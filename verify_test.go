@@ -74,6 +74,7 @@ func Test_verifyWithKeys(t *testing.T) {
 		{ErrInvalidSignatureAlgorithm, "pure", "server_list.json.pure.minisig", "server_list.json", "server_list.json", 10, pk},
 
 		{ok, "valid server_list", "server_list.json.minisig", "server_list.json", "server_list.json", 10, pk},
+		{ok, "TC timestamp:", "server_list.json.tc_timestamp.minisig", "server_list.json", "server_list.json", 10, pk},
 		{ok, "TC no hashed", "server_list.json.tc_nohashed.minisig", "server_list.json", "server_list.json", 10, pk},
 		{ok, "TC later time", "server_list.json.tc_latertime.minisig", "server_list.json", "server_list.json", 10, pk},
 		{ErrWrongFileName, "server_list TC file:organization_list", "server_list.json.tc_orglist.minisig", "server_list.json", "server_list.json", 10, pk},
@@ -82,7 +83,6 @@ func Test_verifyWithKeys(t *testing.T) {
 		{ErrWrongFileName, "TC file:otherfile", "server_list.json.tc_otherfile.minisig", "server_list.json", "server_list.json", 10, pk},
 		{ErrInvalidTrustedComment, "TC no file", "server_list.json.tc_nofile.minisig", "server_list.json", "server_list.json", 10, pk},
 		{ErrInvalidTrustedComment, "TC no time", "server_list.json.tc_notime.minisig", "server_list.json", "server_list.json", 10, pk},
-		{ErrInvalidTrustedComment, "TC empty", "server_list.json.tc_empty.minisig", "server_list.json", "server_list.json", 10, pk},
 		{errAny, "TC empty time", "server_list.json.tc_emptytime.minisig", "server_list.json", "server_list.json", 10, pk},
 		{errAny, "TC empty file", "server_list.json.tc_emptyfile.minisig", "server_list.json", "server_list.json", 10, pk},
 		{ErrWrongFileContent, "TC earlier time", "server_list.json.tc_earliertime.minisig", "server_list.json", "server_list.json", 9, pk},

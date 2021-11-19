@@ -32,7 +32,7 @@ func Verify(signatureFileContent string, signedJson []byte, expectedFileName str
 // Verification is performed using a matching key in allowedPublicKeys.
 // The signature is checked to be a Blake2b-prehashed Ed25519 Minisign signature with a valid trusted comment.
 // The file type that is verified is indicated by expectedFileName, which must be one of server_list.json/organization_list.json.
-// The trusted comment is checked to be of the form "time:<timestamp>\tfile:<expectedFileName>", optionally suffixed by "\thashed".
+// The trusted comment is checked to be of the form "time<(stamp)>:<timestamp>\tfile:<expectedFileName>", optionally suffixed by something, e.g. "\thashed".
 // The JSON file and signature are checked to have a timestamp with a value of at least minSignTime, which is a UNIX timestamp without milliseconds;
 // more precisely: min sign time <= sign time from trusted comment <= time from JSON 'v' tag.
 // The JSON file is checked to be valid JSON and contain a tag with key server_list/organization_list, depending on expectedFileName.
@@ -80,8 +80,11 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFile
 		// sigFileName cannot have spaces
 		_, err = fmt.Sscanf(sig.TrustedComment, "trusted comment: time:%d\tfile:%s", &signTime, &sigFileName)
 		if err != nil {
-			return false, VerifyError{ErrInvalidTrustedComment,
-				fmt.Sprintf("failed to interpret trusted comment (%q)", sig.TrustedComment), err}
+			_, err = fmt.Sscanf(sig.TrustedComment, "trusted comment: timestamp:%d\tfile:%s", &signTime, &sigFileName)
+			if err != nil {
+				return false, VerifyError{ErrInvalidTrustedComment,
+					fmt.Sprintf("failed to interpret trusted comment (%q)", sig.TrustedComment), err}
+			}
 		}
 
 		if sigFileName != expectedFileName {
