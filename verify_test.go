@@ -2,6 +2,8 @@ package eduvpn_verify
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -12,6 +14,33 @@ const (
 	ok     VerifyErrCode = -1
 	errAny               = -2
 )
+
+func compareResults(t *testing.T, ret bool, err error, expected VerifyErrCode, call func() string) {
+	if (err == nil) != (expected == ok) || err != nil && expected != errAny && err.(VerifyError).Code != expected {
+		var errMsg string
+		if err != nil {
+			errMsg = fmt.Sprintf("%v %v (cause %v)", err.(VerifyError).Code, err, errors.Unwrap(err))
+		} else {
+			errMsg = "<ok>"
+		}
+
+		var wantErrCode string
+		switch expected {
+		case ok:
+			wantErrCode = "<ok>"
+		case errAny:
+			wantErrCode = "<any>"
+		default:
+			wantErrCode = strconv.Itoa(int(expected))
+		}
+
+		t.Errorf("%v\nerror = %v, wantErr %v", call(), errMsg, wantErrCode)
+		return
+	}
+	if ret != (expected == ok) {
+		t.Errorf("%v\n= %v, want %v", call(), ret, expected == ok)
+	}
+}
 
 func Test_verifyWithKeys(t *testing.T) {
 	var err error
@@ -125,33 +154,10 @@ func Test_verifyWithKeys(t *testing.T) {
 			t.Parallel()
 			valid, err := verifyWithKeys(string(files[tt.signatureFile]), files[tt.jsonFile],
 				tt.expectedFileName, tt.minSignTime, tt.allowedPks)
-			if (err == nil) != (tt.result == ok) || err != nil && tt.result != errAny && err.(VerifyError).Code != tt.result {
-				var errCode string
-				if err != nil {
-					errCode = strconv.Itoa(int(err.(VerifyError).Code))
-				} else {
-					errCode = "<ok>"
-				}
-
-				var wantErrCode string
-				switch tt.result {
-				case ok:
-					wantErrCode = "<ok>"
-				case errAny:
-					wantErrCode = "<any>"
-				default:
-					wantErrCode = strconv.Itoa(int(tt.result))
-				}
-
-				t.Errorf("verifyWithKeys(%q, %q, %q, %v)\nerror = %v %v, wantErr %v",
-					tt.signatureFile, tt.jsonFile, tt.expectedFileName, tt.minSignTime,
-					errCode, err, wantErrCode)
-				return
-			}
-			if valid != (tt.result == ok) {
-				t.Errorf("verifyWithKeys(%q, %q, %q, %v)\n= %v, want %v",
-					tt.signatureFile, tt.jsonFile, tt.expectedFileName, tt.minSignTime, valid, tt.result == ok)
-			}
+			compareResults(t, valid, err, tt.result, func() string {
+				return fmt.Sprintf("verifyWithKeys(%q, %q, %q, %v, %v)",
+					tt.signatureFile, tt.jsonFile, tt.expectedFileName, tt.minSignTime, tt.allowedPks)
+			})
 		})
 	}
 }
@@ -198,33 +204,10 @@ func Test_Verify(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			t.Parallel()
 			valid, err := Verify(string(files[tt.signatureFile]), files[tt.jsonFile], tt.expectedFileName, tt.minSignTime)
-			if (err == nil) != (tt.result == ok) || err != nil && tt.result != errAny && err.(VerifyError).Code != tt.result {
-				var errCode string
-				if err != nil {
-					errCode = strconv.Itoa(int(err.(VerifyError).Code))
-				} else {
-					errCode = "<ok>"
-				}
-
-				var wantErrCode string
-				switch tt.result {
-				case ok:
-					wantErrCode = "<ok>"
-				case errAny:
-					wantErrCode = "<any>"
-				default:
-					wantErrCode = strconv.Itoa(int(tt.result))
-				}
-
-				t.Errorf("verifyWithKeys(%q, %q, %q, %v)\nerror = %v %v, wantErr %v",
-					tt.signatureFile, tt.jsonFile, tt.expectedFileName, tt.minSignTime,
-					errCode, err, wantErrCode)
-				return
-			}
-			if valid != (tt.result == ok) {
-				t.Errorf("verifyWithKeys(%q, %q, %q, %v)\n= %v, want %v",
-					tt.signatureFile, tt.jsonFile, tt.expectedFileName, tt.minSignTime, valid, tt.result == ok)
-			}
+			compareResults(t, valid, err, tt.result, func() string {
+				return fmt.Sprintf("Verify(%q, %q, %q, %v)",
+					tt.signatureFile, tt.jsonFile, tt.expectedFileName, tt.minSignTime)
+			})
 		})
 	}
 }
