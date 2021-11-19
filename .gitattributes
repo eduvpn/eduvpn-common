@@ -1,1 +1,2 @@
-**/test_data/**.json !eol
+test_data/**/*.json -text eol=lf
+test_data/**/*.blake2b -text
