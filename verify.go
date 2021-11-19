@@ -56,16 +56,12 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFile
 		return false, VerifyError{ErrInvalidSignatureAlgorithm, "BLAKE2b-prehashed EdDSA signature required", nil}
 	}
 
-	keys := make([]minisign.PublicKey, len(allowedPublicKeys))
-	for i, keyStr := range allowedPublicKeys {
+	for _, keyStr := range allowedPublicKeys {
 		key, err := minisign.NewPublicKey(keyStr)
 		if err != nil {
 			return false, VerifyError{ErrInvalidPublicKey, "internal error: could not create public key", err}
 		}
-		keys[i] = key
-	}
 
-	for _, key := range keys {
 		if sig.KeyId != key.KeyId {
 			continue
 		}
