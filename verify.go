@@ -1,7 +1,6 @@
 package eduvpn_verify
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/jedisct1/go-minisign"
 )
@@ -27,15 +26,13 @@ func Verify(signatureFileContent string, signedJson []byte, expectedFileName str
 	return valid, err
 }
 
-// verifyWithKeys verifies the Minisign signature in signatureFileContent (minisig file format) over the server_list/organization_list JSON in signedJson (UTF-8).
+// verifyWithKeys verifies the Minisign signature in signatureFileContent (minisig file format) over the server_list/organization_list JSON in signedJson.
 //
 // Verification is performed using a matching key in allowedPublicKeys.
 // The signature is checked to be a Blake2b-prehashed Ed25519 Minisign signature with a valid trusted comment.
 // The file type that is verified is indicated by expectedFileName, which must be one of server_list.json/organization_list.json.
 // The trusted comment is checked to be of the form "time<(stamp)>:<timestamp>\tfile:<expectedFileName>", optionally suffixed by something, e.g. "\thashed".
-// The JSON file and signature are checked to have a timestamp with a value of at least minSignTime, which is a UNIX timestamp without milliseconds;
-// more precisely: min sign time <= sign time from trusted comment <= time from JSON 'v' tag.
-// The JSON file is checked to be valid JSON and contain a tag with key server_list/organization_list, depending on expectedFileName.
+// The signature is checked to have a timestamp with a value of at least minSignTime, which is a UNIX timestamp without milliseconds;
 //
 // The return value will either be (true, nil) on success or (false, err) on failure.
 func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFileName string, minSignTime uint64, allowedPublicKeys []string) (bool, error) {
@@ -88,47 +85,9 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFile
 				fmt.Sprintf("signature was on file %q instead of expected %q", sigFileName, expectedFileName), nil}
 		}
 
-		// Technically redundant due to checks below
 		if signTime < minSignTime {
 			return false, VerifyError{ErrTooOld,
 				fmt.Sprintf("signature was created at %v < minimum time (%v)", signTime, minSignTime), nil}
-		}
-
-		var signedData struct {
-			Time             uint64      `json:"v"`
-			ServerList       interface{} `json:"server_list"`
-			OrganizationList interface{} `json:"organization_list"`
-		}
-		err = json.Unmarshal(signedJson, &signedData)
-		if err != nil {
-			return false, VerifyError{ErrWrongFileContent, "failed to parse JSON", err}
-		}
-
-		if signedData.Time == 0 {
-			// Field absent or 0
-			return false, VerifyError{ErrWrongFileContent, "JSON file must have nonzero 'v' field", nil}
-		}
-
-		if signedData.Time > signTime {
-			return false, VerifyError{ErrWrongFileContent, fmt.Sprintf(
-				"list was created at %v > signature time (%v), which should be impossible",
-				signedData.Time, signTime), nil}
-		}
-
-		if signedData.Time < minSignTime {
-			return false, VerifyError{ErrTooOld,
-				fmt.Sprintf("list was created at %v < minimum time (%v)", signedData.Time, minSignTime), nil}
-		}
-
-		switch expectedFileName {
-		case "server_list.json":
-			if _, isServerList := signedData.ServerList.([]interface{}); !isServerList {
-				return false, VerifyError{ErrWrongFileContent, "JSON file does not have a server_list", nil}
-			}
-		case "organization_list.json":
-			if _, isOrganizationList := signedData.OrganizationList.([]interface{}); !isOrganizationList {
-				return false, VerifyError{ErrWrongFileContent, "JSON file does not have an organization_list", nil}
-			}
 		}
 
 		return true, nil
@@ -147,7 +106,6 @@ const (
 	ErrInvalidSignature
 	ErrInvalidTrustedComment
 	ErrWrongFileName
-	ErrWrongFileContent
 	ErrTooOld
 	ErrWrongKey
 )

@@ -8,11 +8,13 @@ then
 	exit 1
 fi
 
-rm -f *.minisig *.blake2b *.key
+rm -f *.minisig *.blake2b
 
-echo -en "\n\n" | minisign -Gf -p public.key -s secret.key &
-echo -en "\n\n" | minisign -Gf -p wrong_public.key -s wrong_secret.key &
-wait
+# Uncomment to regenerate keys
+#rm -f *.key
+#echo -en "\n\n" | minisign -Gf -p public.key -s secret.key &
+#echo -en "\n\n" | minisign -Gf -p wrong_public.key -s wrong_secret.key &
+#wait
 
 # Try to create pure signature with default Minisign (works with version < 0.10)
 echo | minisign -Sm server_list.json -x server_list.json.pure.minisig -t $'time:10\tfile:server_list.json' -s secret.key
@@ -33,36 +35,25 @@ echo | minisign -SHm server_list.json -t $'time:10\tfile:server_list.json\thashe
 echo | minisign -SHm server_list.json -x server_list.json.tc_timestamp.minisig -t $'timestamp:10\tfile:server_list.json\thashed' -s secret.key &
 echo | minisign -SHm server_list.json -x server_list.json.tc_nohashed.minisig -t $'time:10\tfile:server_list.json' -s secret.key &
 echo | minisign -SHm server_list.json -x server_list.json.tc_latertime.minisig -t $'time:20\tfile:server_list.json\t hashed' -s secret.key &
-echo | minisign -SHm server_list.json -x server_list.json.tc_orglist.minisig -t $'time:10\tfile:organization_list.json\thashed' -s secret.key &
 wait
+echo | minisign -SHm server_list.json -x server_list.json.tc_orglist.minisig -t $'time:10\tfile:organization_list.json\thashed' -s secret.key &
 echo | minisign -SHm server_list.json -x server_list.json.tc_otherfile.minisig -t $'time:10\tfile:otherfile\thashed' -s secret.key &
 echo | minisign -SHm server_list.json -x server_list.json.tc_nofile.minisig -t $'time:10\thashed' -s secret.key &
 echo | minisign -SHm server_list.json -x server_list.json.tc_notime.minisig -t $'file:server_list.json\thashed' -s secret.key &
-echo | minisign -SHm server_list.json -x server_list.json.tc_emptytime.minisig -t $'time:\tfile:server_list.json\thashed' -s secret.key &
 wait
+echo | minisign -SHm server_list.json -x server_list.json.tc_emptytime.minisig -t $'time:\tfile:server_list.json\thashed' -s secret.key &
 echo | minisign -SHm server_list.json -x server_list.json.tc_emptyfile.minisig -t $'time:10\tfile:\thashed' -s secret.key &
 echo | minisign -SHm server_list.json -x server_list.json.tc_earliertime.minisig -t $'time:9\tfile:server_list.json\thashed' -s secret.key &
 echo | minisign -SHm server_list.json -x server_list.json.tc_random.minisig -t 'random stuff' -s secret.key &
-echo | minisign -SHm server_list-large_time.json -x server_list.json.large_time.minisig -t $'time:4300000000\tfile:server_list.json' -s secret.key &
 wait
-echo | minisign -SHm server_list-no_version.json -x server_list.json.no_version.minisig -t $'time:10\tfile:server_list.json\thashed' -s secret.key &
+echo | minisign -SHm server_list.json -x server_list.json.large_time.minisig -t $'time:4300000000\tfile:server_list.json' -s secret.key &
 
 echo | minisign -SHm organization_list.json -t $'time:10\tfile:organization_list.json\thashed' -s secret.key &
 echo | minisign -SHm organization_list.json -x organization_list.json.tc_servlist.minisig -t $'time:10\tfile:server_list.json\thashed' -s secret.key &
 
 echo | minisign -SHm other_list.json -t $'time:10\tfile:other_list.json\thashed' -s secret.key &
-wait
-echo | minisign -SHm other_list.json -x other_list.json.tc_servlist.minisig -t $'time:10\tfile:server_list.json\thashed' -s secret.key &
-echo | minisign -SHm no_list.json -t $'time:10\tfile:server_list.json\thashed' -s secret.key &
-echo | minisign -SHm random.txt -t $'time:10\tfile:server_list.json\thashed' -s secret.key &
-echo | minisign -SHm empty -t $'time:10\tfile:server_list.json\thashed' -s secret.key &
-wait
 
-echo | minisign -SHm wrong_type1.json -t $'time:10\tfile:server_list.json\thashed' -s secret.key &
-echo | minisign -SHm wrong_type2.json -t $'time:10\tfile:server_list.json\thashed' -s secret.key &
-echo | minisign -SHm wrong_type3.json -t $'time:10\tfile:server_list.json\thashed' -s secret.key &
-
-echo | minisign -SHm server_list.json -x server_list.json.wrong_key.minisig -t $'time:10\tfile:server_list.json\thashed' -s wrong_secret.key
+echo | minisign -SHm server_list.json -x server_list.json.wrong_key.minisig -t $'time:10\tfile:server_list.json\thashed' -s wrong_secret.key &
 wait
 
 ./generate_forged.py
