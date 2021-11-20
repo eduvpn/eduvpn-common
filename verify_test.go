@@ -11,15 +11,25 @@ import (
 )
 
 const (
-	ok     VerifyErrCode = -1
-	errAny               = -2
+	ok     = -1
+	errAny = -2
 )
 
-func compareResults(t *testing.T, ret bool, err error, expected VerifyErrCode, call func() string) {
-	if (err == nil) != (expected == ok) || err != nil && expected != errAny && err.(VerifyError).Code != expected {
+func compareResults(t *testing.T, ret bool, err error, expected int, call func() string) {
+	getCode := func(err error) int {
+		switch e := err.(type) {
+		case detailedVerifyError:
+			return int(e.Code)
+		case VerifyError:
+			return int(e.Code)
+		}
+		panic(nil)
+	}
+
+	if (err == nil) != (expected == ok) || err != nil && expected != errAny && getCode(err) != expected {
 		var errMsg string
 		if err != nil {
-			errMsg = fmt.Sprintf("%v %v (cause %v)", err.(VerifyError).Code, err, errors.Unwrap(err))
+			errMsg = fmt.Sprintf("%v %v (cause %v)", getCode(err), err, errors.Unwrap(err))
 		} else {
 			errMsg = "<ok>"
 		}
@@ -31,7 +41,7 @@ func compareResults(t *testing.T, ret bool, err error, expected VerifyErrCode, c
 		case errAny:
 			wantErrCode = "<any>"
 		default:
-			wantErrCode = strconv.Itoa(int(expected))
+			wantErrCode = strconv.Itoa(expected)
 		}
 
 		t.Errorf("%v\nerror = %v, wantErr %v", call(), errMsg, wantErrCode)
@@ -63,7 +73,7 @@ func Test_verifyWithKeys(t *testing.T) {
 	}
 
 	tests := []struct {
-		result           VerifyErrCode
+		result           detailedVerifyErrorCode
 		testName         string
 		signatureFile    string
 		jsonFile         string
@@ -71,46 +81,46 @@ func Test_verifyWithKeys(t *testing.T) {
 		minSignTime      uint64
 		allowedPks       []string
 	}{
-		{ErrInvalidSignatureAlgorithm, "pure", "server_list.json.pure.minisig", "server_list.json", "server_list.json", 10, pk},
+		{errInvalidSignatureAlgorithm, "pure", "server_list.json.pure.minisig", "server_list.json", "server_list.json", 10, pk},
 
 		{ok, "valid server_list", "server_list.json.minisig", "server_list.json", "server_list.json", 10, pk},
 		{ok, "TC no hashed", "server_list.json.tc_nohashed.minisig", "server_list.json", "server_list.json", 10, pk},
 		{ok, "TC later time", "server_list.json.tc_latertime.minisig", "server_list.json", "server_list.json", 10, pk},
-		{ErrWrongFileName, "server_list TC file:organization_list", "server_list.json.tc_orglist.minisig", "server_list.json", "server_list.json", 10, pk},
-		{ErrWrongFileName, "organization_list as server_list", "organization_list.json.minisig", "organization_list.json", "server_list.json", 10, pk},
-		{ErrWrongFileName, "TC file:otherfile", "server_list.json.tc_otherfile.minisig", "server_list.json", "server_list.json", 10, pk},
-		{ErrInvalidTrustedComment, "TC no file", "server_list.json.tc_nofile.minisig", "server_list.json", "server_list.json", 10, pk},
-		{ErrInvalidTrustedComment, "TC no time", "server_list.json.tc_notime.minisig", "server_list.json", "server_list.json", 10, pk},
+		{errWrongFileName, "server_list TC file:organization_list", "server_list.json.tc_orglist.minisig", "server_list.json", "server_list.json", 10, pk},
+		{errWrongFileName, "organization_list as server_list", "organization_list.json.minisig", "organization_list.json", "server_list.json", 10, pk},
+		{errWrongFileName, "TC file:otherfile", "server_list.json.tc_otherfile.minisig", "server_list.json", "server_list.json", 10, pk},
+		{errInvalidTrustedComment, "TC no file", "server_list.json.tc_nofile.minisig", "server_list.json", "server_list.json", 10, pk},
+		{errInvalidTrustedComment, "TC no time", "server_list.json.tc_notime.minisig", "server_list.json", "server_list.json", 10, pk},
 		{errAny, "TC empty time", "server_list.json.tc_emptytime.minisig", "server_list.json", "server_list.json", 10, pk},
 		{errAny, "TC empty file", "server_list.json.tc_emptyfile.minisig", "server_list.json", "server_list.json", 10, pk},
-		{ErrInvalidTrustedComment, "TC random", "server_list.json.tc_random.minisig", "server_list.json", "server_list.json", 10, pk},
+		{errInvalidTrustedComment, "TC random", "server_list.json.tc_random.minisig", "server_list.json", "server_list.json", 10, pk},
 		{ok, "large time", "server_list.json.large_time.minisig", "server_list.json", "server_list.json", 43e8, pk},
 		{ok, "lower min time", "server_list.json.minisig", "server_list.json", "server_list.json", 5, pk},
-		{ErrTooOld, "higher min time", "server_list.json.minisig", "server_list.json", "server_list.json", 11, pk},
+		{errTooOld, "higher min time", "server_list.json.minisig", "server_list.json", "server_list.json", 11, pk},
 
 		{ok, "valid organization_list", "organization_list.json.minisig", "organization_list.json", "organization_list.json", 10, pk},
-		{ErrWrongFileName, "organization_list TC file:server_list", "organization_list.json.tc_servlist.minisig", "organization_list.json", "organization_list.json", 10, pk},
-		{ErrWrongFileName, "server_list as organization_list", "server_list.json.minisig", "server_list.json", "organization_list.json", 10, pk},
+		{errWrongFileName, "organization_list TC file:server_list", "organization_list.json.tc_servlist.minisig", "organization_list.json", "organization_list.json", 10, pk},
+		{errWrongFileName, "server_list as organization_list", "server_list.json.minisig", "server_list.json", "organization_list.json", 10, pk},
 
-		{ErrUnknownExpectedFileName, "valid other_list", "other_list.json.minisig", "other_list.json", "other_list.json", 10, pk},
-		{ErrWrongFileName, "other_list as server_list", "other_list.json.minisig", "other_list.json", "server_list.json", 10, pk},
+		{errUnknownExpectedFileName, "valid other_list", "other_list.json.minisig", "other_list.json", "other_list.json", 10, pk},
+		{errWrongFileName, "other_list as server_list", "other_list.json.minisig", "other_list.json", "server_list.json", 10, pk},
 
-		{ErrInvalidSignatureFormat, "invalid signature file", "random.txt", "server_list.json", "server_list.json", 10, pk},
-		{ErrInvalidSignatureFormat, "empty signature file", "empty", "server_list.json", "server_list.json", 10, pk},
+		{errInvalidSignatureFormat, "invalid signature file", "random.txt", "server_list.json", "server_list.json", 10, pk},
+		{errInvalidSignatureFormat, "empty signature file", "empty", "server_list.json", "server_list.json", 10, pk},
 
-		{ErrWrongKey, "wrong key", "server_list.json.wrong_key.minisig", "server_list.json", "server_list.json", 10, pk},
+		{errWrongKey, "wrong key", "server_list.json.wrong_key.minisig", "server_list.json", "server_list.json", 10, pk},
 
-		{ErrInvalidSignatureAlgorithm, "forged pure signature", "server_list.json.forged_pure.minisig", "server_list.json.blake2b", "server_list.json", 10, pk},
-		{ErrInvalidSignature, "forged key ID", "server_list.json.forged_keyid.minisig", "server_list.json", "server_list.json", 10, pk},
+		{errInvalidSignatureAlgorithm, "forged pure signature", "server_list.json.forged_pure.minisig", "server_list.json.blake2b", "server_list.json", 10, pk},
+		{errInvalidSignature, "forged key ID", "server_list.json.forged_keyid.minisig", "server_list.json", "server_list.json", 10, pk},
 
-		{ErrWrongKey, "no allowed keys", "server_list.json.minisig", "server_list.json", "server_list.json", 10, []string{}},
+		{errWrongKey, "no allowed keys", "server_list.json.minisig", "server_list.json", "server_list.json", 10, []string{}},
 		{ok, "multiple allowed keys 1", "server_list.json.minisig", "server_list.json", "server_list.json", 10, []string{
 			pk[0], "RWSf0PYToIUJmDlsz21YOXvgQzHj9NSdyJUqEY5ZdfS9GepeXt3+JJRZ",
 		}},
 		{ok, "multiple allowed keys 2", "server_list.json.minisig", "server_list.json", "server_list.json", 10, []string{
 			"RWSf0PYToIUJmDlsz21YOXvgQzHj9NSdyJUqEY5ZdfS9GepeXt3+JJRZ", pk[0],
 		}},
-		{ErrInvalidPublicKey, "invalid allowed key", "server_list.json.minisig", "server_list.json", "server_list.json", 10, []string{"AAA"}},
+		{errInvalidPublicKey, "invalid allowed key", "server_list.json.minisig", "server_list.json", "server_list.json", 10, []string{"AAA"}},
 	}
 
 	files := map[string][]byte{}
@@ -140,7 +150,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			t.Parallel()
 			valid, err := verifyWithKeys(string(files[tt.signatureFile]), files[tt.jsonFile],
 				tt.expectedFileName, tt.minSignTime, tt.allowedPks)
-			compareResults(t, valid, err, tt.result, func() string {
+			compareResults(t, valid, err, int(tt.result), func() string {
 				return fmt.Sprintf("verifyWithKeys(%q, %q, %q, %v, %v)",
 					tt.signatureFile, tt.jsonFile, tt.expectedFileName, tt.minSignTime, tt.allowedPks)
 			})
@@ -151,7 +161,7 @@ func Test_verifyWithKeys(t *testing.T) {
 func Test_Verify(t *testing.T) {
 	var err error
 	tests := []struct {
-		result           VerifyErrCode
+		result           VerifyErrorCode
 		testName         string
 		signatureFile    string
 		jsonFile         string
@@ -159,9 +169,9 @@ func Test_Verify(t *testing.T) {
 		minSignTime      uint64
 	}{
 		//TODO tests with real valid *prehashed* signatures
-		{ErrInvalidSignatureAlgorithm, "pure server_list", "server_list-1.json.pure.minisig", "server_list-1.json", "server_list.json", 1636532223},
-		{ErrInvalidSignatureAlgorithm, "pure organization_list", "organization_list-1.json.pure.minisig", "organization_list-1.json", "organization_list.json", 1636532223},
-		{ErrWrongKey, "wrong key", "../dummy/server_list.json.minisig", "../dummy/server_list.json", "server_list.json", 10},
+		{ErrInvalidSignature, "pure server_list", "server_list-1.json.pure.minisig", "server_list-1.json", "server_list.json", 1636532223},
+		{ErrInvalidSignature, "pure organization_list", "organization_list-1.json.pure.minisig", "organization_list-1.json", "organization_list.json", 1636532223},
+		{ErrInvalidSignatureUnknownKey, "wrong key", "../dummy/server_list.json.minisig", "../dummy/server_list.json", "server_list.json", 10},
 	}
 
 	files := map[string][]byte{}
@@ -190,7 +200,7 @@ func Test_Verify(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			t.Parallel()
 			valid, err := Verify(string(files[tt.signatureFile]), files[tt.jsonFile], tt.expectedFileName, tt.minSignTime)
-			compareResults(t, valid, err, tt.result, func() string {
+			compareResults(t, valid, err, int(tt.result), func() string {
 				return fmt.Sprintf("Verify(%q, %q, %q, %v)",
 					tt.signatureFile, tt.jsonFile, tt.expectedFileName, tt.minSignTime)
 			})

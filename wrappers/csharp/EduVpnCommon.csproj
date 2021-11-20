@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>8</LangVersion>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="EduVpnCommonTests/**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Remove="EduVpnCommonTests/**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="EduVpnCommonTests/**" />
+		<None Condition="Exists('../../exports/eduvpn_verify.dll')" Include="../../exports/eduvpn_verify.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Condition="Exists('../../exports/eduvpn_verify.so')" Include="../../exports/eduvpn_verify.so">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+</Project>
