@@ -13,7 +13,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="../EduVpnCommon.csproj" />
+		<ProjectReference Include="../EduVpnCommon.csproj" />
 	</ItemGroup>
 
 </Project>
