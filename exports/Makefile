@@ -1,12 +1,18 @@
-.PHONY: build
+.PHONY: build clean
 
-ifeq ($(OS),Windows_NT)
-    lib_suffix := .dll
-else
-    lib_suffix := .so
-endif
+lib_suffix_linux   = .so
+lib_suffix_windows = .dll
+lib_suffix_darwin  = .dylib
 
-build: eduvpn_verify$(lib_suffix)
+OS         = $(shell go env GOHOSTOS)
+ARCH       = $(shell go env GOHOSTARCH)
+LIB_SUFFIX = $(lib_suffix_$(OS))
 
-eduvpn_verify.dll eduvpn_verify.so: exports.go ../verify.go
-	go build -o $@ -buildmode=c-shared $<
+# Creates targets like 'linux/amd64/eduvpn_verify.so'
+build: $(OS)/$(ARCH)/eduvpn_verify$(LIB_SUFFIX)
+
+$(OS)/$(ARCH)/eduvpn_verify$(LIB_SUFFIX): exports.go ../verify.go
+	CGO_ENABLED=1 GOOS=$(OS) GOARCH=$(ARCH) go build -o $@ -buildmode=c-shared $<
+
+clean:
+	rm -rf ../exports/*/

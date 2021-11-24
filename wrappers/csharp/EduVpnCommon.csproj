@@ -4,6 +4,11 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>8</LangVersion>
 		<Nullable>enable</Nullable>
+		<PackageId>EduVpn.Common</PackageId>
+		<PackageVersion>0.1.0</PackageVersion>
+		<Authors />
+		<Description>Common EduVpn logic</Description>
+		<Product>EduVpn</Product>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -14,13 +19,47 @@
 		<EmbeddedResource Remove="EduVpnCommonTests/**" />
 	</ItemGroup>
 
+	<Target Name="Build library for current OS" BeforeTargets="PrepareForBuild"
+	        Condition="!(Exists('../../exports/windows/amd64/eduvpn_verify.dll')
+				Or Exists('../../exports/windows/386/eduvpn_verify.dll')
+				Or Exists('../../exports/windows/arm/eduvpn_verify.dll')
+				Or Exists('../../exports/windows/arm64/eduvpn_verify.dll')
+				Or Exists('../../exports/linux/amd64/eduvpn_verify.so')
+				Or Exists('../../exports/linux/arm/eduvpn_verify.so')
+				Or Exists('../../exports/linux/arm64/eduvpn_verify.so'))">
+		<Message Text="Shared eduvpn_verify library not found, you should build that one first" Importance="high" />
+	</Target>
+
 	<ItemGroup>
 		<None Remove="EduVpnCommonTests/**" />
-		<None Condition="Exists('../../exports/eduvpn_verify.dll')" Include="../../exports/eduvpn_verify.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		
+		<None Condition="Exists('../../exports/windows/amd64/eduvpn_verify.dll')"
+		      Include="../../exports/windows/amd64/eduvpn_verify.dll" Pack="true" PackagePath="runtimes/win-x64/native/">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Condition="Exists('../../exports/eduvpn_verify.so')" Include="../../exports/eduvpn_verify.so">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<None Condition="Exists('../../exports/windows/386/eduvpn_verify.dll')"
+		      Include="../../exports/windows/386/eduvpn_verify.dll" Pack="true" PackagePath="runtimes/win-x86/native/">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Condition="Exists('../../exports/windows/arm/eduvpn_verify.dll')"
+		      Include="../../exports/windows/arm/eduvpn_verify.dll" Pack="true" PackagePath="runtimes/win-arm/native/">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Condition="Exists('../../exports/windows/arm64/eduvpn_verify.dll')"
+		      Include="../../exports/windows/arm64/eduvpn_verify.dll" Pack="true" PackagePath="runtimes/win-arm64/native/">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Condition="Exists('../../exports/linux/amd64/eduvpn_verify.so')"
+		      Include="../../exports/linux/amd64/eduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-x64/native/">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Condition="Exists('../../exports/linux/arm/eduvpn_verify.so')"
+		      Include="../../exports/linux/arm/eduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-arm/native/">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Condition="Exists('../../exports/linux/arm64/eduvpn_verify.so')"
+		      Include="../../exports/linux/arm64/eduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-arm64/native/">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 
