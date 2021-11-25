@@ -9,7 +9,13 @@ test-go:
 	go test
 
 test-wrappers: build
+	$(MAKE) -j .test-csharp .test-python
+
+.test-csharp:
 	$(MAKE) -C wrappers/csharp test
+
+.test-python:
+	$(MAKE) -C wrappers/python test
 
 clean:
 	$(MAKE) -C exports clean
