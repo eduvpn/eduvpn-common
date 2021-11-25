@@ -14,13 +14,11 @@ be downloaded by the caller.
 ## Build & test
 
 Build shared library for current platform:
-
 ```shell
 make
 ```
 
 Build shared library for specified OS & architecture (example):
-
 ```shell
 make OS=windows ARCH=386
 ```
@@ -28,13 +26,11 @@ make OS=windows ARCH=386
 Results will be output in `exports/`.
 
 Test Go code:
-
 ```shell
 make test-go
 ```
 
 Test wrappers:
-
 ```shell
 make test-wrappers
 ```
