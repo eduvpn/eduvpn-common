@@ -8,8 +8,9 @@ test: test-go test-wrappers
 test-go:
 	go test
 
+# Enable parallelism if -j is specified
 test-wrappers: build
-	$(MAKE) -j .test-csharp .test-python
+	$(MAKE) .test-csharp .test-python
 
 .test-csharp:
 	$(MAKE) -C wrappers/csharp test
