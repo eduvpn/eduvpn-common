@@ -27,8 +27,8 @@ class VerifyTests(unittest.TestCase):
 
     def testValidMemoryView(self):
         discovery.verify(
-            memoryview(b"abc" + read_bytes(f"{test_data_dir}/dummy/server_list.json.minisig") + b"abc")[3:-3],
-            read_bytes(f"{test_data_dir}/dummy/server_list.json"),
+            read_bytes(f"{test_data_dir}/dummy/server_list.json.minisig"),
+            memoryview(b"abc" + read_bytes(f"{test_data_dir}/dummy/server_list.json") + b"abc")[3:-3],
             "server_list.json",
             0
         )

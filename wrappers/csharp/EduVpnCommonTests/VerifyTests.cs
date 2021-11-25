@@ -25,7 +25,20 @@ namespace EduVpnCommonTests
 				File.ReadAllBytes($"{testDataDir_}/{jsonFile}"),
 				expectedFileName,
 				DateTimeOffset.UnixEpoch);
-		
+
+		[Test]
+		[TestCase("dummy/server_list.json.minisig", "dummy/server_list.json", "server_list.json")]
+		public void TestValidSegment(string sigFile, string jsonFile, string expectedFileName)
+		{
+			var bytes = new byte[] { 1, 2, 3 }.Concat(File.ReadAllBytes($"{testDataDir_}/{jsonFile}"))
+				.Concat(new byte[] { 1, 2, 3 }).ToArray();
+			Discovery.Verify(
+				File.ReadAllBytes($"{testDataDir_}/{sigFile}"),
+				new(bytes, 3, bytes.Length - 3 - 3),
+				expectedFileName,
+				DateTimeOffset.UnixEpoch);
+		}
+
 		[Test]
 		[TestCase("dummy/random.txt", "dummy/server_list.json", "server_list.json")]
 		public void TestInvalidSignature(string sigFile, string jsonFile, string expectedFileName) =>
