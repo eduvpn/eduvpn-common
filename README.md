@@ -42,4 +42,4 @@ Take a look at `wrappers/<lang>/` for descriptions per wrapper.
 - `verify.go`: main API
 - `verify_test.go` and `test_data/`: tests for API
 - `exports/`: C API interface
-- `wrappers/`: Wrappers per language, currently only C#
+- `wrappers/`: Wrappers per language, more will be added
