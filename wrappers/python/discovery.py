@@ -1,8 +1,12 @@
-#!/usr/bin/env python3
-
 import platform
 from ctypes import *
 from enum import Enum
+
+_lib_suffixes = {
+    "windows": ".dll",
+    "linux": ".so",
+    "darwin": ".dylib",
+}
 
 _arch = platform.machine().lower()
 _arch = \
@@ -22,7 +26,7 @@ _arch = \
 
 _os = platform.system().lower()
 
-_lib = cdll.LoadLibrary(f"../../exports/{_os}/{_arch}/eduvpn_verify")
+_lib = cdll.LoadLibrary(f"../../exports/{_os}/{_arch}/eduvpn_verify{_lib_suffixes[_os]}")
 
 
 class GoSlice(Structure):
@@ -62,7 +66,7 @@ class VerifyError(Exception):
                 VerifyErrorCode.ErrUnknownExpectedFileName: "unknown expected file name",
                 VerifyErrorCode.ErrInvalidSignature: "invalid signature",
                 VerifyErrorCode.ErrInvalidSignatureUnknownKey: "invalid signature (unknown key)",
-                VerifyErrorCode.ErrTooOld: "replay of previous signature (rollback)"
+                VerifyErrorCode.ErrTooOld: "replay of previous signature (rollback)",
             }[self.code] if self.code != VerifyErrorCode.Unknown else f"unknown verify error ({self.code_int})"
 
 

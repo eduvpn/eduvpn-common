@@ -1,7 +1,7 @@
 .PHONY: compile test
 
 compile:
-	./discovery.py
+	python3 -m discovery
 
 test:
-	./test_discovery.py
+	python3 -m unittest test_discovery
