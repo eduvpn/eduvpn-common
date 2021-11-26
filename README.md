@@ -11,31 +11,63 @@ each language used in EduVPN clients to easily interface with the library.
 Currently, only verification of signatures on files from `disco.eduvpn.org` is supported. For now, these files have to
 be downloaded by the caller.
 
+## Requirements
+
+To run the Go tests, you will need [Go](https://go.dev/doc/install) 1.15 or later (add it to your `PATH`). To build the
+shared library, you will additionally need to install gcc. If you want to use the Makefile scripts you will need GNU
+make.
+
+On Windows, you can install gcc and make (or even Go) via MinGW or Cygwin or use WSL. For MinGW:
+
+1. [Install MinGW](https://www.msys2.org/#installation) (you don't need to install any extra packages yet) and open some
+   MSYS2 terminal (e.g. from the start menu or one of the installed binaries)
+2. Install the [`make`](https://packages.msys2.org/package/make?repo=msys) package (`pacman -S make`) (or
+   e.g. [`mingw-w64-x86_64-make`](https://packages.msys2.org/package/mingw-w64-x86_64-make?repo=mingw64) and
+   use `mingw32-make` in the command line)
+3. To compile for x86_64:
+   1. Install the [`mingw-w64-x86_64-gcc`](https://packages.msys2.org/package/mingw-w64-x86_64-gcc?repo=mingw64) package
+   2. Open the MinGW 64-bit console, via the start menu, or in your current
+      terminal: `path/to/msys64/msys2_shell.cmd -mingw64 -defterm -no-start -use-full-path`
+   3. Run the make commands in the project directory
+4. To compile for x86 (32-bit):
+   1. Install the [`mingw-w64-i686-gcc`](https://packages.msys2.org/package/mingw-w64-i686-gcc?repo=mingw32) package
+   2. Open the MinGW 32-bit console, via the start menu, or in your current
+      terminal: `path/to/msys64/msys2_shell.cmd -mingw32 -defterm -no-start -use-full-path`
+   3. Run the make commands in the project directory
+
+Take a look at `wrappers/<lang>/README.md` for extra instructions for each wrapper.
+
 ## Build & test
 
 Build shared library for current platform:
+
 ```shell
 make
 ```
 
 Build shared library for specified OS & architecture (example):
+
 ```shell
-make OS=windows ARCH=386
+make GOOS=windows GOARCH=386
 ```
 
 Results will be output in `exports/`.
 
+TODO: notes on cross-compilation
+
 Test Go code:
+
 ```shell
 make test-go
 ```
 
-Test wrappers:
+Test wrappers (you will need compilers for all wrappers if you do this):
+
 ```shell
 make test-wrappers
 ```
 
-Take a look at `wrappers/<lang>/` for descriptions per wrapper.
+Take a look at `wrappers/<lang>/README.md` for descriptions per wrapper.
 
 ## Directory
 
