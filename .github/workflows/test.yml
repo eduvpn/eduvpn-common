@@ -29,5 +29,5 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: temurin
-          java-version: 9
+          java-version: 11
       - run: make test-wrappers
