@@ -6,3 +6,6 @@ compile:
 test:
 	$(MAKE) -C ../../exports
 	python3 -m unittest test_discovery
+
+clean:
+	# Nothing to do
