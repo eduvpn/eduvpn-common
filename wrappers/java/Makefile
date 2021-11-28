@@ -1,14 +1,14 @@
 .PHONY: build pack test clean
 
 build:
-	mvn compile
+	mvn --no-transfer-progress compile
 
 pack:
-	mvn package
+	mvn --no-transfer-progress package
 
 test:
 	$(MAKE) -C ../../exports
-	mvn test
+	mvn --no-transfer-progress test
 
 clean:
-	mvn clean
+	mvn --no-transfer-progress clean
