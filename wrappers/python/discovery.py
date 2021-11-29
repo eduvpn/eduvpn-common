@@ -2,6 +2,14 @@ import platform
 from ctypes import *
 from enum import Enum
 
+# TODO OpenBSD?
+
+_lib_prefixes = {
+    "windows": "",
+    "linux": "lib",
+    "darwin": "lib",
+}
+
 _lib_suffixes = {
     "windows": ".dll",
     "linux": ".so",
@@ -26,7 +34,7 @@ _arch = \
 
 _os = platform.system().lower()
 
-_lib = cdll.LoadLibrary(f"../../exports/{_os}/{_arch}/eduvpn_verify{_lib_suffixes[_os]}")
+_lib = cdll.LoadLibrary(f"../../exports/{_os}/{_arch}/{_lib_prefixes[_os]}eduvpn_verify{_lib_suffixes[_os]}")
 
 
 class GoSlice(Structure):
@@ -74,6 +82,7 @@ def verify(signature: bytes, signed_json: bytes, expected_file_name: str, min_si
     """
     Verifies the signature on the JSON server_list.json/organization_list.json file.
     If the function returns the signature is valid for the given file type.
+
     :param signature: .minisig signature file contents.
     :param signed_json: Signed .json file contents.
     :param expected_file_name: The file type to be verified, one of "server_list.json" or "organization_list.json".

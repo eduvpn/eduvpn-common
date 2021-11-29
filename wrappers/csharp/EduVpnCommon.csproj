@@ -24,15 +24,20 @@
 				Or Exists('../../exports/windows/386/eduvpn_verify.dll')
 				Or Exists('../../exports/windows/arm/eduvpn_verify.dll')
 				Or Exists('../../exports/windows/arm64/eduvpn_verify.dll')
-				Or Exists('../../exports/linux/amd64/eduvpn_verify.so')
-				Or Exists('../../exports/linux/arm/eduvpn_verify.so')
-				Or Exists('../../exports/linux/arm64/eduvpn_verify.so'))">
+				Or Exists('../../exports/linux/amd64/libeduvpn_verify.so')
+				Or Exists('../../exports/linux/arm/libeduvpn_verify.so')
+				Or Exists('../../exports/linux/arm64/libeduvpn_verify.so'))">
 		<Message Text="Shared eduvpn_verify library not found, you should build that one first" Importance="high" />
 	</Target>
 
 	<ItemGroup>
 		<None Remove="EduVpnCommonTests/**" />
-		
+
+		<!--
+			See https://docs.microsoft.com/en-us/nuget/create-packages/supporting-multiple-target-frameworks#architecture-specific-folders
+			and https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
+		-->
+
 		<None Condition="Exists('../../exports/windows/amd64/eduvpn_verify.dll')"
 		      Include="../../exports/windows/amd64/eduvpn_verify.dll" Pack="true" PackagePath="runtimes/win-x64/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -49,16 +54,17 @@
 		      Include="../../exports/windows/arm64/eduvpn_verify.dll" Pack="true" PackagePath="runtimes/win-arm64/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Condition="Exists('../../exports/linux/amd64/eduvpn_verify.so')"
-		      Include="../../exports/linux/amd64/eduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-x64/native/">
+
+		<None Condition="Exists('../../exports/linux/amd64/libeduvpn_verify.so')"
+		      Include="../../exports/linux/amd64/libeduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-x64/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Condition="Exists('../../exports/linux/arm/eduvpn_verify.so')"
-		      Include="../../exports/linux/arm/eduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-arm/native/">
+		<None Condition="Exists('../../exports/linux/arm/libeduvpn_verify.so')"
+		      Include="../../exports/linux/arm/libeduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-arm/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Condition="Exists('../../exports/linux/arm64/eduvpn_verify.so')"
-		      Include="../../exports/linux/arm64/eduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-arm64/native/">
+		<None Condition="Exists('../../exports/linux/arm64/libeduvpn_verify.so')"
+		      Include="../../exports/linux/arm64/libeduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-arm64/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
