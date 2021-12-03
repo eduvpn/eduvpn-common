@@ -1,40 +1,22 @@
+import pathlib
 import platform
+from collections import defaultdict
 from ctypes import *
 from enum import Enum
 
-# TODO OpenBSD?
-
-_lib_prefixes = {
+_lib_prefixes = defaultdict(lambda: "lib", {
     "windows": "",
-    "linux": "lib",
-    "darwin": "lib",
-}
+})
 
-_lib_suffixes = {
+_lib_suffixes = defaultdict(lambda: ".so", {
     "windows": ".dll",
-    "linux": ".so",
     "darwin": ".dylib",
-}
-
-_arch = platform.machine().lower()
-_arch = \
-    {
-        "aarch64_be": "arm64",
-        "aarch64": "arm64",
-        "armv8b": "arm64",
-        "armv8l": "arm64",
-        "x86": "386",
-        "x86pc": "386",
-        "i86pc": "386",
-        "i386": "386",
-        "i686": "386",
-        "x86_64": "amd64",
-        "i686-64": "amd64",
-    }.get(_arch, _arch)
+})
 
 _os = platform.system().lower()
 
-_lib = cdll.LoadLibrary(f"../../exports/{_os}/{_arch}/{_lib_prefixes[_os]}eduvpn_verify{_lib_suffixes[_os]}")
+_libname = f"{_lib_prefixes[_os]}eduvpn_verify{_lib_suffixes[_os]}"
+_lib = cdll.LoadLibrary(str(pathlib.Path(__file__).parent / "lib" / _libname))
 
 
 class GoSlice(Structure):

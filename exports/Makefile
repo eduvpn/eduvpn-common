@@ -1,4 +1,4 @@
-.PHONY: build clean
+.PHONY: build copy-to clean
 
 lib_prefix_linux   = lib
 lib_prefix_windows =
@@ -18,6 +18,9 @@ build: $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX)
 
 $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX): exports.go ../verify.go
 	CGO_ENABLED=1 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $@ -buildmode=c-shared $<
+
+copy-to: $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX)
+	install $< -Dt "$(COPY_TARGET)"
 
 clean:
 	rm -rf ../exports/*/

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import unittest
-import discovery
+import eduvpncommon.discovery as discovery
 
 test_data_dir = "../../test_data"
 
