@@ -15,16 +15,16 @@ class bdist_wheel(_bdist_wheel):
         self.plat_name_supplied = True  # Force use platform
 
         libpath = {
-            # TODO probably partly incorrect
+            # TODO arm may be incorrect; also add more
             "win-amd64": "windows/amd64/eduvpn_verify.dll",
             "win32": "windows/386/eduvpn_verify.dll",
             "win-arm32": "windows/arm/eduvpn_verify.dll",
             "win-arm64": "windows/arm64/eduvpn_verify.dll",
-            "linux_x86_64": "windows/amd64/eduvpn_verify.so",
-            "linux_i386": "windows/386/eduvpn_verify.so",
-            "linux_i686": "windows/386/eduvpn_verify.so",
-            "linux_arm": "windows/arm/eduvpn_verify.so",
-            "linux_aarch64": "windows/arm64/eduvpn_verify.so",
+            "linux-x86_64": "linux/amd64/libeduvpn_verify.so",
+            "linux-i386": "linux/386/libeduvpn_verify.so",
+            "linux-i686": "linux/386/libeduvpn_verify.so",
+            "linux-arm": "linux/arm/libeduvpn_verify.so",
+            "linux-aarch64": "linux/arm64/libeduvpn_verify.so",
         }
 
         if self.plat_name not in libpath:
