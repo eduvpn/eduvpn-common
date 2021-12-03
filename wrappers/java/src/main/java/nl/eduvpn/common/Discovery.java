@@ -5,7 +5,7 @@ import com.sun.jna.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
-public class Discovery {
+public final class Discovery {
     private static final NativeApi discovery = Native.load("eduvpn_verify", NativeApi.class);
 
     /**

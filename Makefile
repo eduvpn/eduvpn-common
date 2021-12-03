@@ -15,8 +15,7 @@ test-wrappers: build
 	$(MAKE) $(foreach wrapper,$(wrappers),.test_$(wrapper))
 
 clean:
-	$(MAKE) -C exports clean
-	$(MAKE) .clean_libs $(foreach wrapper,$(wrappers),.clean_$(wrapper) )
+	$(MAKE) .clean_libs $(foreach wrapper,$(wrappers),.clean_$(wrapper))
 
 .clean_libs:
 	$(MAKE) -C exports clean

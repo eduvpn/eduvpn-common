@@ -15,7 +15,7 @@ namespace EduVpnCommon
 		/// </summary>
 		/// <param name="signatureFileContent">.minisig signature file contents.</param>
 		/// <param name="signedJson">Signed .json file contents.</param>
-		/// <param name="expectedFileName">The file type to be verified, one of <c>server_list.json</c> or <c>organization_list.json</c>.</param>
+		/// <param name="expectedFileName">The file type to be verified, one of <c>"server_list.json"</c> or <c>"organization_list.json"</c>.</param>
 		/// <param name="minSignTime">Minimum time for signature. Should be set to at least the time in a previously retrieved file.</param>
 		/// <exception cref="ArgumentException">If <c>expectedFileName</c> is not one of the allowed values.</exception>
 		/// <exception cref="VerifyException">If signature verification fails.</exception>
