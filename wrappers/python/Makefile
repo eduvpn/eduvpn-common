@@ -1,11 +1,11 @@
-.PHONY: build test clean
+.PHONY: pack test clean
 
 ifdef PLAT_NAME
 SETUP_ARGS += --plat-name=$(PLAT_NAME)
 endif
 
 # Build for current platform only
-build:
+pack:
 	./setup.py bdist_wheel $(SETUP_ARGS)
 
 test:

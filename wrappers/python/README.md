@@ -13,13 +13,13 @@ First build the shared Go library. Next:
 Build wheel using library for current platform:
 
 ```shell
-make
+make pack
 ```
 
 Build wheel using library for specified platform (passed to setuptools `--plat-name`):
 
 ```shell
-make PLAT_NAME=win32
+make pack PLAT_NAME=win32
 ```
 
 To install the wheel, run:

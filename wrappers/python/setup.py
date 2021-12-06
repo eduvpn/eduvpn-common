@@ -43,6 +43,6 @@ setup(
     version="0.1.0",
     packages=["eduvpncommon"],
     python_requires=">=3.6",
-    package_data={"eduvpncommon": ["*eduvpn_verify*"]},
+    package_data={"eduvpncommon": ["lib/*eduvpn_verify*"]},
     cmdclass={"bdist_wheel": bdist_wheel},
 )
