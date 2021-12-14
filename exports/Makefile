@@ -1,23 +1,25 @@
 .PHONY: build copy-to clean
 
-lib_prefix_linux   = lib
-lib_prefix_windows =
-lib_prefix_darwin  = lib
+GOOS      != go env GOHOSTOS
+GOARCH    != go env GOHOSTARCH
 
-lib_suffix_linux   = .so
-lib_suffix_windows = .dll
-lib_suffix_darwin  = .dylib
-
-GOOS      ?= $(shell go env GOHOSTOS)
-GOARCH    ?= $(shell go env GOHOSTARCH)
-LIB_PREFIX = $(lib_prefix_$(GOOS))
-LIB_SUFFIX = $(lib_suffix_$(GOOS))
+ifeq (windows,$(GOOS))
+LIB_PREFIX =
+LIB_SUFFIX = .dll
+else ifeq (darwin,$(GOOS))
+LIB_PREFIX = lib
+LIB_SUFFIX = .dylib
+else
+LIB_PREFIX = lib
+LIB_SUFFIX = .so
+endif
 
 # Creates targets like 'linux/amd64/eduvpn_verify.so'
 build: $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX)
 
 $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX): exports.go ../verify.go
 	CGO_ENABLED=1 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $@ -buildmode=c-shared $<
+	cp $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify.h ./eduvpn_verify.h
 
 copy-to: $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX)
 	install $< -Dt "$(COPY_TARGET)"

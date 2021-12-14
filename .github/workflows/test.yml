@@ -30,4 +30,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
+      - uses: fwal/setup-swift@v1
+        with:
+          swift-version: 5
       - run: make test-wrappers

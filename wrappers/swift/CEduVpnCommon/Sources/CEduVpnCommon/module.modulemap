@@ -1,0 +1,5 @@
+module CEduVpnCommon {
+    header "../../../../../exports/eduvpn_verify.h"
+    link "eduvpn_verify"
+    export *
+}
