@@ -11,4 +11,4 @@ test:
 	mvn --no-transfer-progress test
 
 clean:
-	mvn --no-transfer-progress clean
+	rm -rf target/
