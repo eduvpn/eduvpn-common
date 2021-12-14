@@ -63,7 +63,7 @@ class VerifyError(Exception):
 def verify(signature: bytes, signed_json: bytes, expected_file_name: str, min_sign_time: int) -> None:
     """
     Verifies the signature on the JSON server_list.json/organization_list.json file.
-    If the function returns the signature is valid for the given file type.
+    If the function returns, the signature is valid for the given file type.
 
     :param signature: .minisig signature file contents.
     :param signed_json: Signed .json file contents.
