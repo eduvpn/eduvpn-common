@@ -1,18 +1,6 @@
 .PHONY: build copy-to clean
 
-GOOS      != go env GOHOSTOS
-GOARCH    != go env GOHOSTARCH
-
-ifeq (windows,$(GOOS))
-LIB_PREFIX =
-LIB_SUFFIX = .dll
-else ifeq (darwin,$(GOOS))
-LIB_PREFIX = lib
-LIB_SUFFIX = .dylib
-else
-LIB_PREFIX = lib
-LIB_SUFFIX = .so
-endif
+include platform.mk
 
 # Creates targets like 'linux/amd64/eduvpn_verify.so'
 build: $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX)

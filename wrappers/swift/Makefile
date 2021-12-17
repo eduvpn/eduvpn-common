@@ -1,15 +1,12 @@
 .PHONY: build test clean
 
 ifneq (clean,$(MAKECMDGOALS))
-GOOS      != go env GOHOSTOS
-GOARCH    != go env GOHOSTARCH
+include ../../exports/platform.mk
 
 ifeq (Windows_NT,$(OS))
 SWIFT = ./swift.cmd
-export PATH := $(abspath ../../exports/$(GOOS)/$(GOARCH)):$(PATH)
 else
 SWIFT = swift
-export LD_LIBRARY_PATH := $(abspath ../../exports/$(GOOS)/$(GOARCH)):$(LD_LIBRARY_PATH)
 endif
 endif
 

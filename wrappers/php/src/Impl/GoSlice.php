@@ -18,12 +18,12 @@ class GoSlice
 	{
 		$len   = strlen($data);
 		$cData = FFI::new(FFI::arrayType(FFI::type('char'), [$len]), false);
-		if (!$cData) throw new RuntimeException('error allocating buffer');
+		if ($cData === null) throw new RuntimeException('error allocating buffer');
 		$this->cData = $cData;
 		FFI::memcpy($cData, $data, $len);
 
 		$slice = $ffi->new('GoSlice');
-		if (!$slice) throw new RuntimeException('error allocating buffer');
+		if ($slice === null) throw new RuntimeException('error allocating buffer');
 		$this->slice = $slice;
 		$slice->data = FFI::addr($cData); // $cData must not be destroyed while $slice is in use
 		$slice->cap  = $slice->len = $len;
