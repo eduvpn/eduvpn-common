@@ -16,8 +16,9 @@ LIB_PREFIX = lib
 LIB_SUFFIX = .so
 endif
 
+exports_dir = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 ifeq (Windows_NT,$(OS))
-export PATH := $(abspath ../../exports/$(GOOS)/$(GOARCH)):$(PATH)
+export PATH := $(exports_dir)/$(GOOS)/$(GOARCH):$(PATH)
 else
-export LD_LIBRARY_PATH := $(abspath ../../exports/$(GOOS)/$(GOARCH)):$(LD_LIBRARY_PATH)
+export LD_LIBRARY_PATH := $(exports_dir)/$(GOOS)/$(GOARCH):$(LD_LIBRARY_PATH)
 endif
