@@ -5,27 +5,23 @@ GOOS      != go env GOHOSTOS
 GOARCH    != go env GOHOSTARCH
 
 ifeq (Windows_NT,$(OS))
-export PATH := $(PATH):$(abspath ../../exports/$(GOOS)/$(GOARCH))
+SWIFT = ./swift.cmd
+export PATH := $(abspath ../../exports/$(GOOS)/$(GOARCH)):$(PATH)
 else
-export LD_LIBRARY_PATH := $(LD_LIBRARY_PATH):$(abspath ../../exports/$(GOOS)/$(GOARCH))
+SWIFT = swift
+export LD_LIBRARY_PATH := $(abspath ../../exports/$(GOOS)/$(GOARCH)):$(LD_LIBRARY_PATH)
 endif
 endif
 
-build:
-	$(MAKE) -C ../../exports
-ifeq (Windows_NT,$(OS))
-	"$(COMSPEC)" /c "\".\\fix-path.cmd & swift build --configuration release -Xlinker -L^\"../../exports/$(GOOS)/$(GOARCH)^\"\""
-else
-	swift build --configuration release -Xlinker -L"../../exports/$(GOOS)/$(GOARCH)"
-endif
+build: .build_lib
+	$(SWIFT) build --configuration release -Xlinker -L"../../exports/$(GOOS)/$(GOARCH)"
 
-test:
-	$(MAKE) -C ../../exports
-ifeq (Windows_NT,$(OS))
-	"$(COMSPEC)" /c "\".\\fix-path.cmd & swift test --parallel -Xlinker -L^\"../../exports/$(GOOS)/$(GOARCH)^\"\""
-else
-	swift test --parallel -Xlinker -L"../../exports/$(GOOS)/$(GOARCH)"
-endif
+test: .build_lib
+	$(SWIFT) test --parallel -Xlinker -L"../../exports/$(GOOS)/$(GOARCH)"
 
 clean:
-	rm -rf .build/
+	rm -rf .build/ CEduVpnCommon/Sources/CEduVpnCommon/Headers/*.h
+
+.build_lib:
+	$(MAKE) -C ../../exports
+	install "../../exports/$(GOOS)/$(GOARCH)/eduvpn_verify.h" -Dt CEduVpnCommon/Sources/CEduVpnCommon/Headers

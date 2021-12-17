@@ -19,7 +19,7 @@ build: $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX)
 
 $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX): exports.go ../verify.go
 	CGO_ENABLED=1 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $@ -buildmode=c-shared $<
-	cp $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify.h ./eduvpn_verify.h
+	mv $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify.h $(GOOS)/$(GOARCH)/eduvpn_verify.h || true
 
 copy-to: $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX)
 	install $< -Dt "$(COPY_TARGET)"

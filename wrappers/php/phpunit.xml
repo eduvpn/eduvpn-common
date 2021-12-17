@@ -1,0 +1,7 @@
+<phpunit colors="true">
+	<testsuites>
+		<testsuite name="EduVpnCommon tests">
+			<directory suffix=".php">./tests/</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>
