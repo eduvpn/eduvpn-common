@@ -10,9 +10,11 @@
     <name>eduVPN common library</name>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	    <maven.compiler.source>1.8</maven.compiler.source>
+	    <maven.compiler.target>1.8</maven.compiler.target>
+
+	    <EXPORTS_LIB_PATH>../../exports/lib</EXPORTS_LIB_PATH>
     </properties>
 
     <dependencies>
@@ -40,21 +42,21 @@
             <!-- See com.sun.jna.Platform#getNativeLibraryResourcePrefix -->
 
             <resource>
-                <directory>../../exports/linux/amd64</directory>
+	            <directory>${EXPORTS_LIB_PATH}/linux/amd64</directory>
                 <includes>
                     <include>*.so</include>
                 </includes>
                 <targetPath>linux-x86-64</targetPath>
             </resource>
             <resource>
-                <directory>../../exports/linux/arm</directory>
+	            <directory>${EXPORTS_LIB_PATH}/linux/arm</directory>
                 <includes>
                     <include>*.so</include>
                 </includes>
                 <targetPath>linux-arm</targetPath>
             </resource>
             <resource>
-                <directory>../../exports/linux/arm64</directory>
+	            <directory>${EXPORTS_LIB_PATH}/linux/arm64</directory>
                 <includes>
                     <include>*.so</include>
                 </includes>
@@ -62,36 +64,38 @@
             </resource>
 
             <resource>
-                <directory>../../exports/windows/amd64</directory>
+	            <directory>${EXPORTS_LIB_PATH}/windows/amd64</directory>
                 <includes>
                     <include>*.dll</include>
                 </includes>
                 <targetPath>win32-x86-64</targetPath>
             </resource>
             <resource>
-                <directory>../../exports/windows/386</directory>
+	            <directory>${EXPORTS_LIB_PATH}/windows/386</directory>
                 <includes>
                     <include>*.dll</include>
                 </includes>
                 <targetPath>win32-x86</targetPath>
             </resource>
             <resource>
-                <directory>../../exports/windows/arm</directory>
+	            <directory>${EXPORTS_LIB_PATH}/windows/arm</directory>
                 <includes>
                     <include>*.dll</include>
                 </includes>
                 <targetPath>win32-arm</targetPath>
             </resource>
             <resource>
-                <directory>../../exports/windows/arm64</directory>
+	            <directory>${EXPORTS_LIB_PATH}/windows/arm64</directory>
                 <includes>
                     <include>*.dll</include>
                 </includes>
                 <targetPath>win32-arm64</targetPath>
             </resource>
         </resources>
+
         <plugins>
             <plugin>
+	            <!-- Test adapter -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.1</version>

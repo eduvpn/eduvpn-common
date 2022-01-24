@@ -2,15 +2,20 @@
 
 include platform.mk
 
-# Creates targets like 'linux/amd64/eduvpn_verify.so'
-build: $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX)
+ifeq ($(LIB_SUFFIX),.so)
+# Add SONAME as cgo does not currently do this. Mostly for Android, see https://stackoverflow.com/a/48291044
+export CGO_LDFLAGS := $(CGO_LDFLAGS) -Wl,-soname,$(LIB_FILE)
+endif
 
-$(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX): exports.go ../verify.go
-	CGO_ENABLED=1 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $@ -buildmode=c-shared $<
-	mv $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify.h $(GOOS)/$(GOARCH)/eduvpn_verify.h || true
+# Creates targets like 'lib/linux/amd64/libeduvpn_common.so'
+build: lib/$(GOOS)/$(GOARCH)/$(LIB_FILE)
 
-copy-to: $(GOOS)/$(GOARCH)/$(LIB_PREFIX)eduvpn_verify$(LIB_SUFFIX)
-	install $< -Dt "$(COPY_TARGET)"
+# Build shared library and remove lib prefix (if any) from header name
+# GOOS and GOARCH envvars are set by platform.mk
+# This extra target prevents unnecessary rebuild
+lib/$(GOOS)/$(GOARCH)/$(LIB_FILE): exports.go ../verify.go
+	CGO_ENABLED=1 go build -o $@ -buildmode=c-shared $<
+	mv lib/$(GOOS)/$(GOARCH)/$(LIB_PREFIX)$(LIB_NAME).h lib/$(GOOS)/$(GOARCH)/$(LIB_NAME).h || true	# Normalize header name
 
 clean:
-	rm -rf ../exports/*/
+	rm -rf ../exports/lib/*

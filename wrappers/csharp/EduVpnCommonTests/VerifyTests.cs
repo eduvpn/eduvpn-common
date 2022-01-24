@@ -14,11 +14,11 @@ namespace EduVpnCommonTests
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp() =>
-			Discovery.InsecureTestingSetExtraKey(File.ReadLines($"{testDataDir_}/dummy/public.key").Last());
+			Discovery.InsecureTestingSetExtraKey(File.ReadLines($"{testDataDir_}/public.key").Last());
 
 		[Test]
-		[TestCase("dummy/server_list.json.minisig",       "dummy/server_list.json",       "server_list.json")]
-		[TestCase("dummy/organization_list.json.minisig", "dummy/organization_list.json", "organization_list.json")]
+		[TestCase("server_list.json.minisig",       "server_list.json",       "server_list.json")]
+		[TestCase("organization_list.json.minisig", "organization_list.json", "organization_list.json")]
 		public void TestValid(string sigFile, string jsonFile, string expectedFileName) =>
 			Discovery.Verify(
 				File.ReadAllBytes($"{testDataDir_}/{sigFile}"),
@@ -27,7 +27,7 @@ namespace EduVpnCommonTests
 				DateTimeOffset.UnixEpoch);
 
 		[Test]
-		[TestCase("dummy/server_list.json.minisig", "dummy/server_list.json", "server_list.json")]
+		[TestCase("server_list.json.minisig", "server_list.json", "server_list.json")]
 		public void TestValidSegment(string sigFile, string jsonFile, string expectedFileName)
 		{
 			var bytes = new byte[] { 1, 2, 3 }.Concat(File.ReadAllBytes($"{testDataDir_}/{jsonFile}"))
@@ -40,10 +40,9 @@ namespace EduVpnCommonTests
 		}
 
 		[Test]
-		[TestCase("dummy/random.txt", "dummy/server_list.json", "server_list.json")]
+		[TestCase("random.txt", "server_list.json", "server_list.json")]
 		public void TestInvalidSignature(string sigFile, string jsonFile, string expectedFileName) =>
-			Assert.Throws(Is.TypeOf<VerifyException>()
-					.And.Property(nameof(VerifyException.Code)).EqualTo(VerifyErrorCode.ErrInvalidSignature),
+			Assert.Throws<InvalidSignatureException>(
 				() => Discovery.Verify(
 					File.ReadAllBytes($"{testDataDir_}/{sigFile}"),
 					File.ReadAllBytes($"{testDataDir_}/{jsonFile}"),
@@ -51,10 +50,9 @@ namespace EduVpnCommonTests
 					DateTimeOffset.UnixEpoch));
 
 		[Test]
-		[TestCase("dummy/server_list.json.wrong_key.minisig", "dummy/server_list.json", "server_list.json")]
+		[TestCase("server_list.json.wrong_key.minisig", "server_list.json", "server_list.json")]
 		public void TestWrongKey(string sigFile, string jsonFile, string expectedFileName) =>
-			Assert.Throws(Is.TypeOf<VerifyException>()
-					.And.Property(nameof(VerifyException.Code)).EqualTo(VerifyErrorCode.ErrInvalidSignatureUnknownKey),
+			Assert.Throws<InvalidSignatureUnknownKeyException>(
 				() => Discovery.Verify(
 					File.ReadAllBytes($"{testDataDir_}/{sigFile}"),
 					File.ReadAllBytes($"{testDataDir_}/{jsonFile}"),
@@ -62,10 +60,9 @@ namespace EduVpnCommonTests
 					DateTimeOffset.UnixEpoch));
 
 		[Test]
-		[TestCase("dummy/server_list.json.minisig", "dummy/server_list.json", "server_list.json")]
+		[TestCase("server_list.json.minisig", "server_list.json", "server_list.json")]
 		public void TestOldSignature(string sigFile, string jsonFile, string expectedFileName) =>
-			Assert.Throws(Is.TypeOf<VerifyException>()
-					.And.Property(nameof(VerifyException.Code)).EqualTo(VerifyErrorCode.ErrTooOld),
+			Assert.Throws<SignatureTooOldException>(
 				() => Discovery.Verify(
 					File.ReadAllBytes($"{testDataDir_}/{sigFile}"),
 					File.ReadAllBytes($"{testDataDir_}/{jsonFile}"),
@@ -73,7 +70,7 @@ namespace EduVpnCommonTests
 					DateTimeOffset.MaxValue));
 
 		[Test]
-		[TestCase("dummy/other_list.json.minisig", "dummy/other_list.json", "other_list.json")]
+		[TestCase("other_list.json.minisig", "other_list.json", "other_list.json")]
 		public void TestUnknownExpectedFile(string sigFile, string jsonFile, string expectedFileName) =>
 			Assert.Throws<ArgumentException>(
 				() => Discovery.Verify(

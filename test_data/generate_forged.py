@@ -11,7 +11,7 @@ with open("server_list.json", "rb") as f:
 with open("server_list.json.blake2b", "wb") as f:
 	f.write(hashlib.blake2b(b).digest())
 
-# Forge pure signature on hash
+# Forge pure signature on hash, see https://github.com/jedisct1/minisign/issues/104
 
 with open("server_list.json.minisig", "rb") as f:
 	siglines = f.readlines()

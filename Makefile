@@ -14,17 +14,18 @@ wrappers = $(wildcard wrappers/*/)
 test-wrappers: build
 	$(MAKE) $(foreach wrapper,$(wrappers),.test_$(wrapper))
 
+# Enable parallelism if -j is specified
 clean:
 	$(MAKE) .clean_libs $(foreach wrapper,$(wrappers),.clean_$(wrapper))
 
 .clean_libs:
 	$(MAKE) -C exports clean
 
+# Define test & clean for each wrapper
 define wrapper_targets
 .test_$(1):
-	$(MAKE) -C $(1) test
+	$(MAKE) -C "$(1)" test
 .clean_$(1):
-	$(MAKE) -C $(1) clean
+	$(MAKE) -C "$(1)" clean
 endef
-
 $(foreach wrapper,$(wrappers),$(eval $(call wrapper_targets,$(wrapper))))

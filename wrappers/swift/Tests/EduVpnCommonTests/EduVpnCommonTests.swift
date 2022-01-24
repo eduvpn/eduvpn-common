@@ -6,14 +6,14 @@ final class EduVpnCommonTests: XCTestCase {
 
     override class func setUp() {
         // Swift is confused by CRLF, so on some systems we cannot just take the second-to-last element
-        InsecureTestingSetExtraKey(keyString: try! String(contentsOfFile: "\(testDataDir)/dummy/public.key")
+        InsecureTestingSetExtraKey(keyString: try! String(contentsOfFile: "\(testDataDir)/public.key")
                 .components(separatedBy: .newlines).last(where: { !$0.isEmpty })!)
     }
 
     func testValid() throws {
         try Verify(
-                signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/dummy/server_list.json.minisig")),
-                signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/dummy/server_list.json")),
+                signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json.minisig")),
+                signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json")),
                 expectedFileName: "server_list.json",
                 minSignTime: Date(timeIntervalSince1970: 0))
     }
@@ -21,8 +21,8 @@ final class EduVpnCommonTests: XCTestCase {
     func testInvalidSignature() throws {
         XCTAssertThrowsError(
             try Verify(
-                    signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/dummy/random.txt")),
-                    signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/dummy/server_list.json")),
+                    signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/random.txt")),
+                    signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json")),
                     expectedFileName: "server_list.json",
                     minSignTime: Date(timeIntervalSince1970: 0)),
             "", {err in XCTAssertEqual(err as? VerifyErr, VerifyErr.ErrInvalidSignature)});
@@ -31,8 +31,8 @@ final class EduVpnCommonTests: XCTestCase {
     func testWrongKey() throws {
         XCTAssertThrowsError(
                 try Verify(
-                        signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/dummy/server_list.json.wrong_key.minisig")),
-                        signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/dummy/server_list.json")),
+                        signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json.wrong_key.minisig")),
+                        signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json")),
                         expectedFileName: "server_list.json",
                         minSignTime: Date(timeIntervalSince1970: 0)),
                 "", {err in XCTAssertEqual(err as? VerifyErr, VerifyErr.ErrInvalidSignatureUnknownKey)});
@@ -41,8 +41,8 @@ final class EduVpnCommonTests: XCTestCase {
     func testOldSignature() throws {
         XCTAssertThrowsError(
                 try Verify(
-                        signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/dummy/server_list.json.minisig")),
-                        signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/dummy/server_list.json")),
+                        signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json.minisig")),
+                        signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json")),
                         expectedFileName: "server_list.json",
                         minSignTime: Date(timeIntervalSince1970: TimeInterval(1 << 31))),
                 "", {err in XCTAssertEqual(err as? VerifyErr, VerifyErr.ErrTooOld)});
@@ -51,8 +51,8 @@ final class EduVpnCommonTests: XCTestCase {
     func testUnknownExpectedFile() throws {
         XCTAssertThrowsError(
                 try Verify(
-                        signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/dummy/other_list.json.minisig")),
-                        signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/dummy/other_list.json")),
+                        signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/other_list.json.minisig")),
+                        signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/other_list.json")),
                         expectedFileName: "other_list.json",
                         minSignTime: Date(timeIntervalSince1970: 0)),
                 "", {err in XCTAssertEqual(err as? VerifyErr, VerifyErr.ErrUnknownExpectedFileName)});

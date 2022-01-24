@@ -1,10 +1,10 @@
 #!/bin/bash
 # Generate testcases with fake keys
 
-# Make sure we do not delete *.minisigs etc. anywhere
-if [ ${PWD##*/} != "dummy" ]
+# Make sure we do not delete *.minisigs etc. in the wrong directory
+if [ ${PWD##*/} != "test_data" ]
 then
-	>&2 echo "Wrong directory, should be run in dummy/"
+	>&2 echo "Wrong directory, should be run in test_data/"
 	exit 1
 fi
 

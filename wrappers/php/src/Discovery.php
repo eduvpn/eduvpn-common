@@ -11,13 +11,15 @@ final class Discovery
 {
 	public function __construct() { }
 
+	const LIB_NAME = "eduvpn_common";
+
 	private static ?FFI $ffi = null;
 
 	private static function ffi(): FFI
 	{
 		if (!self::$ffi) {
-			if (!(self::$ffi = FFI::load(__DIR__ . '/headers/eduvpn_verify_php.h')))
-				throw new Error('failed to load eduvpn_verify');
+			if (!(self::$ffi = FFI::load(__DIR__ . '/headers/' . self::LIB_NAME . '_php.h')))
+				throw new Error('failed to load ' . self::LIB_NAME);
 		}
 		return self::$ffi;
 	}
@@ -30,8 +32,8 @@ final class Discovery
 	 * @param string $signedJson       Signed .json file contents.
 	 * @param string $expectedFileName The file type to be verified, one of "server_list.json" or
 	 *                                 "organization_list.json".
-	 * @param int    $minSignTime      Minimum time for signature. Should be set to at least the time in a previously
-	 *                                 retrieved file.
+	 * @param int    $minSignTime      Minimum time for signature. Should be set to at least the time of the previous
+	 *                                 signature.
 	 * @return void
 	 * @throws InvalidArgumentException If expectedFileName is not one of the allowed values.
 	 * @throws VerifyException If signature verification fails.

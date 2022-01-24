@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
+// Make InsecureTestingSetExtraKey visible to tests
 [assembly: InternalsVisibleTo("EduVpnCommonTests")]
 
 namespace EduVpnCommon
@@ -11,12 +13,12 @@ namespace EduVpnCommon
 	{
 		/// <summary>
 		/// Verifies the signature on the JSON server_list.json/organization_list.json file.
-		/// If the function returns the signature is valid for the given file type.
+		/// If the function returns, the signature is valid for the given file type.
 		/// </summary>
 		/// <param name="signatureFileContent">.minisig signature file contents.</param>
 		/// <param name="signedJson">Signed .json file contents.</param>
 		/// <param name="expectedFileName">The file type to be verified, one of <c>"server_list.json"</c> or <c>"organization_list.json"</c>.</param>
-		/// <param name="minSignTime">Minimum time for signature. Should be set to at least the time in a previously retrieved file.</param>
+		/// <param name="minSignTime">Minimum time for signature. Should be set to at least the time of the previous signature.</param>
 		/// <exception cref="ArgumentException">If <c>expectedFileName</c> is not one of the allowed values.</exception>
 		/// <exception cref="VerifyException">If signature verification fails.</exception>
 		public static void Verify(
@@ -35,11 +37,20 @@ namespace EduVpnCommon
 					(ulong) minSignTime.ToUnixTimeSeconds());
 			}
 
-			if (result != VerifyReturnCode.Ok)
+			switch (result)
 			{
-				if (result == VerifyReturnCode.ErrUnknownExpectedFileName)
-					throw new ArgumentException("unknown name", nameof(expectedFileName));
-				throw new VerifyException((VerifyErrorCode) result);
+				case VerifyReturnCode.Ok:
+					return;
+				case VerifyReturnCode.ErrUnknownExpectedFileName:
+					throw new ArgumentException("unknown expected file name", nameof(expectedFileName));
+				case VerifyReturnCode.ErrInvalidSignature:
+					throw new InvalidSignatureException();
+				case VerifyReturnCode.ErrInvalidSignatureUnknownKey:
+					throw new InvalidSignatureUnknownKeyException();
+				case VerifyReturnCode.ErrTooOld:
+					throw new SignatureTooOldException();
+				default:
+					throw new UnknownVerifyException((sbyte) result);
 			}
 		}
 
@@ -50,13 +61,17 @@ namespace EduVpnCommon
 			InsecureTestingSetExtraKey(keyHandle.Slice);
 		}
 
-		const string VerifyLibName = "eduvpn_verify";
+		const string LibName = "eduvpn_common";
 
-		[DllImport(VerifyLibName)]
+		[DllImport(LibName)]
 		static extern VerifyReturnCode Verify(GoSlice signatureFileContent, GoSlice signedJson, GoSlice expectedFileName, ulong minSignTime);
 
-		[DllImport(VerifyLibName)] static extern void InsecureTestingSetExtraKey(GoSlice keyStr);
+		[DllImport(LibName)] static extern void InsecureTestingSetExtraKey(GoSlice keyStr);
 
+		/// <summary>
+		/// Safe auto-disposing Go slice handle.
+		/// Non-copying alternative to `Marshal.AllocHGlobal` etc.
+		/// </summary>
 		class GoSliceHandle : IDisposable
 		{
 			GCHandle         gcHandle_;
@@ -68,6 +83,7 @@ namespace EduVpnCommon
 
 			GoSliceHandle(Array array, int offset, int count)
 			{
+				Debug.Assert(offset <= array.Length && /*prevent overflow:*/ count <= array.Length && offset <= array.Length - count);
 				gcHandle_ = GCHandle.Alloc(array, GCHandleType.Pinned);
 				var elemSize = Marshal.SizeOf(array.GetType().GetElementType()!);
 				slice_ = new GoSlice(gcHandle_.AddrOfPinnedObject() + offset * elemSize, count * elemSize);
@@ -76,12 +92,14 @@ namespace EduVpnCommon
 			public static GoSliceHandle FromArray<T>(ArraySegment<T> segment) where T : struct =>
 				new GoSliceHandle(segment.Array!, segment.Offset, segment.Count);
 
+			/// <summary>From string as UTF-8.</summary>
 			public static GoSliceHandle FromString(string str) =>
 				FromArray(new ArraySegment<byte>(Encoding.UTF8.GetBytes(str)));
 
 			public void Dispose() => gcHandle_.Free();
 		}
 
+		// C-compatible structure
 		readonly struct GoSlice
 		{
 			readonly IntPtr data_;
@@ -98,38 +116,42 @@ namespace EduVpnCommon
 		}
 	}
 
-	public class VerifyException : Exception
+	/// <summary>Verification failed, do not trust the file.</summary>
+	public abstract class VerifyException : Exception
 	{
-		public VerifyErrorCode Code { get; }
-
-		internal VerifyException(VerifyErrorCode code) : base(GetMessage(code)) => Code = code;
-
-		static string GetMessage(VerifyErrorCode code) => code switch
-		{
-			VerifyErrorCode.ErrInvalidSignature           => "invalid signature",
-			VerifyErrorCode.ErrInvalidSignatureUnknownKey => "invalid signature (unknown key)",
-			VerifyErrorCode.ErrTooOld                     => "replay of previous signature (rollback)",
-			_                                             => $"unknown verify error ({code})"
-		};
+		protected VerifyException(string message) : base(message) { }
 	}
 
-	public enum VerifyErrorCode
+	/// <summary>Signature is invalid (for the expected file type).</summary>
+	public sealed class InvalidSignatureException : VerifyException
 	{
-		/// <summary>Signature is invalid (for the expected file type).</summary>
-		ErrInvalidSignature = VerifyReturnCode.ErrUnknownExpectedFileName + 1,
-
-		/// <summary>Signature was created with an unknown key and has not been verified.</summary>
-		ErrInvalidSignatureUnknownKey,
-
-		/// <summary>Signature has a timestamp lower than the specified minimum signing time.</summary>
-		ErrTooOld
+		public InvalidSignatureException() : base("invalid signature") { }
 	}
 
-	enum VerifyReturnCode
+	/// <summary>Signature was created with an unknown key and has not been verified.</summary>
+	public sealed class InvalidSignatureUnknownKeyException : VerifyException
+	{
+		public InvalidSignatureUnknownKeyException() : base("invalid signature (unknown key)") { }
+	}
+
+	/// <summary>Signature timestamp smaller than specified minimum signing time (rollback).</summary>
+	public sealed class SignatureTooOldException : VerifyException
+	{
+		public SignatureTooOldException() : base("replay of previous signature (rollback)") { }
+	}
+
+	/// <summary>Other unknown error.</summary>
+	public sealed class UnknownVerifyException : VerifyException
+	{
+		public UnknownVerifyException(sbyte code) : base($"unknown verify error ({code})") => Debug.Assert(code != 0);
+	}
+
+	enum VerifyReturnCode : sbyte
 	{
 		Ok,
-		ErrUnknownExpectedFileName
-
-		//...
+		ErrUnknownExpectedFileName,
+		ErrInvalidSignature,
+		ErrInvalidSignatureUnknownKey,
+		ErrTooOld
 	}
 }

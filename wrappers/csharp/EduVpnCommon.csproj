@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
@@ -13,58 +13,59 @@
 
 	<ItemGroup>
 		<Compile Remove="EduVpnCommonTests/**" />
+		<EmbeddedResource Remove="EduVpnCommonTests/**" />
+		<None Remove="EduVpnCommonTests/**" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<EmbeddedResource Remove="EduVpnCommonTests/**" />
-	</ItemGroup>
+	<!-- Include EXPORTS_LIB_PATH, LIB_NAME definitions -->
+	<ImportGroup Label="PropertySheets">
+		<Import Project="EduVpnCommon.props" />
+	</ImportGroup>
 
 	<Target Name="Build library for current OS" BeforeTargets="PrepareForBuild"
-	        Condition="!(Exists('../../exports/windows/amd64/eduvpn_verify.dll')
-				Or Exists('../../exports/windows/386/eduvpn_verify.dll')
-				Or Exists('../../exports/windows/arm/eduvpn_verify.dll')
-				Or Exists('../../exports/windows/arm64/eduvpn_verify.dll')
-				Or Exists('../../exports/linux/amd64/libeduvpn_verify.so')
-				Or Exists('../../exports/linux/arm/libeduvpn_verify.so')
-				Or Exists('../../exports/linux/arm64/libeduvpn_verify.so'))">
-		<Message Text="Shared eduvpn_verify library not found, you should build that one first" Importance="high" />
+	        Condition="!(Exists('$(EXPORTS_LIB_PATH)/windows/amd64/$(LIB_NAME).dll')
+				Or Exists('$(EXPORTS_LIB_PATH)/windows/386/$(LIB_NAME).dll')
+				Or Exists('$(EXPORTS_LIB_PATH)/windows/arm/$(LIB_NAME).dll')
+				Or Exists('$(EXPORTS_LIB_PATH)/windows/arm64/$(LIB_NAME).dll')
+				Or Exists('$(EXPORTS_LIB_PATH)/linux/amd64/lib$(LIB_NAME).so')
+				Or Exists('$(EXPORTS_LIB_PATH)/linux/arm/lib$(LIB_NAME).so')
+				Or Exists('$(EXPORTS_LIB_PATH)/linux/arm64/lib$(LIB_NAME).so'))">
+		<Message Text="!! Shared $(LIB_NAME) library not found, you should build that one first" Importance="high" />
 	</Target>
 
 	<ItemGroup>
-		<None Remove="EduVpnCommonTests/**" />
-
 		<!--
 			See https://docs.microsoft.com/en-us/nuget/create-packages/supporting-multiple-target-frameworks#architecture-specific-folders
 			and https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
 		-->
 
-		<None Condition="Exists('../../exports/windows/amd64/eduvpn_verify.dll')"
-		      Include="../../exports/windows/amd64/eduvpn_verify.dll" Pack="true" PackagePath="runtimes/win-x64/native/">
+		<None Condition="Exists('$(EXPORTS_LIB_PATH)/windows/amd64/$(LIB_NAME).dll')"
+		      Include="$(EXPORTS_LIB_PATH)/windows/amd64/$(LIB_NAME).dll" Pack="true" PackagePath="runtimes/win-x64/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Condition="Exists('../../exports/windows/386/eduvpn_verify.dll')"
-		      Include="../../exports/windows/386/eduvpn_verify.dll" Pack="true" PackagePath="runtimes/win-x86/native/">
+		<None Condition="Exists('$(EXPORTS_LIB_PATH)/windows/386/$(LIB_NAME).dll')"
+		      Include="$(EXPORTS_LIB_PATH)/windows/386/$(LIB_NAME).dll" Pack="true" PackagePath="runtimes/win-x86/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Condition="Exists('../../exports/windows/arm/eduvpn_verify.dll')"
-		      Include="../../exports/windows/arm/eduvpn_verify.dll" Pack="true" PackagePath="runtimes/win-arm/native/">
+		<None Condition="Exists('$(EXPORTS_LIB_PATH)/windows/arm/$(LIB_NAME).dll')"
+		      Include="$(EXPORTS_LIB_PATH)/windows/arm/$(LIB_NAME).dll" Pack="true" PackagePath="runtimes/win-arm/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Condition="Exists('../../exports/windows/arm64/eduvpn_verify.dll')"
-		      Include="../../exports/windows/arm64/eduvpn_verify.dll" Pack="true" PackagePath="runtimes/win-arm64/native/">
+		<None Condition="Exists('$(EXPORTS_LIB_PATH)/windows/arm64/$(LIB_NAME).dll')"
+		      Include="$(EXPORTS_LIB_PATH)/windows/arm64/$(LIB_NAME).dll" Pack="true" PackagePath="runtimes/win-arm64/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 
-		<None Condition="Exists('../../exports/linux/amd64/libeduvpn_verify.so')"
-		      Include="../../exports/linux/amd64/libeduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-x64/native/">
+		<None Condition="Exists('$(EXPORTS_LIB_PATH)/linux/amd64/lib$(LIB_NAME).so')"
+		      Include="$(EXPORTS_LIB_PATH)/linux/amd64/lib$(LIB_NAME).so" Pack="true" PackagePath="runtimes/linux-x64/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Condition="Exists('../../exports/linux/arm/libeduvpn_verify.so')"
-		      Include="../../exports/linux/arm/libeduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-arm/native/">
+		<None Condition="Exists('$(EXPORTS_LIB_PATH)/linux/arm/lib$(LIB_NAME).so')"
+		      Include="$(EXPORTS_LIB_PATH)/linux/arm/lib$(LIB_NAME).so" Pack="true" PackagePath="runtimes/linux-arm/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Condition="Exists('../../exports/linux/arm64/libeduvpn_verify.so')"
-		      Include="../../exports/linux/arm64/libeduvpn_verify.so" Pack="true" PackagePath="runtimes/linux-arm64/native/">
+		<None Condition="Exists('$(EXPORTS_LIB_PATH)/linux/arm64/lib$(LIB_NAME).so')"
+		      Include="$(EXPORTS_LIB_PATH)/linux/arm64/lib$(LIB_NAME).so" Pack="true" PackagePath="runtimes/linux-arm64/native/">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

@@ -30,7 +30,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
-      - uses: fwal/setup-swift@v1
+      - uses: slashmo/install-swift@v0.1.0
         with:
-          swift-version: 5
+          version: 5.5
       - run: make test-wrappers

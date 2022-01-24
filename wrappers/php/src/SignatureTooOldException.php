@@ -2,7 +2,7 @@
 
 namespace EduVpn\Common;
 
-/** Signature has a timestamp lower than the specified minimum signing time. */
+/** Signature timestamp smaller than specified minimum signing time (rollback). */
 final class SignatureTooOldException extends VerifyException
 {
 	public function __construct()

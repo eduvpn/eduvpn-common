@@ -27,3 +27,9 @@ Or for the specified platform:
 ```shell
 make install-header GOOS=windows GOARCH=amd64
 ```
+
+When using this library, you will need to make sure that the linker can find the shared Go library. Alternatively,
+pass `COPY_LIB=1` to `make install-header` to copy the library over to this folder and load it via this relative path.
+
+If you do not build this as part of the full repository, specify `EXPORTS_PATH="path/to/exports-folder"` when calling
+make. This folder must contain `platform.mk` and the `lib/` folder with built libraries and headers.

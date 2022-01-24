@@ -16,7 +16,7 @@ Build `EduVpnCommon`:
 make
 ```
 
-Build as JAR, including eduvpn_verify library:
+Build as JAR, including shared Go library:
 
 ```shell
 make pack

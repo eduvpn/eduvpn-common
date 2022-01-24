@@ -1,9 +1,8 @@
 package nl.eduvpn.common;
 
-public class VerifyException extends Exception {
-    public final long code; //TODO not use plain long
-
-    public VerifyException(long code) {
-        this.code = code;
+/** Verification failed, do not trust the file. */
+public abstract class VerifyException extends Exception {
+    protected VerifyException(String message) {
+        super(message);
     }
 }

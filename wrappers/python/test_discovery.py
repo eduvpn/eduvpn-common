@@ -14,21 +14,21 @@ def read_bytes(path: str) -> bytes:
 class VerifyTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        with open(f"{test_data_dir}/dummy/public.key") as f:
+        with open(f"{test_data_dir}/public.key") as f:
             discovery._insecure_testing_set_extra_key(f.readlines()[-1][:-1])
 
     def testValid(self):
         discovery.verify(
-            read_bytes(f"{test_data_dir}/dummy/server_list.json.minisig"),
-            read_bytes(f"{test_data_dir}/dummy/server_list.json"),
+            read_bytes(f"{test_data_dir}/server_list.json.minisig"),
+            read_bytes(f"{test_data_dir}/server_list.json"),
             "server_list.json",
             0
         )
 
     def testValidMemoryView(self):
         discovery.verify(
-            read_bytes(f"{test_data_dir}/dummy/server_list.json.minisig"),
-            memoryview(b"abc" + read_bytes(f"{test_data_dir}/dummy/server_list.json") + b"abc")[3:-3],
+            read_bytes(f"{test_data_dir}/server_list.json.minisig"),
+            memoryview(b"abc" + read_bytes(f"{test_data_dir}/server_list.json") + b"abc")[3:-3],
             "server_list.json",
             0
         )
@@ -36,8 +36,8 @@ class VerifyTests(unittest.TestCase):
     def testInvalidSignature(self):
         with self.assertRaises(discovery.VerifyError) as ctx:
             discovery.verify(
-                read_bytes(f"{test_data_dir}/dummy/random.txt"),
-                read_bytes(f"{test_data_dir}/dummy/server_list.json"),
+                read_bytes(f"{test_data_dir}/random.txt"),
+                read_bytes(f"{test_data_dir}/server_list.json"),
                 "server_list.json",
                 0
             )
@@ -46,8 +46,8 @@ class VerifyTests(unittest.TestCase):
     def testWrongKey(self):
         with self.assertRaises(discovery.VerifyError) as ctx:
             discovery.verify(
-                read_bytes(f"{test_data_dir}/dummy/server_list.json.wrong_key.minisig"),
-                read_bytes(f"{test_data_dir}/dummy/server_list.json"),
+                read_bytes(f"{test_data_dir}/server_list.json.wrong_key.minisig"),
+                read_bytes(f"{test_data_dir}/server_list.json"),
                 "server_list.json",
                 0
             )
@@ -56,8 +56,8 @@ class VerifyTests(unittest.TestCase):
     def testOldSignature(self):
         with self.assertRaises(discovery.VerifyError) as ctx:
             discovery.verify(
-                read_bytes(f"{test_data_dir}/dummy/server_list.json.minisig"),
-                read_bytes(f"{test_data_dir}/dummy/server_list.json"),
+                read_bytes(f"{test_data_dir}/server_list.json.minisig"),
+                read_bytes(f"{test_data_dir}/server_list.json"),
                 "server_list.json",
                 1 << 31
             )
@@ -66,8 +66,8 @@ class VerifyTests(unittest.TestCase):
     def TestUnknownExpectedFile(self):
         with self.assertRaises(discovery.VerifyError) as ctx:
             discovery.verify(
-                read_bytes(f"{test_data_dir}/dummy/other_list.json.minisig"),
-                read_bytes(f"{test_data_dir}/dummy/other_list.json"),
+                read_bytes(f"{test_data_dir}/other_list.json.minisig"),
+                read_bytes(f"{test_data_dir}/other_list.json"),
                 "other_list.json",
                 0
             )

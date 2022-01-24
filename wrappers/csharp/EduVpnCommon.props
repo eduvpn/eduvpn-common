@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<EXPORTS_LIB_PATH Condition="'$(EXPORTS_LIB_PATH)' == ''">$(SolutionDir)../../exports/lib</EXPORTS_LIB_PATH>
+		<LIB_NAME Condition="'$(LIB_NAME)' == ''">eduvpn_common</LIB_NAME>
+	</PropertyGroup>
+</Project>

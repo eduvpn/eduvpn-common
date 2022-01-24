@@ -9,7 +9,7 @@ private extension Data {
         // This closure method guarantees this
         try withUnsafeBytes { (pointer: UnsafeRawBufferPointer) -> ResultType in
             // Note: UnsafeRawBufferPointer.startIndex will always be 0, see docs
-            // Cast to UnsafeMutableRawPointer, assumes it will not be written to
+            // Cast to UnsafeMutableRawPointer, assumes it will not actually be written to
             try body(GoSlice(data: UnsafeMutableRawPointer(mutating: pointer.baseAddress),
                     len: GoInt(pointer.count), cap: GoInt(pointer.count)))
         }
@@ -33,9 +33,9 @@ public enum VerifyErr: Error, Equatable {
     /// Signature has a timestamp lower than the specified minimum signing time.
     case ErrTooOld
     /// Other unknown error
-    case Unknown(code: GoInt)
+    case Unknown(code: GoInt8)
 
-    static func fromCode(_ code: GoInt) -> VerifyErr {
+    static func fromCode(_ code: GoInt8) -> VerifyErr {
         precondition(code != 0)
         switch code {
         case 1: return ErrUnknownExpectedFileName
@@ -54,7 +54,7 @@ public enum VerifyErr: Error, Equatable {
 ///   - signature: .minisig signature file contents.
 ///   - signedJson: Signed .json file contents.
 ///   - expectedFileName: The file type to be verified, one of "server_list.json" or "organization_list.json".
-///   - minSignTime: Minimum time for signature. Should be set to at least the time in a previously retrieved file.
+///   - minSignTime: Minimum time for signature. Should be set to at least the time of the previous signature.
 /// - Throws: VerifyErr: If signature verification fails or `expectedFileName` is not one of the allowed values.
 public func Verify(signature: Data, signedJson: Data, expectedFileName: String, minSignTime: Date) throws {
     let result = signature.withSlice { signatureData in

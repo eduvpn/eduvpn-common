@@ -1,4 +1,5 @@
 /vendor/
+/lib/*
 composer.phar
 .phpunit*
 *.h
