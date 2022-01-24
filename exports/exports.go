@@ -6,8 +6,8 @@ import "eduvpn-common"
 
 // Functions here should probably not take string parameters, see https://pkg.go.dev/cmd/cgo#hdr-C_references_to_Go
 
-// Verify verifies a signature on a JSON file. See eduvpn_verify.Verify for more details.
-// It returns 0 for a valid signature and a nonzero eduvpn_verify.VerifyErrorCode otherwise.
+// Verify verifies a signature on a JSON file. See eduvpn_discovery.Verify for more details.
+// It returns 0 for a valid signature and a nonzero eduvpn_discovery.VerifyErrorCode otherwise.
 // signatureFileContent must be UTF-8-encoded.
 //export Verify
 func Verify(signatureFileContent []byte, signedJson []byte, expectedFileName []byte, minSignTime uint64) int8 {
