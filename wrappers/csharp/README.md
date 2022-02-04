@@ -22,8 +22,8 @@ Build as nupkg, including shared Go library for all platforms built in `exports/
 make pack
 ```
 
-If you do not build this as part of the full repository, specify `EXPORTS_PATH="" EXPORTS_LIB_PATH="path/to/lib-folder"`
-when calling make.
+If you do not build this as part of the full repository, specify `EXPORTS_PATH="path/to/exports-folder"`
+when calling make. This folder must contain `common.mk` and the `lib/` folder with built libraries.
 
 The wrapper targets .NET Standard 2.0, which means that it can be referenced by projects using either .NET Framework
 4.6.1+, .NET Core 2.0+, or .NET 5+.

@@ -32,4 +32,4 @@ When using this library, you will need to make sure that the linker can find the
 pass `COPY_LIB=1` to `make install-header` to copy the library over to this folder and load it via this relative path.
 
 If you do not build this as part of the full repository, specify `EXPORTS_PATH="path/to/exports-folder"` when calling
-make. This folder must contain `platform.mk` and the `lib/` folder with built libraries and headers.
+make. This folder must contain `common.mk` and the `lib/` folder with built libraries and headers.

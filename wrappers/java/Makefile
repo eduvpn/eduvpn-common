@@ -1,7 +1,7 @@
 .PHONY: build pack test clean
 
 EXPORTS_PATH ?= ../../exports
-EXPORTS_LIB_PATH ?= $(EXPORTS_PATH)/lib
+include $(EXPORTS_PATH)/common.mk
 
 build:
 	mvn --no-transfer-progress compile -DEXPORTS_LIB_PATH="$(EXPORTS_LIB_PATH)"
@@ -9,12 +9,7 @@ build:
 pack:
 	mvn --no-transfer-progress package -DEXPORTS_LIB_PATH="$(EXPORTS_LIB_PATH)"
 
-test:
-ifneq ($(EXPORTS_PATH),)
-ifneq ($(wildcard $(EXPORTS_PATH)/Makefile),)
-	$(MAKE) -C "$(EXPORTS_PATH)"
-endif
-endif
+test: .try_build_lib
 	mvn --no-transfer-progress test -DEXPORTS_LIB_PATH="$(EXPORTS_LIB_PATH)"
 
 clean:

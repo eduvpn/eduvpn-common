@@ -21,11 +21,12 @@ make GOOS=linux GOARCH=amd64
 
 When using this library, you will need to make sure that the linker can find the shared Go library.
 
-<small>On Windows, you will also need to generate a .lib import library for the .dll. You can
+<details><summary>Windows</summary><small>
+On Windows, you will also need to generate a .lib import library for the .dll. You can
 use `exports/generate_lib.ps1`
 for this, passing in the path to the DLL file. Execute this from a Visual Studio Developer shell before building the
 Swift project. Alternatively, you could use `objdump` and `llvm-dlltool`. You only need to update this if the list of
-exported symbols changes.</small>
+exported symbols changes.</small></details>
 
 If you just want to copy over the C header file to the right directory for the modulemap in `CEduVpnCommon`, run:
 
@@ -34,7 +35,7 @@ make install-header
 ```
 
 If you do not build this as part of the full repository, specify `EXPORTS_PATH="path/to/exports-folder"` when calling
-make. This folder must contain `platform.mk` and the `lib/` folder with built libraries and headers.
+make. This folder must contain `common.mk` and the `lib/` folder with built libraries and headers.
 
 Test:
 

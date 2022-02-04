@@ -34,7 +34,7 @@ You could also reference the discovery module directly and copy the library for 
 folder.
 
 If you do not build this as part of the full repository, specify `EXPORTS_PATH="path/to/exports-folder"` when calling
-make. This folder must contain `platform.mk` and the `lib/` folder with built libraries.
+make. This folder must contain `common.mk` and the `lib/` folder with built libraries.
 
 Test:
 
