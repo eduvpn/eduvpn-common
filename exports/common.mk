@@ -23,7 +23,7 @@ LIB_NAME ?= eduvpn_common
 # Library file name
 LIB_FILE ?= $(LIB_PREFIX)$(LIB_NAME)$(LIB_SUFFIX)
 
-# Get exports/ directory when included from a wrapper
+# Get relative exports/ directory when included from a wrapper
 EXPORTS_PATH = $(dir $(lastword $(MAKEFILE_LIST)))
 # Remove trailing slash
 EXPORTS_PATH := $(EXPORTS_PATH:/=)
@@ -38,7 +38,9 @@ else
 export LD_LIBRARY_PATH := $(abspath $(EXPORTS_LIB_SUBFOLDER_PATH)):$(LD_LIBRARY_PATH)
 endif
 
-.try_build_lib:
+.try-build-lib:
 ifneq ($(wildcard $(EXPORTS_PATH)/Makefile),)
 	$(MAKE) -C $(EXPORTS_PATH)
+else
+$(info Skipping building library as exports/Makefile was not found)
 endif

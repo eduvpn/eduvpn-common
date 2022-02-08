@@ -85,8 +85,11 @@ make test
 Clean built libraries and wrapper builds:
 
 ```shell
-make clean -j
+make -j clean
 ```
+
+Usually you won't need to do this, as changes in the library should automatically be incorporated in wrappers.
+Specify `CLEAN_ALL=1` to also remove downloaded dependencies for some wrappers.
 
 Take a look at `wrappers/<lang>/README.md` for descriptions per wrapper.
 
@@ -95,4 +98,4 @@ Take a look at `wrappers/<lang>/README.md` for descriptions per wrapper.
 - `verify.go`: main API
 - `verify_test.go` and `test_data/`: tests for API
 - `exports/`: C API interface
-- `wrappers/`: Wrappers per language, more will be added
+- `wrappers/`: Wrappers per language

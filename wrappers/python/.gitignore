@@ -3,3 +3,4 @@
 *.egg-info/
 /eduvpncommon/lib/*
 __pycache__/
+venv/

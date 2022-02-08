@@ -1,0 +1,107 @@
+import com.android.build.api.dsl.ManagedVirtualDevice
+
+plugins {
+    id 'com.android.library'  // Build AAR
+}
+
+android {
+    compileSdk 31
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 31
+        versionCode 1
+        versionName '1.0'
+
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+
+        consumerProguardFiles 'consumer-rules.pro'
+
+        externalNativeBuild {
+            cmake {
+                // Specify which target we want to build
+                targets 'shared-lib'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // Support Java 8+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    externalNativeBuild {
+        cmake {
+            version '3.18.1'  // See cmake_minimum_required in CMakeLists.txt
+            path 'CMakeLists.txt'
+        }
+    }
+
+    sourceSets {
+        androidTest {
+            // Use same sources & resources for Android instrumented tests as unit tests
+            java.srcDirs = sourceSets.test.java.srcDirs
+            resources.srcDirs = sourceSets.test.resources.srcDirs
+        }
+    }
+
+    task copyTestData(type: Copy, description: 'Copy test_data to test resources') {
+        from('../../../test_data') {
+            exclude '**/*.py', '**/*.sh'
+        }
+        into sourceSets.test.resources.srcDirs[0].toPath().resolve('org/eduvpn/common')
+    }
+
+    // Copy test_data to Java resources before these are processed
+    // (.named does not find all tasks. Task names were obtained with com.dorongold.task-tree plugin)
+    tasks.matching { t ->
+        t.name in [
+                'processDebugUnitTestJavaRes', 'processReleaseUnitTestJavaRes',
+                'processDebugAndroidTestJavaRes', 'processReleaseAndroidTestJavaRes']
+    }.all {
+        dependsOn copyTestData
+    }
+
+    // Do not cache unit test results as the shared library may have changed
+    tasks.matching { t -> t.name in ['testDebugUnitTest', 'testReleaseUnitTest'] }.all {
+        outputs.upToDateWhen { false }
+    }
+
+    testOptions {
+        // Display full exceptions and passed tests for unit tests
+        unitTests.all {
+            testLogging {
+                events 'passed', 'skipped', 'failed'
+                exceptionFormat 'full'
+            }
+        }
+
+        devices {
+            pixel2(ManagedVirtualDevice) {
+                device = 'Pixel 2'
+                apiLevel = 30
+                systemImageSource = 'aosp'
+                abi = 'x86_64'
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation 'net.java.dev.jna:jna:5.10.0@aar'
+
+    testImplementation 'commons-io:commons-io:2.11.0'
+    testImplementation 'net.java.dev.jna:jna:5.10.0'  // Include jnidispatch library in unit tests
+    testImplementation 'junit:junit:4.+'
+
+    androidTestImplementation 'commons-io:commons-io:2.11.0'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+}

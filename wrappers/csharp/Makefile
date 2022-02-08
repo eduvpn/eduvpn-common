@@ -12,7 +12,7 @@ build:
 pack:
 	dotnet pack EduVpnCommon.csproj --configuration Release
 
-test: .try_build_lib
+test: .try-build-lib
 	dotnet test
 
 clean:

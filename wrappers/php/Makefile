@@ -10,12 +10,12 @@ ifeq ($(COPY_LIB),1)
 COPY_LIB_DIR ?= lib
 endif
 ifneq ($(COPY_LIB_DIR),)
-COPY_LIB_DIR := $(COPY_LIB_DIR)/
+override COPY_LIB_DIR := $(COPY_LIB_DIR)/
 endif
 
 # Strip / replace elements confusing PHP's limited C parser: __SIZE_TYPE__, _Complex, extern "C"
 # Also add FFI_LIB library name, see https://www.php.net/manual/en/ffi.load
-install-header: .try_build_lib
+install-header: .try-build-lib
 	mkdir -p src/headers
 	sed --null-data \
 		-e 's/DO NOT EDIT/Modified for PHP/' \
@@ -47,4 +47,7 @@ install-dev-dependencies:
 	$(COMPOSER) check-platform-reqs
 
 clean:
-	rm -rf vendor/ .phpunit* src/headers/*.h lib/*
+	rm -rf .phpunit* src/headers/*.h lib/*
+ifeq ($(CLEAN_ALL),1)
+	rm -rf vendor/
+endif

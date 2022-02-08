@@ -32,8 +32,8 @@ final class Discovery
 	 * @param string $signedJson       Signed .json file contents.
 	 * @param string $expectedFileName The file type to be verified, one of "server_list.json" or
 	 *                                 "organization_list.json".
-	 * @param int    $minSignTime      Minimum time for signature. Should be set to at least the time of the previous
-	 *                                 signature.
+	 * @param int    $minSignTime      Minimum time for signature (UNIX timestamp, seconds). Should be set to at least
+	 *                                 the time of the previous signature.
 	 * @return void
 	 * @throws InvalidArgumentException If expectedFileName is not one of the allowed values.
 	 * @throws VerifyException If signature verification fails.

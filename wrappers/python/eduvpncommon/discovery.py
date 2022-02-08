@@ -71,7 +71,7 @@ def verify(signature: bytes, signed_json: bytes, expected_file_name: str, min_si
     :param signature: .minisig signature file contents.
     :param signed_json: Signed .json file contents.
     :param expected_file_name: The file type to be verified, one of "server_list.json" or "organization_list.json".
-    :param min_sign_time: Minimum time for signature. Should be set to at least the time of the previous signature.
+    :param min_sign_time: Minimum time for signature (UNIX timestamp, seconds). Should be set to at least the time of the previous signature.
 
     :raises VerifyException: If signature verification fails or expectedFileName is not one of the allowed values.
     """

@@ -15,7 +15,7 @@ build: install-header
 test: install-header
 	$(SWIFT) test --parallel -Xlinker -L"$(EXPORTS_LIB_SUBFOLDER_PATH)"
 
-install-header: .try_build_lib
+install-header: .try-build-lib
 	install "$(EXPORTS_LIB_SUBFOLDER_PATH)/$(LIB_NAME).h" -Dt CEduVpnCommon/Sources/CEduVpnCommon/Headers  # Copy header for modulemap
 
 clean:
