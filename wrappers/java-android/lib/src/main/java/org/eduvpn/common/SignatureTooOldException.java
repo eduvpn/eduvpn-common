@@ -1,4 +1,4 @@
-package nl.eduvpn.common;
+package org.eduvpn.common;
 
 /** Signature timestamp smaller than specified minimum signing time (rollback). */
 public final class SignatureTooOldException extends VerifyException {

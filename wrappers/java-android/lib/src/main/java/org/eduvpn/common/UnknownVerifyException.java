@@ -1,4 +1,4 @@
-package nl.eduvpn.common;
+package org.eduvpn.common;
 
 /** Other unknown error. */
 public final class UnknownVerifyException extends VerifyException {

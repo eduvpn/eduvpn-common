@@ -1,4 +1,4 @@
-package nl.eduvpn.common;
+package org.eduvpn.common;
 
 /** Signature was created with an unknown key and has not been verified. */
 public final class InvalidSignatureUnknownKeyException extends VerifyException {

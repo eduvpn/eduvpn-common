@@ -1,9 +1,8 @@
-package nl.eduvpn.common;
+package org.eduvpn.common;
 
 import com.sun.jna.*;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 
 public final class Discovery {
     private static final String LIB_NAME = "eduvpn_common";
@@ -16,13 +15,13 @@ public final class Discovery {
      * @param signature        .minisig signature file contents.
      * @param signedJson       Signed .json file contents.
      * @param expectedFileName The file type to be verified, one of {@code "server_list.json"} or {@code "organization_list.json"}.
-     * @param minSignTime      Minimum time for signature. Should be set to at least the time of the previous signature.
+     * @param minSignTime      Minimum time for signature (UNIX timestamp, seconds). Should be set to at least the time of the previous signature.
      * @throws IllegalArgumentException If {@code expectedFileName} is not one of the allowed values or one of the parameters is empty.
      * @throws VerifyException          If signature verification fails.
      */
-    public static void verify(byte[] signature, byte[] signedJson, String expectedFileName, Instant minSignTime) throws VerifyException {
+    public static void verify(byte[] signature, byte[] signedJson, String expectedFileName, long minSignTime) throws VerifyException {
         byte err = discovery.Verify(NativeApi.GoSlice.fromArray(signature), NativeApi.GoSlice.fromArray(signedJson),
-                NativeApi.GoSlice.fromString(expectedFileName), minSignTime.getEpochSecond());
+                NativeApi.GoSlice.fromString(expectedFileName), minSignTime);
 
         switch (err) {
             case 0:
