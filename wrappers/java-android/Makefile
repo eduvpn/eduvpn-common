@@ -10,6 +10,8 @@ endif
 build:
 	./gradlew $(GRADLE_FLAGS) assembleRelease
 
+pack: build
+
 # Unit tests use library for desktop OS platform, so we still need .try-build-lib for this
 # The unit tests find this library through the library path set in common.mk
 unit-test: .try-build-lib

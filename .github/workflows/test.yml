@@ -1,4 +1,4 @@
-name: Test
+name: Test & check build
 
 on: [ push, pull_request ]
 
@@ -44,7 +44,10 @@ jobs:
         with:
           name: shared-lib
           path: exports/lib/
-      - run: make -C wrappers/csharp
+      - name: Test
+        run: make -C wrappers/csharp
+      - name: Build .nupkg
+        run: make -C wrappers/csharp pack
 
   test-java-android:
     name: Test Android (Java) wrapper
@@ -63,7 +66,10 @@ jobs:
         with:
           name: shared-lib
           path: exports/lib/
-      - run: make -C wrappers/java-android NO_DAEMON=1 NO_EMULATOR=1
+      - name: Test
+        run: make -C wrappers/java-android test NO_DAEMON=1 NO_EMULATOR=1
+      - name: Build .aar
+        run: make -C wrappers/java-android pack NO_DAEMON=1 NO_EMULATOR=1
 
   test-php:
     name: Test PHP wrapper
@@ -78,7 +84,8 @@ jobs:
         with:
           name: shared-lib
           path: exports/lib/
-      - run: make -C wrappers/php
+      - name: Test
+        run: make -C wrappers/php test
 
   test-python:
     name: Test Python wrapper
@@ -93,7 +100,10 @@ jobs:
         with:
           name: shared-lib
           path: exports/lib/
-      - run: make -C wrappers/python
+      - name: Test
+        run: make -C wrappers/python test
+      - name: Build .whl
+        run: make -C wrappers/python pack
 
   test-swift:
     name: Test Swift wrapper
@@ -108,4 +118,5 @@ jobs:
         with:
           name: shared-lib
           path: exports/lib/
-      - run: make -C wrappers/swift
+      - name: test
+        run: make -C wrappers/swift

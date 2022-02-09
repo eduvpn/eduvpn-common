@@ -1,5 +1,4 @@
-// swift-tools-version:5.1
-//TODO ^ find out minimal version
+// swift-tools-version:5.0
 
 import PackageDescription
 
