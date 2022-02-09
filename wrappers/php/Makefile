@@ -9,7 +9,7 @@ export PATH := $(abspath vendor/bin):$(PATH)
 ifeq ($(COPY_LIB),1)
 COPY_LIB_DIR ?= lib
 endif
-ifneq ($(COPY_LIB_DIR),)
+ifdef COPY_LIB_DIR
 override COPY_LIB_DIR := $(COPY_LIB_DIR)/
 endif
 
@@ -27,7 +27,7 @@ install-header: .try-build-lib
 		-e 's/^/#define FFI_LIB "$(subst /,\/,$(COPY_LIB_DIR))$(LIB_FILE)"\n\n/' \
 		\
 		"$(EXPORTS_LIB_SUBFOLDER_PATH)/$(LIB_NAME).h" >src/headers/$(LIB_NAME)_php.h
-ifneq ($(COPY_LIB_DIR),)
+ifdef COPY_LIB_DIR
 	install "$(EXPORTS_LIB_SUBFOLDER_PATH)/$(LIB_FILE)" -Dt "$(COPY_LIB_DIR)"
 endif
 

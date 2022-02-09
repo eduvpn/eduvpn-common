@@ -1,31 +1,29 @@
 .PHONY: build test test-go test-wrappers clean
 
 build:
-	$(MAKE) -C exports build
+	$(MAKE) -C exports
 
 test: test-go test-wrappers
 
 test-go:
 	go test
 
-wrappers = $(wildcard wrappers/*/)
+WRAPPERS ?= $(notdir $(patsubst %/,%,$(wildcard wrappers/*/)))
 
-# Enable parallelism if -j is specified
+# Enable parallelism if -j is specified, but first execute build
 test-wrappers: build
-	$(MAKE) $(foreach wrapper,$(wrappers),.test_$(wrapper))
+	$(MAKE) $(foreach wrapper,$(WRAPPERS),.test-$(wrapper))
 
-# Enable parallelism if -j is specified
-clean:
-	$(MAKE) .clean_libs $(foreach wrapper,$(wrappers),.clean_$(wrapper))
+clean: .clean_libs $(foreach wrapper,$(WRAPPERS),.clean-$(wrapper))
 
-.clean_libs:
+.clean-libs:
 	$(MAKE) -C exports clean
 
 # Define test & clean for each wrapper
 define wrapper_targets
-.test_$(1):
-	$(MAKE) -C "$(1)" test
-.clean_$(1):
-	$(MAKE) -C "$(1)" clean
+.test-$(1):
+	$(MAKE) -C wrappers/$(1) test
+.clean-$(1):
+	$(MAKE) -C wrappers/$(1) clean
 endef
-$(foreach wrapper,$(wrappers),$(eval $(call wrapper_targets,$(wrapper))))
+$(foreach wrapper,$(WRAPPERS),$(eval $(call wrapper_targets,$(wrapper))))

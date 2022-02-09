@@ -18,9 +18,10 @@ See the [list of Gradle releases](https://github.com/gradle/gradle/releases)
 and [list of Android Gradle plugin releases](https://maven.google.com/web/?q=com.android.tools.build#com.android.tools.build:gradle)
 .
 
-Versions are managed per project by the Gradle wrapper (see `gradle*` files). Run `./gradlew --version` to get the
-project Gradle version. Look at the dependencies in `/build.gradle` for the current Android Gradle plugin version. This
-means that you do not need to install Gradle separately yourself.
+Versions are managed per project by
+the [Gradle wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html) (see `gradle*` files).
+Run `./gradlew --version` to get the project Gradle version. Look at the dependencies in `/build.gradle` for the current
+Android Gradle plugin version. This means that you do not need to install Gradle separately yourself.
 
 Currently, versions are Gradle 7.0.2 and Android Gradle plugin 7.0.4, which means you have to install a **JDK with a
 version between 11 and 16**. If desired, these can be upgraded to e.g. 7.4 and 7.1.1 respectively without problems, but
@@ -55,8 +56,8 @@ Run Android instrumented tests on a new emulator:
 make android-test
 ```
 
-This uses [Gradle managed virtual devices](https://developer.android.com/studio/preview/features#gmd). This feature is
-enabled in `gradle.properties`. It is normal that tests that pass are not logged.
+This uses [Gradle managed virtual devices](https://developer.android.com/studio/preview/features#gmd). This experimental
+feature is enabled in `gradle.properties`. It is normal that tests that pass are not logged.
 
 Run Android instrumented tests on an already running emulator:
 

@@ -3,13 +3,17 @@
 This repository contains a Go library with functions that all EduVPN clients can use. The goal is to let EduVPN clients
 link against this library and gradually merge more common logic between EduVPN clients into this repository.
 
-cgo is used to build the Go library into a shared dynamic library. Wrappers will be written using some FFI framework for
-each language used in EduVPN clients to easily interface with the library.
+[cgo](https://pkg.go.dev/cmd/cgo) is used to build the Go library into a shared dynamic library. Wrappers will be
+written using some FFI framework for each language used in EduVPN clients to easily interface with the library.
 
 ## Functionality
 
 Currently, only verification of signatures on files from `disco.eduvpn.org` is supported. For now, these files have to
 be downloaded by the caller.
+
+⚠️ The caller has to extract the timestamp from the file (JSON `"v"` tag), save it, and pass it to the Verify function
+the next time that they call it. This prevents a rollback of a previous file. This functionality may be integrated into
+the library in the future.
 
 ## Requirements
 
@@ -52,6 +56,8 @@ Build shared library for specified OS & architecture (example):
 make GOOS=windows GOARCH=386
 ```
 
+To list all platforms supported by cgo, run `go tool dist list`.
+
 Results will be output in `exports/lib/`.
 
 Usually you will need to specify the compiler when cross compiling, for example:
@@ -74,7 +80,8 @@ Test wrappers (you will need compilers for all wrappers if you do this):
 make test-wrappers
 ```
 
-Specify `-j` to execute tests in parallel.
+Specify `-j` to execute tests in parallel. You can specify specific wrappers to test by appending
+e.g. `WRAPPERS="csharp php"`.
 
 Test both:
 
@@ -89,7 +96,8 @@ make -j clean
 ```
 
 Usually you won't need to do this, as changes in the library should automatically be incorporated in wrappers.
-Specify `CLEAN_ALL=1` to also remove downloaded dependencies for some wrappers.
+Specify `CLEAN_ALL=1` to also remove downloaded dependencies for some wrappers. You can clean individual wrappers by
+executing clean in their directories, or specify `WRAPPERS=...`.
 
 Take a look at `wrappers/<lang>/README.md` for descriptions per wrapper.
 
@@ -98,4 +106,5 @@ Take a look at `wrappers/<lang>/README.md` for descriptions per wrapper.
 - `verify.go`: main API
 - `verify_test.go` and `test_data/`: tests for API
 - `exports/`: C API interface
-- `wrappers/`: Wrappers per language
+- `exports/lib/`: built libraries per architecture per OS
+- `wrappers/`: wrappers per language
