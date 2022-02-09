@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.18.1)
 project(eduvpn_common)
 
-set(CMAKE_VERBOSE_MAKEFILE on)
-
 # Android -> Go architecture map
 set(arch_map_x86	386)
 set(arch_map_x86_64	amd64)

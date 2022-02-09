@@ -12,7 +12,7 @@ versions.
 
 If you see `Unsupported class file major version xx` then Gradle wants you to use an older Java version. If you
 see `Android Gradle plugin requires Java xx to run.` then the Android Gradle plugin wants you to use a newer Java
-version.
+version. Set `JAVA_HOME` to the right JDK install.
 
 See the [list of Gradle releases](https://github.com/gradle/gradle/releases)
 and [list of Android Gradle plugin releases](https://maven.google.com/web/?q=com.android.tools.build#com.android.tools.build:gradle)
@@ -83,3 +83,7 @@ copied from the `../../test_data` folder by Gradle.
 
 This library uses JNA, not JNI. Hence, there is no C wrapper. The library is dynamically opened with `dlopen`
 via `libjnidispatch.so` which comes with the JNA AAR.
+
+If you want to know how the tests would look like with JUnit 5, or if for some reason you want to look at a pure Java
+wrapper using Maven,
+see [`b60ecf2`](https://github.com/stevenwdv/eduvpn-common/tree/b60ecf2fe5ddfe506e02093286b3931873187e91/wrappers/java).

@@ -11,7 +11,7 @@ final class Discovery
 {
 	public function __construct() { }
 
-	const LIB_NAME = "eduvpn_common";
+	const LIB_NAME = 'eduvpn_common';
 
 	private static ?FFI $ffi = null;
 

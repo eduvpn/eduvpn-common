@@ -8,7 +8,6 @@ use PHPUnit\Framework\TestCase;
 
 class DiscoveryTest extends TestCase
 {
-	/** @var string */
 	private const TEST_DATA_DIR = '../../test_data';
 
 	public static function setUpBeforeClass(): void
@@ -41,7 +40,6 @@ class DiscoveryTest extends TestCase
 			  'server_list.json', 0);
 	}
 
-	#[deprecated]
 	public function testOldSignature(): void
 	{
 		$this->expectException(SignatureTooOldException::class);
