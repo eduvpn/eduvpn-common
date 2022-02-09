@@ -72,8 +72,8 @@ Run both unit tests and Android instrumented tests on a new emulator:
 make test
 ```
 
-For all commands you can specify options to pass to Gradle via `GRADLE_FLAGS=`. Specify `NO_DAEMON=1` to
-add `--no-daemon`.
+For all commands you can specify options to pass to Gradle via `GRADLE_FLAGS=`, e.g. `GRADLE_FLAGS=--info`.
+Specify `NO_DAEMON=1` to add `--no-daemon`.
 
 ## Notes
 

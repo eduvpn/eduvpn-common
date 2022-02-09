@@ -1,4 +1,4 @@
-.PHONY: build test android-test clean
+.PHONY: build android-test connected-android-test test clean
 
 EXPORTS_PATH ?= ../../exports
 include $(EXPORTS_PATH)/common.mk
@@ -22,7 +22,11 @@ connected-android-test:
 	./gradlew $(GRADLE_FLAGS) connectedAndroidTest
 
 test: .try-build-lib
+ifeq ($(NO_EMULATOR),1)
+	./gradlew $(GRADLE_FLAGS) test
+else
 	./gradlew $(GRADLE_FLAGS) test pixel2DebugAndroidTest
+endif
 
 clean:
 	rm -rf lib/build lib/.cxx lib/CMakeFiles lib/src/test/resources/*
