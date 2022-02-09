@@ -22,7 +22,7 @@ namespace EduVpnCommon
 		/// <exception cref="ArgumentException">If <c>expectedFileName</c> is not one of the allowed values.</exception>
 		/// <exception cref="VerifyException">If signature verification fails.</exception>
 		public static void Verify(
-			ArraySegment<byte> signatureFileContent,
+			ArraySegment<byte> signatureFileContent,  // Span<byte> would be nicer, but is not available in .NET Standard 2.0
 			ArraySegment<byte> signedJson,
 			string             expectedFileName,
 			DateTimeOffset     minSignTime)

@@ -21,7 +21,7 @@ class DiscoveryTest extends TestCase
 		$this->expectNotToPerformAssertions();
 		Discovery::verify(file_get_contents(self::TEST_DATA_DIR . '/server_list.json.minisig'),
 			  file_get_contents(self::TEST_DATA_DIR . '/server_list.json'),
-			  'server_list.json', 0);
+			  'server_list.json', 10);
 	}
 
 	public function testInvalidSignature(): void
@@ -45,7 +45,7 @@ class DiscoveryTest extends TestCase
 		$this->expectException(SignatureTooOldException::class);
 		Discovery::verify(file_get_contents(self::TEST_DATA_DIR . '/server_list.json.minisig'),
 			  file_get_contents(self::TEST_DATA_DIR . '/server_list.json'),
-			  'server_list.json', 1 << 31);
+			  'server_list.json', 11);
 	}
 
 	public function testUnknownExpectedFileName(): void

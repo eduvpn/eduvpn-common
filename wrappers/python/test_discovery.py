@@ -22,7 +22,7 @@ class VerifyTests(unittest.TestCase):
             read_bytes(f"{test_data_dir}/server_list.json.minisig"),
             read_bytes(f"{test_data_dir}/server_list.json"),
             "server_list.json",
-            0
+            10
         )
 
     def testValidMemoryView(self):
@@ -59,7 +59,7 @@ class VerifyTests(unittest.TestCase):
                 read_bytes(f"{test_data_dir}/server_list.json.minisig"),
                 read_bytes(f"{test_data_dir}/server_list.json"),
                 "server_list.json",
-                1 << 31
+                11
             )
         self.assertEqual(ctx.exception.code, discovery.VerifyErrorCode.ErrTooOld)
 

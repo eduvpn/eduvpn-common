@@ -31,7 +31,7 @@ public class VerifyTests {
                 readAll("server_list.json.minisig"),
                 readAll("server_list.json"),
                 "server_list.json",
-                0
+                10
         );
     }
 
@@ -61,7 +61,7 @@ public class VerifyTests {
                 readAll("server_list.json.minisig"),
                 readAll("server_list.json"),
                 "server_list.json",
-                Long.MAX_VALUE
+                11
         );
     }
 

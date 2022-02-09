@@ -4,7 +4,8 @@
 
 You will need to install the [.NET SDK](https://dotnet.microsoft.com/download), which includes the `dotnet` tool. The
 wrapper targets .NET Standard 2.0, which means that at least .NET Core 2.0 is required (.NET 5+ is also fine). For the
-tests, .NET 5 is required.
+tests, .NET 5 is required. (Or change `<TargetFramework>` in EduVpnCommonTests.csproj to e.g. `net6.0` to use newer
+versions.)
 
 ## Build & test
 

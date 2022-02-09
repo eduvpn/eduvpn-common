@@ -24,7 +24,7 @@ namespace EduVpnCommonTests
 				File.ReadAllBytes($"{testDataDir_}/{sigFile}"),
 				File.ReadAllBytes($"{testDataDir_}/{jsonFile}"),
 				expectedFileName,
-				DateTimeOffset.UnixEpoch);
+				DateTimeOffset.FromUnixTimeSeconds(10));
 
 		[Test]
 		[TestCase("server_list.json.minisig", "server_list.json", "server_list.json")]
@@ -67,7 +67,7 @@ namespace EduVpnCommonTests
 					File.ReadAllBytes($"{testDataDir_}/{sigFile}"),
 					File.ReadAllBytes($"{testDataDir_}/{jsonFile}"),
 					expectedFileName,
-					DateTimeOffset.MaxValue));
+					DateTimeOffset.FromUnixTimeSeconds(11)));
 
 		[Test]
 		[TestCase("other_list.json.minisig", "other_list.json", "other_list.json")]

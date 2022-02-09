@@ -15,7 +15,7 @@ final class EduVpnCommonTests: XCTestCase {
                 signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json.minisig")),
                 signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json")),
                 expectedFileName: "server_list.json",
-                minSignTime: Date(timeIntervalSince1970: 0))
+                minSignTime: Date(timeIntervalSince1970: 10))
     }
 
     func testInvalidSignature() throws {
@@ -44,7 +44,7 @@ final class EduVpnCommonTests: XCTestCase {
                         signature: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json.minisig")),
                         signedJson: try! Data(contentsOf: URL(fileURLWithPath: "\(EduVpnCommonTests.testDataDir)/server_list.json")),
                         expectedFileName: "server_list.json",
-                        minSignTime: Date(timeIntervalSince1970: TimeInterval(1 << 31))),
+                        minSignTime: Date(timeIntervalSince1970: 11)),
                 "", {err in XCTAssertEqual(err as? VerifyErr, VerifyErr.ErrTooOld)});
     }
 
