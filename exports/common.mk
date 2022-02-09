@@ -23,10 +23,8 @@ LIB_NAME ?= eduvpn_common
 # Library file name
 LIB_FILE ?= $(LIB_PREFIX)$(LIB_NAME)$(LIB_SUFFIX)
 
-# Get relative exports/ directory when included from a wrapper
-EXPORTS_PATH = $(dir $(lastword $(MAKEFILE_LIST)))
-# Remove trailing slash
-EXPORTS_PATH := $(EXPORTS_PATH:/=)
+# Get relative exports/ directory when included from a wrapper, without trailing slash
+override EXPORTS_PATH = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
 EXPORTS_LIB_PATH ?= $(EXPORTS_PATH)/lib
 EXPORTS_LIB_SUBFOLDER_PATH ?= $(EXPORTS_LIB_PATH)/$(GOOS)/$(GOARCH)
