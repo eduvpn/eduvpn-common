@@ -45,7 +45,7 @@ jobs:
           name: shared-lib
           path: exports/lib/
       - name: Test
-        run: make -C wrappers/csharp
+        run: make -C wrappers/csharp test
       - name: Build .nupkg
         run: make -C wrappers/csharp pack
 
@@ -119,4 +119,4 @@ jobs:
           name: shared-lib
           path: exports/lib/
       - name: test
-        run: make -C wrappers/swift
+        run: make -C wrappers/swift test
