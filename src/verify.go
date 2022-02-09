@@ -1,4 +1,4 @@
-package eduvpn_discovery
+package eduvpn
 
 import (
 	"fmt"
@@ -19,11 +19,13 @@ func getKeys() []string {
 // expectedFileName must be set to the file type to be verified, either "server_list.json" or "organization_list.json".
 // minSign must be set to the minimum UNIX timestamp (without milliseconds) for the file version.
 // This value should not be smaller than the time on the previous document verified.
+// forcePrehash indicates whether or not we want to force the use of prehashed signatures
+// In the future we want to remove this parameter and only allow prehashed signatures
 //
 // The return value will either be (true, nil) for a valid signature or (false, VerifyError) otherwise.
 //
 // Verify is a wrapper around verifyWithKeys where allowedPublicKeys is set to the list from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys.
-func Verify(signatureFileContent string, signedJson []byte, expectedFileName string, minSignTime uint64) (bool, error) {
+func Verify(signatureFileContent string, signedJson []byte, expectedFileName string, minSignTime uint64, forcePrehash bool) (bool, error) {
 	keyStrs := getKeys()
 	if extraKey != "" {
 		keyStrs = append(keyStrs, extraKey)
@@ -32,7 +34,7 @@ func Verify(signatureFileContent string, signedJson []byte, expectedFileName str
 			panic(err)
 		}
 	}
-	valid, err := verifyWithKeys(signatureFileContent, signedJson, expectedFileName, minSignTime, keyStrs)
+	valid, err := verifyWithKeys(signatureFileContent, signedJson, expectedFileName, minSignTime, keyStrs, forcePrehash)
 	if err != nil {
 		if err.(detailedVerifyError).Code == errInvalidPublicKey {
 			panic(err) // This should not happen unless keyStrs has an invalid key
@@ -78,13 +80,13 @@ func (err VerifyError) Unwrap() error {
 // verifyWithKeys verifies the Minisign signature in signatureFileContent (minisig file format) over the server_list/organization_list JSON in signedJson.
 //
 // Verification is performed using a matching key in allowedPublicKeys.
-// The signature is checked to be a Blake2b-prehashed Ed25519 Minisign signature with a valid trusted comment.
+// The signature is checked to be a Ed25519 Minisign (optionally Ed25519 Blake2b-512 prehashed, see forcePrehash) signature with a valid trusted comment.
 // The file type that is verified is indicated by expectedFileName, which must be one of "server_list.json"/"organization_list.json".
 // The trusted comment is checked to be of the form "timestamp:<timestamp>\tfile:<expectedFileName>", optionally suffixed by something, e.g. "\thashed".
 // The signature is checked to have a timestamp with a value of at least minSignTime, which is a UNIX timestamp without milliseconds.
 //
 // The return value will either be (true, nil) on success or (false, detailedVerifyError) on failure.
-func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFileName string, minSignTime uint64, allowedPublicKeys []string) (bool, error) {
+func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFileName string, minSignTime uint64, allowedPublicKeys []string, forcePrehash bool) (bool, error) {
 	switch expectedFileName {
 	case "server_list.json", "organization_list.json":
 		break
@@ -98,7 +100,7 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFile
 	}
 
 	// Check if signature is prehashed, see https://jedisct1.github.io/minisign/#signature-format
-	if sig.SignatureAlgorithm != [2]byte{'E', 'D'} {
+	if forcePrehash && sig.SignatureAlgorithm != [2]byte{'E', 'D'} {
 		return false, detailedVerifyError{errInvalidSignatureAlgorithm, "BLAKE2b-prehashed EdDSA signature required", nil}
 	}
 

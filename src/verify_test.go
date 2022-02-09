@@ -1,4 +1,4 @@
-package eduvpn_discovery
+package eduvpn
 
 import (
 	"bufio"
@@ -99,14 +99,15 @@ func Test_verifyWithKeys(t *testing.T) {
 		loadFile(test.jsonFile)
 	}
 
+	forcePrehash := true
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			t.Parallel()
 			valid, err := verifyWithKeys(string(files[tt.signatureFile]), files[tt.jsonFile],
-				tt.expectedFileName, tt.minSignTime, tt.allowedPks)
+				tt.expectedFileName, tt.minSignTime, tt.allowedPks, forcePrehash)
 			compareResults(t, valid, err, int(tt.result), func() string {
-				return fmt.Sprintf("verifyWithKeys(%q, %q, %q, %v, %v)",
-					tt.signatureFile, tt.jsonFile, tt.expectedFileName, tt.minSignTime, tt.allowedPks)
+				return fmt.Sprintf("verifyWithKeys(%q, %q, %q, %v, %v, %t)",
+					tt.signatureFile, tt.jsonFile, tt.expectedFileName, tt.minSignTime, tt.allowedPks, forcePrehash)
 			})
 		})
 	}
