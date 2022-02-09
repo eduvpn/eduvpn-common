@@ -28,6 +28,7 @@ jobs:
         with:
           name: shared-lib
           path: exports/lib/
+          retention-days: 1
 
   test-csharp:
     name: Test C# wrapper
