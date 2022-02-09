@@ -69,7 +69,7 @@ jobs:
       - name: Test
         run: make -C wrappers/java-android test NO_DAEMON=1 NO_EMULATOR=1
       - name: Build .aar
-        run: make -C wrappers/java-android pack NO_DAEMON=1 NO_EMULATOR=1
+        run: make -C wrappers/java-android pack NO_DAEMON=1
 
   test-php:
     name: Test PHP wrapper
@@ -118,5 +118,5 @@ jobs:
         with:
           name: shared-lib
           path: exports/lib/
-      - name: test
+      - name: Test
         run: make -C wrappers/swift test
