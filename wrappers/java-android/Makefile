@@ -1,4 +1,4 @@
-.PHONY: build android-test connected-android-test test clean
+.PHONY: build pack android-test connected-android-test test clean
 
 EXPORTS_PATH ?= ../../exports
 include $(EXPORTS_PATH)/common.mk
