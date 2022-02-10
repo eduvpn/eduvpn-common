@@ -1,0 +1,131 @@
+name: Test & check build
+
+on: [ push, pull_request ]
+
+jobs:
+  test-go:
+    name: Test Go
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
+      - run: make test-go
+
+  build-lib:
+    name: Build shared Go library
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
+      - run: make
+      - name: Set up Visual Studio shell
+        uses: egor-tensin/vs-shell@v2
+        with:
+          arch: x64
+      - name: Generate import library
+        run: exports/generate_lib.ps1 -DllPath (Get-ChildItem -Recurse exports/lib *.dll)
+      - uses: actions/upload-artifact@v2
+        with:
+          name: shared-lib
+          path: exports/lib/
+          retention-days: 1
+
+  test-csharp:
+    name: Test C# wrapper
+    needs: build-lib
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: shared-lib
+          path: exports/lib/
+      - name: Test
+        run: make -C wrappers/csharp test
+      - name: Build .nupkg
+        run: make -C wrappers/csharp pack
+
+  test-java-android:
+    name: Test Android (Java) wrapper
+    needs: build-lib
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: 11
+      - uses: android-actions/setup-android@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: shared-lib
+          path: exports/lib/
+      - name: Test
+        run: make -C wrappers/java-android test NO_DAEMON=1 NO_EMULATOR=1
+      - name: Build .aar
+        run: make -C wrappers/java-android pack NO_DAEMON=1
+
+  test-php:
+    name: Test PHP wrapper
+    needs: build-lib
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      # Note: PHP is already included: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: shared-lib
+          path: exports/lib/
+      - name: Test
+        run: make -C wrappers/php test
+
+  test-python:
+    name: Test Python wrapper
+    needs: build-lib
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      # Note: Python 3 is already included
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: shared-lib
+          path: exports/lib/
+      - name: Test
+        run: make -C wrappers/python test
+      - name: Build .whl
+        run: make -C wrappers/python pack
+
+  test-swift:
+    name: Test Swift wrapper
+    needs: build-lib
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: slashmo/install-swift@v0.1.0
+        with:
+          version: 5.5
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: shared-lib
+          path: exports/lib/
+      - name: Test
+        run: make -C wrappers/swift test
