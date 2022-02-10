@@ -1,10 +1,10 @@
 # Prevent executing `go env ...` multiple times for the same property
 # export is needed for this and also to pass the values on to the Go compiler
 ifndef GOOS
-export GOOS != go env GOHOSTOS
+export GOOS := $(shell go env GOHOSTOS)
 endif
 ifndef GOARCH
-export GOARCH != go env GOHOSTARCH
+export GOARCH := $(shell go env GOHOSTARCH)
 endif
 
 ifeq (windows,$(GOOS))
@@ -34,6 +34,7 @@ ifeq (Windows_NT,$(OS))
 export PATH := $(abspath $(EXPORTS_LIB_SUBFOLDER_PATH)):$(PATH)
 else
 export LD_LIBRARY_PATH := $(abspath $(EXPORTS_LIB_SUBFOLDER_PATH)):$(LD_LIBRARY_PATH)
+export DYLD_FALLBACK_LIBRARY_PATH := $(abspath $(EXPORTS_LIB_SUBFOLDER_PATH)):$(DYLD_FALLBACK_LIBRARY_PATH)
 endif
 
 .try-build-lib:
