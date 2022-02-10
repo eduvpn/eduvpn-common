@@ -102,9 +102,11 @@ executing clean in their directories, or specify `WRAPPERS=...`.
 Take a look at `wrappers/<lang>/README.md` for descriptions per wrapper.
 
 ## Structure
-
-- `verify.go`: main API
-- `verify_test.go` and `test_data/`: tests for API
+- `src`: Source code folder
+   - `src/verify.go`: Code for verifying signatures
+   - `src/server.go`: Code for retrieving server and organization list
+   - `src/*_test.go`: Testing source code
+   - `src/test_data`: Test data for the source code
 - `exports/`: C API interface
 - `exports/lib/`: built libraries per architecture per OS
 - `wrappers/`: wrappers per language
