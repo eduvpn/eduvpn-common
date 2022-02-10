@@ -24,12 +24,6 @@ jobs:
         with:
           go-version: ^1.15
       - run: make
-      - name: Set up Visual Studio shell
-        uses: egor-tensin/vs-shell@v2
-        with:
-          arch: x64
-      - name: Generate import library
-        run: exports/generate_lib.ps1 -DllPath (Get-ChildItem -Recurse exports/lib *.dll)
       - uses: actions/upload-artifact@v2
         with:
           name: shared-lib
@@ -119,7 +113,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: slashmo/install-swift@v0.1.0
+      - name: Set up Visual Studio shell
+        uses: egor-tensin/vs-shell@v2
+        with:
+          arch: x64
+      - name: Generate import library
+        run: exports/generate_lib.ps1 -DllPath (Get-ChildItem -Recurse exports/lib *.dll)
+      - uses: rinsuki/setup-swift-windows
         with:
           version: 5.5
 
