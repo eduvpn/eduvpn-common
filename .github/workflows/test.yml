@@ -1,4 +1,4 @@
-name: Test & check build
+name: "[Ubuntu] Test & check build"
 
 on: [ push, pull_request ]
 

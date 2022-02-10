@@ -1,11 +1,11 @@
-name: "[Windows] Test & check build"
+name: "[macOS] Test & check build"
 
 on: [ push, pull_request ]
 
 jobs:
   test-go:
-    name: "[Windows] Test Go"
-    runs-on: windows-latest
+    name: "[macOS] Test Go"
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -15,8 +15,8 @@ jobs:
       - run: make test-go
 
   build-lib:
-    name: "[Windows] Build shared Go library"
-    runs-on: windows-latest
+    name: "[macOS] Build shared Go library"
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -30,22 +30,18 @@ jobs:
           path: exports/lib/
           retention-days: 1
 
-  test-csharp:
-    name: "[Windows] Test C# wrapper"
+  test-swift:
+    name: "[macOS] Test Swift wrapper"
     needs: build-lib
-    runs-on: windows-latest
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 5.0.x
+      # Note: Swift is already included
 
       - uses: actions/download-artifact@v2
         with:
           name: shared-lib
           path: exports/lib/
       - name: Test
-        run: make -C wrappers/csharp test
-      - name: Build .nupkg
-        run: make -C wrappers/csharp pack
+        run: make -C wrappers/swift test
