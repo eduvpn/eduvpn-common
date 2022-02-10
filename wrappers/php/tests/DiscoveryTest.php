@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class DiscoveryTest extends TestCase
 {
-	private const TEST_DATA_DIR = '../../test_data';
+	private const TEST_DATA_DIR = '../../src/test_data';
 
 	public static function setUpBeforeClass(): void
 	{

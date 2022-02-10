@@ -2,7 +2,7 @@ import XCTest
 @testable import EduVpnCommon
 
 final class EduVpnCommonTests: XCTestCase {
-    private static let testDataDir = "../../test_data"
+    private static let testDataDir = "../../src/test_data"
 
     override class func setUp() {
         // Swift is confused by CRLF, so on some systems we cannot just take the second-to-last element

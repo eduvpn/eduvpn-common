@@ -2,20 +2,20 @@ package main
 
 import "C"
 
-import "eduvpn-common"
+import "github.com/jwijenbergh/eduvpn-common/src"
 
 // Functions here should probably not take string parameters, see https://pkg.go.dev/cmd/cgo#hdr-C_references_to_Go
 
-// Verify verifies a signature on a JSON file. See eduvpn_discovery.Verify for more details.
-// It returns 0 for a valid signature and a nonzero eduvpn_discovery.VerifyErrorCode otherwise.
+// Verify verifies a signature on a JSON file. See eduvpn.Verify for more details.
+// It returns 0 for a valid signature and a nonzero eduvpn.VerifyErrorCode otherwise.
 // signatureFileContent must be UTF-8-encoded.
 //export Verify
 func Verify(signatureFileContent []byte, signedJson []byte, expectedFileName []byte, minSignTime uint64) int8 {
-	valid, err := eduvpn_discovery.Verify(string(signatureFileContent), signedJson, string(expectedFileName), minSignTime)
+	valid, err := eduvpn.Verify(string(signatureFileContent), signedJson, string(expectedFileName), minSignTime, false)
 	if valid {
 		return 0
 	} else {
-		return int8(err.(eduvpn_discovery.VerifyError).Code)
+		return int8(err.(eduvpn.VerifyError).Code)
 	}
 }
 
@@ -24,7 +24,7 @@ func Verify(signatureFileContent []byte, signedJson []byte, expectedFileName []b
 // keyString must be an ASCII Base64-encoded key.
 //export InsecureTestingSetExtraKey
 func InsecureTestingSetExtraKey(keyString []byte) {
-	eduvpn_discovery.InsecureTestingSetExtraKey(string(keyString))
+	eduvpn.InsecureTestingSetExtraKey(string(keyString))
 }
 
 // Not used in library, but needed to compile.

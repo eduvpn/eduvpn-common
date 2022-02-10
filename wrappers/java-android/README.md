@@ -79,7 +79,7 @@ Specify `NO_DAEMON=1` to add `--no-daemon`.
 ## Notes
 
 The same Java code is used for the Android instrumented tests as for the unit tests. Both use Java resources that are
-copied from the `../../test_data` folder by Gradle.
+copied from the `../../src/test_data` folder by Gradle.
 
 This library uses JNA, not JNI. Hence, there is no C wrapper. The library is dynamically opened with `dlopen`
 via `libjnidispatch.so` which comes with the JNA AAR.

@@ -10,7 +10,7 @@ namespace EduVpnCommonTests
 	public class VerifyTests
 	{
 		// Relative to e.g. EduVpnCommonTests/bin/Debug/net5.0
-		readonly string testDataDir_ = $"{TestContext.CurrentContext.TestDirectory}/../../../../../../test_data";
+		readonly string testDataDir_ = $"{TestContext.CurrentContext.TestDirectory}/../../../../../../src/test_data";
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp() =>

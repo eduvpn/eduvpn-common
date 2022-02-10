@@ -3,7 +3,7 @@
 import unittest
 import eduvpncommon.discovery as discovery
 
-test_data_dir = "../../test_data"
+test_data_dir = "../../src/test_data"
 
 
 def read_bytes(path: str) -> bytes:

@@ -6,7 +6,7 @@ build:
 test: test-go test-wrappers
 
 test-go:
-	go test
+	go test github.com/jwijenbergh/eduvpn-common/src
 
 WRAPPERS ?= $(notdir $(patsubst %/,%,$(wildcard wrappers/*/)))
 

@@ -54,7 +54,7 @@ android {
     }
 
     task copyTestData(type: Copy, description: 'Copy test_data to test resources') {
-        from('../../../test_data') {
+        from('../../../src/test_data') {
             exclude '**/*.py', '**/*.sh'
         }
         into sourceSets.test.resources.srcDirs[0].toPath().resolve('org/eduvpn/common')
