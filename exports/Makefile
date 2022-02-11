@@ -16,7 +16,7 @@ endif
 # Build shared library and remove lib prefix (if any) from header name
 # GOOS and GOARCH envvars are set by common.mk
 # This extra target prevents unnecessary rebuild
-lib/$(GOOS)/$(GOARCH)/$(LIB_FILE): exports.go ../src/verify.go
+lib/$(GOOS)/$(GOARCH)/$(LIB_FILE): exports.go ../src/*.go
 	CGO_ENABLED=1 go build -o $@ -buildmode=c-shared $<
 	mv lib/$(GOOS)/$(GOARCH)/$(LIB_PREFIX)$(LIB_NAME).h lib/$(GOOS)/$(GOARCH)/$(LIB_NAME).h || true	# Normalize header name
 

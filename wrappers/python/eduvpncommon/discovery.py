@@ -2,6 +2,7 @@ from . import lib, GoSlice
 from ctypes import *
 from enum import Enum
 
+lib.GetOrganizationsList.argtypes, lib.GetOrganizationsList.restype = [], c_uint64
 lib.Verify.argtypes, lib.Verify.restype = [GoSlice, GoSlice, GoSlice, c_uint64], c_int64
 lib.InsecureTestingSetExtraKey.argtypes, lib.InsecureTestingSetExtraKey.restype = [GoSlice], None
 

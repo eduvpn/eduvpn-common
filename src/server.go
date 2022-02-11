@@ -10,7 +10,7 @@ import (
 // Struct that defines the json format for
 // url: "https://disco.eduvpn.org/v2/organization_list.json"
 type organizations struct {
-	v string `json:"v"`
+	V uint64 `json:"v"`
 	OrganizationList []struct {
 		DisplayName struct {
 			En string `json:"en"`
@@ -26,7 +26,7 @@ type organizations struct {
 // Struct that defines the json format for
 // url: "https://disco.eduvpn.org/v2/server_list.json"
 type servers struct {
-	v string `json:"v"`
+	V uint64 `json:"v"`
 	ServerList []struct {
 		BaseUrl string `json:"base_url"`
 		CountryCode string `json:"country_code"`
@@ -101,14 +101,32 @@ func getDiscoJson(jsonFile string, structure interface{}) bool {
 	return true
 }
 
+// Global maps that are used for storing info
+var organizationsMap = map[uint64]organizations{}
+var serversMap = map[uint64]servers{}
+
 // Get the organization list
-func GetOrganizationList() bool {
+// Returns the unix timestamp of the data
+func GetOrganizationsList() uint64 {
 	organizations := organizations{}
-	return getDiscoJson("organization_list.json", &organizations)
+	success := getDiscoJson("organization_list.json", &organizations)
+
+	if success {
+		organizationsMap[organizations.V] = organizations
+	}
+
+	return organizations.V
 }
 
 // Get the server list
-func GetServerList() bool {
+// Return the unix timestamp of the data
+func GetServerList() uint64 {
 	servers := servers{}
-	return getDiscoJson("server_list.json", &servers)
+	success := getDiscoJson("server_list.json", &servers)
+
+	if success {
+		serversMap[servers.V] = servers
+	}
+
+	return servers.V
 }
