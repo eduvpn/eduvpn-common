@@ -8,16 +8,16 @@ import "github.com/jwijenbergh/eduvpn-common/src"
 // GetOrganizationsList gets the list of organizations from the disco server.
 // Returns the unix timestamp of the data. This is used as key for looking up data.
 //export GetOrganizationsList
-func GetOrganizationsList() uint64 {
-	return eduvpn.GetOrganizationsList()
-}
-
-// GetServerList gets the list of servers from the disco server.
-// Returns the unix timestamp of the data. This is used as key for looking up data.
-//export GetServerList
-func GetServerList() uint64 {
-	return eduvpn.GetServerList()
-}
+//func GetOrganizationsList() uint64 {
+//	return eduvpn.GetOrganizationsList()
+//}
+//
+//// GetServerList gets the list of servers from the disco server.
+//// Returns the unix timestamp of the data. This is used as key for looking up data.
+////export GetServerList
+//func GetServerList() uint64 {
+//	return eduvpn.GetServerList()
+//}
 
 // Verify verifies a signature on a JSON file. See eduvpn.Verify for more details.
 // It returns 0 for a valid signature and a nonzero eduvpn.VerifyErrorCode otherwise.
