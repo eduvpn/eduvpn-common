@@ -55,28 +55,6 @@ func InsecureTestingSetExtraKey(keyString string) {
 	extraKey = keyString
 }
 
-// VerifyErrorCode Simplified error code for public interface.
-type VerifyErrorCode int8
-
-const (
-	ErrUnknownExpectedFileName    VerifyErrorCode = iota + 1 // Unknown expected file name specified. The signature has not been verified.
-	ErrInvalidSignature                                      // Signature is invalid (for the expected file type).
-	ErrInvalidSignatureUnknownKey                            // Signature was created with an unknown key and has not been verified.
-	ErrTooOld                                                // Signature timestamp smaller than specified minimum signing time (rollback).
-)
-
-type VerifyError struct {
-	Code     VerifyErrorCode
-	Detailed detailedVerifyError
-}
-
-func (err VerifyError) Error() string {
-	return err.Detailed.Error()
-}
-func (err VerifyError) Unwrap() error {
-	return err.Detailed
-}
-
 // verifyWithKeys verifies the Minisign signature in signatureFileContent (minisig file format) over the server_list/organization_list JSON in signedJson.
 //
 // Verification is performed using a matching key in allowedPublicKeys.
@@ -145,8 +123,20 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFile
 	return false, detailedVerifyError{errWrongKey, "signature was created with an unknown key", nil}
 }
 
+// VerifyErrorCode Simplified error code for public interface.
+type VerifyErrorCode = VPNErrorCode
+type VerifyError = VPNError
 // detailedVerifyErrorCode used for unit tests.
-type detailedVerifyErrorCode int8
+type detailedVerifyErrorCode = detailedVPNErrorCode
+type detailedVerifyError = detailedVPNError
+
+
+const (
+	ErrUnknownExpectedFileName    VerifyErrorCode = iota + 1 // Unknown expected file name specified. The signature has not been verified.
+	ErrInvalidSignature                                      // Signature is invalid (for the expected file type).
+	ErrInvalidSignatureUnknownKey                            // Signature was created with an unknown key and has not been verified.
+	ErrTooOld                                                // Signature timestamp smaller than specified minimum signing time (rollback).
+)
 
 const (
 	errUnknownExpectedFileName detailedVerifyErrorCode = iota + 1
@@ -159,6 +149,10 @@ const (
 	errTooOld
 	errWrongKey
 )
+
+func (err detailedVerifyError) ToVerifyError() VerifyError {
+	return VerifyError{err.Code.ToVerifyErrorCode(), err}
+}
 
 func (code detailedVerifyErrorCode) ToVerifyErrorCode() VerifyErrorCode {
 	switch code {
@@ -184,19 +178,3 @@ func (code detailedVerifyErrorCode) ToVerifyErrorCode() VerifyErrorCode {
 	panic("invalid detailedVerifyErrorCode")
 }
 
-type detailedVerifyError struct {
-	Code    detailedVerifyErrorCode
-	Message string
-	Cause   error
-}
-
-func (err detailedVerifyError) Error() string {
-	return err.Message
-}
-func (err detailedVerifyError) Unwrap() error {
-	return err.Cause
-}
-
-func (err detailedVerifyError) ToVerifyError() VerifyError {
-	return VerifyError{err.Code.ToVerifyErrorCode(), err}
-}

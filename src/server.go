@@ -1,82 +1,49 @@
 package eduvpn
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"fmt"
 )
 
-// Struct that defines the json format for
-// url: "https://disco.eduvpn.org/v2/organization_list.json"
-type organizations struct {
-	V uint64 `json:"v"`
-	OrganizationList []struct {
-		DisplayName struct {
-			En string `json:"en"`
-		} `json:"display_name"`
-		OrgId string `json:"org_id"`
-		SecureInternetHome string `json:"secure_internet_home"`
-		KeywordList struct {
-			En string `json:"en"`
-		} `json:"keyword_list"`
-	} `json:"organization_list"`
-}
-
-// Struct that defines the json format for
-// url: "https://disco.eduvpn.org/v2/server_list.json"
-type servers struct {
-	V uint64 `json:"v"`
-	ServerList []struct {
-		BaseUrl string `json:"base_url"`
-		CountryCode string `json:"country_code"`
-		PublicKeyList []string `json:"public_key_list"`
-		ServerType string `json:"secure_internet"`
-		SupportContact []string `json:"support_contact"`
-	} `json:"server_list"`
-}
-
-func getFileUrl(url string) ([]byte, bool) {
+func getFileUrl(url string) ([]byte, error) {
 	// Do a Get request to the specified url
 	resp, reqErr := http.Get(url)
 	if reqErr != nil {
-		fmt.Println("error making request")
-		return nil, false
+		return nil, detailedVPNError{errRequestFileError, fmt.Sprintf("request failed for file url %s", url), reqErr}
 	}
 	// Close the response body at the end
 	defer resp.Body.Close()
 
 	// Check if http response code is ok
 	if resp.StatusCode != http.StatusOK {
-		return nil, false
+		return nil, detailedVPNError{errRequestFileHTTPError, fmt.Sprintf("http status not ok for file url %s", url), nil}
 	}
 	// Read the body
 	body, readErr := ioutil.ReadAll(resp.Body)
 	if readErr != nil {
-		fmt.Println("error reading body of request")
-		return nil, false
+		return nil, detailedVPNError{errRequestFileReadError, fmt.Sprintf("error reading body from file url %s", url), readErr}
 	}
-	return body, true
+	return body, nil 
 }
 
 // Helper function that gets a disco json
 // TODO: Verify signature
-func getDiscoJson(jsonFile string, structure interface{}) bool {
+func getDiscoFile(jsonFile string) ([]byte, error) {
 	// Get json data
 	fileUrl := "https://disco.eduvpn.org/v2/" + jsonFile
-	fileBody, fileSuccess := getFileUrl(fileUrl)
+	fileBody, error := getFileUrl(fileUrl)
 
-	if !fileSuccess {
-		fmt.Println("error getting file")
+	if error != nil {
+		return nil, error
 	}
 
 	// Get signature
 	sigUrl := fileUrl + ".minisig"
-	sigBody, sigSuccess := getFileUrl(sigUrl)
+	sigBody, error := getFileUrl(sigUrl)
 
-	if !sigSuccess {
-		fmt.Println("error getting signature")
-		return false
+	if error != nil {
+		return nil, error
 	}
 
 	// Verify signature
@@ -87,46 +54,54 @@ func getDiscoJson(jsonFile string, structure interface{}) bool {
 	verifySuccess, verifyErr := Verify(string(sigBody), fileBody, jsonFile, previousSigTime, forcePrehash)
 
 	if !verifySuccess || verifyErr != nil {
-		fmt.Printf("signature is invalid with error: %s\n", verifyErr)
-		return false
+		return nil, detailedVPNError{errVerifySigError, "Signature is not valid", verifyErr}
 	}
 
-	// Parse the json using the predefined struct
-	error := json.Unmarshal([]byte(fileBody), &structure)
-	if error != nil {
-		fmt.Println("error parsing server json")
-		return false
-	}
-
-	return true
+	return fileBody, nil
 }
 
-// Global maps that are used for storing info
-var organizationsMap = map[uint64]organizations{}
-var serversMap = map[uint64]servers{}
-
 // Get the organization list
-// Returns the unix timestamp of the data
-func GetOrganizationsList() uint64 {
-	organizations := organizations{}
-	success := getDiscoJson("organization_list.json", &organizations)
-
-	if success {
-		organizationsMap[organizations.V] = organizations
-	}
-
-	return organizations.V
+func GetOrganizationsList() ([]byte, error) {
+	return getDiscoFile("organization_list.json")
 }
 
 // Get the server list
-// Return the unix timestamp of the data
-func GetServerList() uint64 {
-	servers := servers{}
-	success := getDiscoJson("server_list.json", &servers)
+func getServersList() ([]byte, error) {
+	return getDiscoFile("server_list.json")
+}
 
-	if success {
-		serversMap[servers.V] = servers
+// RequestErrorCode Simplified error code for public interface.
+type RequestErrorCode = VPNErrorCode
+type RequestError = VPNError
+// detailedRequestErrorCode used for unit tests.
+type detailedRequestErrorCode = detailedVPNErrorCode
+type detailedRequestError = detailedVPNError
+
+const (
+	ErrRequestFileError RequestErrorCode = iota + 1
+	ErrVerifySigError
+)
+
+const (
+	errRequestFileError detailedRequestErrorCode = iota + 1
+	errRequestFileHTTPError
+	errRequestFileReadError
+	errVerifySigError
+)
+
+func (err detailedRequestError) ToRequestError() RequestError {
+	return RequestError{err.Code.ToRequestErrorCode(), err}
+}
+
+func (code detailedRequestErrorCode) ToRequestErrorCode() RequestErrorCode {
+	switch code {
+	case errRequestFileError:
+	case errRequestFileReadError:
+	case errRequestFileHTTPError:
+		return ErrRequestFileError
+		return ErrRequestFileError
+	case errVerifySigError:
+		return ErrVerifySigError
 	}
-
-	return servers.V
+	panic("invalid detailedRequestErrorCode")
 }
