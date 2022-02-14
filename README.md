@@ -110,3 +110,7 @@ Take a look at `wrappers/<lang>/README.md` for descriptions per wrapper.
 - `exports/`: C API interface
 - `exports/lib/`: built libraries per architecture per OS
 - `wrappers/`: wrappers per language
+
+## Clients
+There are currently no EduVPN clients that use this common library. The goal is to use this library for all official EduVPN clients in the future. There is work being done to make sure that these clients use this library. For example:
+- [Python linux client](https://github.com/jwijenbergh/python-eduvpn-client/tree/eduvpncommon)
