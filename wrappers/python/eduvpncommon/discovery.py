@@ -14,9 +14,9 @@ def getOrganizationsList() -> str:
     dataError = lib.GetOrganizationsList()
     ptr = dataError.data
     error = dataError.error
-    body = None
+    body = ""
     if not error:
-        body = cast(ptr, c_char_p).value
+        body = str(cast(ptr, c_char_p).value)
     lib.FreeString(ptr)
     if error:
         raise RequestError(error)
@@ -24,15 +24,15 @@ def getOrganizationsList() -> str:
 
 
 class GoError(Exception):
-    message_dict: Enum
-    code: int
+    message_dict: dict
+    code: Enum | None
 
     def __init__(self, err: Enum, messages: dict):
         assert err
         try:
             self.code = err
         except ValueError:
-            self.code = -1
+            self.code = None
         self.message_dict = messages
 
     def __str__(self):
