@@ -1,6 +1,10 @@
 package main
 
+/*
+#include <stdlib.h>
+*/
 import "C"
+import "unsafe"
 
 import "github.com/jwijenbergh/eduvpn-common/src"
 
@@ -8,15 +12,27 @@ import "github.com/jwijenbergh/eduvpn-common/src"
 // GetOrganizationsList gets the list of organizations from the disco server.
 // Returns the unix timestamp of the data. This is used as key for looking up data.
 //export GetOrganizationsList
-//func GetOrganizationsList() uint64 {
-//	return eduvpn.GetOrganizationsList()
-//}
+func GetOrganizationsList() (*C.char, int8) {
+	body, err := eduvpn.GetOrganizationsList()
+	if err != nil {
+		return nil, int8(err.(eduvpn.RequestError).Code)
+	}
+	return C.CString(body), 0
+}
+
+//export FreeString
+func FreeString(addr *C.char) {
+	C.free(unsafe.Pointer(addr))
+}
 //
 //// GetServerList gets the list of servers from the disco server.
 //// Returns the unix timestamp of the data. This is used as key for looking up data.
-////export GetServerList
-//func GetServerList() uint64 {
-//	return eduvpn.GetServerList()
+//func GetServersList() ([]byte, int8) {
+//	body, err := eduvpn.GetServersList()
+//	if err != nil {
+//		return nil, int8(err.(eduvpn.RequestError).Code)
+//	}
+//	return body, 0
 //}
 
 // Verify verifies a signature on a JSON file. See eduvpn.Verify for more details.

@@ -1,10 +1,29 @@
-from . import lib, GoSlice
+from . import lib, GoSlice, DataError
 from ctypes import *
 from enum import Enum
 
-#lib.GetOrganizationsList.argtypes, lib.GetOrganizationsList.restype = [], c_uint64
+# We have to use c_void_p instead of c_char_p to free it properly
+# See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
+lib.GetOrganizationsList.argtypes, lib.GetOrganizationsList.restype = [], DataError
+lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
+
 lib.Verify.argtypes, lib.Verify.restype = [GoSlice, GoSlice, GoSlice, c_uint64], c_int64
 lib.InsecureTestingSetExtraKey.argtypes, lib.InsecureTestingSetExtraKey.restype = [GoSlice], None
+
+class RequestErrorCode(Enum):
+    ErrRequestFileError = 1  # The request for the file has failed.
+    ErrVerifySigError = 2  # The signature failed to verify.
+    Unknown = -1  # Other unknown error.
+
+def getOrganizationsList():
+    dataError = lib.GetOrganizationsList()
+    ptr = dataError.data
+    err = dataError.error
+    body = None
+    if not err:
+        body = cast(ptr, c_char_p).value
+    lib.FreeString(ptr)
+    return body
 
 
 class VerifyErrorCode(Enum):

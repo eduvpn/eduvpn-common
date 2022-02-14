@@ -29,13 +29,13 @@ func getFileUrl(url string) ([]byte, error) {
 
 // Helper function that gets a disco json
 // TODO: Verify signature
-func getDiscoFile(jsonFile string) ([]byte, error) {
+func getDiscoFile(jsonFile string) (string, error) {
 	// Get json data
 	fileUrl := "https://disco.eduvpn.org/v2/" + jsonFile
 	fileBody, error := getFileUrl(fileUrl)
 
 	if error != nil {
-		return nil, error
+		return "", error
 	}
 
 	// Get signature
@@ -43,7 +43,7 @@ func getDiscoFile(jsonFile string) ([]byte, error) {
 	sigBody, error := getFileUrl(sigUrl)
 
 	if error != nil {
-		return nil, error
+		return "", error
 	}
 
 	// Verify signature
@@ -54,19 +54,23 @@ func getDiscoFile(jsonFile string) ([]byte, error) {
 	verifySuccess, verifyErr := Verify(string(sigBody), fileBody, jsonFile, previousSigTime, forcePrehash)
 
 	if !verifySuccess || verifyErr != nil {
-		return nil, detailedVPNError{errVerifySigError, "Signature is not valid", verifyErr}
+		return "", detailedVPNError{errVerifySigError, "Signature is not valid", verifyErr}
 	}
 
-	return fileBody, nil
+	return string(fileBody), nil
 }
 
 // Get the organization list
-func GetOrganizationsList() ([]byte, error) {
-	return getDiscoFile("organization_list.json")
+func GetOrganizationsList() (string, error) {
+	body, err := getDiscoFile("organization_list.json")
+	if err != nil {
+		return "", err.(detailedRequestError).ToVerifyError()
+	}
+	return body, nil
 }
 
 // Get the server list
-func getServersList() ([]byte, error) {
+func GetServersList() (string, error) {
 	return getDiscoFile("server_list.json")
 }
 

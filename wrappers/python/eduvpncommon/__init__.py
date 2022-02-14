@@ -28,3 +28,6 @@ class GoSlice(Structure):
         return GoSlice((c_char * len(bs))(*bs), len(bs), len(bs))
 
 
+class DataError(Structure):
+    _fields_ = [('data', c_void_p),
+                ('error', c_int64)]
