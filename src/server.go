@@ -71,7 +71,11 @@ func GetOrganizationsList() (string, error) {
 
 // Get the server list
 func GetServersList() (string, error) {
-	return getDiscoFile("server_list.json")
+	body, err := getDiscoFile("server_list.json")
+	if err != nil {
+		return "", err.(detailedRequestError).ToRequestError()
+	}
+	return body, nil
 }
 
 // RequestErrorCode Simplified error code for public interface.

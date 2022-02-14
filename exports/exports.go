@@ -24,7 +24,7 @@ func GetOrganizationsList() (*C.char, int8) {
 // Returns the json data as a string and an error code. This is used as key for looking up data.
 //export GetServersList
 func GetServersList() (*C.char, int8) {
-	body, err := eduvpn.GetOrganizationsList()
+	body, err := eduvpn.GetServersList()
 	if err != nil {
 		return nil, int8(err.(eduvpn.RequestError).Code)
 	}
