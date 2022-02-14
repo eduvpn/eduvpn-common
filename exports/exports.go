@@ -10,9 +10,20 @@ import "github.com/jwijenbergh/eduvpn-common/src"
 
 // Functions here should probably not take string parameters, see https://pkg.go.dev/cmd/cgo#hdr-C_references_to_Go
 // GetOrganizationsList gets the list of organizations from the disco server.
-// Returns the unix timestamp of the data. This is used as key for looking up data.
+// Returns the json data as a string and an error code. This is used as key for looking up data.
 //export GetOrganizationsList
 func GetOrganizationsList() (*C.char, int8) {
+	body, err := eduvpn.GetOrganizationsList()
+	if err != nil {
+		return nil, int8(err.(eduvpn.RequestError).Code)
+	}
+	return C.CString(body), 0
+}
+
+// GetServersList gets the list of servers from the disco server.
+// Returns the json data as a string and an error code. This is used as key for looking up data.
+//export GetServersList
+func GetServersList() (*C.char, int8) {
 	body, err := eduvpn.GetOrganizationsList()
 	if err != nil {
 		return nil, int8(err.(eduvpn.RequestError).Code)

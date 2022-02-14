@@ -1,17 +1,19 @@
 from . import lib, GoSlice, DataError
 from ctypes import *
+from typing import Callable
 from enum import Enum
 
 # We have to use c_void_p instead of c_char_p to free it properly
 # See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
 lib.GetOrganizationsList.argtypes, lib.GetOrganizationsList.restype = [], DataError
+lib.GetServersList.argtypes, lib.GetServersList.restype = [], DataError
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
 
 lib.Verify.argtypes, lib.Verify.restype = [GoSlice, GoSlice, GoSlice, c_uint64], c_int64
 lib.InsecureTestingSetExtraKey.argtypes, lib.InsecureTestingSetExtraKey.restype = [GoSlice], None
 
-def getOrganizationsList() -> str:
-    dataError = lib.GetOrganizationsList()
+def getList(func: Callable) -> str:
+    dataError = func()
     ptr = dataError.data
     error = dataError.error
     body = ""
@@ -21,6 +23,12 @@ def getOrganizationsList() -> str:
     if error:
         raise RequestError(error)
     return body
+
+def GetOrganizationsList() -> str:
+    return getList(lib.GetOrganizationsList)
+
+def GetServersList() -> str:
+    return getList(lib.GetServersList)
 
 
 class GoError(Exception):
