@@ -1,9 +1,9 @@
 package eduvpn
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"fmt"
 )
 
 func getFileUrl(url string) ([]byte, error) {
@@ -24,7 +24,7 @@ func getFileUrl(url string) ([]byte, error) {
 	if readErr != nil {
 		return nil, detailedVPNError{errRequestFileReadError, fmt.Sprintf("error reading body from file url %s", url), readErr}
 	}
-	return body, nil 
+	return body, nil
 }
 
 // Helper function that gets a disco json
@@ -64,7 +64,7 @@ func getDiscoFile(jsonFile string) (string, error) {
 func GetOrganizationsList() (string, error) {
 	body, err := getDiscoFile("organization_list.json")
 	if err != nil {
-		return "", err.(detailedRequestError).ToVerifyError()
+		return "", err.(detailedRequestError).ToRequestError()
 	}
 	return body, nil
 }
@@ -77,6 +77,7 @@ func GetServersList() (string, error) {
 // RequestErrorCode Simplified error code for public interface.
 type RequestErrorCode = VPNErrorCode
 type RequestError = VPNError
+
 // detailedRequestErrorCode used for unit tests.
 type detailedRequestErrorCode = detailedVPNErrorCode
 type detailedRequestError = detailedVPNError
@@ -102,7 +103,6 @@ func (code detailedRequestErrorCode) ToRequestErrorCode() RequestErrorCode {
 	case errRequestFileError:
 	case errRequestFileReadError:
 	case errRequestFileHTTPError:
-		return ErrRequestFileError
 		return ErrRequestFileError
 	case errVerifySigError:
 		return ErrVerifySigError

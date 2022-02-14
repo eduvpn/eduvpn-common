@@ -10,20 +10,47 @@ lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
 lib.Verify.argtypes, lib.Verify.restype = [GoSlice, GoSlice, GoSlice, c_uint64], c_int64
 lib.InsecureTestingSetExtraKey.argtypes, lib.InsecureTestingSetExtraKey.restype = [GoSlice], None
 
+def getOrganizationsList() -> str:
+    dataError = lib.GetOrganizationsList()
+    ptr = dataError.data
+    error = dataError.error
+    body = None
+    if not error:
+        body = cast(ptr, c_char_p).value
+    lib.FreeString(ptr)
+    if error:
+        raise RequestError(error)
+    return body
+
+
+class GoError(Exception):
+    message_dict: Enum
+    code: int
+
+    def __init__(self, err: Enum, messages: dict):
+        assert err
+        try:
+            self.code = err
+        except ValueError:
+            self.code = -1
+        self.message_dict = messages
+
+    def __str__(self):
+        return self.message_dict[self.code] if self.code in self.message_dict else f"unknown error ({self.code})"
+
+
 class RequestErrorCode(Enum):
     ErrRequestFileError = 1  # The request for the file has failed.
     ErrVerifySigError = 2  # The signature failed to verify.
     Unknown = -1  # Other unknown error.
 
-def getOrganizationsList():
-    dataError = lib.GetOrganizationsList()
-    ptr = dataError.data
-    err = dataError.error
-    body = None
-    if not err:
-        body = cast(ptr, c_char_p).value
-    lib.FreeString(ptr)
-    return body
+class RequestError(GoError):
+    def __init__(self, err: int):
+        super().__init__(RequestErrorCode(err),
+            {
+                RequestErrorCode.ErrRequestFileError: "file request error",
+                RequestErrorCode.ErrVerifySigError: "signature verify error",
+            })
 
 
 class VerifyErrorCode(Enum):
@@ -33,27 +60,15 @@ class VerifyErrorCode(Enum):
     ErrTooOld = 4  # Signature timestamp smaller than specified minimum signing time (rollback).
     Unknown = -1  # Other unknown error.
 
-
-class VerifyError(Exception):
-    code: VerifyErrorCode
-    code_int: int  # Original error code also for VerifyErrorCode.Unknown
-
+class VerifyError(GoError):
     def __init__(self, err: int):
-        assert err
-        try:
-            self.code = VerifyErrorCode(err)
-        except ValueError:
-            self.code = VerifyErrorCode.Unknown
-        self.code_int = err
-
-    def __str__(self):
-        return \
+        super().__init__(VerifyErrorCode(err),
             {
                 VerifyErrorCode.ErrUnknownExpectedFileName: "unknown expected file name",
                 VerifyErrorCode.ErrInvalidSignature: "invalid signature",
                 VerifyErrorCode.ErrInvalidSignatureUnknownKey: "invalid signature (unknown key)",
                 VerifyErrorCode.ErrTooOld: "replay of previous signature (rollback)",
-            }[self.code] if self.code != VerifyErrorCode.Unknown else f"unknown verify error ({self.code_int})"
+            })
 
 
 def verify(signature: bytes, signed_json: bytes, expected_file_name: str, min_sign_time: int) -> None:
