@@ -43,6 +43,7 @@ class RequestError(GoError):
             {
                 RequestErrorCode.ErrRequestFileError: "file request error",
                 RequestErrorCode.ErrVerifySigError: "signature verify error",
+                RequestErrorCode.Unknown: "unknown error",
             })
 
 
@@ -61,6 +62,7 @@ class VerifyError(GoError):
                 VerifyErrorCode.ErrInvalidSignature: "invalid signature",
                 VerifyErrorCode.ErrInvalidSignatureUnknownKey: "invalid signature (unknown key)",
                 VerifyErrorCode.ErrTooOld: "replay of previous signature (rollback)",
+                VerifyErrorCode.Unknown: "unknown error",
             })
 
 
