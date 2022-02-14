@@ -25,7 +25,7 @@ class GoSlice(Structure):
 
     @staticmethod
     def make(bs: bytes) -> "GoSlice":
-        return GoSlice((c_char * len(bs))(*bs), len(bs), len(bs))
+        return GoSlice((c_char * len(bs))(*bs), len(bs), len(bs)) # type: ignore
 
 
 class DataError(Structure):

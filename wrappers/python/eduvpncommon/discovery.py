@@ -1,4 +1,5 @@
 from . import lib, GoSlice, DataError
+from .error import GoError
 from ctypes import *
 from typing import Callable
 from enum import Enum
@@ -29,22 +30,6 @@ def GetOrganizationsList() -> str:
 
 def GetServersList() -> str:
     return getList(lib.GetServersList)
-
-
-class GoError(Exception):
-    message_dict: dict
-    code: Enum | None
-
-    def __init__(self, err: Enum, messages: dict):
-        assert err
-        try:
-            self.code = err
-        except ValueError:
-            self.code = None
-        self.message_dict = messages
-
-    def __str__(self):
-        return self.message_dict[self.code] if self.code in self.message_dict else f"unknown error ({self.code})"
 
 
 class RequestErrorCode(Enum):
