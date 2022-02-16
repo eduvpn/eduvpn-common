@@ -14,7 +14,7 @@ WRAPPERS ?= $(notdir $(patsubst %/,%,$(wildcard wrappers/*/)))
 test-wrappers: build
 	$(MAKE) $(foreach wrapper,$(WRAPPERS),.test-$(wrapper))
 
-clean: .clean_libs $(foreach wrapper,$(WRAPPERS),.clean-$(wrapper))
+clean: .clean-libs $(foreach wrapper,$(WRAPPERS),.clean-$(wrapper))
 
 .clean-libs:
 	$(MAKE) -C exports clean

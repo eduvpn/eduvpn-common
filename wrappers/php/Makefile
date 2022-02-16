@@ -36,7 +36,7 @@ test: install-header install-dev-dependencies
 
 composers = composer composer.phar ./composer ./composer.phar
 # Find first composer from list above, default to 'composer'
-find_composer = $(firstword $(foreach bin,$(composers),$(if $(shell command -v $(bin)),$(bin),)) composer)
+find_composer = $(firstword $(foreach bin,$(composers),$(if $(shell command -v $(bin) 2>/dev/null),$(bin),)) composer)
 # Lazy variable: https://blog.jgc.org/2016/07/lazy-gnu-make-variables.html
 COMPOSER ?= $(eval COMPOSER := $(find_composer))$(COMPOSER)
 

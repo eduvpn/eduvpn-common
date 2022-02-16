@@ -29,7 +29,7 @@ class _GoSlice(Structure):
         return _GoSlice((c_char * len(bs))(*bs), len(bs), len(bs))
 
 
-_lib.Verify.argtypes, _lib.Verify.restype = [_GoSlice, _GoSlice, _GoSlice, c_uint64], c_int64
+_lib.Verify.argtypes, _lib.Verify.restype = [_GoSlice, _GoSlice, _GoSlice, c_uint64], c_int8
 _lib.InsecureTestingSetExtraKey.argtypes, _lib.InsecureTestingSetExtraKey.restype = [_GoSlice], None
 
 
