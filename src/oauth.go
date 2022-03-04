@@ -5,8 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"net/http"
 	"golang.org/x/oauth2"
+	"net/http"
 )
 
 // Generates a random base64 string to be used for state
@@ -35,7 +35,6 @@ func genChallengeS256(verifier string) string {
 	return base64.RawURLEncoding.EncodeToString(hash[:])
 }
 
-
 // Generates a verifier
 // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-4.1.1
 // The code_verifier is a unique high-entropy cryptographically random
@@ -52,20 +51,19 @@ func genVerifier() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(randomBytes), nil
 }
 
-
 // This structure gets passed to the callback for easy access to the current state
 type EduVPNOauth struct {
 	// Public
 	AuthURL string
-	Config *oauth2.Config
+	Config  *oauth2.Config
 
 	// private
 	callbackError error
-	client *http.Client
-	context context.Context
-	state string
-	server *http.Server
-	verifier string
+	client        *http.Client
+	context       context.Context
+	state         string
+	server        *http.Server
+	verifier      string
 }
 
 // Initializes the OAuth eduvpn class. It returns a tuple of the class and error.
@@ -94,11 +92,11 @@ func InitializeOAuth(config *oauth2.Config) (*EduVPNOauth, error) {
 }
 
 // Gets an authenticated HTTP client by obtaining refresh and access tokens
-func (eduvpn* EduVPNOauth) GetHTTPTokenClient() (*http.Client, error) {
+func (eduvpn *EduVPNOauth) GetHTTPTokenClient() (*http.Client, error) {
 	eduvpn.context = context.Background()
 	mux := http.NewServeMux()
-	eduvpn.server = &http.Server {
-		Addr: "127.0.0.1:8000",
+	eduvpn.server = &http.Server{
+		Addr:    "127.0.0.1:8000",
 		Handler: mux,
 	}
 	mux.HandleFunc("/callback", eduvpn.oauthCallback)
@@ -107,8 +105,6 @@ func (eduvpn* EduVPNOauth) GetHTTPTokenClient() (*http.Client, error) {
 	}
 	return eduvpn.client, eduvpn.callbackError
 }
-
-
 
 // Get the access and refresh tokens
 // Access tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.4
@@ -143,9 +139,8 @@ func (eduvpn *EduVPNOauth) oauthCallback(w http.ResponseWriter, req *http.Reques
 	// The code is the first entry
 	extractedCode := code[0]
 
-
 	// Make sure the state is present and matches to protect against cross-site request forgeries
-        // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-7.15
+	// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-7.15
 	state, success := req.URL.Query()["state"]
 	if !success {
 		eduvpn.callbackError = detailedOAuthError{errCallbackGetStateError, fmt.Sprintf("oauth state cannot be retrieved"), nil}

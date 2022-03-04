@@ -126,10 +126,10 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFile
 // VerifyErrorCode Simplified error code for public interface.
 type VerifyErrorCode = VPNErrorCode
 type VerifyError = VPNError
+
 // detailedVerifyErrorCode used for unit tests.
 type detailedVerifyErrorCode = detailedVPNErrorCode
 type detailedVerifyError = detailedVPNError
-
 
 const (
 	ErrUnknownExpectedFileName    VerifyErrorCode = iota + 1 // Unknown expected file name specified. The signature has not been verified.
@@ -177,4 +177,3 @@ func (code detailedVerifyErrorCode) ToVerifyErrorCode() VerifyErrorCode {
 	}
 	panic("invalid detailedVerifyErrorCode")
 }
-
