@@ -28,7 +28,9 @@ func main() {
 		urlString = "https://" + urlString
 	}
 
-	state := eduvpn.Register("org.eduvpn.app.linux", urlString)
+	state := eduvpn.GetVPNState()
+
+	eduvpn.Register(state, "org.eduvpn.app.linux", urlString)
 	authURL, err := eduvpn.InitializeOAuth(state)
 	if err != nil {
 		log.Fatal(err)

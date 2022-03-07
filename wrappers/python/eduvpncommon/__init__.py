@@ -31,3 +31,15 @@ class GoSlice(Structure):
 class DataError(Structure):
     _fields_ = [('data', c_void_p),
                 ('error', c_int64)]
+
+
+# We have to use c_void_p instead of c_char_p to free it properly
+# See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
+lib.Register.argtypes, lib.Register.restype = [c_char_p, c_char_p], None
+lib.InitializeOAuth.argtypes, lib.InitializeOAuth.restype = [], c_void_p
+lib.GetOrganizationsList.argtypes, lib.GetOrganizationsList.restype = [], DataError
+lib.GetServersList.argtypes, lib.GetServersList.restype = [], DataError
+lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
+lib.Verify.argtypes, lib.Verify.restype = [GoSlice, GoSlice, GoSlice, c_uint64], c_int64
+lib.InsecureTestingSetExtraKey.argtypes, lib.InsecureTestingSetExtraKey.restype = [GoSlice], None
+

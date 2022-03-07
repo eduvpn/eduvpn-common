@@ -12,13 +12,28 @@ type EduVPNState struct {
 	Server string
 }
 
-func Register(name string, server string) *EduVPNState {
-	state := &EduVPNState{Name: name, Server: server}
+func Register(state *EduVPNState, name string, server string) error {
+	state.Name = name
+	state.Server = server
+
 	endpoints, err := APIGetEndpoints(state)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
+
 	state.Endpoints = endpoints
-	return state
+	return nil
 }
+
+
+var VPNStateInstance *EduVPNState
+
+func GetVPNState() *EduVPNState {
+	if VPNStateInstance == nil {
+		VPNStateInstance = &EduVPNState{}
+	}
+	return VPNStateInstance
+}
+
+

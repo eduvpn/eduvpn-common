@@ -20,6 +20,20 @@ func GetOrganizationsList() (*C.char, int8) {
 	return C.CString(body), 0
 }
 
+//export Register
+func Register(name *C.char, url *C.char) {
+	eduvpn.Register(eduvpn.GetVPNState(), C.GoString(name), C.GoString(url))
+}
+
+//export InitializeOAuth
+func InitializeOAuth() (*C.char) {
+	url, err := eduvpn.InitializeOAuth(eduvpn.GetVPNState())
+	if err != nil {
+		panic(err)
+	}
+	return C.CString(url)
+}
+
 // GetServersList gets the list of servers from the disco server.
 // Returns the json data as a string and an error code. This is used as key for looking up data.
 //export GetServersList
