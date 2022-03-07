@@ -2,6 +2,7 @@ package eduvpn
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 )
@@ -13,7 +14,7 @@ type endpointList struct {
 }
 
 // Struct that defines the json format for /.well-known/vpn-user-portal"
-type PortalEndpoints struct {
+type EduVPNEndpoints struct {
 	API struct {
 		V2 endpointList `json:"http://eduvpn.org/api#2"`
 		V3 endpointList `json:"http://eduvpn.org/api#3"`
@@ -21,8 +22,8 @@ type PortalEndpoints struct {
 	V string `json:"v"`
 }
 
-func APIGetEndpoints(baseURL string) (*PortalEndpoints, error) {
-	url := baseURL + "/.well-known/vpn-user-portal"
+func APIGetEndpoints(vpnState *EduVPNState) (*EduVPNEndpoints, error) {
+	url := vpnState.Server + "/.well-known/vpn-user-portal"
 	resp, reqErr := http.Get(url)
 	if reqErr != nil {
 		return nil, reqErr
@@ -40,7 +41,7 @@ func APIGetEndpoints(baseURL string) (*PortalEndpoints, error) {
 		return nil, readErr
 	}
 
-	structure := &PortalEndpoints{}
+	structure := &EduVPNEndpoints{}
 	jsonErr := json.Unmarshal(body, &structure)
 
 	if jsonErr != nil {
@@ -48,4 +49,25 @@ func APIGetEndpoints(baseURL string) (*PortalEndpoints, error) {
 	}
 
 	return structure, nil
+}
+
+func APIAuthenticatedInfo(vpnState *EduVPNState) (string, error) {
+	url := vpnState.Endpoints.API.V3.Endpoint + "/info"
+	resp, reqErr := vpnState.OAuth.client.Get(url)
+	if reqErr != nil {
+		return "", reqErr
+	}
+	// Close the response body at the end
+	defer resp.Body.Close()
+
+	// Check if http response code is ok
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New("HTTP code not ok")
+	}
+	// Read the body
+	body, readErr := ioutil.ReadAll(resp.Body)
+	if readErr != nil {
+		return "", readErr
+	}
+	return string(body), nil
 }
