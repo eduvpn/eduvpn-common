@@ -1,15 +1,16 @@
 package eduvpn
 
 type EduVPNState struct {
-	// The struct used for oauth
-	OAuth *EduVPNOauth
-
 	// The endpoints
 	Endpoints *EduVPNEndpoints
 
 	// Info passed by the client
 	Name   string
 	Server string
+
+	// OAuth
+	OAuthToken   *EduVPNOAuthToken
+	OAuthSession *EduVPNOAuthSession
 }
 
 func Register(state *EduVPNState, name string, server string) error {
@@ -26,7 +27,6 @@ func Register(state *EduVPNState, name string, server string) error {
 	return nil
 }
 
-
 var VPNStateInstance *EduVPNState
 
 func GetVPNState() *EduVPNState {
@@ -35,5 +35,3 @@ func GetVPNState() *EduVPNState {
 	}
 	return VPNStateInstance
 }
-
-

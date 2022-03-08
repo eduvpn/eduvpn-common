@@ -4,9 +4,12 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
-	"golang.org/x/oauth2"
+	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 // Generates a random base64 string to be used for state
@@ -52,22 +55,29 @@ func genVerifier() (string, error) {
 }
 
 // This structure gets passed to the callback for easy access to the current state
-type EduVPNOauth struct {
+type EduVPNOAuthSession struct {
 	// Public
-	AuthURL string
-	Config  *oauth2.Config
+	AuthURL  string
+	VPNState *EduVPNState
 
 	// private
 	callbackError error
-	client        *http.Client
 	context       context.Context
 	state         string
 	server        *http.Server
 	verifier      string
 }
 
+// Struct that defines the json format for /.well-known/vpn-user-portal"
+type EduVPNOAuthToken struct {
+	Access  string `json:"access_token"`
+	Refresh string `json:"refresh_token"`
+	Type    string `json:"token_type"`
+	Expires int    `json:"expires_in"`
+}
+
 // Gets an authenticated HTTP client by obtaining refresh and access tokens
-func (eduvpn *EduVPNOauth) getHTTPTokenClient() error {
+func (eduvpn *EduVPNOAuthSession) getHTTPTokenClient() error {
 	eduvpn.context = context.Background()
 	mux := http.NewServeMux()
 	eduvpn.server = &http.Server{
@@ -84,26 +94,53 @@ func (eduvpn *EduVPNOauth) getHTTPTokenClient() error {
 // Get the access and refresh tokens
 // Access tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.4
 // Refresh tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.2
-func (eduvpn *EduVPNOauth) getTokens(authCode string) error {
+func (eduvpn *EduVPNOAuthSession) getTokens(authCode string) error {
 	// Make sure the verifier is set as the parameter
 	// so that the server can verify that we are the actual owner of the authorization code
-	codeVerifier := oauth2.SetAuthURLParam("code_verifier", eduvpn.verifier)
 
-	// This is from the oauth library that gets the tokens from the authcode
-	// https://pkg.go.dev/golang.org/x/oauth2#Config.Exchange
-	// We pass the verifier as an additional parameter
-	tok, err := eduvpn.Config.Exchange(eduvpn.context, authCode, codeVerifier)
-	if err != nil {
-		return err
+	data := url.Values{
+		"client_id":     {eduvpn.VPNState.Name},
+		"code":          {authCode},
+		"code_verifier": {eduvpn.verifier},
+		"grant_type":    {"authorization_code"},
+		"redirect_uri":  {"http://127.0.0.1:8000/callback"},
+	}
+	client := &http.Client{}
+	req, reqErr := http.NewRequest(http.MethodPost, eduvpn.VPNState.Endpoints.API.V3.Token, strings.NewReader(data.Encode()))
+	if reqErr != nil {
+		return reqErr
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	resp, reqErr := client.Do(req)
+
+	if reqErr != nil {
+		return reqErr
 	}
 
-	// Fill the http client for future use in the struct
-	eduvpn.client = eduvpn.Config.Client(eduvpn.context, tok)
+	// Close the response body at the end
+	defer resp.Body.Close()
+
+	// Read the body
+	body, readErr := ioutil.ReadAll(resp.Body)
+	if readErr != nil {
+		return readErr
+	}
+
+	tokenStructure := &EduVPNOAuthToken{}
+	jsonErr := json.Unmarshal(body, tokenStructure)
+
+	if jsonErr != nil {
+		return jsonErr
+	}
+
+	eduvpn.VPNState.OAuthToken = tokenStructure
+
 	return nil
 }
 
-// The callback to retrieve the authorization code: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.1
-func (eduvpn *EduVPNOauth) oauthCallback(w http.ResponseWriter, req *http.Request) {
+//
+//// The callback to retrieve the authorization code: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.1
+func (eduvpn *EduVPNOAuthSession) oauthCallback(w http.ResponseWriter, req *http.Request) {
 	// Extract the authorization code
 	code, success := req.URL.Query()["code"]
 	if !success {
@@ -144,19 +181,20 @@ func (eduvpn *EduVPNOauth) oauthCallback(w http.ResponseWriter, req *http.Reques
 	go eduvpn.server.Shutdown(eduvpn.context)
 }
 
-// Generate a config for oauth
-// It uses the state to get the server and the name
-func genConfig(vpnState *EduVPNState) (*oauth2.Config, error) {
-	config := &oauth2.Config{
-		RedirectURL: "http://127.0.0.1:8000/callback",
-		ClientID:    vpnState.Name,
-		Scopes:      []string{"config"},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  vpnState.Endpoints.API.V3.AuthorizationEndpoint,
-			TokenURL: vpnState.Endpoints.API.V3.TokenEndpoint,
-		},
+func constructURL(baseURL string, parameters map[string]string) (string, error) {
+	url, err := url.Parse(baseURL)
+
+	if err != nil {
+		return "", err
 	}
-	return config, nil
+
+	q := url.Query()
+
+	for parameter, value := range parameters {
+		q.Set(parameter, value)
+	}
+	url.RawQuery = q.Encode()
+	return url.String(), nil
 }
 
 // Initializes the OAuth for eduvpn.
@@ -165,11 +203,6 @@ func genConfig(vpnState *EduVPNState) (*oauth2.Config, error) {
 func InitializeOAuth(vpnState *EduVPNState) (string, error) {
 	if vpnState == nil {
 		panic("invalid state")
-	}
-
-	config, configErr := genConfig(vpnState)
-	if configErr != nil {
-		return "", configErr
 	}
 
 	// Generate the state
@@ -185,13 +218,24 @@ func InitializeOAuth(vpnState *EduVPNState) (string, error) {
 	}
 	challenge := genChallengeS256(verifier)
 
-	// Update the auth url with the challenge and state
-	codeChallengeMethod := oauth2.SetAuthURLParam("code_challenge_method", "S256")
-	codeChallenge := oauth2.SetAuthURLParam("code_challenge", challenge)
-	authURL := config.AuthCodeURL(state, codeChallengeMethod, codeChallenge)
+	parameters := map[string]string{
+		"client_id":             vpnState.Name,
+		"code_challenge_method": "S256",
+		"code_challenge":        challenge,
+		"response_type":         "code",
+		"scope":                 "config",
+		"state":                 state,
+		"redirect_uri":          "http://127.0.0.1:8000/callback",
+	}
+
+	authURL, urlErr := constructURL(vpnState.Endpoints.API.V3.Authorization, parameters)
+
+	if urlErr != nil {
+		panic(urlErr)
+	}
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
-	vpnState.OAuth = &EduVPNOauth{AuthURL: authURL, Config: config, state: state, verifier: verifier}
+	vpnState.OAuthSession = &EduVPNOAuthSession{AuthURL: authURL, VPNState: vpnState, state: state, verifier: verifier}
 	return authURL, nil
 }
 
@@ -200,10 +244,10 @@ func FinishOAuth(vpnState *EduVPNState) error {
 		panic("invalid state")
 	}
 
-	if vpnState.OAuth == nil {
+	if vpnState.OAuthSession == nil {
 		panic("invalid oauth state")
 	}
-	return vpnState.OAuth.getHTTPTokenClient()
+	return vpnState.OAuthSession.getHTTPTokenClient()
 }
 
 // OAuthErrorCode Simplified error code for public interface.

@@ -8,9 +8,9 @@ import (
 )
 
 type endpointList struct {
-	Endpoint              string `json:"api_endpoint"`
-	AuthorizationEndpoint string `json:"authorization_endpoint"`
-	TokenEndpoint         string `json:"token_endpoint"`
+	API           string `json:"api_endpoint"`
+	Authorization string `json:"authorization_endpoint"`
+	Token         string `json:"token_endpoint"`
 }
 
 // Struct that defines the json format for /.well-known/vpn-user-portal"
@@ -52,8 +52,16 @@ func APIGetEndpoints(vpnState *EduVPNState) (*EduVPNEndpoints, error) {
 }
 
 func APIAuthenticatedInfo(vpnState *EduVPNState) (string, error) {
-	url := vpnState.Endpoints.API.V3.Endpoint + "/info"
-	resp, reqErr := vpnState.OAuth.client.Get(url)
+	url := vpnState.Endpoints.API.V3.API + "/info"
+
+	client := &http.Client{}
+	req, reqErr := http.NewRequest(http.MethodGet, url, nil)
+	if reqErr != nil {
+		return "", reqErr
+	}
+	req.Header.Add("Authorization", "Bearer "+vpnState.OAuthToken.Access)
+	resp, reqErr := client.Do(req)
+
 	if reqErr != nil {
 		return "", reqErr
 	}
@@ -64,6 +72,7 @@ func APIAuthenticatedInfo(vpnState *EduVPNState) (string, error) {
 	if resp.StatusCode != http.StatusOK {
 		return "", errors.New("HTTP code not ok")
 	}
+
 	// Read the body
 	body, readErr := ioutil.ReadAll(resp.Body)
 	if readErr != nil {
