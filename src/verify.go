@@ -1,6 +1,7 @@
 package eduvpn
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jedisct1/go-minisign"
 	"os"
@@ -36,10 +37,11 @@ func Verify(signatureFileContent string, signedJson []byte, expectedFileName str
 	}
 	valid, err := verifyWithKeys(signatureFileContent, signedJson, expectedFileName, minSignTime, keyStrs, forcePrehash)
 	if err != nil {
-		if err.(detailedVerifyError).Code == errInvalidPublicKey {
+		var verifyCreatePublickeyError *VerifyCreatePublicKeyError
+		if errors.As(err, &verifyCreatePublickeyError) {
 			panic(err) // This should not happen unless keyStrs has an invalid key
 		}
-		return valid, err.(detailedVerifyError).ToVerifyError()
+		return valid, err
 	}
 	return valid, nil
 }
@@ -55,6 +57,84 @@ func InsecureTestingSetExtraKey(keyString string) {
 	extraKey = keyString
 }
 
+type VerifyUnknownExpectedFilenameError struct {
+	Filename string
+	Expected string
+}
+
+func (e *VerifyUnknownExpectedFilenameError) Error() string {
+	return fmt.Sprintf("invalid filename %s, expected %s", e.Filename, e.Expected)
+}
+
+type VerifyInvalidSignatureFormatError struct {
+	Err error
+}
+
+func (e *VerifyInvalidSignatureFormatError) Error() string {
+	return fmt.Sprintf("invalid signature format, error %v", e.Err)
+}
+
+type VerifyInvalidSignatureAlgorithmError struct {
+	Algorithm       string
+	WantedAlgorithm string
+}
+
+func (e *VerifyInvalidSignatureAlgorithmError) Error() string {
+	return fmt.Sprintf("invalid signature algorithm %s, wanted %s", e.Algorithm, e.WantedAlgorithm)
+}
+
+type VerifyCreatePublicKeyError struct {
+	PublicKey string
+	Err       error
+}
+
+func (e *VerifyCreatePublicKeyError) Error() string {
+	return fmt.Sprintf("failed to create public key %s with error %v", e.PublicKey, e.Err)
+}
+
+type VerifyInvalidSignatureError struct {
+	Err error
+}
+
+func (e *VerifyInvalidSignatureError) Error() string {
+	return fmt.Sprintf("invalid signature with error %v", e.Err)
+}
+
+type VerifyInvalidTrustedCommentError struct {
+	TrustedComment string
+	Err            error
+}
+
+func (e *VerifyInvalidTrustedCommentError) Error() string {
+	return fmt.Sprintf("invalid trusted comment %s with error %v", e.TrustedComment, e.Err)
+}
+
+type VerifyWrongSigFilenameError struct {
+	Filename    string
+	SigFilename string
+}
+
+func (e *VerifyWrongSigFilenameError) Error() string {
+	return fmt.Sprintf("wrong filename %s, expected filename %s for signature", e.Filename, e.SigFilename)
+}
+
+type VerifySigTimeEarlierError struct {
+	SigTime    uint64
+	MinSigTime uint64
+}
+
+func (e *VerifySigTimeEarlierError) Error() string {
+	return fmt.Sprintf("Sign time %d is earlier than sign time %d", e.SigTime, e.MinSigTime)
+}
+
+type VerifyUnknownKeyError struct {
+	Filename string
+}
+
+func (e *VerifyUnknownKeyError) Error() string {
+	return fmt.Sprintf("signature for filename %s was created with an unknown key", e.Filename)
+}
+
 // verifyWithKeys verifies the Minisign signature in signatureFileContent (minisig file format) over the server_list/organization_list JSON in signedJson.
 //
 // Verification is performed using a matching key in allowedPublicKeys.
@@ -64,22 +144,22 @@ func InsecureTestingSetExtraKey(keyString string) {
 // The signature is checked to have a timestamp with a value of at least minSignTime, which is a UNIX timestamp without milliseconds.
 //
 // The return value will either be (true, nil) on success or (false, detailedVerifyError) on failure.
-func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFileName string, minSignTime uint64, allowedPublicKeys []string, forcePrehash bool) (bool, error) {
-	switch expectedFileName {
+func verifyWithKeys(signatureFileContent string, signedJson []byte, filename string, minSignTime uint64, allowedPublicKeys []string, forcePrehash bool) (bool, error) {
+	switch filename {
 	case "server_list.json", "organization_list.json":
 		break
 	default:
-		return false, detailedVerifyError{errUnknownExpectedFileName, "invalid expected file name", nil}
+		return false, &VerifyUnknownExpectedFilenameError{Filename: filename, Expected: "server_list.json or organization_list.json"}
 	}
 
 	sig, err := minisign.DecodeSignature(signatureFileContent)
 	if err != nil {
-		return false, detailedVerifyError{errInvalidSignatureFormat, "invalid signature format", err}
+		return false, &VerifyInvalidSignatureFormatError{Err: err}
 	}
 
 	// Check if signature is prehashed, see https://jedisct1.github.io/minisign/#signature-format
 	if forcePrehash && sig.SignatureAlgorithm != [2]byte{'E', 'D'} {
-		return false, detailedVerifyError{errInvalidSignatureAlgorithm, "BLAKE2b-prehashed EdDSA signature required", nil}
+		return false, &VerifyInvalidSignatureAlgorithmError{Algorithm: string(sig.SignatureAlgorithm[:]), WantedAlgorithm: "ED (BLAKE2b-prehashed EdDSA)"}
 	}
 
 	// Find allowed key used for signature
@@ -87,7 +167,7 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFile
 		key, err := minisign.NewPublicKey(keyStr)
 		if err != nil {
 			// Should only happen if Verify is wrong or extraKey is invalid
-			return false, detailedVerifyError{errInvalidPublicKey, "internal error: could not create public key", err}
+			return false, &VerifyCreatePublicKeyError{PublicKey: keyStr, Err: err}
 		}
 
 		if sig.KeyId != key.KeyId {
@@ -96,7 +176,7 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFile
 
 		valid, err := key.Verify(signedJson, sig)
 		if !valid {
-			return false, detailedVerifyError{errInvalidSignature, "invalid signature", err}
+			return false, &VerifyInvalidSignatureError{Err: err}
 		}
 
 		// Parse trusted comment
@@ -105,75 +185,20 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, expectedFile
 		// sigFileName cannot have spaces
 		_, err = fmt.Sscanf(sig.TrustedComment, "trusted comment: timestamp:%d\tfile:%s", &signTime, &sigFileName)
 		if err != nil {
-			return false, detailedVerifyError{errInvalidTrustedComment, "failed to interpret trusted comment", err}
+			return false, &VerifyInvalidTrustedCommentError{TrustedComment: sig.TrustedComment, Err: err}
 		}
 
-		if sigFileName != expectedFileName {
-			return false, detailedVerifyError{errWrongFileName, "signature was created for wrong file", nil}
+		if sigFileName != filename {
+			return false, &VerifyWrongSigFilenameError{Filename: filename, SigFilename: sigFileName}
 		}
 
 		if signTime < minSignTime {
-			return false, detailedVerifyError{errTooOld, "signature was created a time earlier than the minimum time specified", nil}
+			return false, &VerifySigTimeEarlierError{SigTime: signTime, MinSigTime: minSignTime}
 		}
 
 		return true, nil
 	}
 
 	// No matching allowed key found
-	return false, detailedVerifyError{errWrongKey, "signature was created with an unknown key", nil}
-}
-
-// VerifyErrorCode Simplified error code for public interface.
-type VerifyErrorCode = VPNErrorCode
-type VerifyError = VPNError
-
-// detailedVerifyErrorCode used for unit tests.
-type detailedVerifyErrorCode = detailedVPNErrorCode
-type detailedVerifyError = detailedVPNError
-
-const (
-	ErrUnknownExpectedFileName    VerifyErrorCode = iota + 1 // Unknown expected file name specified. The signature has not been verified.
-	ErrInvalidSignature                                      // Signature is invalid (for the expected file type).
-	ErrInvalidSignatureUnknownKey                            // Signature was created with an unknown key and has not been verified.
-	ErrTooOld                                                // Signature timestamp smaller than specified minimum signing time (rollback).
-)
-
-const (
-	errUnknownExpectedFileName detailedVerifyErrorCode = iota + 1
-	errInvalidSignatureFormat
-	errInvalidSignatureAlgorithm
-	errInvalidPublicKey
-	errInvalidSignature
-	errInvalidTrustedComment
-	errWrongFileName
-	errTooOld
-	errWrongKey
-)
-
-func (err detailedVerifyError) ToVerifyError() VerifyError {
-	return VerifyError{err.Code.ToVerifyErrorCode(), err}
-}
-
-func (code detailedVerifyErrorCode) ToVerifyErrorCode() VerifyErrorCode {
-	switch code {
-	case errUnknownExpectedFileName:
-		return ErrUnknownExpectedFileName
-	case errInvalidSignatureFormat:
-		return ErrInvalidSignature
-	case errInvalidSignatureAlgorithm:
-		return ErrInvalidSignature
-	case errInvalidPublicKey:
-		panic("errInvalidPublicKey cannot be converted to VerifyErrorCode")
-	case errInvalidSignature:
-		return ErrInvalidSignature
-	case errInvalidTrustedComment:
-		return ErrInvalidSignature
-	case errWrongFileName:
-		return ErrInvalidSignature
-	case errTooOld:
-		return ErrTooOld
-	case errWrongKey:
-		return ErrInvalidSignatureUnknownKey
-	}
-	panic("invalid detailedVerifyErrorCode")
+	return false, &VerifyUnknownKeyError{Filename: filename}
 }

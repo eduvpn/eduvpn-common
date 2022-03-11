@@ -12,12 +12,12 @@ import "github.com/jwijenbergh/eduvpn-common/src"
 // GetOrganizationsList gets the list of organizations from the disco server.
 // Returns the json data as a string and an error code. This is used as key for looking up data.
 //export GetOrganizationsList
-func GetOrganizationsList() (*C.char, int8) {
+func GetOrganizationsList() (*C.char, *C.char) {
 	body, err := eduvpn.GetOrganizationsList()
 	if err != nil {
-		return nil, int8(err.(eduvpn.RequestError).Code)
+		return nil, C.CString(err.Error())
 	}
-	return C.CString(body), 0
+	return C.CString(body), nil
 }
 
 //export Register
@@ -26,50 +26,40 @@ func Register(name *C.char, url *C.char) {
 }
 
 //export InitializeOAuth
-func InitializeOAuth() (*C.char) {
+func InitializeOAuth() (*C.char, *C.char) {
 	url, err := eduvpn.InitializeOAuth(eduvpn.GetVPNState())
 	if err != nil {
-		panic(err)
+		return nil, C.CString(err.Error())
 	}
-	return C.CString(url)
+	return C.CString(url), nil
 }
 
 // GetServersList gets the list of servers from the disco server.
 // Returns the json data as a string and an error code. This is used as key for looking up data.
 //export GetServersList
-func GetServersList() (*C.char, int8) {
+func GetServersList() (*C.char, *C.char) {
 	body, err := eduvpn.GetServersList()
 	if err != nil {
-		return nil, int8(err.(eduvpn.RequestError).Code)
+		return nil, C.CString(err.Error())
 	}
-	return C.CString(body), 0
+	return C.CString(body), nil
 }
 
 //export FreeString
 func FreeString(addr *C.char) {
 	C.free(unsafe.Pointer(addr))
 }
-//
-//// GetServerList gets the list of servers from the disco server.
-//// Returns the unix timestamp of the data. This is used as key for looking up data.
-//func GetServersList() ([]byte, int8) {
-//	body, err := eduvpn.GetServersList()
-//	if err != nil {
-//		return nil, int8(err.(eduvpn.RequestError).Code)
-//	}
-//	return body, 0
-//}
 
 // Verify verifies a signature on a JSON file. See eduvpn.Verify for more details.
 // It returns 0 for a valid signature and a nonzero eduvpn.VerifyErrorCode otherwise.
 // signatureFileContent must be UTF-8-encoded.
 //export Verify
-func Verify(signatureFileContent []byte, signedJson []byte, expectedFileName []byte, minSignTime uint64) int8 {
+func Verify(signatureFileContent []byte, signedJson []byte, expectedFileName []byte, minSignTime uint64) (int8, *C.char) {
 	valid, err := eduvpn.Verify(string(signatureFileContent), signedJson, string(expectedFileName), minSignTime, false)
 	if valid {
-		return 0
+		return 0, nil
 	} else {
-		return int8(err.(eduvpn.VerifyError).Code)
+		return 1, C.CString(err.Error())
 	}
 }
 

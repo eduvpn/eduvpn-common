@@ -1,30 +1,42 @@
 package eduvpn
 
-type detailedVPNErrorCode int8
-type VPNErrorCode int8
+import "fmt"
 
-type VPNError struct {
-	Code     VPNErrorCode
-	Detailed detailedVPNError
+// Error structures defined here are used throughout the code
+
+type HTTPResourceError struct {
+	URL string
+	Err error
 }
 
-func (err VPNError) Error() string {
-	return err.Detailed.Error()
+func (e *HTTPResourceError) Error() string {
+	return fmt.Sprintf("failed obtaining HTTP resource %s with error %v", e.URL, e.Err)
 }
 
-func (err VPNError) Unwrap() error {
-	return err.Detailed
+type HTTPStatusError struct {
+	URL    string
+	Status int
 }
 
-type detailedVPNError struct {
-	Code    detailedVPNErrorCode
-	Message string
-	Cause   error
+func (e *HTTPStatusError) Error() string {
+	return fmt.Sprintf("failed obtaining HTTP resource %s as it gave an unsuccesful status code %d", e.URL, e.Status)
 }
 
-func (err detailedVPNError) Error() string {
-	return err.Message
+type HTTPReadError struct {
+	URL string
+	Err error
 }
-func (err detailedVPNError) Unwrap() error {
-	return err.Cause
+
+func (e *HTTPReadError) Error() string {
+	return fmt.Sprintf("failed reading HTTP resource %s with error %v", e.URL, e.Err)
+}
+
+type HTTPParseJsonError struct {
+	URL  string
+	Body string
+	Err  error
+}
+
+func (e *HTTPParseJsonError) Error() string {
+	return fmt.Sprintf("failed parsing json %s for HTTP resource %s with error %v", e.Body, e.URL, e.Err)
 }

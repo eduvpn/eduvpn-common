@@ -30,22 +30,22 @@ jobs:
           path: exports/lib/
           retention-days: 1
 
-  test-csharp:
-    name: "[Windows] Test C# wrapper"
-    needs: build-lib
-    runs-on: windows-latest
+  #test-csharp:
+  #  name: "[Windows] Test C# wrapper"
+  #  needs: build-lib
+  #  runs-on: windows-latest
 
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 5.0.x
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #    - uses: actions/setup-dotnet@v1
+  #      with:
+  #        dotnet-version: 5.0.x
 
-      - uses: actions/download-artifact@v2
-        with:
-          name: shared-lib
-          path: exports/lib/
-      - name: Test
-        run: make -C wrappers/csharp test
-      - name: Build .nupkg
-        run: make -C wrappers/csharp pack
+  #    - uses: actions/download-artifact@v2
+  #      with:
+  #        name: shared-lib
+  #        path: exports/lib/
+  #    - name: Test
+  #      run: make -C wrappers/csharp test
+  #    - name: Build .nupkg
+  #      run: make -C wrappers/csharp pack
