@@ -1,4 +1,4 @@
-## Welcome to the eduVPN-common documentation
+## eduVPN-common documentation
 
 This is the documentation for eduVPN-common, a shared GO library to be used as a common codebase between eduVPN clients. This library is a WIP and is not production ready.
 
