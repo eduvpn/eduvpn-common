@@ -72,7 +72,7 @@ make test-go
 
 ### Testing
 
-To tesst wrappers, issue the following command in a shell (you will need compilers for all wrappers if you do this):
+To test the wrappers, issue the following command in a shell (you will need compilers for all wrappers if you do this):
 
 ```shell
 make test-wrappers
