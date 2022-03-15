@@ -13,7 +13,7 @@ type EduVPNState struct {
 	OAuthSession *EduVPNOAuthSession
 }
 
-func Register(state *EduVPNState, name string, server string) error {
+func Register(state *EduVPNState, name string, server string, stateCallback func(string, string)) error {
 	state.Name = name
 	state.Server = server
 
@@ -24,6 +24,7 @@ func Register(state *EduVPNState, name string, server string) error {
 	}
 
 	state.Endpoints = endpoints
+	stateCallback("START", "REGISTER")
 	return nil
 }
 
