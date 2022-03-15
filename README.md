@@ -14,10 +14,13 @@ Supported languages:
 - Swift
 
 ## Documentation
-The documentation for this library can be found at x.
+The documentation for this library can be found at https://jwijenbergh.github.io/eduvpn-common.
 
 ## Contributing
 Contributions are welcome.
 
 ## License
 This code does not have a license yet.
+
+## Authors
+This works is done by @stevenwdv and @jwijenbergh at the [Surf](https://www.surf.nl/) organisation.
