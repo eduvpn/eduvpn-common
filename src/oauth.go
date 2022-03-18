@@ -6,10 +6,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 type OAuthGenStateUnableError struct {
@@ -124,6 +122,7 @@ func (eduvpn *EduVPNOAuthSession) getTokens(authCode string) error {
 	// Make sure the verifier is set as the parameter
 	// so that the server can verify that we are the actual owner of the authorization code
 
+	reqURL := eduvpn.VPNState.Endpoints.API.V3.Token
 	data := url.Values{
 		"client_id":     {eduvpn.VPNState.Name},
 		"code":          {authCode},
@@ -131,33 +130,19 @@ func (eduvpn *EduVPNOAuthSession) getTokens(authCode string) error {
 		"grant_type":    {"authorization_code"},
 		"redirect_uri":  {"http://127.0.0.1:8000/callback"},
 	}
-	client := &http.Client{}
-	url := eduvpn.VPNState.Endpoints.API.V3.Token
-	req, reqErr := http.NewRequest(http.MethodPost, url, strings.NewReader(data.Encode()))
-	if reqErr != nil { // shouldn't happen
-		panic(reqErr)
-	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	resp, reqErr := client.Do(req)
-
-	if reqErr != nil {
-		return &HTTPResourceError{URL: url, Err: reqErr}
-	}
-
-	// Close the response body at the end
-	defer resp.Body.Close()
-
-	// Read the body
-	body, readErr := ioutil.ReadAll(resp.Body)
-	if readErr != nil {
-		return &HTTPReadError{URL: url, Err: readErr}
+	headers := &http.Header{
+		"content-type": {"application/x-www-form-urlencoded"}}
+	opts := &HTTPOptionalParams{Headers: headers}
+	body, bodyErr := HTTPPostWithOptionalParams(reqURL, data, opts)
+	if bodyErr != nil {
+		return bodyErr
 	}
 
 	tokenStructure := &EduVPNOAuthToken{}
 	jsonErr := json.Unmarshal(body, tokenStructure)
 
 	if jsonErr != nil {
-		return &HTTPParseJsonError{URL: url, Body: string(body), Err: jsonErr}
+		return &HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
 	}
 
 	eduvpn.VPNState.OAuthToken = tokenStructure

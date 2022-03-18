@@ -2,30 +2,7 @@ package eduvpn
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 )
-
-func getFileUrl(url string) ([]byte, error) {
-	// Do a Get request to the specified url
-	resp, reqErr := http.Get(url)
-	if reqErr != nil {
-		return nil, &HTTPResourceError{URL: url, Err: reqErr}
-	}
-	// Close the response body at the end
-	defer resp.Body.Close()
-
-	// Check if http response code is ok
-	if resp.StatusCode != http.StatusOK {
-		return nil, &HTTPStatusError{URL: url, Status: resp.StatusCode}
-	}
-	// Read the body
-	body, readErr := ioutil.ReadAll(resp.Body)
-	if readErr != nil {
-		return nil, &HTTPReadError{URL: url, Err: readErr}
-	}
-	return body, nil
-}
 
 type DiscoFileError struct {
 	URL string
@@ -60,7 +37,7 @@ func getDiscoFile(jsonFile string) (string, error) {
 	// Get json data
 	discoURL := "https://disco.eduvpn.org/v2/"
 	fileURL := discoURL + jsonFile
-	fileBody, fileErr := getFileUrl(fileURL)
+	fileBody, fileErr := HTTPGet(fileURL)
 
 	if fileErr != nil {
 		return "", &DiscoFileError{fileURL, fileErr}
@@ -69,7 +46,7 @@ func getDiscoFile(jsonFile string) (string, error) {
 	// Get signature
 	sigFile := jsonFile + ".minisig"
 	sigURL := discoURL + sigFile
-	sigBody, sigFileErr := getFileUrl(sigURL)
+	sigBody, sigFileErr := HTTPGet(sigURL)
 
 	if sigFileErr != nil {
 		return "", &DiscoSigFileError{URL: sigURL, Err: sigFileErr}

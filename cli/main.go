@@ -14,6 +14,10 @@ func openBrowser(urlString string) {
 	exec.Command("xdg-open", urlString).Start()
 }
 
+func logState(oldState string, newState string) {
+	log.Printf("State: %s -> State: %s\n", oldState, newState)
+}
+
 func main() {
 	urlArg := flag.String("url", "", "The url of the vpn")
 	flag.Parse()
@@ -30,7 +34,7 @@ func main() {
 
 	state := eduvpn.GetVPNState()
 
-	eduvpn.Register(state, "org.eduvpn.app.linux", urlString)
+	eduvpn.Register(state, "org.eduvpn.app.linux", urlString, logState)
 	authURL, err := eduvpn.InitializeOAuth(state)
 	if err != nil {
 		log.Fatal(err)

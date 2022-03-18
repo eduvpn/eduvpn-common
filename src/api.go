@@ -2,8 +2,6 @@ package eduvpn
 
 import (
 	"encoding/json"
-	"errors"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -24,21 +22,10 @@ type EduVPNEndpoints struct {
 
 func APIGetEndpoints(vpnState *EduVPNState) (*EduVPNEndpoints, error) {
 	url := vpnState.Server + "/.well-known/vpn-user-portal"
-	resp, reqErr := http.Get(url)
-	if reqErr != nil {
-		return nil, reqErr
-	}
-	// Close the response body at the end
-	defer resp.Body.Close()
+	body, bodyErr := HTTPGet(url)
 
-	// Check if http response code is ok
-	if resp.StatusCode != http.StatusOK {
-		panic("http code not ok")
-	}
-	// Read the body
-	body, readErr := ioutil.ReadAll(resp.Body)
-	if readErr != nil {
-		return nil, readErr
+	if bodyErr != nil {
+		return nil, bodyErr
 	}
 
 	structure := &EduVPNEndpoints{}
@@ -54,29 +41,10 @@ func APIGetEndpoints(vpnState *EduVPNState) (*EduVPNEndpoints, error) {
 func APIAuthenticatedInfo(vpnState *EduVPNState) (string, error) {
 	url := vpnState.Endpoints.API.V3.API + "/info"
 
-	client := &http.Client{}
-	req, reqErr := http.NewRequest(http.MethodGet, url, nil)
-	if reqErr != nil {
-		return "", reqErr
-	}
-	req.Header.Add("Authorization", "Bearer "+vpnState.OAuthToken.Access)
-	resp, reqErr := client.Do(req)
-
-	if reqErr != nil {
-		return "", reqErr
-	}
-	// Close the response body at the end
-	defer resp.Body.Close()
-
-	// Check if http response code is ok
-	if resp.StatusCode != http.StatusOK {
-		return "", errors.New("HTTP code not ok")
-	}
-
-	// Read the body
-	body, readErr := ioutil.ReadAll(resp.Body)
-	if readErr != nil {
-		return "", readErr
+	headers := &http.Header{"Authorization": {"Bearer " + vpnState.OAuthToken.Access}}
+	body, bodyErr := HTTPGetWithOptionalParams(url, &HTTPOptionalParams{Headers: headers})
+	if bodyErr != nil {
+		return "", bodyErr
 	}
 	return string(body), nil
 }
