@@ -1,38 +1,25 @@
 package eduvpn
 
-type EduVPNState struct {
-	// The endpoints
-	Endpoints *EduVPNEndpoints
-
+type VPNState struct {
 	// Info passed by the client
 	Name   string
-	Server string
 
-	// OAuth
-	OAuthToken   *EduVPNOAuthToken
-	OAuthSession *EduVPNOAuthSession
+	// The chosen server
+	Server *Server
 }
 
-func Register(state *EduVPNState, name string, server string, stateCallback func(string, string)) error {
+func Register(state *VPNState, name string, stateCallback func(string, string)) error {
 	state.Name = name
-	state.Server = server
 
-	endpoints, err := APIGetEndpoints(state)
-
-	if err != nil {
-		return err
-	}
-
-	state.Endpoints = endpoints
 	stateCallback("START", "REGISTER")
 	return nil
 }
 
-var VPNStateInstance *EduVPNState
+var VPNStateInstance *VPNState
 
-func GetVPNState() *EduVPNState {
+func GetVPNState() *VPNState {
 	if VPNStateInstance == nil {
-		VPNStateInstance = &EduVPNState{}
+		VPNStateInstance = &VPNState{}
 	}
 	return VPNStateInstance
 }

@@ -62,6 +62,23 @@ func HTTPGet(url string) ([]byte, error) {
 	return HTTPGetWithOptionalParams(url, nil)
 }
 
+func HTTPConstructURL(baseURL string, parameters map[string]string) (string, error) {
+	url, err := url.Parse(baseURL)
+
+	if err != nil {
+		return "", err
+	}
+
+	q := url.Query()
+
+	for parameter, value := range parameters {
+		q.Set(parameter, value)
+	}
+	url.RawQuery = q.Encode()
+	return url.String(), nil
+}
+
+
 func HTTPGetWithOptionalParams(url string, opts *HTTPOptionalParams) ([]byte, error) {
 	client := &http.Client{}
 	req, reqErr := http.NewRequest(http.MethodGet, url, nil)

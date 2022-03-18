@@ -34,17 +34,23 @@ func main() {
 
 	state := eduvpn.GetVPNState()
 
-	eduvpn.Register(state, "org.eduvpn.app.linux", urlString, logState)
-	authURL, err := eduvpn.InitializeOAuth(state)
+	eduvpn.Register(state, "org.eduvpn.app.linux", logState)
+	state.Server = &eduvpn.Server{}
+	serverInitializeErr := state.Server.Initialize(urlString)
+	if serverInitializeErr != nil {
+		log.Fatal(serverInitializeErr)
+	}
+
+	authURL, err := state.InitializeOAuth()
 	if err != nil {
 		log.Fatal(err)
 	}
 	openBrowser(authURL)
-	oauthErr := eduvpn.FinishOAuth(state)
+	oauthErr := state.FinishOAuth()
 	if oauthErr != nil {
 		log.Fatal(oauthErr)
 	}
-	infoString, infoErr := eduvpn.APIAuthenticatedInfo(state)
+	infoString, infoErr := state.APIAuthenticatedInfo()
 	if infoErr != nil {
 		log.Fatal(infoErr)
 	}

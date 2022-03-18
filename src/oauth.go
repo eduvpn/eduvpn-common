@@ -10,22 +10,6 @@ import (
 	"net/url"
 )
 
-type OAuthGenStateUnableError struct {
-	Err error
-}
-
-func (e *OAuthGenStateUnableError) Error() string {
-	return fmt.Sprintf("failed generating state with error %v", e.Err)
-}
-
-type OAuthGenVerifierUnableError struct {
-	Err error
-}
-
-func (e *OAuthGenVerifierUnableError) Error() string {
-	return fmt.Sprintf("failed generating verifier with error %v", e.Err)
-}
-
 // Generates a random base64 string to be used for state
 // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-4.1.1
 // "state":  OPTIONAL.  An opaque value used by the client to maintain
@@ -68,65 +52,63 @@ func genVerifier() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(randomBytes), nil
 }
 
-// This structure gets passed to the callback for easy access to the current state
-type EduVPNOAuthSession struct {
-	// Public
-	AuthURL  string
-	VPNState *EduVPNState
+type OAuth struct {
+	Session *OAuthExchangeSession
+	Token *OAuthToken
+	TokenURL string
+}
 
-	// private
-	callbackError error
-	context       context.Context
-	state         string
-	server        *http.Server
-	verifier      string
+// This structure gets passed to the callback for easy access to the current state
+type OAuthExchangeSession struct {
+	// returned from the callback
+	CallbackError error
+
+	// filled in in initialize
+	ClientID  string
+	State         string
+	Verifier      string
+
+	// filled in when constructing the callback
+	Context       context.Context
+	Server        *http.Server
 }
 
 // Struct that defines the json format for /.well-known/vpn-user-portal"
-type EduVPNOAuthToken struct {
+type OAuthToken struct {
 	Access  string `json:"access_token"`
 	Refresh string `json:"refresh_token"`
 	Type    string `json:"token_type"`
 	Expires int    `json:"expires_in"`
 }
 
-type OAuthFailedCallbackError struct {
-	Addr string
-	Err  error
-}
-
-func (e *OAuthFailedCallbackError) Error() string {
-	return fmt.Sprintf("failed callback %s with error %v", e.Addr, e.Err)
-}
-
 // Gets an authenticated HTTP client by obtaining refresh and access tokens
-func (eduvpn *EduVPNOAuthSession) getHTTPTokenClient() error {
-	eduvpn.context = context.Background()
+func (oauth *OAuth) getTokensWithCallback() error {
+	oauth.Session.Context = context.Background()
 	mux := http.NewServeMux()
 	addr := "127.0.0.1:8000"
-	eduvpn.server = &http.Server{
+	oauth.Session.Server = &http.Server{
 		Addr:    addr,
 		Handler: mux,
 	}
-	mux.HandleFunc("/callback", eduvpn.oauthCallback)
-	if err := eduvpn.server.ListenAndServe(); err != http.ErrServerClosed {
+	mux.HandleFunc("/callback", oauth.Callback)
+	if err := oauth.Session.Server.ListenAndServe(); err != http.ErrServerClosed {
 		return &OAuthFailedCallbackError{Addr: addr, Err: err}
 	}
-	return eduvpn.callbackError
+	return oauth.Session.CallbackError
 }
 
 // Get the access and refresh tokens
 // Access tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.4
 // Refresh tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.2
-func (eduvpn *EduVPNOAuthSession) getTokens(authCode string) error {
+func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 	// Make sure the verifier is set as the parameter
 	// so that the server can verify that we are the actual owner of the authorization code
 
-	reqURL := eduvpn.VPNState.Endpoints.API.V3.Token
+	reqURL := oauth.TokenURL
 	data := url.Values{
-		"client_id":     {eduvpn.VPNState.Name},
+		"client_id":     {oauth.Session.ClientID},
 		"code":          {authCode},
-		"code_verifier": {eduvpn.verifier},
+		"code_verifier": {oauth.Session.Verifier},
 		"grant_type":    {"authorization_code"},
 		"redirect_uri":  {"http://127.0.0.1:8000/callback"},
 	}
@@ -138,16 +120,163 @@ func (eduvpn *EduVPNOAuthSession) getTokens(authCode string) error {
 		return bodyErr
 	}
 
-	tokenStructure := &EduVPNOAuthToken{}
+	tokenStructure := &OAuthToken{}
 	jsonErr := json.Unmarshal(body, tokenStructure)
 
 	if jsonErr != nil {
 		return &HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
 	}
 
-	eduvpn.VPNState.OAuthToken = tokenStructure
+	oauth.Token = tokenStructure
 
 	return nil
+}
+
+// Get the access and refresh tokens with a previously received refresh token
+// Access tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.4
+// Refresh tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.2
+func (oauth *OAuth) getTokensWithRefresh() error {
+	reqURL := oauth.TokenURL
+	data := url.Values{
+		"refresh_token": {oauth.Token.Refresh},
+		"grant_type":    {"refresh_token"},
+	}
+	headers := &http.Header{
+		"content-type": {"application/x-www-form-urlencoded"}}
+	opts := &HTTPOptionalParams{Headers: headers}
+	body, bodyErr := HTTPPostWithOptionalParams(reqURL, data, opts)
+	if bodyErr != nil {
+		return bodyErr
+	}
+
+	tokenStructure := &OAuthToken{}
+	jsonErr := json.Unmarshal(body, tokenStructure)
+
+	if jsonErr != nil {
+		return &HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
+	}
+
+	oauth.Token = tokenStructure
+
+	return nil
+}
+
+//
+//// The callback to retrieve the authorization code: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.1
+func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
+	// Extract the authorization code
+	code, success := req.URL.Query()["code"]
+	if !success {
+		oauth.Session.CallbackError = &OAuthFailedCallbackParameterError{Parameter: "code", URL: req.URL.String()}
+		go oauth.Session.Server.Shutdown(oauth.Session.Context)
+		return
+	}
+	// The code is the first entry
+	extractedCode := code[0]
+
+	// Make sure the state is present and matches to protect against cross-site request forgeries
+	// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-7.15
+	state, success := req.URL.Query()["state"]
+	if !success {
+		oauth.Session.CallbackError = &OAuthFailedCallbackParameterError{Parameter: "state", URL: req.URL.String()}
+		go oauth.Session.Server.Shutdown(oauth.Session.Context)
+		return
+	}
+	// The state is the first entry
+	extractedState := state[0]
+	if extractedState != oauth.Session.State {
+		oauth.Session.CallbackError = &OAuthFailedCallbackStateMatchError{State: extractedState, ExpectedState: oauth.Session.State}
+		go oauth.Session.Server.Shutdown(oauth.Session.Context)
+		return
+	}
+
+	// Now that we have obtained the authorization code, we can move to the next step:
+	// Obtaining the access and refresh tokens
+	err := oauth.getTokensWithAuthCode(extractedCode)
+
+	if err != nil {
+		oauth.Session.CallbackError = &OAuthFailedCallbackGetTokensError{Err: err}
+		go oauth.Session.Server.Shutdown(oauth.Session.Context)
+		return
+	}
+
+	// Shutdown the server as we're done listening
+	go oauth.Session.Server.Shutdown(oauth.Session.Context)
+}
+
+// Initializes the OAuth for eduvpn.
+// It needs a vpn state that was gotten from `Register`
+// It returns the authurl for the browser and an error if present
+func (eduvpn *VPNState) InitializeOAuth() (string, error) {
+	// Generate the state
+	state, stateErr := genState()
+	if stateErr != nil {
+		return "", &OAuthFailedInitializeError{Err: stateErr}
+	}
+
+	// Generate the verifier and challenge
+	verifier, verifierErr := genVerifier()
+	if verifierErr != nil {
+		return "", &OAuthFailedInitializeError{Err: verifierErr}
+	}
+	challenge := genChallengeS256(verifier)
+
+	parameters := map[string]string{
+		"client_id":             eduvpn.Name,
+		"code_challenge_method": "S256",
+		"code_challenge":        challenge,
+		"response_type":         "code",
+		"scope":                 "config",
+		"state":                 state,
+		"redirect_uri":          "http://127.0.0.1:8000/callback",
+	}
+
+	authURL, urlErr := HTTPConstructURL(eduvpn.Server.Endpoints.API.V3.Authorization, parameters)
+
+	if urlErr != nil { // shouldn't happen
+		panic(urlErr)
+	}
+
+	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
+	oauthSession := &OAuthExchangeSession{ClientID: eduvpn.Name, State: state, Verifier: verifier}
+	eduvpn.Server.OAuth = &OAuth{TokenURL: eduvpn.Server.Endpoints.API.V3.Token, Session: oauthSession}
+	return authURL, nil
+}
+
+
+// Error definitions
+func (eduvpn *VPNState) FinishOAuth() error {
+	oauth := eduvpn.Server.OAuth
+	if oauth == nil {
+		panic("invalid oauth state")
+	}
+	return oauth.getTokensWithCallback()
+}
+
+type OAuthGenStateUnableError struct {
+	Err error
+}
+
+func (e *OAuthGenStateUnableError) Error() string {
+	return fmt.Sprintf("failed generating state with error %v", e.Err)
+}
+
+type OAuthGenVerifierUnableError struct {
+	Err error
+}
+
+func (e *OAuthGenVerifierUnableError) Error() string {
+	return fmt.Sprintf("failed generating verifier with error %v", e.Err)
+}
+
+
+type OAuthFailedCallbackError struct {
+	Addr string
+	Err  error
+}
+
+func (e *OAuthFailedCallbackError) Error() string {
+	return fmt.Sprintf("failed callback %s with error %v", e.Addr, e.Err)
 }
 
 type OAuthFailedCallbackParameterError struct {
@@ -176,122 +305,10 @@ func (e *OAuthFailedCallbackGetTokensError) Error() string {
 	return fmt.Sprintf("failed getting tokens with error %v", e.Err)
 }
 
-//
-//// The callback to retrieve the authorization code: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.1
-func (eduvpn *EduVPNOAuthSession) oauthCallback(w http.ResponseWriter, req *http.Request) {
-	// Extract the authorization code
-	code, success := req.URL.Query()["code"]
-	if !success {
-		eduvpn.callbackError = &OAuthFailedCallbackParameterError{Parameter: "code", URL: req.URL.String()}
-		go eduvpn.server.Shutdown(eduvpn.context)
-		return
-	}
-	// The code is the first entry
-	extractedCode := code[0]
-
-	// Make sure the state is present and matches to protect against cross-site request forgeries
-	// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-7.15
-	state, success := req.URL.Query()["state"]
-	if !success {
-		eduvpn.callbackError = &OAuthFailedCallbackParameterError{Parameter: "state", URL: req.URL.String()}
-		go eduvpn.server.Shutdown(eduvpn.context)
-		return
-	}
-	// The state is the first entry
-	extractedState := state[0]
-	if extractedState != eduvpn.state {
-		eduvpn.callbackError = &OAuthFailedCallbackStateMatchError{State: extractedState, ExpectedState: eduvpn.state}
-		go eduvpn.server.Shutdown(eduvpn.context)
-		return
-	}
-
-	// Now that we have obtained the authorization code, we can move to the next step:
-	// Obtaining the access and refresh tokens
-	err := eduvpn.getTokens(extractedCode)
-
-	if err != nil {
-		eduvpn.callbackError = &OAuthFailedCallbackGetTokensError{Err: err}
-		go eduvpn.server.Shutdown(eduvpn.context)
-		return
-	}
-
-	// Shutdown the server as we're done listening
-	go eduvpn.server.Shutdown(eduvpn.context)
-}
-
-func constructURL(baseURL string, parameters map[string]string) (string, error) {
-	url, err := url.Parse(baseURL)
-
-	if err != nil {
-		return "", err
-	}
-
-	q := url.Query()
-
-	for parameter, value := range parameters {
-		q.Set(parameter, value)
-	}
-	url.RawQuery = q.Encode()
-	return url.String(), nil
-}
-
 type OAuthFailedInitializeError struct {
 	Err error
 }
 
 func (e *OAuthFailedInitializeError) Error() string {
 	return fmt.Sprintf("failed initializing OAuth with error %v", e.Err)
-}
-
-// Initializes the OAuth for eduvpn.
-// It needs a vpn state that was gotten from `Register`
-// It returns the authurl for the browser and an error if present
-func InitializeOAuth(vpnState *EduVPNState) (string, error) {
-	if vpnState == nil {
-		panic("invalid state")
-	}
-
-	// Generate the state
-	state, stateErr := genState()
-	if stateErr != nil {
-		return "", &OAuthFailedInitializeError{Err: stateErr}
-	}
-
-	// Generate the verifier and challenge
-	verifier, verifierErr := genVerifier()
-	if verifierErr != nil {
-		return "", &OAuthFailedInitializeError{Err: verifierErr}
-	}
-	challenge := genChallengeS256(verifier)
-
-	parameters := map[string]string{
-		"client_id":             vpnState.Name,
-		"code_challenge_method": "S256",
-		"code_challenge":        challenge,
-		"response_type":         "code",
-		"scope":                 "config",
-		"state":                 state,
-		"redirect_uri":          "http://127.0.0.1:8000/callback",
-	}
-
-	authURL, urlErr := constructURL(vpnState.Endpoints.API.V3.Authorization, parameters)
-
-	if urlErr != nil { // shouldn't happen
-		panic(urlErr)
-	}
-
-	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
-	vpnState.OAuthSession = &EduVPNOAuthSession{AuthURL: authURL, VPNState: vpnState, state: state, verifier: verifier}
-	return authURL, nil
-}
-
-func FinishOAuth(vpnState *EduVPNState) error {
-	if vpnState == nil {
-		panic("invalid state")
-	}
-
-	if vpnState.OAuthSession == nil {
-		panic("invalid oauth state")
-	}
-	return vpnState.OAuthSession.getHTTPTokenClient()
 }
