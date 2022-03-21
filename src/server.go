@@ -5,9 +5,9 @@ import (
 )
 
 type Server struct {
-	BaseURL string
+	BaseURL   string
 	Endpoints *ServerEndpoints
-	OAuth *OAuth
+	OAuth     *OAuth
 }
 
 type ServerEndpointList struct {
@@ -25,7 +25,6 @@ type ServerEndpoints struct {
 	V string `json:"v"`
 }
 
-
 func (server *Server) Initialize(url string) error {
 	server.BaseURL = url
 	endpointsErr := server.GetEndpoints()
@@ -34,7 +33,6 @@ func (server *Server) Initialize(url string) error {
 	}
 	return nil
 }
-
 
 func (server *Server) GetEndpoints() error {
 	url := server.BaseURL + "/.well-known/vpn-user-portal"

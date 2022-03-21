@@ -54,8 +54,8 @@ func genVerifier() (string, error) {
 }
 
 type OAuth struct {
-	Session *OAuthExchangeSession
-	Token *OAuthToken
+	Session  *OAuthExchangeSession
+	Token    *OAuthToken
 	TokenURL string
 }
 
@@ -65,13 +65,13 @@ type OAuthExchangeSession struct {
 	CallbackError error
 
 	// filled in in initialize
-	ClientID  string
-	State         string
-	Verifier      string
+	ClientID string
+	State    string
+	Verifier string
 
 	// filled in when constructing the callback
-	Context       context.Context
-	Server        *http.Server
+	Context context.Context
+	Server  *http.Server
 }
 
 func generateTimeSeconds() int64 {
@@ -81,10 +81,10 @@ func generateTimeSeconds() int64 {
 
 // Struct that defines the json format for /.well-known/vpn-user-portal"
 type OAuthToken struct {
-	Access  string `json:"access_token"`
-	Refresh string `json:"refresh_token"`
-	Type    string `json:"token_type"`
-	Expires int64  `json:"expires_in"`
+	Access           string `json:"access_token"`
+	Refresh          string `json:"refresh_token"`
+	Type             string `json:"token_type"`
+	Expires          int64  `json:"expires_in"`
 	ExpiredTimestamp int64
 }
 
@@ -121,9 +121,9 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 	}
 	headers := &http.Header{
 		"content-type": {"application/x-www-form-urlencoded"}}
-	opts := &HTTPOptionalParams{Headers: headers}
+	opts := &HTTPOptionalParams{Headers: headers, Body: data}
 	current_time := generateTimeSeconds()
-	body, bodyErr := HTTPPostWithOptionalParams(reqURL, data, opts)
+	body, bodyErr := HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return bodyErr
 	}
@@ -158,9 +158,9 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 	}
 	headers := &http.Header{
 		"content-type": {"application/x-www-form-urlencoded"}}
-	opts := &HTTPOptionalParams{Headers: headers}
+	opts := &HTTPOptionalParams{Headers: headers, Body: data}
 	current_time := generateTimeSeconds()
-	body, bodyErr := HTTPPostWithOptionalParams(reqURL, data, opts)
+	body, bodyErr := HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return bodyErr
 	}
@@ -260,7 +260,6 @@ func (eduvpn *VPNState) InitializeOAuth() (string, error) {
 	return authURL, nil
 }
 
-
 // Error definitions
 func (eduvpn *VPNState) FinishOAuth() error {
 	oauth := eduvpn.Server.OAuth
@@ -277,11 +276,10 @@ func (eduvpn *VPNState) EnsureTokensOAuth() error {
 	}
 
 	if oauth.isTokensExpired() {
-		return oauth.getTokensWithRefresh();
+		return oauth.getTokensWithRefresh()
 	}
 	return nil
 }
-
 
 type OAuthGenStateUnableError struct {
 	Err error
@@ -298,7 +296,6 @@ type OAuthGenVerifierUnableError struct {
 func (e *OAuthGenVerifierUnableError) Error() string {
 	return fmt.Sprintf("failed generating verifier with error %v", e.Err)
 }
-
 
 type OAuthFailedCallbackError struct {
 	Addr string

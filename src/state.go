@@ -2,7 +2,7 @@ package eduvpn
 
 type VPNState struct {
 	// Info passed by the client
-	Name   string
+	Name string
 
 	// The chosen server
 	Server *Server

@@ -50,9 +50,14 @@ func main() {
 	if oauthErr != nil {
 		log.Fatal(oauthErr)
 	}
-	infoString, infoErr := state.APIAuthenticatedGet("/info")
-	if infoErr != nil {
-		log.Fatal(infoErr)
+	wireguardKey, wireguardErr := eduvpn.WireguardGenerateKey()
+
+	if wireguardErr != nil {
+		log.Fatal(wireguardErr)
 	}
-	log.Println(infoString)
+	configString, configErr := state.APIConnectWireguard(wireguardKey.PublicKey().String())
+	if configErr != nil {
+		log.Fatal(configErr)
+	}
+	log.Println(eduvpn.WireguardConfigAddKey(configString, wireguardKey))
 }
