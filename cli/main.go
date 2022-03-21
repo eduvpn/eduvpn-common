@@ -14,8 +14,8 @@ func openBrowser(urlString string) {
 	exec.Command("xdg-open", urlString).Start()
 }
 
-func logState(oldState string, newState string) {
-	log.Printf("State: %s -> State: %s\n", oldState, newState)
+func logState(oldState string, newState string, data string) {
+	log.Printf("State: %s -> State: %s with data %s\n", oldState, newState, data)
 }
 
 func main() {
@@ -34,21 +34,28 @@ func main() {
 
 	state := eduvpn.GetVPNState()
 
-	eduvpn.Register(state, "org.eduvpn.app.linux", logState)
+	eduvpn.Register(state, "org.eduvpn.app.linux", "configs", logState)
 	state.Server = &eduvpn.Server{}
 	serverInitializeErr := state.Server.Initialize(urlString)
 	if serverInitializeErr != nil {
 		log.Fatal(serverInitializeErr)
 	}
 
-	authURL, err := state.InitializeOAuth()
-	if err != nil {
-		log.Fatal(err)
+	if state.LoadConfig() != nil {
+		authURL, err := state.InitializeOAuth()
+		if err != nil {
+			log.Fatal(err)
+		}
+		openBrowser(authURL)
+		oauthErr := state.FinishOAuth()
+		if oauthErr != nil {
+			log.Fatal(oauthErr)
+		}
 	}
-	openBrowser(authURL)
-	oauthErr := state.FinishOAuth()
-	if oauthErr != nil {
-		log.Fatal(oauthErr)
+
+	writeErr := state.WriteConfig()
+	if writeErr != nil {
+		log.Fatal(writeErr)
 	}
 	wireguardKey, wireguardErr := eduvpn.WireguardGenerateKey()
 

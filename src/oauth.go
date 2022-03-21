@@ -54,9 +54,9 @@ func genVerifier() (string, error) {
 }
 
 type OAuth struct {
-	Session  *OAuthExchangeSession
-	Token    *OAuthToken
-	TokenURL string
+	Session  *OAuthExchangeSession `json:"-"`
+	Token    *OAuthToken           `json:"token"`
+	TokenURL string                `json:"token_url"`
 }
 
 // This structure gets passed to the callback for easy access to the current state
@@ -85,7 +85,7 @@ type OAuthToken struct {
 	Refresh          string `json:"refresh_token"`
 	Type             string `json:"token_type"`
 	Expires          int64  `json:"expires_in"`
-	ExpiredTimestamp int64
+	ExpiredTimestamp int64  `json:"expires_in_timestamp"`
 }
 
 // Gets an authenticated HTTP client by obtaining refresh and access tokens

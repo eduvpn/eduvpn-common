@@ -3,46 +3,38 @@ package main
 /*
 #include <stdlib.h>
 
-typedef void (*PythonCB)(const char* oldstate, const char* newstate);
+typedef void (*PythonCB)(const char* oldstate, const char* newstate, const char* data);
 
 // FIXME: Remove this, see: https://stackoverflow.com/questions/58606884/multiple-definition-when-using-cgo
 __attribute__((weak))
-void call_callback(PythonCB callback, const char* oldstate, const char* newstate)
+void call_callback(PythonCB callback, const char* oldstate, const char* newstate, const char* data)
 {
-    callback(oldstate, newstate);
+    callback(oldstate, newstate, data);
 }
 */
 import "C"
 import "unsafe"
-
 import "github.com/jwijenbergh/eduvpn-common/src"
 
 var P_StateCallback C.PythonCB
 
-func StateCallback(old_state string, new_state string) {
+func StateCallback(old_state string, new_state string, data string) {
 	if P_StateCallback == nil {
 		return
 	}
 	oldState_c := C.CString(old_state)
 	newState_c := C.CString(new_state)
-	C.call_callback(P_StateCallback, oldState_c, newState_c)
+	data_c := C.CString(data)
+	C.call_callback(P_StateCallback, oldState_c, newState_c, data_c)
 	C.free(unsafe.Pointer(oldState_c))
 	C.free(unsafe.Pointer(newState_c))
+	C.free(unsafe.Pointer(data_c))
 }
 
 //export Register
-func Register(name *C.char, url *C.char, stateCallback C.PythonCB) {
+func Register(name *C.char, config_directory *C.char, stateCallback C.PythonCB) {
 	P_StateCallback = stateCallback
-	eduvpn.Register(eduvpn.GetVPNState(), C.GoString(name), C.GoString(url), StateCallback)
-}
-
-//export InitializeOAuth
-func InitializeOAuth() (*C.char, *C.char) {
-	url, err := eduvpn.InitializeOAuth(eduvpn.GetVPNState())
-	if err != nil {
-		return nil, C.CString(err.Error())
-	}
-	return C.CString(url), nil
+	eduvpn.Register(eduvpn.GetVPNState(), C.GoString(name), C.GoString(config_directory), StateCallback)
 }
 
 //export FreeString

@@ -5,9 +5,9 @@ import (
 )
 
 type Server struct {
-	BaseURL   string
-	Endpoints *ServerEndpoints
-	OAuth     *OAuth
+	BaseURL   string           `json:"base_url"`
+	Endpoints *ServerEndpoints `json:"endpoints"`
+	OAuth     *OAuth           `json:"oauth"`
 }
 
 type ServerEndpointList struct {
