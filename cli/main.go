@@ -50,7 +50,7 @@ func main() {
 	if oauthErr != nil {
 		log.Fatal(oauthErr)
 	}
-	infoString, infoErr := state.APIAuthenticatedInfo()
+	infoString, infoErr := state.APIAuthenticatedGet("/info")
 	if infoErr != nil {
 		log.Fatal(infoErr)
 	}

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 // Generates a random base64 string to be used for state
@@ -73,12 +74,18 @@ type OAuthExchangeSession struct {
 	Server        *http.Server
 }
 
+func generateTimeSeconds() int64 {
+	current := time.Now()
+	return current.Unix()
+}
+
 // Struct that defines the json format for /.well-known/vpn-user-portal"
 type OAuthToken struct {
 	Access  string `json:"access_token"`
 	Refresh string `json:"refresh_token"`
 	Type    string `json:"token_type"`
-	Expires int    `json:"expires_in"`
+	Expires int64  `json:"expires_in"`
+	ExpiredTimestamp int64
 }
 
 // Gets an authenticated HTTP client by obtaining refresh and access tokens
@@ -115,6 +122,7 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 	headers := &http.Header{
 		"content-type": {"application/x-www-form-urlencoded"}}
 	opts := &HTTPOptionalParams{Headers: headers}
+	current_time := generateTimeSeconds()
 	body, bodyErr := HTTPPostWithOptionalParams(reqURL, data, opts)
 	if bodyErr != nil {
 		return bodyErr
@@ -127,9 +135,16 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 		return &HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
 	}
 
+	tokenStructure.ExpiredTimestamp = current_time + tokenStructure.Expires
 	oauth.Token = tokenStructure
 
 	return nil
+}
+
+func (oauth *OAuth) isTokensExpired() bool {
+	expired_time := oauth.Token.ExpiredTimestamp
+	current_time := generateTimeSeconds()
+	return current_time >= expired_time
 }
 
 // Get the access and refresh tokens with a previously received refresh token
@@ -144,6 +159,7 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 	headers := &http.Header{
 		"content-type": {"application/x-www-form-urlencoded"}}
 	opts := &HTTPOptionalParams{Headers: headers}
+	current_time := generateTimeSeconds()
 	body, bodyErr := HTTPPostWithOptionalParams(reqURL, data, opts)
 	if bodyErr != nil {
 		return bodyErr
@@ -156,6 +172,7 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 		return &HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
 	}
 
+	tokenStructure.ExpiredTimestamp = current_time + tokenStructure.Expires
 	oauth.Token = tokenStructure
 
 	return nil
@@ -252,6 +269,19 @@ func (eduvpn *VPNState) FinishOAuth() error {
 	}
 	return oauth.getTokensWithCallback()
 }
+
+func (eduvpn *VPNState) EnsureTokensOAuth() error {
+	oauth := eduvpn.Server.OAuth
+	if oauth == nil {
+		panic("invalid oauth state")
+	}
+
+	if oauth.isTokensExpired() {
+		return oauth.getTokensWithRefresh();
+	}
+	return nil
+}
+
 
 type OAuthGenStateUnableError struct {
 	Err error
