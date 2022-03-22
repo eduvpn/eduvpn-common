@@ -1,4 +1,4 @@
-from . import lib, VPNStateChange
+from . import lib, VPNStateChange, GetDataError
 from ctypes import *
 
 @VPNStateChange
@@ -13,4 +13,9 @@ def Register(name, config_directory, state_callback):
     name_bytes = name.encode('utf-8')
     dir_bytes = config_directory.encode('utf-8')
     lib.Register(name_bytes, dir_bytes, state_callback)
+
+def GetDiscoServers():
+    servers, serversErr = GetDataError(lib.GetServersList())
+    organizations, organizationsErr = GetDataError(lib.GetOrganizationsList())
+    return servers, serversErr, organizations, organizationsErr
 

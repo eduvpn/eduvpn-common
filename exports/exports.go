@@ -37,6 +37,29 @@ func Register(name *C.char, config_directory *C.char, stateCallback C.PythonCB) 
 	eduvpn.Register(eduvpn.GetVPNState(), C.GoString(name), C.GoString(config_directory), StateCallback)
 }
 
+func ErrorToString(error error) string {
+	if error == nil {
+		return ""
+	}
+
+	return error.Error()
+}
+
+//export GetOrganizationsList
+func GetOrganizationsList() (*C.char, *C.char) {
+	state := eduvpn.GetVPNState()
+	organizations, organizationsErr := state.GetOrganizationsList()
+	return C.CString(organizations), C.CString(ErrorToString(organizationsErr))
+}
+
+
+//export GetServersList
+func GetServersList() (*C.char, *C.char) {
+	state := eduvpn.GetVPNState()
+	servers, serversErr := state.GetServersList()
+	return C.CString(servers), C.CString(ErrorToString(serversErr))
+}
+
 //export FreeString
 func FreeString(addr *C.char) {
 	C.free(unsafe.Pointer(addr))
