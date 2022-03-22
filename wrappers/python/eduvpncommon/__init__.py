@@ -22,7 +22,7 @@ lib = cdll.LoadLibrary(str(pathlib.Path(__file__).parent / "lib" / _libfile))
 VPNStateChange = CFUNCTYPE(None, c_char_p, c_char_p, c_char_p)
 
 # Exposed functions
-lib.Register.argtypes, lib.Register.restype = [c_char_p, VPNStateChange], None
+lib.Register.argtypes, lib.Register.restype = [c_char_p, c_char_p, VPNStateChange], None
 # We have to use c_void_p instead of c_char_p to free it properly
 # See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
