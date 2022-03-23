@@ -25,7 +25,7 @@ func wireguardConfigAddKey(config string, key wgtypes.Key) string {
 	return interface_re.ReplaceAllString(config, to_replace)
 }
 
-func (eduvpn *VPNState) WireguardGetConfig() (string, error) {
+func (server *Server) WireguardGetConfig() (string, error) {
 	wireguardKey, wireguardErr := wireguardGenerateKey()
 
 	if wireguardErr != nil {
@@ -33,7 +33,7 @@ func (eduvpn *VPNState) WireguardGetConfig() (string, error) {
 	}
 
 	wireguardPublicKey := wireguardKey.PublicKey().String()
-	configWireguard, _, configErr := eduvpn.APIConnectWireguard(wireguardPublicKey)
+	configWireguard, _, configErr := server.APIConnectWireguard("default", wireguardPublicKey)
 
 	if configErr != nil {
 		return "", configErr

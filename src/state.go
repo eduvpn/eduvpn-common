@@ -56,7 +56,7 @@ func (state *VPNState) Connect(url string) (string, error) {
 		state.WriteConfig()
 	}
 
-	return state.WireguardGetConfig()
+	return state.Server.GetConfig()
 }
 
 var VPNStateInstance *VPNState

@@ -1,6 +1,7 @@
 package eduvpn
 
 import (
+	"errors"
 	"encoding/json"
 )
 
@@ -8,6 +9,21 @@ type Server struct {
 	BaseURL   string           `json:"base_url"`
 	Endpoints *ServerEndpoints `json:"endpoints"`
 	OAuth     *OAuth           `json:"oauth"`
+	Profiles  *ServerProfileInfo `json:"profiles"`
+}
+
+type ServerProfile struct {
+	ID string `json:"profile_id"`
+	DisplayName string `json:"display_name"`
+	VPNProtoList []string `json:"vpn_proto_list"`
+	DefaultGateway bool `json:"default_gateway"`
+}
+
+type ServerProfileInfo struct {
+	Current uint8 `json:"current_profile"`
+	Info struct {
+		ProfileList []ServerProfile `json:"profile_list"`
+	} `json:"info"`
 }
 
 type ServerEndpointList struct {
@@ -57,4 +73,51 @@ func (server *Server) GetEndpoints() error {
 	server.Endpoints = endpoints
 
 	return nil
+}
+
+func (profiles *ServerProfileInfo) getCurrentProfile() (*ServerProfile, error) {
+	if profiles.Info.ProfileList == nil {
+		return nil, errors.New("No server profiles")
+	}
+
+	if (int)(profiles.Current) >= len(profiles.Info.ProfileList) {
+		return nil, errors.New("Invalid profile")
+	}
+	return &profiles.Info.ProfileList[profiles.Current], nil
+}
+
+func (profile *ServerProfile) supportsWireguard() bool {
+	for _, proto := range profile.VPNProtoList {
+		if proto == "wireguard" {
+			return true
+		}
+	}
+	return false
+}
+
+func (server *Server) GetCurrentProfile() (*ServerProfile, error) {
+	if server.Profiles == nil {
+		return nil, errors.New("No server profiles found")
+	}
+
+	return server.Profiles.getCurrentProfile()
+}
+
+func (server *Server) GetConfig() (string, error) {
+	infoErr := server.APIInfo()
+
+	if infoErr != nil {
+		return "", infoErr
+	}
+
+	profile, profileErr := server.GetCurrentProfile()
+
+	if profileErr != nil {
+		return "", profileErr
+	}
+
+	if profile.supportsWireguard() {
+		return server.WireguardGetConfig()
+	}
+	return server.OpenVPNGetConfig()
 }

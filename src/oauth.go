@@ -269,12 +269,7 @@ func (eduvpn *VPNState) FinishOAuth() error {
 	return oauth.getTokensWithCallback()
 }
 
-func (eduvpn *VPNState) EnsureTokensOAuth() error {
-	oauth := eduvpn.Server.OAuth
-	if oauth == nil {
-		panic("invalid oauth state")
-	}
-
+func (oauth *OAuth) EnsureTokens() error {
 	if oauth.isTokensExpired() {
 		return oauth.getTokensWithRefresh()
 	}
