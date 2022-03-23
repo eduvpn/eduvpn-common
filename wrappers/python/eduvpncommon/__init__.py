@@ -33,6 +33,7 @@ class DataError(Structure):
 VPNStateChange = CFUNCTYPE(None, c_char_p, c_char_p, c_char_p)
 
 # Exposed functions
+lib.Connect.argtypes, lib.Connect.restype = [c_char_p], DataError
 lib.Register.argtypes, lib.Register.restype = [c_char_p, c_char_p, VPNStateChange], None
 lib.GetOrganizationsList.argtypes, lib.GetOrganizationsList.restype = [], DataError
 lib.GetServersList.argtypes, lib.GetServersList.restype = [], DataError

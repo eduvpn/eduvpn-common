@@ -34,7 +34,8 @@ func StateCallback(old_state string, new_state string, data string) {
 //export Register
 func Register(name *C.char, config_directory *C.char, stateCallback C.PythonCB) *C.char {
 	P_StateCallback = stateCallback
-	registerErr := eduvpn.Register(eduvpn.GetVPNState(), C.GoString(name), C.GoString(config_directory), StateCallback)
+	state := eduvpn.GetVPNState()
+	registerErr := state.Register(C.GoString(name), C.GoString(config_directory), StateCallback)
 	return C.CString(ErrorToString(registerErr))
 }
 
@@ -44,6 +45,13 @@ func ErrorToString(error error) string {
 	}
 
 	return error.Error()
+}
+
+//export Connect
+func Connect(url *C.char) (*C.char, *C.char) {
+	state := eduvpn.GetVPNState()
+	config, configErr := state.Connect(C.GoString(url))
+	return C.CString(config), C.CString(ErrorToString(configErr))
 }
 
 //export GetOrganizationsList

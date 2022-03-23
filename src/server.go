@@ -34,6 +34,11 @@ func (server *Server) Initialize(url string) error {
 	return nil
 }
 
+// FIXME: Check validity of tokens
+func (server *Server) IsAuthenticated() bool {
+	return server.OAuth != nil
+}
+
 func (server *Server) GetEndpoints() error {
 	url := server.BaseURL + "/.well-known/vpn-user-portal"
 	body, bodyErr := HTTPGet(url)

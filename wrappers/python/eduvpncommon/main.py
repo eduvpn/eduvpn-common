@@ -1,11 +1,12 @@
 from . import lib, VPNStateChange, GetDataError, GetPtrString
 from ctypes import *
 from enum import Enum
-import functools
+
 
 class StateType(Enum):
     Enter = 1
     Leave = 2
+
 
 # Registers the python app with the Go code
 # name: The name of the app to be registered
@@ -19,19 +20,46 @@ def Register(name, config_directory, state_callback):
     return err_string
 
 
+def GetDiscoServers():
+    servers, serversErr = GetDataError(lib.GetServersList())
+    organizations, organizationsErr = GetDataError(lib.GetOrganizationsList())
+    return servers, serversErr, organizations, organizationsErr
+
+
+def Connect(url):
+    url_bytes = url.encode("utf-8")
+    data_error = lib.Connect(url_bytes)
+    return GetDataError(data_error)
+
+
+# This has to be global as otherwise the callback is not alive
+callback_function = None
+
+
+def register_callback(eduvpn):
+    global callback_function
+    callback_function = VPNStateChange(
+        lambda old_state, new_state, data: eduvpn.callback(
+            old_state.decode(), new_state.decode(), data.decode()
+        )
+    )
+
+
 class EduVPN(object):
     def __init__(self, name, config_directory):
         self.event_handler = EventHandler()
         self.name = name
         self.config_directory = config_directory
+        register_callback(self)
 
     def register(self) -> bool:
-        closure = VPNStateChange(
-            lambda old_state, new_state, data: self.callback(
-                old_state.decode(), new_state.decode(), data.decode()
-            )
-        )
-        return Register(self.name, self.config_directory, closure) == ""
+        return Register(self.name, self.config_directory, callback_function) == ""
+
+    def get_disco(self):
+        return GetDiscoServers()
+
+    def connect(self, url):
+        return Connect(url)
 
     @property
     def event(self):
@@ -51,6 +79,7 @@ class EventHandler(object):
                 self.handlers[(state, state_type)] = []
             self.handlers[(state, state_type)].append(func)
             return func
+
         return wrapped_f
 
     def run_state(self, state, state_type, data):
@@ -64,9 +93,3 @@ class EventHandler(object):
             return
         self.run_state(old_state, StateType.Leave, data)
         self.run_state(new_state, StateType.Enter, data)
-
-
-def GetDiscoServers():
-    servers, serversErr = GetDataError(lib.GetServersList())
-    organizations, organizationsErr = GetDataError(lib.GetOrganizationsList())
-    return servers, serversErr, organizations, organizationsErr
