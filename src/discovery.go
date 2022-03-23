@@ -114,7 +114,6 @@ func (eduvpn *VPNState) GetOrganizationsList() (string, error) {
 // Get the server list
 func (eduvpn *VPNState) GetServersList() (string, error) {
 	if !eduvpn.DetermineServersUpdate() {
-		fmt.Println("DO NOT NEED UPDATE")
 		return *eduvpn.DiscoList.Servers, nil
 	}
 	file := "server_list.json"
