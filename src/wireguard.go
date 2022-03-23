@@ -33,11 +33,16 @@ func (eduvpn *VPNState) WireguardGetConfig() (string, error) {
 	}
 
 	wireguardPublicKey := wireguardKey.PublicKey().String()
-	configWireguard, configErr := eduvpn.APIConnectWireguard(wireguardPublicKey)
+	configWireguard, _, configErr := eduvpn.APIConnectWireguard(wireguardPublicKey)
 
 	if configErr != nil {
 		return "", configErr
 	}
+
+	// FIXME: Store expiry
+	// This needs the go code a way to identify a connection
+	// Use the uuid of the connection e.g. on Linux
+	// This needs the client code to call the go code
 
 	configWireguardKey := wireguardConfigAddKey(configWireguard, wireguardKey)
 

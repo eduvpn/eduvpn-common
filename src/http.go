@@ -81,19 +81,19 @@ func HTTPConstructURL(baseURL string, parameters URLParameters) (string, error) 
 }
 
 // Convenience functions
-func HTTPGet(url string) ([]byte, error) {
+func HTTPGet(url string) (http.Header, []byte, error) {
 	return HTTPMethodWithOpts(http.MethodGet, url, nil)
 }
 
-func HTTPPost(url string, body url.Values) ([]byte, error) {
+func HTTPPost(url string, body url.Values) (http.Header, []byte, error) {
 	return HTTPMethodWithOpts(http.MethodGet, url, &HTTPOptionalParams{Body: body})
 }
 
-func HTTPGetWithOpts(url string, opts *HTTPOptionalParams) ([]byte, error) {
+func HTTPGetWithOpts(url string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
 	return HTTPMethodWithOpts(http.MethodGet, url, opts)
 }
 
-func HTTPPostWithOpts(url string, opts *HTTPOptionalParams) ([]byte, error) {
+func HTTPPostWithOpts(url string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
 	return HTTPMethodWithOpts(http.MethodPost, url, opts)
 }
 
@@ -126,14 +126,14 @@ func httpOptionalBodyReader(opts *HTTPOptionalParams) io.Reader {
 	return nil
 }
 
-func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) ([]byte, error) {
+func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
 
 	// Make sure the url contains all the parameters
 	// This can return an error,
 	// it already has the right error so so we don't wrap it further
 	url, urlErr := httpOptionalURL(url, opts)
 	if urlErr != nil {
-		return nil, urlErr
+		return nil, nil, urlErr
 	}
 
 	// Create a client
@@ -142,7 +142,7 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) ([]
 	// Create request object with the body reader generated from the optional arguments
 	req, reqErr := http.NewRequest(method, url, httpOptionalBodyReader(opts))
 	if reqErr != nil {
-		return nil, &HTTPRequestCreateError{URL: url, Err: reqErr}
+		return nil, nil, &HTTPRequestCreateError{URL: url, Err: reqErr}
 	}
 
 	// Make sure the headers contain all the parameters
@@ -151,7 +151,7 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) ([]
 	// Do request
 	resp, respErr := client.Do(req)
 	if respErr != nil {
-		return nil, &HTTPResourceError{URL: url, Err: respErr}
+		return nil, nil, &HTTPResourceError{URL: url, Err: respErr}
 	}
 
 	// Request successful, make sure body is closed at the end
@@ -160,9 +160,9 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) ([]
 	// Return a string
 	body, readErr := ioutil.ReadAll(resp.Body)
 	if readErr != nil {
-		return nil, &HTTPReadError{URL: url, Err: readErr}
+		return resp.Header, nil, &HTTPReadError{URL: url, Err: readErr}
 	}
 
 	// Return the body in bytes and signal that there was no error
-	return body, nil
+	return resp.Header, body, nil
 }

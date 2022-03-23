@@ -123,7 +123,7 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 		"content-type": {"application/x-www-form-urlencoded"}}
 	opts := &HTTPOptionalParams{Headers: headers, Body: data}
 	current_time := generateTimeSeconds()
-	body, bodyErr := HTTPPostWithOpts(reqURL, opts)
+	_, body, bodyErr := HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return bodyErr
 	}
@@ -160,7 +160,7 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 		"content-type": {"application/x-www-form-urlencoded"}}
 	opts := &HTTPOptionalParams{Headers: headers, Body: data}
 	current_time := generateTimeSeconds()
-	body, bodyErr := HTTPPostWithOpts(reqURL, opts)
+	_, body, bodyErr := HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return bodyErr
 	}

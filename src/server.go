@@ -41,7 +41,7 @@ func (server *Server) IsAuthenticated() bool {
 
 func (server *Server) GetEndpoints() error {
 	url := server.BaseURL + "/.well-known/vpn-user-portal"
-	body, bodyErr := HTTPGet(url)
+	_, body, bodyErr := HTTPGet(url)
 
 	if bodyErr != nil {
 		return bodyErr

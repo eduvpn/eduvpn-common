@@ -62,7 +62,7 @@ func main() {
 	if wireguardErr != nil {
 		log.Fatal(wireguardErr)
 	}
-	configString, configErr := state.APIConnectWireguard(wireguardKey.PublicKey().String())
+	configString, configExpires, configErr := state.APIConnectWireguard(wireguardKey.PublicKey().String())
 	if configErr != nil {
 		log.Fatal(configErr)
 	}

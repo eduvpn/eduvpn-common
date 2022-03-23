@@ -42,7 +42,7 @@ func getDiscoFile(jsonFile string) (string, error) {
 	// Get json data
 	discoURL := "https://disco.eduvpn.org/v2/"
 	fileURL := discoURL + jsonFile
-	fileBody, fileErr := HTTPGet(fileURL)
+	_, fileBody, fileErr := HTTPGet(fileURL)
 
 	if fileErr != nil {
 		return "", &DiscoFileError{fileURL, fileErr}
@@ -51,7 +51,7 @@ func getDiscoFile(jsonFile string) (string, error) {
 	// Get signature
 	sigFile := jsonFile + ".minisig"
 	sigURL := discoURL + sigFile
-	sigBody, sigFileErr := HTTPGet(sigURL)
+	_, sigBody, sigFileErr := HTTPGet(sigURL)
 
 	if sigFileErr != nil {
 		return "", &DiscoSigFileError{URL: sigURL, Err: sigFileErr}

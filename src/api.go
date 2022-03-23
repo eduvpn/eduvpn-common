@@ -7,7 +7,7 @@ import (
 )
 
 // Authenticated wrappers on top of HTTP
-func (eduvpn *VPNState) apiAuthenticatedWithOpts(method string, endpoint string, opts *HTTPOptionalParams) ([]byte, error) {
+func (eduvpn *VPNState) apiAuthenticatedWithOpts(method string, endpoint string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
 	// Ensure optional is not nil as we will fill it with headers
 	if opts == nil {
 		opts = &HTTPOptionalParams{}
@@ -18,7 +18,7 @@ func (eduvpn *VPNState) apiAuthenticatedWithOpts(method string, endpoint string,
 	oauthErr := eduvpn.EnsureTokensOAuth()
 
 	if oauthErr != nil {
-		return nil, oauthErr
+		return nil, nil, oauthErr
 	}
 
 	headerKey := "Authorization"
@@ -28,14 +28,14 @@ func (eduvpn *VPNState) apiAuthenticatedWithOpts(method string, endpoint string,
 	} else {
 		opts.Headers = &http.Header{headerKey: {headerValue}}
 	}
-	body, bodyErr := HTTPMethodWithOpts(method, url, opts)
+	header, body, bodyErr := HTTPMethodWithOpts(method, url, opts)
 	if bodyErr != nil {
-		return nil, bodyErr
+		return header, nil, bodyErr
 	}
-	return body, nil
+	return header, body, nil
 }
 
-func (eduvpn *VPNState) APIConnectWireguard(pubkey string) (string, error) {
+func (eduvpn *VPNState) APIConnectWireguard(pubkey string) (string, string, error) {
 	headers := &http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 		"accept":       {"application/x-wireguard-profile"},
@@ -45,13 +45,11 @@ func (eduvpn *VPNState) APIConnectWireguard(pubkey string) (string, error) {
 		"profile_id": {"default"},
 		"public_key": {pubkey},
 	}
-	body, bodyErr := eduvpn.apiAuthenticatedWithOpts(http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
+	header, body, bodyErr := eduvpn.apiAuthenticatedWithOpts(http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if bodyErr != nil {
-		return "", bodyErr
+		return "", "", bodyErr
 	}
-	return string(body), nil
-}
 
-func (eduvpn *VPNState) APIInfo() ([]byte, error) {
-	return eduvpn.apiAuthenticatedWithOpts(http.MethodGet, "/info", nil)
+	expires := header.Get("expires")
+	return string(body), expires, nil
 }
