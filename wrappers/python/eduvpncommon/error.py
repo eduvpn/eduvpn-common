@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class GoError(Exception):
     message_dict: dict
     code: Enum

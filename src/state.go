@@ -19,7 +19,6 @@ func Register(state *VPNState, name string, directory string, stateCallback func
 	stateCallback("START", "REGISTERED", "app registered")
 
 	// Try to load the previous configuration
-
 	if state.LoadConfig() != nil {
 		// This error can be safely ignored, as when the config does not load, the struct will not be filled
 		// Make sure to log this when we have implemented a good logging system

@@ -3,14 +3,20 @@ from collections import defaultdict
 import pathlib
 import platform
 
-_lib_prefixes = defaultdict(lambda: "lib", {
-    "windows": "",
-})
+_lib_prefixes = defaultdict(
+    lambda: "lib",
+    {
+        "windows": "",
+    },
+)
 
-_lib_suffixes = defaultdict(lambda: ".so", {
-    "windows": ".dll",
-    "darwin": ".dylib",
-})
+_lib_suffixes = defaultdict(
+    lambda: ".so",
+    {
+        "windows": ".dll",
+        "darwin": ".dylib",
+    },
+)
 
 _os = platform.system().lower()
 
@@ -19,9 +25,10 @@ _libfile = f"{_lib_prefixes[_os]}{_libname}{_lib_suffixes[_os]}"
 # Library should have been copied to the lib/ folder
 lib = cdll.LoadLibrary(str(pathlib.Path(__file__).parent / "lib" / _libfile))
 
+
 class DataError(Structure):
-    _fields_ = [('data', c_void_p),
-                ('error', c_void_p)]
+    _fields_ = [("data", c_void_p), ("error", c_void_p)]
+
 
 VPNStateChange = CFUNCTYPE(None, c_char_p, c_char_p, c_char_p)
 
@@ -32,6 +39,7 @@ lib.GetServersList.argtypes, lib.GetServersList.restype = [], DataError
 # We have to use c_void_p instead of c_char_p to free it properly
 # See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
+
 
 def GetPtrString(ptr):
     if ptr:
