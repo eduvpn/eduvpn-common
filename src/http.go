@@ -66,7 +66,6 @@ type HTTPOptionalParams struct {
 // Construct an URL including on parameters
 func HTTPConstructURL(baseURL string, parameters URLParameters) (string, error) {
 	url, err := url.Parse(baseURL)
-
 	if err != nil {
 		return "", err
 	}
@@ -116,7 +115,6 @@ func httpOptionalHeaders(req *http.Request, opts *HTTPOptionalParams) {
 			req.Header.Add(k, v[0])
 		}
 	}
-
 }
 
 func httpOptionalBodyReader(opts *HTTPOptionalParams) io.Reader {
@@ -127,7 +125,6 @@ func httpOptionalBodyReader(opts *HTTPOptionalParams) io.Reader {
 }
 
 func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
-
 	// Make sure the url contains all the parameters
 	// This can return an error,
 	// it already has the right error so so we don't wrap it further

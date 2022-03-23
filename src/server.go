@@ -1,27 +1,27 @@
 package eduvpn
 
 import (
-	"errors"
 	"encoding/json"
+	"errors"
 )
 
 type Server struct {
-	BaseURL   string           `json:"base_url"`
-	Endpoints *ServerEndpoints `json:"endpoints"`
-	OAuth     *OAuth           `json:"oauth"`
+	BaseURL   string             `json:"base_url"`
+	Endpoints *ServerEndpoints   `json:"endpoints"`
+	OAuth     *OAuth             `json:"oauth"`
 	Profiles  *ServerProfileInfo `json:"profiles"`
 }
 
 type ServerProfile struct {
-	ID string `json:"profile_id"`
-	DisplayName string `json:"display_name"`
-	VPNProtoList []string `json:"vpn_proto_list"`
-	DefaultGateway bool `json:"default_gateway"`
+	ID             string   `json:"profile_id"`
+	DisplayName    string   `json:"display_name"`
+	VPNProtoList   []string `json:"vpn_proto_list"`
+	DefaultGateway bool     `json:"default_gateway"`
 }
 
 type ServerProfileInfo struct {
 	Current uint8 `json:"current_profile"`
-	Info struct {
+	Info    struct {
 		ProfileList []ServerProfile `json:"profile_list"`
 	} `json:"info"`
 }

@@ -1,8 +1,8 @@
 package eduvpn
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 )

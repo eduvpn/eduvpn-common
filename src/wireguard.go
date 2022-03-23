@@ -2,8 +2,9 @@ package eduvpn
 
 import (
 	"fmt"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"regexp"
+
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 func wireguardGenerateKey() (wgtypes.Key, error) {

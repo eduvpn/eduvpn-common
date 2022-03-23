@@ -3,8 +3,9 @@ package eduvpn
 import (
 	"errors"
 	"fmt"
-	"github.com/jedisct1/go-minisign"
 	"os"
+
+	"github.com/jedisct1/go-minisign"
 )
 
 // getKeys returns keys taken from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys.

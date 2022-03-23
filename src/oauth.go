@@ -19,7 +19,6 @@ import (
 // client.
 func genState() (string, error) {
 	randomBytes, err := MakeRandomByteSlice(32)
-
 	if err != nil {
 		return "", &OAuthGenStateUnableError{Err: err}
 	}
@@ -120,7 +119,8 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 		"redirect_uri":  {"http://127.0.0.1:8000/callback"},
 	}
 	headers := &http.Header{
-		"content-type": {"application/x-www-form-urlencoded"}}
+		"content-type": {"application/x-www-form-urlencoded"},
+	}
 	opts := &HTTPOptionalParams{Headers: headers, Body: data}
 	current_time := generateTimeSeconds()
 	_, body, bodyErr := HTTPPostWithOpts(reqURL, opts)
@@ -157,7 +157,8 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 		"grant_type":    {"refresh_token"},
 	}
 	headers := &http.Header{
-		"content-type": {"application/x-www-form-urlencoded"}}
+		"content-type": {"application/x-www-form-urlencoded"},
+	}
 	opts := &HTTPOptionalParams{Headers: headers, Body: data}
 	current_time := generateTimeSeconds()
 	_, body, bodyErr := HTTPPostWithOpts(reqURL, opts)
@@ -210,7 +211,6 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	// Now that we have obtained the authorization code, we can move to the next step:
 	// Obtaining the access and refresh tokens
 	err := oauth.getTokensWithAuthCode(extractedCode)
-
 	if err != nil {
 		oauth.Session.CallbackError = &OAuthFailedCallbackGetTokensError{Err: err}
 		go oauth.Session.Server.Shutdown(oauth.Session.Context)

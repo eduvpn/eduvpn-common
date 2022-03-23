@@ -22,7 +22,7 @@ func (eduvpn *VPNState) WriteConfig() error {
 	if marshalErr != nil {
 		return marshalErr
 	}
-	return ioutil.WriteFile(eduvpn.GetConfigName(), jsonString, 0644)
+	return ioutil.WriteFile(eduvpn.GetConfigName(), jsonString, 0o644)
 }
 
 func (eduvpn *VPNState) LoadConfig() error {

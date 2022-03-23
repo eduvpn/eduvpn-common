@@ -2,10 +2,11 @@ package main
 
 import (
 	"flag"
-	eduvpn "github.com/jwijenbergh/eduvpn-common/src"
 	"log"
 	"os/exec"
 	"strings"
+
+	eduvpn "github.com/jwijenbergh/eduvpn-common/src"
 )
 
 func openBrowser(urlString string) {
