@@ -9,10 +9,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-        with:
-          go-version: ^1.15
-      - run: make test-go
+      - name: Test with docker-compose
+        run: docker-compose --file ci/docker/docker-compose.yml --project-directory . up --abort-on-container-exit
 
   build-lib:
     name: Build shared Go library
