@@ -1,5 +1,9 @@
 version: '3'
 
+x-common-env: &common-env
+  PORTAL_USER: ${PORTAL_USER}
+  PORTAL_PASS: ${PORTAL_PASS}
+
 networks:
   eduvpn_network:
     ipam:
@@ -20,6 +24,7 @@ services:
         ipv4_address: 172.20.0.5
     cap_add: # needed for wireguard
       - NET_ADMIN
+    environment: *common-env
     healthcheck:
         test: ["CMD", "systemctl", "status", "wg-quick@wg0"] # Wait for wireguard to come online
         interval: 5s
@@ -29,6 +34,7 @@ services:
     build:
       context: "."
       dockerfile: 'ci/docker/go-test.docker'
+    environment: *common-env
     depends_on:
       eduvpnserver:
         condition: service_healthy

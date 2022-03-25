@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Test with docker-compose
-        run: docker-compose --file ci/docker/docker-compose.yml --project-directory . up --abort-on-container-exit
+        run: PORTAL_USER="ci" PORTAL_PASS="ci" ./ci/startcompose.sh
 
   build-lib:
     name: Build shared Go library

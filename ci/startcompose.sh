@@ -10,15 +10,6 @@ if [[ -z "${PORTAL_PASS}" ]]; then
     exit 1
 fi
 
-systemctl start php-fpm
-systemctl start httpd
-systemctl start crond
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-vpn-daemon &
-sleep 5
-
-vpn-maint-apply-changes
-
-sudo -u apache vpn-user-portal-account --add "${PORTAL_USER}" --password "${PORTAL_PASS}"
-
-sleep infinity
+docker-compose --file ci/docker/docker-compose.yml --project-directory $SCRIPT_DIR/.. up --abort-on-container-exit
