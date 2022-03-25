@@ -15,10 +15,11 @@ systemctl start httpd
 systemctl start crond
 
 vpn-daemon &
+pid_daemon=$!
 sleep 5
 
 vpn-maint-apply-changes
 
 sudo -u apache vpn-user-portal-account --add "${PORTAL_USER}" --password "${PORTAL_PASS}"
 
-sleep infinity
+wait $pid_daemon
