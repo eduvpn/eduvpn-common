@@ -1,11 +1,35 @@
 FROM golang:1.18
 
+WORKDIR /eduvpn
+
+
+# Selenium dependencies
+
+# Firefox
+RUN echo "deb http://deb.debian.org/debian/ unstable main contrib non-free" >> /etc/apt/sources.list.d/debian.list
+RUN apt-get update
+RUN apt-get -y install openjdk-11-jre xvfb python3-selenium firefox python3-pyvirtualdisplay
+
+# Install geckodriver and add to path
+WORKDIR /eduvpn/go/vendor
+
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz
+RUN tar xzvf geckodriver-v0.30.0-linux64.tar.gz
+
+ENV PATH="/eduvpn/go/vendor:$PATH"
+
 WORKDIR /eduvpn/go
 
 # pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
 COPY ./go.mod go.sum ./
 RUN go mod download && go mod verify
 
+WORKDIR /eduvpn/go
+
+# Copy go source
 COPY ./src ./src
 
-CMD ["go", "test", "github.com/jwijenbergh/eduvpn-common/src"]
+# Copy selenium scripts
+COPY ./selenium_eduvpn.py ./selenium_eduvpn.py
+
+CMD ["go", "test", "-mod=readonly", "github.com/jwijenbergh/eduvpn-common/src", "-v"]
