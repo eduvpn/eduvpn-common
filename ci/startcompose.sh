@@ -12,4 +12,4 @@ fi
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-docker-compose --file ci/docker/docker-compose.yml --project-directory $SCRIPT_DIR/.. up --abort-on-container-exit
+docker-compose --file ci/docker/docker-compose.yml --project-directory $SCRIPT_DIR/.. up --build --force-recreate --abort-on-container-exit
