@@ -10,27 +10,27 @@ import (
 	"strings"
 )
 
-func RunCommand(t *testing.T, name string, args ...string) {
+func runCommand(t *testing.T, errBuffer *strings.Builder, name string, args ...string) error {
 	cmd := exec.Command(name, args...)
-	var errBuffer strings.Builder
 
-	cmd.Stderr = &errBuffer
+	cmd.Stderr = errBuffer
 	err := cmd.Start()
 	if err != nil {
-		t.Errorf("%v", err)
+		return err
 	}
 
-	err = cmd.Wait()
-
-	if err != nil {
-		t.Errorf("Login OAuth with selenium script failed with error %v and stderr %s", err, errBuffer.String())
-	}
+	return cmd.Wait()
 }
 
 func LoginOAuthSelenium(t* testing.T, url string) {
 	// We could use the go selenium library
 	// But it does not support the latest selenium v4 just yet
-	RunCommand(t, "python3", "../selenium_eduvpn.py", url)
+	var errBuffer strings.Builder
+	err := runCommand(t, &errBuffer, "python3", "../selenium_eduvpn.py", url)
+
+	if err != nil {
+		t.Errorf("Login OAuth with selenium script failed with error %v and stderr %s", err, errBuffer.String())
+	}
 }
 
 func StateCallback(t *testing.T, oldState string, newState string, data string) {
