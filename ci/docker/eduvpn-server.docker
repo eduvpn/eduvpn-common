@@ -1,15 +1,22 @@
 FROM fedora:36
 
+# This dockerfile was adapted from https://github.com/eduvpn/documentation/blob/v3/deploy_fedora.sh
+# DO NOT USE THIS IN PRODUCTION, ONLY FOR TESTING
+
+# Install git to clone the documentation repo
 RUN dnf -y install git
 
 WORKDIR /eduvpn
 
+# Clone the documentation
 RUN git clone https://github.com/eduvpn/documentation
 
 WORKDIR /eduvpn/documentation
 
+# Checkout v3 branch
 RUN git checkout v3
 
+# Add dev package
 RUN echo -e '[eduVPN_v3-dev]\n\
 name=eduVPN 3.x Development Packages (Fedora $releasever)\n\
 baseurl=https://repo.tuxed.net/eduVPN/v3-dev/rpm/fedora-$releasever-$basearch\n\
@@ -18,31 +25,35 @@ gpgkey=https://repo.tuxed.net/fkooman+repo@tuxed.net.asc\n\
 enabled=1'\
 >> /etc/yum.repos.d/eduVPN_v3-dev.repo
 
-RUN cat /etc/yum.repos.d/eduVPN_v3-dev.repo
-
+# Install dependencies
 RUN dnf -y install mod_ssl php-opcache httpd iptables-nft pwgen cronie \
     iptables-services php-fpm php-cli policycoreutils-python-utils chrony \
     ipcalc tmux wget iproute
 
+# Install vpn packages
 RUN dnf -y install vpn-server-node vpn-user-portal vpn-maint-scripts
 
+# Set webserver name
 ARG WEB_FQDN=eduvpnserver
 
+# Copy and apply configurations
 RUN cp resources/ssl.fedora.conf /etc/httpd/conf.d/ssl.conf
 RUN cp resources/localhost.fedora.conf /etc/httpd/conf.d/localhost.conf
 RUN cp resources/vpn.example.fedora.conf "/etc/httpd/conf.d/${WEB_FQDN}.conf"
 
 RUN sed -i "s/vpn.example/${WEB_FQDN}/" "/etc/httpd/conf.d/${WEB_FQDN}.conf"
-
 RUN sed -i "s/vpn.example/${WEB_FQDN}/" "/etc/vpn-user-portal/config.php"
 
+# Update ip ranges
 RUN sed -i "s|10.42.42.0|$(ipcalc -4 -r 24 -n --no-decorate)|" "/etc/vpn-user-portal/config.php"
 RUN sed -i "s|fd42::|$(ipcalc -6 -r 64 -n --no-decorate)|" "/etc/vpn-user-portal/config.php"
 RUN sed -i "s|10.43.43.0|$(ipcalc -4 -r 24 -n --no-decorate)|" "/etc/vpn-user-portal/config.php"
 RUN sed -i "s|fd43::|$(ipcalc -6 -r 64 -n --no-decorate)|" "/etc/vpn-user-portal/config.php"
 
+# Update secrets
 RUN cp /etc/vpn-user-portal/keys/node.0.key /etc/vpn-server-node/keys/node.key
 
+# Create self signed cert and key
 RUN openssl req \
     -nodes \
     -subj "/CN=${WEB_FQDN}" \
@@ -53,13 +64,17 @@ RUN openssl req \
     -out "/etc/pki/tls/certs/${WEB_FQDN}.crt" \
     -days 90
 
+# Add the start script
 WORKDIR /eduvpn/server
 ADD ci/docker/starteduvpn.sh /eduvpn/server
 
 RUN chmod +x ./starteduvpn.sh
 
+# While we could mimic the systemd units ourselves, let's use a systemctl replacement script
+# This makes it easier to update
 RUN wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl3.py -O /bin/systemctl
 
+# make it executable
 RUN chmod +x /bin/systemctl
 
 CMD ["./starteduvpn.sh"]

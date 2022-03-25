@@ -1,10 +1,10 @@
 FROM golang:1.18
 
+# This docker image is for testing the go code with go test and the needed dependencies for selenium
+
 WORKDIR /eduvpn
 
-
 # Selenium dependencies
-
 # Firefox
 RUN echo "deb http://deb.debian.org/debian/ unstable main contrib non-free" >> /etc/apt/sources.list.d/debian.list
 RUN apt-get update
@@ -15,11 +15,12 @@ WORKDIR /eduvpn/go/vendor
 
 RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz
 RUN tar xzvf geckodriver-v0.30.0-linux64.tar.gz
-
 ENV PATH="/eduvpn/go/vendor:$PATH"
 
+# Set up file tree
 WORKDIR /eduvpn/go
 
+# Taken from golang docker example
 # pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
 COPY ./go.mod go.sum ./
 RUN go mod download && go mod verify
@@ -32,4 +33,5 @@ COPY ./src ./src
 # Copy selenium scripts
 COPY ./selenium_eduvpn.py ./selenium_eduvpn.py
 
+# Run the tests
 CMD ["go", "test", "-mod=readonly", "github.com/jwijenbergh/eduvpn-common/src", "-v"]

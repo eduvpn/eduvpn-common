@@ -1,9 +1,12 @@
 version: '3'
 
+# Common environment vars
+# These are the credentials for the portal
 x-common-env: &common-env
   PORTAL_USER: ${PORTAL_USER}
   PORTAL_PASS: ${PORTAL_PASS}
 
+# Define a network so that the containers can talk with eachother using their service name
 networks:
   eduvpn_network:
     ipam:
@@ -11,12 +14,14 @@ networks:
         config:
           - subnet: 172.20.0.0/24
 
+# Defines the services
 services:
+  # The eduvpn server with portal
   eduvpnserver:
     build:
       context: "."
       dockerfile: 'ci/docker/eduvpn-server.docker'
-    sysctls:
+    sysctls: # needed for wireguard permissions, otherwise we get a permisison failed
       - net.ipv6.conf.all.disable_ipv6=0
     networks:
       eduvpn_network:
@@ -29,6 +34,7 @@ services:
         interval: 5s
         timeout: 10s
         retries: 10
+  # The container for testing the go code
   gotest:
     build:
       context: "."
@@ -37,6 +43,7 @@ services:
     networks:
       eduvpn_network:
         ipv4_address: 172.20.0.5
+    # Wait for eduvpn server to come online
     depends_on:
       eduvpnserver:
         condition: service_healthy
