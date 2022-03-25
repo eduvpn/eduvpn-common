@@ -45,7 +45,7 @@ func (state *VPNState) Connect(url string) (string, error) {
 			return "", authInitializeErr
 		}
 
-		state.StateCallback("Registered", "OAuthInitialized", authURL)
+		go state.StateCallback("Registered", "OAuthInitialized", authURL)
 		oauthErr := state.FinishOAuth()
 
 		if oauthErr != nil {
