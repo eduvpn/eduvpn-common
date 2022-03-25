@@ -1,19 +1,8 @@
-name: "[Windows] Test & check build"
+name: "[Windows] Check build"
 
 on: [ push, pull_request ]
 
 jobs:
-  test-go:
-    name: "[Windows] Test Go"
-    runs-on: windows-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-        with:
-          go-version: ^1.15
-      - run: make test-go
-
   build-lib:
     name: "[Windows] Build shared Go library"
     runs-on: windows-latest
