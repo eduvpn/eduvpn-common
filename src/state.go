@@ -39,21 +39,11 @@ func (state *VPNState) Connect(url string) (string, error) {
 	}
 
 	if !state.Server.IsAuthenticated() {
-		authURL, authInitializeErr := state.InitializeOAuth()
+		loginErr := state.LoginOAuth()
 
-		if authInitializeErr != nil {
-			return "", authInitializeErr
+		if loginErr != nil {
+			return "", loginErr
 		}
-
-		go state.StateCallback("Registered", "OAuthInitialized", authURL)
-		oauthErr := state.FinishOAuth()
-
-		if oauthErr != nil {
-			return "", oauthErr
-		}
-
-		state.StateCallback("OAuthInitialized", "OAuthFinished", "finished oauth")
-		state.WriteConfig()
 	}
 
 	return state.Server.GetConfig()

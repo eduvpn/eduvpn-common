@@ -73,7 +73,7 @@ type OAuthExchangeSession struct {
 	Server  *http.Server
 }
 
-func generateTimeSeconds() int64 {
+func GenerateTimeSeconds() int64 {
 	current := time.Now()
 	return current.Unix()
 }
@@ -122,13 +122,14 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
 	opts := &HTTPOptionalParams{Headers: headers, Body: data}
-	current_time := generateTimeSeconds()
+	current_time := GenerateTimeSeconds()
 	_, body, bodyErr := HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return bodyErr
 	}
 
 	tokenStructure := &OAuthToken{}
+
 	jsonErr := json.Unmarshal(body, tokenStructure)
 
 	if jsonErr != nil {
@@ -143,7 +144,7 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 
 func (oauth *OAuth) isTokensExpired() bool {
 	expired_time := oauth.Token.ExpiredTimestamp
-	current_time := generateTimeSeconds()
+	current_time := GenerateTimeSeconds()
 	return current_time >= expired_time
 }
 
@@ -160,7 +161,7 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
 	opts := &HTTPOptionalParams{Headers: headers, Body: data}
-	current_time := generateTimeSeconds()
+	current_time := GenerateTimeSeconds()
 	_, body, bodyErr := HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return bodyErr
@@ -269,9 +270,38 @@ func (eduvpn *VPNState) FinishOAuth() error {
 	return oauth.getTokensWithCallback()
 }
 
+func (state *VPNState) LoginOAuth() error {
+	authURL, authInitializeErr := state.InitializeOAuth()
+
+	if authInitializeErr != nil {
+		return authInitializeErr
+	}
+
+	go state.StateCallback("Registered", "OAuthInitialized", authURL)
+	oauthErr := state.FinishOAuth()
+
+	if oauthErr != nil {
+		return oauthErr
+	}
+
+	state.StateCallback("OAuthInitialized", "OAuthFinished", "finished oauth")
+	state.WriteConfig()
+	return nil
+}
+
+func (oauth *OAuth) Login() error {
+	// FIXME: Find a better way
+	state := GetVPNState()
+	return state.LoginOAuth()
+}
+
 func (oauth *OAuth) EnsureTokens() error {
 	if oauth.isTokensExpired() {
-		return oauth.getTokensWithRefresh()
+		err := oauth.getTokensWithRefresh()
+		if err != nil {
+			// log that we're getting tokens using login
+			return oauth.Login()
+		}
 	}
 	return nil
 }

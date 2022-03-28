@@ -160,6 +160,10 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (ht
 		return resp.Header, nil, &HTTPReadError{URL: url, Err: readErr}
 	}
 
-	// Return the body in bytes and signal that there was no error
+	if resp.StatusCode != 200 {
+		return resp.Header, body, &HTTPStatusError{URL: url, Status: resp.StatusCode}
+	}
+
+	// Return the body in bytes and signal the status error if there was one
 	return resp.Header, body, nil
 }
