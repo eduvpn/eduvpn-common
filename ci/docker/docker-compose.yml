@@ -5,6 +5,7 @@ version: '3'
 x-common-env: &common-env
   PORTAL_USER: ${PORTAL_USER}
   PORTAL_PASS: ${PORTAL_PASS}
+  OAUTH_EXPIRED_TTL: ${OAUTH_EXPIRED_TTL}
 
 # Define a network so that the containers can talk with eachother using their service name
 networks:

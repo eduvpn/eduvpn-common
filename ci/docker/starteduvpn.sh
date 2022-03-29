@@ -12,6 +12,9 @@ if [[ -z "${PORTAL_PASS}" ]]; then
     exit 1
 fi
 
+# Replace expiry
+./replaceexpiry.sh /etc/vpn-user-portal/config.php
+
 # Start the preliminary systemd units
 systemctl start php-fpm
 systemctl start httpd

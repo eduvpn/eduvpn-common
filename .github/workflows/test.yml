@@ -12,6 +12,15 @@ jobs:
       - name: Test with docker-compose
         run: PORTAL_USER="ci" PORTAL_PASS="ci" ./ci/startcompose.sh
 
+  test-go-expiry:
+    name: Test Go [Custom Expiry]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test with docker-compose
+        run: OAUTH_EXPIRED_TTL="5" PORTAL_USER="ci" PORTAL_PASS="ci" ./ci/startcompose.sh
+
   build-lib:
     name: Build shared Go library
     runs-on: ubuntu-latest

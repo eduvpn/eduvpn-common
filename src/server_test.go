@@ -5,9 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 func runCommand(t *testing.T, errBuffer *strings.Builder, name string, args ...string) error {
@@ -98,20 +101,34 @@ func Test_connect_oauth_parameters(t *testing.T) {
 	}
 }
 
-func Test_token_refresh(t *testing.T) {
+func Test_token_expired(t *testing.T) {
+	expiredTTL := os.Getenv("OAUTH_EXPIRED_TTL")
+	if expiredTTL == "" {
+		t.Log("No expired TTL present, skipping this test. Set EXPIRED_TTL env variable to run it")
+		return
+	}
+
+	// Convert the env variable to an int and signal error if it is not possible
+	expiredInt, expiredErr := strconv.Atoi(expiredTTL)
+	if expiredErr != nil {
+		t.Errorf("Cannot convert EXPIRED_TTL env variable to an int with error %v", expiredErr)
+	}
+
+	// Get a vpn state
 	state := GetVPNState()
 
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	state.Register("org.eduvpn.app.linux", "configsrefresh", func(old string, new string, data string) {
+	state.Register("org.eduvpn.app.linux", "configstest", func(old string, new string, data string) {
 		StateCallback(t, old, new, data)
 	})
 
-	// Fake expiry
-	state.Server.OAuth.Token.ExpiredTimestamp = GenerateTimeSeconds()
 	accessToken := state.Server.OAuth.Token.Access
 	refreshToken := state.Server.OAuth.Token.Refresh
+
+	// Wait for TTL so that the tokens expire
+	time.Sleep(time.Duration(expiredInt) * time.Second)
 
 	_, configErr := state.Connect("https://eduvpnserver")
 

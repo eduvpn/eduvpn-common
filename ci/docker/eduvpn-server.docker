@@ -64,11 +64,13 @@ RUN openssl req \
     -out "/etc/pki/tls/certs/${WEB_FQDN}.crt" \
     -days 90
 
-# Add the start script
+# Add the start script and expiry script
 WORKDIR /eduvpn/server
 ADD ci/docker/starteduvpn.sh /eduvpn/server
+ADD ci/docker/replaceexpiry.sh /eduvpn/server
 
 RUN chmod +x ./starteduvpn.sh
+RUN chmod +x ./replaceexpiry.sh
 
 # While we could mimic the systemd units ourselves, let's use a systemctl replacement script
 # This makes it easier to update
