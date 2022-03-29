@@ -39,6 +39,7 @@ func (server *Server) apiAuthenticatedRetry(method string, endpoint string, opts
 		var error *HTTPStatusError
 
 		if errors.As(bodyErr, &error) {
+			GetVPNState().Log(LOG_INFO, fmt.Sprintf("API: Got HTTP error %v, retrying authenticated", bodyErr))
 			// Tell the method that the token is expired
 			server.OAuth.Token.ExpiredTimestamp = GenerateTimeSeconds()
 			return server.apiAuthenticated(method, endpoint, opts)

@@ -24,14 +24,14 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 	// Initialize the logger
 	state.InitLog(LOG_WARNING)
 
-	state.Log(LOG_INFO, "App Registered")
+	state.Log(LOG_INFO, "App registered")
 
 	state.StateCallback("Start", "Registered", "app registered")
 
 	// Try to load the previous configuration
 	if state.LoadConfig() != nil {
 		// This error can be safely ignored, as when the config does not load, the struct will not be filled
-		// Make sure to log this when we have implemented a good logging system
+		state.Log(LOG_INFO, "Previous configuration not found")
 	}
 	return nil
 }

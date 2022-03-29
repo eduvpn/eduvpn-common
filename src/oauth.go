@@ -297,8 +297,10 @@ func (oauth *OAuth) Login() error {
 
 func (oauth *OAuth) EnsureTokens() error {
 	if oauth.isTokensExpired() {
+		GetVPNState().Log(LOG_INFO, "OAuth: Tokens are expired, retrying with refresh tokens")
 		err := oauth.getTokensWithRefresh()
 		if err != nil {
+			GetVPNState().Log(LOG_INFO, fmt.Sprintf("OAuth: Refresh tokens with error %v, retrying with a new login phase", err))
 			// log that we're getting tokens using login
 			return oauth.Login()
 		}
