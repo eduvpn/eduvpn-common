@@ -8,15 +8,23 @@ import (
 	"path"
 )
 
+func (eduvpn *VPNState) EnsureConfigDir() error {
+	mkdirErr := os.MkdirAll(eduvpn.ConfigDirectory, os.ModePerm)
+	if mkdirErr != nil {
+		return mkdirErr
+	}
+	return nil
+}
+
 func (eduvpn *VPNState) GetConfigName() string {
 	pathString := path.Join(eduvpn.ConfigDirectory, eduvpn.Name)
 	return fmt.Sprintf("%s.json", pathString)
 }
 
 func (eduvpn *VPNState) WriteConfig() error {
-	mkdirErr := os.MkdirAll(eduvpn.ConfigDirectory, os.ModePerm)
-	if mkdirErr != nil {
-		return mkdirErr
+	configDirErr := eduvpn.EnsureConfigDir()
+	if configDirErr != nil {
+		return configDirErr
 	}
 	jsonString, marshalErr := json.Marshal(eduvpn)
 	if marshalErr != nil {

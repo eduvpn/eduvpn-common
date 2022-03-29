@@ -11,12 +11,20 @@ type VPNState struct {
 
 	// The list of servers and organizations from disco
 	DiscoList *DiscoList `json:"disco"`
+
+	// The file we keep open for logging
+	LogFile *FileLogger `json:"-"`
 }
 
 func (state *VPNState) Register(name string, directory string, stateCallback func(string, string, string)) error {
 	state.Name = name
 	state.ConfigDirectory = directory
 	state.StateCallback = stateCallback
+
+	// Initialize the logger
+	state.InitLog(LOG_WARNING)
+
+	state.Log(LOG_INFO, "App Registered")
 
 	state.StateCallback("Start", "Registered", "app registered")
 
