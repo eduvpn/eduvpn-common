@@ -36,6 +36,14 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 	return nil
 }
 
+func (state *VPNState) Deregister() {
+	// Close the log file
+	state.CloseLog()
+
+	// Re-initialize everything
+	state = &VPNState{}
+}
+
 func (state *VPNState) Connect(url string) (string, error) {
 	if state.Server == nil {
 		state.Server = &Server{}

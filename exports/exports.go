@@ -39,6 +39,12 @@ func Register(name *C.char, config_directory *C.char, stateCallback C.PythonCB) 
 	return C.CString(ErrorToString(registerErr))
 }
 
+//export Deregister
+func Deregister() {
+	state := eduvpn.GetVPNState()
+	state.Deregister()
+}
+
 func ErrorToString(error error) string {
 	if error == nil {
 		return ""

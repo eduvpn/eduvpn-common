@@ -19,6 +19,8 @@ def Register(name, config_directory, state_callback):
     err_string = GetPtrString(ptr_err)
     return err_string
 
+def Deregister():
+    return lib.Deregister()
 
 def GetDiscoServers():
     servers, serversErr = GetDataError(lib.GetServersList())
@@ -51,6 +53,9 @@ class EduVPN(object):
         self.name = name
         self.config_directory = config_directory
         register_callback(self)
+
+    def __del__(self):
+        Deregister()
 
     def register(self) -> bool:
         return Register(self.name, self.config_directory, callback_function) == ""
