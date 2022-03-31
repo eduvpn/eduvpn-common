@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os/exec"
 	"strings"
@@ -17,6 +18,10 @@ func openBrowser(urlString string) {
 
 func logState(oldState string, newState string, data string) {
 	log.Printf("State: %s -> State: %s with data %s\n", oldState, newState, data)
+
+	if newState == "SERVER_OAUTH_STARTED" {
+		openBrowser(data)
+	}
 }
 
 func main() {
@@ -35,37 +40,13 @@ func main() {
 
 	state := eduvpn.GetVPNState()
 
-	eduvpn.Register(state, "org.eduvpn.app.linux", "configs", logState)
-	state.Server = &eduvpn.Server{}
-	serverInitializeErr := state.Server.Initialize(urlString)
-	if serverInitializeErr != nil {
-		log.Fatal(serverInitializeErr)
-	}
+	state.Register("org.eduvpn.app.linux", "configs", logState)
+	config, configErr := state.Connect(urlString)
 
-	if state.LoadConfig() != nil {
-		authURL, err := state.InitializeOAuth()
-		if err != nil {
-			log.Fatal(err)
-		}
-		openBrowser(authURL)
-		oauthErr := state.FinishOAuth()
-		if oauthErr != nil {
-			log.Fatal(oauthErr)
-		}
-	}
-
-	writeErr := state.WriteConfig()
-	if writeErr != nil {
-		log.Fatal(writeErr)
-	}
-	wireguardKey, wireguardErr := eduvpn.WireguardGenerateKey()
-
-	if wireguardErr != nil {
-		log.Fatal(wireguardErr)
-	}
-	configString, configExpires, configErr := state.APIConnectWireguard(wireguardKey.PublicKey().String())
 	if configErr != nil {
-		log.Fatal(configErr)
+		fmt.Printf("Config error %v", configErr)
+		return
 	}
-	log.Println(eduvpn.WireguardConfigAddKey(configString, wireguardKey))
+
+	print(config)
 }

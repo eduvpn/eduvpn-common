@@ -42,17 +42,22 @@ type ServerEndpoints struct {
 }
 
 func (server *Server) Initialize(url string) error {
+	if !GetVPNState().HasTransition(CONFIG_CHOSENSERVER) {
+		return errors.New("cannot choose a server")
+	}
 	server.BaseURL = url
 	endpointsErr := server.GetEndpoints()
 	if endpointsErr != nil {
 		return endpointsErr
 	}
+	GetVPNState().GoTransition(CONFIG_CHOSENSERVER, "Chosen server")
 	return nil
 }
 
 // FIXME: Check validity of tokens
 func (server *Server) IsAuthenticated() bool {
 	return server.OAuth != nil
+	// return GetVPNState().HasTransition(SERVER_NOT_AUTHENTICATED)
 }
 
 func (server *Server) GetEndpoints() error {

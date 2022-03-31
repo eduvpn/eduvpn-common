@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -225,17 +226,20 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 // Initializes the OAuth for eduvpn.
 // It needs a vpn state that was gotten from `Register`
 // It returns the authurl for the browser and an error if present
-func (eduvpn *VPNState) InitializeOAuth() (string, error) {
+func (eduvpn *VPNState) InitializeOAuth() error {
+	if !eduvpn.HasTransition(SERVER_OAUTH_STARTED) {
+		return errors.New("Failed starting oauth, invalid state")
+	}
 	// Generate the state
 	state, stateErr := genState()
 	if stateErr != nil {
-		return "", &OAuthFailedInitializeError{Err: stateErr}
+		return &OAuthFailedInitializeError{Err: stateErr}
 	}
 
 	// Generate the verifier and challenge
 	verifier, verifierErr := genVerifier()
 	if verifierErr != nil {
-		return "", &OAuthFailedInitializeError{Err: verifierErr}
+		return &OAuthFailedInitializeError{Err: verifierErr}
 	}
 	challenge := genChallengeS256(verifier)
 
@@ -258,33 +262,38 @@ func (eduvpn *VPNState) InitializeOAuth() (string, error) {
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
 	oauthSession := &OAuthExchangeSession{ClientID: eduvpn.Name, State: state, Verifier: verifier}
 	eduvpn.Server.OAuth = &OAuth{TokenURL: eduvpn.Server.Endpoints.API.V3.Token, Session: oauthSession}
-	return authURL, nil
+	eduvpn.GoTransition(SERVER_OAUTH_STARTED, authURL)
+	return nil
 }
 
 // Error definitions
 func (eduvpn *VPNState) FinishOAuth() error {
-	oauth := eduvpn.Server.OAuth
-	if oauth == nil {
-		panic("invalid oauth state")
+	if !eduvpn.HasTransition(SERVER_OAUTH_FINISHED) {
+		return errors.New("invalid state to finish oauth")
 	}
-	return oauth.getTokensWithCallback()
+	oauth := eduvpn.Server.OAuth
+	tokenErr := oauth.getTokensWithCallback()
+	if tokenErr != nil {
+		return tokenErr
+	}
+	eduvpn.GoTransition(SERVER_OAUTH_FINISHED, "")
+	eduvpn.GoTransition(SERVER_AUTHENTICATED, "")
+	return nil
 }
 
 func (state *VPNState) LoginOAuth() error {
-	authURL, authInitializeErr := state.InitializeOAuth()
+	authInitializeErr := state.InitializeOAuth()
 
 	if authInitializeErr != nil {
 		return authInitializeErr
 	}
 
-	go state.StateCallback("Registered", "OAuthInitialized", authURL)
 	oauthErr := state.FinishOAuth()
 
 	if oauthErr != nil {
 		return oauthErr
 	}
 
-	state.StateCallback("OAuthInitialized", "OAuthFinished", "finished oauth")
 	state.WriteConfig()
 	return nil
 }
