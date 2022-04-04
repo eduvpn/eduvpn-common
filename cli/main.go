@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -24,29 +25,88 @@ func logState(oldState string, newState string, data string) {
 	}
 }
 
+func getGraphviz(fsm *eduvpn.FSM, graph string) string {
+	if fsm == nil {
+		return graph
+	}
+
+	for name, state := range fsm.States {
+		for _, transition := range state.Transition {
+			graph += "\n" + "cluster_" + name.String() + "-> cluster_" + transition.String()
+		}
+
+		graph += "\nsubgraph cluster_" + name.String() + "{\n"
+		if (state.Locked) {
+			graph += "bgcolor=\"red\"\n"
+		}
+		if (fsm.Current == name) {
+			graph += "color=\"blue\"\n"
+		} else {
+			graph += "color=\"\"\n"
+		}
+		graph += "label=" + name.String()
+		graph = getGraphviz(state.Sub, graph)
+		graph += "\n}"
+	}
+	return graph
+}
+
+func generateGraph() string {
+	state := eduvpn.GetVPNState()
+
+	state.InitializeFSM()
+
+
+	graph := "digraph fsm {\n"
+	graph += "nodesep=2"
+	graph = getGraphviz(state.FSM, graph)
+	graph += "\n}"
+
+	return graph
+}
+
 func main() {
+	generateGraph()
+	fileGraph := flag.String("dumpgraph", "", "Dump the FSM to a graphviz fdp file")
 	urlArg := flag.String("url", "", "The url of the vpn")
 	flag.Parse()
 
+	fileGraphString := *fileGraph
+	if fileGraphString != "" {
+		f, err := os.Create(fileGraphString)
+
+		if err != nil {
+			log.Fatalf("Failed to create file %s with error %v", fileGraphString, err)
+		}
+
+		defer f.Close()
+
+		f.WriteString(generateGraph())
+
+		log.Printf("Graph written to file: %s, use 'fdp %s -Tsvg > graph.svg' from graphviz to save to a svg file called graph.svg\n", fileGraphString, fileGraphString)
+		return
+	}
 	urlString := *urlArg
 
-	if urlString == "" {
-		log.Fatal("Error: -url is required")
-	}
+	if urlString != "" {
+		if !strings.HasPrefix(urlString, "https://") {
+			urlString = "https://" + urlString
+		}
 
-	if !strings.HasPrefix(urlString, "https://") {
-		urlString = "https://" + urlString
-	}
+		state := eduvpn.GetVPNState()
 
-	state := eduvpn.GetVPNState()
+		state.Register("org.eduvpn.app.linux", "configs", logState)
+		config, configErr := state.Connect(urlString)
 
-	state.Register("org.eduvpn.app.linux", "configs", logState)
-	config, configErr := state.Connect(urlString)
+		if configErr != nil {
+			fmt.Printf("Config error %v", configErr)
+			return
+		}
 
-	if configErr != nil {
-		fmt.Printf("Config error %v", configErr)
+		log.Println(config)
+
 		return
 	}
 
-	print(config)
+	flag.PrintDefaults()
 }
