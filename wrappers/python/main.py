@@ -5,23 +5,22 @@ import webbrowser
 _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "configs")
 
 
-@_eduvpn.event.on("OAuthInitialized", eduvpn.StateType.Enter)
+@_eduvpn.event.on("SERVER_OAUTH_STARTED", eduvpn.StateType.Enter)
 def oauth_initialized(url):
     print(f"Got OAUTH url {url}")
     webbrowser.open(url)
 
 
-@_eduvpn.event.on("OAuthFinished", eduvpn.StateType.Enter)
-def oauth_finished(data):
-    print(f"Oauth finished {data}")
+success = _eduvpn.register(debug=True)
 
+if not success:
+    print("failed to register")
 
-_eduvpn.register()
 print(_eduvpn.get_disco())
 
 config, error = _eduvpn.connect("https://eduvpn.jwijenbergh.com")
-#
-if error != "":
+
+if error:
     print("Got connect error", error)
 
 print(config)
