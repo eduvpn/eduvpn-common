@@ -2,6 +2,7 @@ package eduvpn
 
 import (
 	"errors"
+	"os"
 )
 
 type FSMStateID int8
@@ -152,16 +153,82 @@ func (eduvpn *VPNState) HasTransition(check FSMStateID) bool {
 	return ok && fsm != nil
 }
 
+func (eduvpn *VPNState) InState(check FSMStateID) bool {
+	fsm := FindFSMState(check, eduvpn.FSM)
+
+	if fsm == nil {
+		return false
+	}
+
+	return fsm.Current == check
+}
+
+func (eduvpn *VPNState) writeGraph() {
+	graph := eduvpn.GenerateGraph()
+
+	f, err := os.Create("debug.graph")
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+
+	f.WriteString(graph)
+}
+
 func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) bool {
 	fsm, ok := eduvpn.findTransition(newState)
 
 	if ok {
 		oldState := fsm.Current
 		fsm.Current = newState
+		if eduvpn.Debug {
+			eduvpn.writeGraph()
+		}
 		eduvpn.StateCallback(oldState.String(), newState.String(), data)
 	}
 
 	return ok
+}
+
+func getGraphviz(fsm *FSM, graph string) string {
+	if fsm == nil {
+		return graph
+	}
+
+	for name, state := range fsm.States {
+		for _, transition := range state.Transition {
+			graph += "\n" + "cluster_" + name.String() + " -> cluster_" + transition.String()
+		}
+
+		graph += "\nsubgraph cluster_" + name.String() + "{\n"
+		if (state.Locked) {
+			graph += "style=\"dotted\"\n"
+		} else {
+			graph += "style=\"\"\n"
+		}
+		if (fsm.Current == name) {
+			graph += "color=\"blue\"\n"
+			graph += "fontcolor=\"blue\"\n"
+		} else {
+			graph += "color=\"\"\n"
+			graph += "fontcolor=\"\"\n"
+		}
+		graph += "label=" + name.String()
+		graph = getGraphviz(state.Sub, graph)
+		graph += "\n}"
+	}
+	return graph
+}
+
+func (eduvpn *VPNState) GenerateGraph() string {
+	graph := "digraph fsm {\n"
+	graph += "nodesep=2"
+	graph = getGraphviz(eduvpn.FSM, graph)
+	graph += "\n}"
+
+	return graph
 }
 
 func (eduvpn *VPNState) InitializeFSM() {

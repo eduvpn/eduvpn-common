@@ -12,10 +12,10 @@ class StateType(Enum):
 # name: The name of the app to be registered
 # url: The url of the server to connect to, FIXME: To be removed
 # state_callback: The callback to trigger whenever a state is changed, FIXME: Remove whenever this wrapper has implemented callbacks using function decorations
-def Register(name, config_directory, state_callback):
+def Register(name, config_directory, state_callback, debug):
     name_bytes = name.encode("utf-8")
     dir_bytes = config_directory.encode("utf-8")
-    ptr_err = lib.Register(name_bytes, dir_bytes, state_callback)
+    ptr_err = lib.Register(name_bytes, dir_bytes, state_callback, debug)
     err_string = GetPtrString(ptr_err)
     return err_string
 
@@ -57,8 +57,8 @@ class EduVPN(object):
     def __del__(self):
         Deregister()
 
-    def register(self) -> bool:
-        return Register(self.name, self.config_directory, callback_function) == ""
+    def register(self, debug=False) -> bool:
+        return Register(self.name, self.config_directory, callback_function, debug) == ""
 
     def get_disco(self):
         return GetDiscoServers()

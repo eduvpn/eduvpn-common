@@ -12,8 +12,8 @@ import (
 )
 
 func openBrowser(urlString string) {
-	log.Printf("OAuth: Initialized with AuthURL %s\n", urlString)
-	log.Println("OAuth: Opening browser with xdg-open...")
+	fmt.Printf("OAuth: Initialized with AuthURL %s\n", urlString)
+	fmt.Println("OAuth: Opening browser with xdg-open...")
 	exec.Command("xdg-open", urlString).Start()
 }
 
@@ -40,8 +40,10 @@ func getGraphviz(fsm *eduvpn.FSM, graph string) string {
 			graph += "bgcolor=\"red\"\n"
 		}
 		if (fsm.Current == name) {
+			graph += "style=\"bold\"\n"
 			graph += "color=\"blue\"\n"
 		} else {
+			graph += "style=\"\"\n"
 			graph += "color=\"\"\n"
 		}
 		graph += "label=" + name.String()
@@ -66,7 +68,6 @@ func generateGraph() string {
 }
 
 func main() {
-	generateGraph()
 	fileGraph := flag.String("dumpgraph", "", "Dump the FSM to a graphviz fdp file")
 	urlArg := flag.String("url", "", "The url of the vpn")
 	flag.Parse()
@@ -95,7 +96,7 @@ func main() {
 
 		state := eduvpn.GetVPNState()
 
-		state.Register("org.eduvpn.app.linux", "configs", logState)
+		state.Register("org.eduvpn.app.linux", "configs", logState, true)
 		config, configErr := state.Connect(urlString)
 
 		if configErr != nil {
@@ -103,7 +104,7 @@ func main() {
 			return
 		}
 
-		log.Println(config)
+		fmt.Println(config)
 
 		return
 	}
