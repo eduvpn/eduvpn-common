@@ -118,12 +118,21 @@ func Test_token_expired(t *testing.T) {
 	// Get a vpn state
 	state := GetVPNState()
 
+	state.Deregister()
+
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	state.Register("org.eduvpn.app.linux", "configstest", func(old string, new string, data string) {
+	state.Register("org.eduvpn.app.linux", "configsexpired", func(old string, new string, data string) {
 		StateCallback(t, old, new, data)
 	}, false)
+
+
+	_, configErr := state.Connect("https://eduvpnserver")
+
+	if configErr != nil {
+		t.Errorf("Connect error before expired: %v", configErr)
+	}
 
 	accessToken := state.Server.OAuth.Token.Access
 	refreshToken := state.Server.OAuth.Token.Refresh
@@ -131,10 +140,10 @@ func Test_token_expired(t *testing.T) {
 	// Wait for TTL so that the tokens expire
 	time.Sleep(time.Duration(expiredInt) * time.Second)
 
-	_, configErr := state.Connect("https://eduvpnserver")
+	infoErr := state.Server.APIInfo()
 
-	if configErr != nil {
-		t.Errorf("Connect error: %v", configErr)
+	if infoErr != nil {
+		t.Errorf("Info error after expired: %v", infoErr)
 	}
 
 	// Check if tokens have changed
