@@ -36,8 +36,8 @@ func LoginOAuthSelenium(t *testing.T, url string) {
 }
 
 func StateCallback(t *testing.T, oldState string, newState string, data string) {
-	if newState == "OAuthInitialized" {
-		LoginOAuthSelenium(t, data)
+	if newState == "SERVER_OAUTH_STARTED" {
+		go LoginOAuthSelenium(t, data)
 	}
 }
 
@@ -49,7 +49,7 @@ func Test_server(t *testing.T) {
 
 	state.Register("org.eduvpn.app.linux", "configstest", func(old string, new string, data string) {
 		StateCallback(t, old, new, data)
-	})
+	}, false)
 
 	_, configErr := state.Connect("https://eduvpnserver")
 
@@ -59,21 +59,22 @@ func Test_server(t *testing.T) {
 }
 
 func test_connect_oauth_parameter(t *testing.T, parameters URLParameters, expectedErr interface{}) {
-	state := &VPNState{}
+	state := GetVPNState()
+	state.Deregister()
 
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	state.Register("org.eduvpn.app.linux", "configsnologin", func(old string, new string, data string) {
-		if new == "OAuthInitialized" {
+	state.Register("org.eduvpn.app.linux", "configsnologin", func(oldState string, newState string, data string) {
+		if newState == "SERVER_OAUTH_STARTED" {
 			baseURL := "http://127.0.0.1:8000/callback"
 			url, err := HTTPConstructURL(baseURL, parameters)
 			if err != nil {
 				t.Errorf("Error: Constructing url %s with parameters %s", baseURL, fmt.Sprint(parameters))
 			}
-			_, _ = http.Get(url)
+			go http.Get(url)
 		}
-	})
+	}, false)
 	_, configErr := state.Connect("https://eduvpnserver")
 
 	if !errors.As(configErr, expectedErr) {
@@ -122,7 +123,7 @@ func Test_token_expired(t *testing.T) {
 
 	state.Register("org.eduvpn.app.linux", "configstest", func(old string, new string, data string) {
 		StateCallback(t, old, new, data)
-	})
+	}, false)
 
 	accessToken := state.Server.OAuth.Token.Access
 	refreshToken := state.Server.OAuth.Token.Refresh
@@ -155,9 +156,17 @@ func Test_token_invalid(t *testing.T) {
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
+	state.Deregister()
+
 	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old string, new string, data string) {
 		StateCallback(t, old, new, data)
-	})
+	}, false)
+
+	_, configErr := state.Connect("https://eduvpnserver")
+
+	if configErr != nil {
+		t.Errorf("Connect error before invalid: %v", configErr)
+	}
 
 	dummy_value := "37"
 
@@ -165,10 +174,10 @@ func Test_token_invalid(t *testing.T) {
 	state.Server.OAuth.Token.Access = dummy_value
 	state.Server.OAuth.Token.Refresh = dummy_value
 
-	_, configErr := state.Connect("https://eduvpnserver")
+	infoErr := state.Server.APIInfo()
 
-	if configErr != nil {
-		t.Errorf("Connect error: %v", configErr)
+	if infoErr != nil {
+		t.Errorf("Info error after invalid: %v", infoErr)
 	}
 
 	if state.Server.OAuth.Token.Access == dummy_value {
