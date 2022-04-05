@@ -168,7 +168,6 @@ func (eduvpn *VPNState) writeGraph() {
 	graph := eduvpn.GenerateGraph()
 
 	f, err := os.Create("debug.graph")
-
 	if err != nil {
 		eduvpn.Log(LOG_INFO, fmt.Sprintf("Failed to write debug fsm graph with error %v", err))
 	}
@@ -204,12 +203,12 @@ func getGraphviz(fsm *FSM, graph string) string {
 		}
 
 		graph += "\nsubgraph cluster_" + name.String() + "{\n"
-		if (state.Locked) {
+		if state.Locked {
 			graph += "style=\"dotted\"\n"
 		} else {
 			graph += "style=\"\"\n"
 		}
-		if (fsm.Current == name) {
+		if fsm.Current == name {
 			graph += "color=\"blue\"\n"
 			graph += "fontcolor=\"blue\"\n"
 		} else {
