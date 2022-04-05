@@ -160,7 +160,7 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (ht
 		return resp.Header, nil, &HTTPReadError{URL: url, Err: readErr}
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return resp.Header, body, &HTTPStatusError{URL: url, Status: resp.StatusCode}
 	}
 
