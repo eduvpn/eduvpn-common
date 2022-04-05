@@ -2,6 +2,7 @@ package eduvpn
 
 import (
 	"errors"
+	"fmt"
 	"os"
 )
 
@@ -169,7 +170,7 @@ func (eduvpn *VPNState) writeGraph() {
 	f, err := os.Create("debug.graph")
 
 	if err != nil {
-		panic(err)
+		eduvpn.Log(LOG_INFO, fmt.Sprintf("Failed to write debug fsm graph with error %v", err))
 	}
 
 	defer f.Close()
