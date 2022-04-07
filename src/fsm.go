@@ -192,7 +192,7 @@ func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) bool {
 	return ok
 }
 
-func getGraphviz(fsm *FSM, graph string) string {
+func getGraphviz(fsm *FSM, graph string, current bool) string {
 	if fsm == nil {
 		return graph
 	}
@@ -209,24 +209,36 @@ func getGraphviz(fsm *FSM, graph string) string {
 			graph += "style=\"\"\n"
 		}
 		if fsm.Current == name {
-			graph += "color=\"blue\"\n"
-			graph += "fontcolor=\"blue\"\n"
+			color := "orange"
+			if current {
+				color = "blue"
+			}
+			graph += fmt.Sprintf("color=\"%s\"\n", color)
+			graph += fmt.Sprintf("fontcolor=\"%s\"\n", color)
 		} else {
 			graph += "color=\"\"\n"
 			graph += "fontcolor=\"\"\n"
 		}
 		graph += "label=" + name.String()
-		graph = getGraphviz(state.Sub, graph)
+		graph = getGraphviz(state.Sub, graph, current && fsm.Current == name)
 		graph += "\n}"
 	}
 	return graph
 }
 
 func (eduvpn *VPNState) GenerateGraph() string {
-	graph := "digraph fsm {\n"
-	graph += "nodesep=2"
-	graph = getGraphviz(eduvpn.FSM, graph)
+	graph := `digraph fsm_with_legend {
+nodesep=2
+subgraph fsm {
+nodesep=2`
+	graph = getGraphviz(eduvpn.FSM, graph, true)
 	graph += "\n}"
+	graph += `graph [labelloc="b" labeljust="r" label=<
+<TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0">
+<TR><TD BGCOLOR="BLUE"><font color="white">The current state</font></TD></TR>
+<TR><TD BGCOLOR="ORANGE">A state that is not the current state but will be once the parent state becomes the current</TD></TR>
+</TABLE>>];
+}`
 
 	return graph
 }
