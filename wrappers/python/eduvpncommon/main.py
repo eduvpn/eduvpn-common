@@ -20,7 +20,7 @@ def Register(name, config_directory, state_callback, debug):
     return err_string
 
 def Deregister():
-    return lib.Deregister()
+    lib.Deregister()
 
 def GetDiscoServers():
     servers, serversErr = GetDataError(lib.GetServersList())
@@ -55,7 +55,9 @@ class EduVPN(object):
         register_callback(self)
 
     def __del__(self):
-        Deregister()
+        # It could be that lib is garbage collected already
+        if lib:
+            Deregister()
 
     def register(self, debug=False) -> bool:
         return Register(self.name, self.config_directory, callback_function, debug) == ""
