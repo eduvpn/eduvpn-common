@@ -227,7 +227,7 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 // It needs a vpn state that was gotten from `Register`
 // It returns the authurl for the browser and an error if present
 func (eduvpn *VPNState) InitializeOAuth() error {
-	if !eduvpn.HasTransition(SERVER_OAUTH_STARTED) {
+	if !eduvpn.HasTransition(OAUTH_STARTED) {
 		return errors.New("Failed starting oauth, invalid state")
 	}
 	// Generate the state
@@ -262,13 +262,13 @@ func (eduvpn *VPNState) InitializeOAuth() error {
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
 	oauthSession := &OAuthExchangeSession{ClientID: eduvpn.Name, State: state, Verifier: verifier}
 	eduvpn.Server.OAuth = &OAuth{TokenURL: eduvpn.Server.Endpoints.API.V3.Token, Session: oauthSession}
-	eduvpn.GoTransition(SERVER_OAUTH_STARTED, authURL)
+	eduvpn.GoTransition(OAUTH_STARTED, authURL)
 	return nil
 }
 
 // Error definitions
 func (eduvpn *VPNState) FinishOAuth() error {
-	if !eduvpn.HasTransition(SERVER_OAUTH_FINISHED) {
+	if !eduvpn.HasTransition(AUTHENTICATED) {
 		return errors.New("invalid state to finish oauth")
 	}
 	oauth := eduvpn.Server.OAuth
@@ -276,8 +276,7 @@ func (eduvpn *VPNState) FinishOAuth() error {
 	if tokenErr != nil {
 		return tokenErr
 	}
-	eduvpn.GoTransition(SERVER_OAUTH_FINISHED, "")
-	eduvpn.GoTransition(SERVER_AUTHENTICATED, "")
+	eduvpn.GoTransition(AUTHENTICATED, "")
 	return nil
 }
 

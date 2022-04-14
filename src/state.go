@@ -28,7 +28,7 @@ type VPNState struct {
 
 func (state *VPNState) Register(name string, directory string, stateCallback func(string, string, string), debug bool) error {
 	state.InitializeFSM()
-	if !state.HasTransition(APP_REGISTERED) {
+	if !state.InState(DEREGISTERED) {
 		return errors.New("app already registered")
 	}
 	state.Name = name
@@ -50,13 +50,13 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 		// This error can be safely ignored, as when the config does not load, the struct will not be filled
 		state.Log(LOG_INFO, "Previous configuration not found")
 	}
-	state.GoTransition(APP_REGISTERED, "HALLO")
+	state.GoTransition(NO_SERVER, "")
 	return nil
 }
 
 func (state *VPNState) Deregister() error {
-	if !state.HasTransition(APP_DEREGISTERED) {
-		return errors.New("app cannot deregister")
+	if state.InState(DEREGISTERED) {
+		return errors.New("app already deregistered")
 	}
 	// Close the log file
 	state.CloseLog()
@@ -90,7 +90,7 @@ func (state *VPNState) Connect(url string) (string, error) {
 		return "", configErr
 	}
 
-	if !state.HasTransition(SERVER_CONNECTED) {
+	if !state.HasTransition(CONNECTED) {
 		return "", errors.New("cannot connect to server, invalid state")
 	}
 

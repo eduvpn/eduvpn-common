@@ -36,7 +36,7 @@ func LoginOAuthSelenium(t *testing.T, url string) {
 }
 
 func StateCallback(t *testing.T, oldState string, newState string, data string) {
-	if newState == "SERVER_OAUTH_STARTED" {
+	if newState == "OAuth_Started" {
 		go LoginOAuthSelenium(t, data)
 	}
 }
@@ -66,7 +66,7 @@ func test_connect_oauth_parameter(t *testing.T, parameters URLParameters, expect
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	state.Register("org.eduvpn.app.linux", "configsnologin", func(oldState string, newState string, data string) {
-		if newState == "SERVER_OAUTH_STARTED" {
+		if newState == "OAuth_Started" {
 			baseURL := "http://127.0.0.1:8000/callback"
 			url, err := HTTPConstructURL(baseURL, parameters)
 			if err != nil {

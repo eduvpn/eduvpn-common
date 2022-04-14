@@ -20,7 +20,7 @@ func openBrowser(urlString string) {
 func logState(oldState string, newState string, data string) {
 	fmt.Printf("State: %s -> State: %s with data %s\n", oldState, newState, data)
 
-	if newState == "SERVER_OAUTH_STARTED" {
+	if newState == "OAuth_Started" {
 		openBrowser(data)
 	}
 }

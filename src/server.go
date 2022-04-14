@@ -42,7 +42,7 @@ type ServerEndpoints struct {
 }
 
 func (server *Server) Initialize(url string) error {
-	if !GetVPNState().HasTransition(CONFIG_CHOSENSERVER) {
+	if !GetVPNState().HasTransition(CHOSEN_SERVER) {
 		return errors.New("cannot choose a server")
 	}
 	server.BaseURL = url
@@ -50,7 +50,7 @@ func (server *Server) Initialize(url string) error {
 	if endpointsErr != nil {
 		return endpointsErr
 	}
-	GetVPNState().GoTransition(CONFIG_CHOSENSERVER, "Chosen server")
+	GetVPNState().GoTransition(CHOSEN_SERVER, "Chosen server")
 	return nil
 }
 
