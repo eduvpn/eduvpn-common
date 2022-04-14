@@ -103,11 +103,12 @@ func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) bool {
 	return ok
 }
 
-func (eduvpn *VPNState) GenerateGraph() string {
+func (eduvpn *VPNState) generateDotGraph() string {
 	graph := `digraph eduvpn_fsm {
 nodesep = 2;
-rankdir = LR;`
-	graph += "\nnode[color=blue]; " + eduvpn.FSM.Current.String() + ";\n"
+remincross = false;
+`
+	graph += "node[color=blue]; " + eduvpn.FSM.Current.String() + ";\n"
 	graph += "node [color=black];\n"
 	for state, transitions := range eduvpn.FSM.States {
 		for _, transition := range transitions {
@@ -116,6 +117,21 @@ rankdir = LR;`
 	}
 	graph += "}"
 	return graph
+}
+
+func (eduvpn *VPNState) generateMermaidGraph() string {
+	graph := "graph TD\n"
+	graph += "style " + eduvpn.FSM.Current.String() + " fill:cyan\n"
+	for state, transitions := range eduvpn.FSM.States {
+		for _, transition := range transitions {
+			graph += state.String() + "(" + state.String() + ") " + "-->|" + transition.Description + "| " + transition.To.String() + "\n"
+		}
+	}
+	return graph
+}
+
+func (eduvpn *VPNState) GenerateGraph() string {
+	return eduvpn.generateMermaidGraph()
 }
 
 func (eduvpn *VPNState) InitializeFSM() {
