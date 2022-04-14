@@ -46,8 +46,13 @@ func (s FSMStateID) String() string {
 	}
 }
 
+type FSMTransition struct {
+	To FSMStateID
+	Description string
+}
+
 type (
-	FSMTransitions []FSMStateID
+	FSMTransitions []FSMTransition
 	FSMStates      map[FSMStateID]FSMTransitions
 )
 
@@ -58,7 +63,7 @@ type FSM struct {
 
 func (eduvpn *VPNState) HasTransition(check FSMStateID) bool {
 	for _, transition_state := range eduvpn.FSM.States[eduvpn.FSM.Current] {
-		if transition_state == check {
+		if transition_state.To == check {
 			return true
 		}
 	}
@@ -105,8 +110,8 @@ rankdir = LR;`
 	graph += "\nnode[color=blue]; " + eduvpn.FSM.Current.String() + ";\n"
 	graph += "node [color=black];\n"
 	for state, transitions := range eduvpn.FSM.States {
-		for _, transition_state := range transitions {
-			graph += state.String() + " -> " + transition_state.String() + "\n"
+		for _, transition := range transitions {
+			graph += state.String() + " -> " + transition.To.String() + " [label=\"" + transition.Description + "\"]\n"
 		}
 	}
 	graph += "}"
@@ -116,12 +121,12 @@ rankdir = LR;`
 func (eduvpn *VPNState) InitializeFSM() {
 	eduvpn.FSM = &FSM{
 		States: FSMStates {
-			DEREGISTERED: {NO_SERVER},
-			NO_SERVER: {CHOSEN_SERVER},
-			CHOSEN_SERVER: {AUTHENTICATED, OAUTH_STARTED},
-			OAUTH_STARTED: {AUTHENTICATED},
-			AUTHENTICATED: {CONNECTED},
-			CONNECTED: {AUTHENTICATED},
+			DEREGISTERED: {{NO_SERVER, "Client registers"}},
+			NO_SERVER: {{CHOSEN_SERVER, "User chooses a server"}},
+			CHOSEN_SERVER: {{AUTHENTICATED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
+			OAUTH_STARTED: {{AUTHENTICATED, "User authorizes with browser"}},
+			AUTHENTICATED: {{CONNECTED, "OS reports connected"}},
+			CONNECTED: {{AUTHENTICATED, "OS reports disconnected"}},
 		},
 		Current: DEREGISTERED,
 	}
