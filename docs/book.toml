@@ -1,0 +1,6 @@
+[book]
+authors = ["Jeroen Wijenbergh"]
+language = "en"
+multilingual = false
+src = "src"
+title = "eduVPN-common documentation"

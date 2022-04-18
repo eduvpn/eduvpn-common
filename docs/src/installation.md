@@ -1,17 +1,8 @@
----
-layout: default
-title: Home
-nav_order: 1
-description: "eduVPN-common documentation."
-permalink: /
----
-
-## eduVPN-common documentation
-
-This is the documentation for eduVPN-common, a shared GO library to be used as a common codebase between eduVPN clients. This library is a WIP and is not production ready.
-
-### Dependencies
-#### Linux
+# Installation and building
+This chapter contains the instructions to build and install the Go library.
+## Dependencies
+This section contains the dependencies needed to build the library on Linux and Windows
+### Linux
 To build the GO shared library using Linux you need the following dependencies:
 
 - [Go](https://go.dev/doc/install) 1.15 or later
@@ -19,7 +10,7 @@ To build the GO shared library using Linux you need the following dependencies:
 - [GNU Make](https://www.gnu.org/software/make/)
 - Dependencies for each wrapper you are interested in
 
-#### Windows
+### Windows
 On Windows, you can install gcc and make (or even Go) via MinGW or Cygwin or use WSL. For MinGW:
 
 1. [Install MinGW](https://www.msys2.org/#installation) (you don't need to install any extra packages yet) and open some
@@ -39,8 +30,8 @@ On Windows, you can install gcc and make (or even Go) via MinGW or Cygwin or use
        terminal: `path/to/msys64/msys2_shell.cmd -mingw32 -defterm -no-start -use-full-path`
     3. Run the make commands in the project directory
 
-### Building
-Build shared library for current platform:
+## Building
+To build the shared library for the current platform issue the following command in the root directory:
 
 ```shell
 make
@@ -70,7 +61,7 @@ Test Go code:
 make test-go
 ```
 
-### Testing
+## Testing
 
 To test the wrappers, issue the following command in a shell (you will need compilers for all wrappers if you do this):
 

@@ -1,0 +1,41 @@
+# Adapted from https://github.com/rust-lang/mdBook/wiki/Automated-Deployment:-GitHub-Actions#github-pages-deploy
+
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Install mdbook
+      run: |
+        # Get mdbook
+        curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.18/mdbook-v0.4.18-x86_64-unknown-linux-gnu.tar.gz -o mdbook.tar.gz
+        # Verify hash
+        echo "d276b0e594d5980de6a7917ce74c348f28d3cb8b353ca4eaae344ae8a4c40bea  mdbook.tar.gz" | sha256sum --check
+        # Extract
+        mkdir mdbook
+        tar -xzf mdbook.tar.gz --directory mdbook
+        echo `pwd`/mdbook >> $GITHUB_PATH
+    - name: Deploy GitHub Pages
+      run: |
+        # Go to docs directory
+        cd docs
+        mdbook build
+        git worktree add gh-pages gh-pages
+        git config user.name "Deploy from CI"
+        git config user.email ""
+        cd gh-pages
+        # Delete the ref to avoid keeping history.
+        git update-ref -d refs/heads/gh-pages
+        rm -rf *
+        mv ../book/* .
+        git add .
+        git commit -m "Deploy $GITHUB_SHA to gh-pages"
+        git push --force
