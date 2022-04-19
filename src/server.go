@@ -10,6 +10,7 @@ type Server struct {
 	Endpoints *ServerEndpoints   `json:"endpoints"`
 	OAuth     *OAuth             `json:"oauth"`
 	Profiles  *ServerProfileInfo `json:"profiles"`
+	ProfilesRaw string           `json:"profiles_raw"`
 }
 
 type ServerProfile struct {
@@ -20,7 +21,7 @@ type ServerProfile struct {
 }
 
 type ServerProfileInfo struct {
-	Current uint8 `json:"current_profile"`
+	Current string `json:"current_profile"`
 	Info    struct {
 		ProfileList []ServerProfile `json:"profile_list"`
 	} `json:"info"`
@@ -84,17 +85,6 @@ func (server *Server) GetEndpoints() error {
 	return nil
 }
 
-func (profiles *ServerProfileInfo) getCurrentProfile() (*ServerProfile, error) {
-	if profiles.Info.ProfileList == nil {
-		return nil, errors.New("No server profiles")
-	}
-
-	if (int)(profiles.Current) >= len(profiles.Info.ProfileList) {
-		return nil, errors.New("Invalid profile")
-	}
-	return &profiles.Info.ProfileList[profiles.Current], nil
-}
-
 func (profile *ServerProfile) supportsWireguard() bool {
 	for _, proto := range profile.VPNProtoList {
 		if proto == "wireguard" {
@@ -104,12 +94,31 @@ func (profile *ServerProfile) supportsWireguard() bool {
 	return false
 }
 
-func (server *Server) GetCurrentProfile() (*ServerProfile, error) {
-	if server.Profiles == nil {
-		return nil, errors.New("No server profiles found")
+func (server *Server) getProfileForID(profile_id string) (*ServerProfile, error) {
+	for _, profile := range server.Profiles.Info.ProfileList {
+		if profile.ID == profile_id {
+			return &profile, nil
+		}
+	}
+	return nil, errors.New("no profile found for id")
+}
+
+func (server *Server) getConfigWithProfile(profile_id string) (string, error) {
+	profile, profileErr := server.getProfileForID(profile_id)
+
+	if profileErr != nil {
+		return "", profileErr
 	}
 
-	return server.Profiles.getCurrentProfile()
+	if profile.supportsWireguard() {
+		return server.WireguardGetConfig(profile_id)
+	}
+	return server.OpenVPNGetConfig(profile_id)
+}
+
+func (server *Server) askForProfileID() (string, error) {
+	_, profile_id := GetVPNState().GoTransition(ASK_PROFILE, server.ProfilesRaw)
+	return profile_id, nil
 }
 
 func (server *Server) GetConfig() (string, error) {
@@ -119,14 +128,16 @@ func (server *Server) GetConfig() (string, error) {
 		return "", infoErr
 	}
 
-	profile, profileErr := server.GetCurrentProfile()
+	// Set the current profile if there is only one profile
+	if len(server.Profiles.Info.ProfileList) == 1 {
+		return server.getConfigWithProfile(server.Profiles.Info.ProfileList[0].ID)
+	}
+
+	profile_id, profileErr := server.askForProfileID()
 
 	if profileErr != nil {
-		return "", profileErr
+		return "", nil
 	}
 
-	if profile.supportsWireguard() {
-		return server.WireguardGetConfig()
-	}
-	return server.OpenVPNGetConfig()
+	return server.getConfigWithProfile(profile_id)
 }

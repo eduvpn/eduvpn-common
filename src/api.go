@@ -62,9 +62,7 @@ func (server *Server) APIInfo() error {
 	}
 
 	server.Profiles = structure
-
-	// FIXME: Implement profile selection callback
-	server.Profiles.Current = 0
+	server.ProfilesRaw = string(body)
 	return nil
 }
 
@@ -75,7 +73,7 @@ func (server *Server) APIConnectWireguard(profile_id string, pubkey string) (str
 	}
 
 	urlForm := url.Values{
-		"profile_id": {"default"},
+		"profile_id": {profile_id},
 		"public_key": {pubkey},
 	}
 	header, connectBody, connectErr := server.apiAuthenticatedRetry(http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
@@ -94,7 +92,7 @@ func (server *Server) APIConnectOpenVPN(profile_id string) (string, string, erro
 	}
 
 	urlForm := url.Values{
-		"profile_id": {"default"},
+		"profile_id": {profile_id},
 	}
 	header, connectBody, connectErr := server.apiAuthenticatedRetry(http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {

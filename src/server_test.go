@@ -35,10 +35,13 @@ func LoginOAuthSelenium(t *testing.T, url string) {
 	}
 }
 
-func StateCallback(t *testing.T, oldState string, newState string, data string) {
+func StateCallback(t *testing.T, oldState string, newState string, data string) string {
 	if newState == "OAuth_Started" {
 		go LoginOAuthSelenium(t, data)
 	}
+
+    // We have no data to send back
+    return ""
 }
 
 func Test_server(t *testing.T) {
@@ -47,8 +50,8 @@ func Test_server(t *testing.T) {
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	state.Register("org.eduvpn.app.linux", "configstest", func(old string, new string, data string) {
-		StateCallback(t, old, new, data)
+	state.Register("org.eduvpn.app.linux", "configstest", func(old string, new string, data string) string {
+		return StateCallback(t, old, new, data)
 	}, false)
 
 	_, configErr := state.Connect("https://eduvpnserver")
@@ -65,7 +68,7 @@ func test_connect_oauth_parameter(t *testing.T, parameters URLParameters, expect
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	state.Register("org.eduvpn.app.linux", "configsnologin", func(oldState string, newState string, data string) {
+	state.Register("org.eduvpn.app.linux", "configsnologin", func(oldState string, newState string, data string) string {
 		if newState == "OAuth_Started" {
 			baseURL := "http://127.0.0.1:8000/callback"
 			url, err := HTTPConstructURL(baseURL, parameters)
@@ -73,7 +76,10 @@ func test_connect_oauth_parameter(t *testing.T, parameters URLParameters, expect
 				t.Errorf("Error: Constructing url %s with parameters %s", baseURL, fmt.Sprint(parameters))
 			}
 			go http.Get(url)
+
 		}
+		// We have no data to send back
+		return ""
 	}, false)
 	_, configErr := state.Connect("https://eduvpnserver")
 
@@ -123,8 +129,8 @@ func Test_token_expired(t *testing.T) {
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	state.Register("org.eduvpn.app.linux", "configsexpired", func(old string, new string, data string) {
-		StateCallback(t, old, new, data)
+	state.Register("org.eduvpn.app.linux", "configsexpired", func(old string, new string, data string) string {
+		return StateCallback(t, old, new, data)
 	}, false)
 
 

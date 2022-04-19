@@ -23,6 +23,9 @@ const (
 	// Authenticated means the OAuth process has finished and the user is now authenticated with the server
 	AUTHENTICATED
 
+	// Ask profile means the go code is asking for a profile selection from the ui
+	ASK_PROFILE
+
 	// Connected means the user has been connected to the server
 	CONNECTED
 )
@@ -37,6 +40,8 @@ func (s FSMStateID) String() string {
 		return "Chosen_Server"
 	case OAUTH_STARTED:
 		return "OAuth_Started"
+	case ASK_PROFILE:
+		return "Ask_Profile"
 	case AUTHENTICATED:
 		return "Authenticated"
 	case CONNECTED:
@@ -88,8 +93,10 @@ func (eduvpn *VPNState) writeGraph() {
 	f.WriteString(graph)
 }
 
-func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) bool {
+func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) (bool, string) {
 	ok := eduvpn.HasTransition(newState)
+
+	received := ""
 
 	if ok {
 		oldState := eduvpn.FSM.Current
@@ -97,10 +104,10 @@ func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) bool {
 		if eduvpn.Debug {
 			eduvpn.writeGraph()
 		}
-		eduvpn.StateCallback(oldState.String(), newState.String(), data)
+		received = eduvpn.StateCallback(oldState.String(), newState.String(), data)
 	}
 
-	return ok
+	return ok, received
 }
 
 func (eduvpn *VPNState) generateDotGraph() string {
@@ -141,7 +148,8 @@ func (eduvpn *VPNState) InitializeFSM() {
 			NO_SERVER: {{CHOSEN_SERVER, "User chooses a server"}},
 			CHOSEN_SERVER: {{AUTHENTICATED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
 			OAUTH_STARTED: {{AUTHENTICATED, "User authorizes with browser"}},
-			AUTHENTICATED: {{CONNECTED, "OS reports connected"}, {OAUTH_STARTED, "Re-authenticate with OAuth"}},
+			AUTHENTICATED: {{CONNECTED, "OS reports connected"}, {OAUTH_STARTED, "Re-authenticate with OAuth"}, {ASK_PROFILE, "Connect, multiple profiles detected"}},
+			ASK_PROFILE: {{CONNECTED, "OS reports connected"}},
 			CONNECTED: {{AUTHENTICATED, "OS reports disconnected"}},
 		},
 		Current: DEREGISTERED,

@@ -47,6 +47,10 @@ def register_callback(eduvpn):
     )
 
 
+def SendData(data):
+    lib.SendData(data.encode("utf-8"))
+
+
 class EduVPN(object):
     def __init__(self, name, config_directory):
         self.event_handler = EventHandler()
@@ -74,6 +78,9 @@ class EduVPN(object):
 
     def callback(self, old_state, new_state, data):
         self.event.run(old_state, new_state, data)
+
+    def send_data(self, data):
+        return SendData(data)
 
 
 class EventHandler(object):

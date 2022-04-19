@@ -11,6 +11,12 @@ def oauth_initialized(url):
     webbrowser.open(url)
 
 
+@_eduvpn.event.on("Ask_Profile", eduvpn.StateType.Enter)
+def ask_profile(profiles):
+    print("ASK PROFILE CB", profiles)
+    _eduvpn.send_data("prefer-openvpn")
+
+
 success = _eduvpn.register(debug=True)
 
 if not success:
