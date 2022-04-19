@@ -16,7 +16,7 @@ func (server *Server) apiAuthenticated(method string, endpoint string, opts *HTT
 	}
 	url := server.Endpoints.API.V3.API + endpoint
 
-	// Ensure we have non-expired tokens
+	// Ensure we have valid tokens
 	oauthErr := server.OAuth.EnsureTokens()
 
 	if oauthErr != nil {

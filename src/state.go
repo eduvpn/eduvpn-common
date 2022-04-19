@@ -61,6 +61,10 @@ func (state *VPNState) Deregister() error {
 	// Close the log file
 	state.CloseLog()
 
+	// Write the config
+	state.WriteConfig()
+
+	// Re-initialize the server and FSM
 	state.Server = &Server{}
 	state.InitializeFSM()
 	return nil

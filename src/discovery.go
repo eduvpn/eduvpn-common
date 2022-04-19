@@ -107,7 +107,6 @@ func (eduvpn *VPNState) GetOrganizationsList() (string, error) {
 	}
 	eduvpn.EnsureDisco()
 	eduvpn.DiscoList.Organizations = &body
-	eduvpn.WriteConfig()
 	return body, nil
 }
 
@@ -123,6 +122,5 @@ func (eduvpn *VPNState) GetServersList() (string, error) {
 	}
 	eduvpn.EnsureDisco()
 	eduvpn.DiscoList.Servers = &body
-	eduvpn.WriteConfig()
 	return body, nil
 }

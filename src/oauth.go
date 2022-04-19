@@ -292,15 +292,11 @@ func (state *VPNState) LoginOAuth() error {
 	if oauthErr != nil {
 		return oauthErr
 	}
-
-	state.WriteConfig()
 	return nil
 }
 
 func (oauth *OAuth) Login() error {
-	// FIXME: Find a better way
-	state := GetVPNState()
-	return state.LoginOAuth()
+	return GetVPNState().LoginOAuth()
 }
 
 func (oauth *OAuth) NeedsRelogin() bool {
