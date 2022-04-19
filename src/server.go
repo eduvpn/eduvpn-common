@@ -56,7 +56,7 @@ func (server *Server) Initialize(url string) error {
 
 func (server *Server) NeedsRelogin() bool {
 	// Server has no oauth tokens
-	if server.OAuth == nil {
+	if server.OAuth == nil || server.OAuth.Token == nil {
 		return true
 	}
 
