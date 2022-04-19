@@ -141,7 +141,7 @@ func (eduvpn *VPNState) InitializeFSM() {
 			NO_SERVER: {{CHOSEN_SERVER, "User chooses a server"}},
 			CHOSEN_SERVER: {{AUTHENTICATED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
 			OAUTH_STARTED: {{AUTHENTICATED, "User authorizes with browser"}},
-			AUTHENTICATED: {{CONNECTED, "OS reports connected"}},
+			AUTHENTICATED: {{CONNECTED, "OS reports connected"}, {OAUTH_STARTED, "Re-authenticate with OAuth"}},
 			CONNECTED: {{AUTHENTICATED, "OS reports disconnected"}},
 		},
 		Current: DEREGISTERED,

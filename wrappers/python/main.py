@@ -5,7 +5,7 @@ import webbrowser
 _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "configs")
 
 
-@_eduvpn.event.on("SERVER_OAUTH_STARTED", eduvpn.StateType.Enter)
+@_eduvpn.event.on("OAuth_Started", eduvpn.StateType.Enter)
 def oauth_initialized(url):
     print(f"Got OAUTH url {url}")
     webbrowser.open(url)

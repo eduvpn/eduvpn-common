@@ -303,15 +303,29 @@ func (oauth *OAuth) Login() error {
 	return state.LoginOAuth()
 }
 
+func (oauth *OAuth) NeedsRelogin() bool {
+	// The tokens are not expired yet
+	// No relogin is needed
+	if !oauth.isTokensExpired() {
+		GetVPNState().Log(LOG_INFO, "OAuth: Tokens are not expired, re-login not needed")
+		return false
+	}
+
+	refreshErr := oauth.getTokensWithRefresh()
+	// We have obtained new tokens with refresh
+	if refreshErr == nil {
+		GetVPNState().Log(LOG_INFO, "OAuth: Tokens could be re-acquired using the refresh token, re-login not needed")
+		return false
+	}
+
+	// Otherwise relogin is really needed
+	return true
+}
+
 func (oauth *OAuth) EnsureTokens() error {
-	if oauth.isTokensExpired() {
-		GetVPNState().Log(LOG_INFO, "OAuth: Tokens are expired, retrying with refresh tokens")
-		err := oauth.getTokensWithRefresh()
-		if err != nil {
-			GetVPNState().Log(LOG_INFO, fmt.Sprintf("OAuth: Refresh tokens with error %v, retrying with a new login phase", err))
-			// log that we're getting tokens using login
-			return oauth.Login()
-		}
+	if oauth.NeedsRelogin() {
+		GetVPNState().Log(LOG_INFO, "OAuth: Tokens are invalid, relogging in")
+		return oauth.Login()
 	}
 	return nil
 }

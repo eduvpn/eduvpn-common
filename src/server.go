@@ -54,10 +54,14 @@ func (server *Server) Initialize(url string) error {
 	return nil
 }
 
-// FIXME: Check validity of tokens
-func (server *Server) IsAuthenticated() bool {
-	return server.OAuth != nil
-	// return GetVPNState().HasTransition(SERVER_NOT_AUTHENTICATED)
+func (server *Server) NeedsRelogin() bool {
+	// Server has no oauth tokens
+	if server.OAuth == nil {
+		return true
+	}
+
+	// Server has oauth tokens, check if they need a relogin
+	return server.OAuth.NeedsRelogin()
 }
 
 func (server *Server) GetEndpoints() error {

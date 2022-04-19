@@ -76,12 +76,16 @@ func (state *VPNState) Connect(url string) (string, error) {
 		return "", initializeErr
 	}
 
-	if !state.Server.IsAuthenticated() {
+	// Relogin with oauth
+	// This moves the state to authenticated
+	if state.Server.NeedsRelogin() {
 		loginErr := state.LoginOAuth()
 
 		if loginErr != nil {
 			return "", loginErr
 		}
+	} else { // OAuth was valid, ensure we are in the authenticated state
+		state.GoTransition(AUTHENTICATED, "")
 	}
 
 	config, configErr := state.Server.GetConfig()
