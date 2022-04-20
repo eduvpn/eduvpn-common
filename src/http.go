@@ -142,6 +142,9 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (ht
 		return nil, nil, &HTTPRequestCreateError{URL: url, Err: reqErr}
 	}
 
+	// See https://stackoverflow.com/questions/17714494/golang-http-request-results-in-eof-errors-when-making-multiple-requests-successi
+	req.Close = true
+
 	// Make sure the headers contain all the parameters
 	httpOptionalHeaders(req, opts)
 
