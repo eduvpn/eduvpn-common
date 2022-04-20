@@ -159,42 +159,46 @@ func Test_token_expired(t *testing.T) {
 	}
 }
 
-// FIXME:This needs to be uncommented when we can go to an oauth state in the fsm even if we're already authenticated
-//func Test_token_invalid(t *testing.T) {
-//	state := GetVPNState()
-//
-//	// Do not verify because during testing, the cert is self-signed
-//	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-//
-//	state.Deregister()
-//
-//	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old string, new string, data string) {
-//		StateCallback(t, old, new, data)
-//	}, false)
-//
-//	_, configErr := state.Connect("https://eduvpnserver")
-//
-//	if configErr != nil {
-//		t.Errorf("Connect error before invalid: %v", configErr)
-//	}
-//
-//	dummy_value := "37"
-//
-//	// Override tokens with invalid values
-//	state.Server.OAuth.Token.Access = dummy_value
-//	state.Server.OAuth.Token.Refresh = dummy_value
-//
-//	infoErr := state.Server.APIInfo()
-//
-//	if infoErr != nil {
-//		t.Errorf("Info error after invalid: %v", infoErr)
-//	}
-//
-//	if state.Server.OAuth.Token.Access == dummy_value {
-//		t.Errorf("Access token is equal to dummy value: %s", dummy_value)
-//	}
-//
-//	if state.Server.OAuth.Token.Refresh == dummy_value {
-//		t.Errorf("Refresh token is equal to dummy value: %s", dummy_value)
-//	}
-//}
+func Test_token_invalid(t *testing.T) {
+	state := GetVPNState()
+
+	// Do not verify because during testing, the cert is self-signed
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	state.Deregister()
+
+	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old string, new string, data string) {
+		StateCallback(t, old, new, data)
+	}, false)
+
+	_, configErr := state.Connect("https://eduvpnserver")
+
+	if configErr != nil {
+		t.Errorf("Connect error before invalid: %v", configErr)
+	}
+
+	// Fake connect and then back to authenticated so that we can re-authenticate
+	// Going to authenticated fakes a disconnect
+	state.GoTransition(CONNECTED, "")
+	state.GoTransition(AUTHENTICATED, "")
+
+	dummy_value := "37"
+
+	// Override tokens with invalid values
+	state.Server.OAuth.Token.Access = dummy_value
+	state.Server.OAuth.Token.Refresh = dummy_value
+
+	infoErr := state.Server.APIInfo()
+
+	if infoErr != nil {
+		t.Errorf("Info error after invalid: %v", infoErr)
+	}
+
+	if state.Server.OAuth.Token.Access == dummy_value {
+		t.Errorf("Access token is equal to dummy value: %s", dummy_value)
+	}
+
+	if state.Server.OAuth.Token.Refresh == dummy_value {
+		t.Errorf("Refresh token is equal to dummy value: %s", dummy_value)
+	}
+}
