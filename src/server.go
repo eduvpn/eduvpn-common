@@ -6,11 +6,11 @@ import (
 )
 
 type Server struct {
-	BaseURL     string             `json:"base_url"`
-	Endpoints   *ServerEndpoints   `json:"endpoints"`
-	OAuth       *OAuth             `json:"oauth"`
-	Profiles    *ServerProfileInfo `json:"profiles"`
-	ProfilesRaw string             `json:"profiles_raw"`
+	BaseURL     string            `json:"base_url"`
+	Endpoints   ServerEndpoints   `json:"endpoints"`
+	OAuth       OAuth             `json:"oauth"`
+	Profiles    ServerProfileInfo `json:"profiles"`
+	ProfilesRaw string            `json:"profiles_raw"`
 }
 
 type ServerProfile struct {
@@ -56,12 +56,7 @@ func (server *Server) Initialize(url string) error {
 }
 
 func (server *Server) NeedsRelogin() bool {
-	// Server has no oauth tokens
-	if server.OAuth == nil || server.OAuth.Token == nil {
-		return true
-	}
-
-	// Server has oauth tokens, check if they need a relogin
+	// Check if OAuth needs relogin
 	return server.OAuth.NeedsRelogin()
 }
 
@@ -73,7 +68,7 @@ func (server *Server) GetEndpoints() error {
 		return bodyErr
 	}
 
-	endpoints := &ServerEndpoints{}
+	endpoints := ServerEndpoints{}
 	jsonErr := json.Unmarshal(body, &endpoints)
 
 	if jsonErr != nil {

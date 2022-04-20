@@ -58,8 +58,8 @@ func (e *HTTPRequestCreateError) Error() string {
 type URLParameters map[string]string
 
 type HTTPOptionalParams struct {
-	Headers       *http.Header
-	URLParameters *URLParameters
+	Headers       http.Header
+	URLParameters URLParameters
 	Body          url.Values
 }
 
@@ -97,8 +97,8 @@ func HTTPPostWithOpts(url string, opts *HTTPOptionalParams) (http.Header, []byte
 }
 
 func httpOptionalURL(url string, opts *HTTPOptionalParams) (string, error) {
-	if opts != nil && opts.URLParameters != nil {
-		url, urlErr := HTTPConstructURL(url, *opts.URLParameters)
+	if opts != nil {
+		url, urlErr := HTTPConstructURL(url, opts.URLParameters)
 
 		if urlErr != nil {
 			return url, &HTTPRequestCreateError{URL: url, Err: urlErr}
@@ -110,8 +110,8 @@ func httpOptionalURL(url string, opts *HTTPOptionalParams) (string, error) {
 
 func httpOptionalHeaders(req *http.Request, opts *HTTPOptionalParams) {
 	// Add headers
-	if opts != nil && opts.Headers != nil && req != nil {
-		for k, v := range *opts.Headers {
+	if opts != nil && req != nil {
+		for k, v := range opts.Headers {
 			req.Header.Add(k, v[0])
 		}
 	}

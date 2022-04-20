@@ -28,7 +28,7 @@ func (server *Server) apiAuthenticated(method string, endpoint string, opts *HTT
 	if opts.Headers != nil {
 		opts.Headers.Add(headerKey, headerValue)
 	} else {
-		opts.Headers = &http.Header{headerKey: {headerValue}}
+		opts.Headers = http.Header{headerKey: {headerValue}}
 	}
 	return HTTPMethodWithOpts(method, url, opts)
 }
@@ -54,8 +54,8 @@ func (server *Server) APIInfo() error {
 	if bodyErr != nil {
 		return bodyErr
 	}
-	structure := &ServerProfileInfo{}
-	jsonErr := json.Unmarshal(body, structure)
+	structure := ServerProfileInfo{}
+	jsonErr := json.Unmarshal(body, &structure)
 
 	if jsonErr != nil {
 		return jsonErr
@@ -67,7 +67,7 @@ func (server *Server) APIInfo() error {
 }
 
 func (server *Server) APIConnectWireguard(profile_id string, pubkey string) (string, string, error) {
-	headers := &http.Header{
+	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 		"accept":       {"application/x-wireguard-profile"},
 	}
@@ -86,7 +86,7 @@ func (server *Server) APIConnectWireguard(profile_id string, pubkey string) (str
 }
 
 func (server *Server) APIConnectOpenVPN(profile_id string) (string, string, error) {
-	headers := &http.Header{
+	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 		"accept":       {"application/x-openvpn-profile"},
 	}

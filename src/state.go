@@ -12,16 +12,16 @@ type VPNState struct {
 	StateCallbackData string                       `json:"-"`
 
 	// The chosen server
-	Server *Server `json:"server"`
+	Server Server `json:"server"`
 
 	// The list of servers and organizations from disco
-	DiscoList *DiscoList `json:"disco"`
+	DiscoList DiscoList `json:"disco"`
 
 	// The file we keep open for logging
-	LogFile *FileLogger `json:"-"`
+	LogFile FileLogger `json:"-"`
 
 	// The fsm
-	FSM *FSM `json:"-"`
+	FSM FSM `json:"-"`
 
 	// Whether to enable debugging
 	Debug bool `json:"-"`
@@ -66,21 +66,21 @@ func (state *VPNState) Deregister() error {
 	state.WriteConfig()
 
 	// Re-initialize the server and FSM
-	state.Server = &Server{}
+	state.Server = Server{}
 	state.InitializeFSM()
 	return nil
 }
 
 func (state *VPNState) Connect(url string) (string, error) {
-	if state.Server == nil || state.Server.BaseURL != url {
-		state.Server = &Server{}
+	// New server chosen, ensure the server is fresh
+	if state.Server.BaseURL != url {
+		state.Server = Server{}
 	}
 	initializeErr := state.Server.Initialize(url)
 
 	if initializeErr != nil {
 		return "", initializeErr
 	}
-
 	// Relogin with oauth
 	// This moves the state to authenticated
 	if state.Server.NeedsRelogin() {

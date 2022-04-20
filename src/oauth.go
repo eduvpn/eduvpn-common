@@ -54,9 +54,9 @@ func genVerifier() (string, error) {
 }
 
 type OAuth struct {
-	Session  *OAuthExchangeSession `json:"-"`
-	Token    *OAuthToken           `json:"token"`
-	TokenURL string                `json:"token_url"`
+	Session  OAuthExchangeSession `json:"-"`
+	Token    OAuthToken           `json:"token"`
+	TokenURL string               `json:"token_url"`
 }
 
 // This structure gets passed to the callback for easy access to the current state
@@ -71,7 +71,7 @@ type OAuthExchangeSession struct {
 
 	// filled in when constructing the callback
 	Context context.Context
-	Server  *http.Server
+	Server  http.Server
 }
 
 func GenerateTimeSeconds() int64 {
@@ -93,7 +93,7 @@ func (oauth *OAuth) getTokensWithCallback() error {
 	oauth.Session.Context = context.Background()
 	mux := http.NewServeMux()
 	addr := "127.0.0.1:8000"
-	oauth.Session.Server = &http.Server{
+	oauth.Session.Server = http.Server{
 		Addr:    addr,
 		Handler: mux,
 	}
@@ -119,7 +119,7 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 		"grant_type":    {"authorization_code"},
 		"redirect_uri":  {"http://127.0.0.1:8000/callback"},
 	}
-	headers := &http.Header{
+	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
 	opts := &HTTPOptionalParams{Headers: headers, Body: data}
@@ -129,9 +129,9 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 		return bodyErr
 	}
 
-	tokenStructure := &OAuthToken{}
+	tokenStructure := OAuthToken{}
 
-	jsonErr := json.Unmarshal(body, tokenStructure)
+	jsonErr := json.Unmarshal(body, &tokenStructure)
 
 	if jsonErr != nil {
 		return &HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
@@ -139,7 +139,6 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 
 	tokenStructure.ExpiredTimestamp = current_time + tokenStructure.Expires
 	oauth.Token = tokenStructure
-
 	return nil
 }
 
@@ -158,7 +157,7 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 		"refresh_token": {oauth.Token.Refresh},
 		"grant_type":    {"refresh_token"},
 	}
-	headers := &http.Header{
+	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
 	opts := &HTTPOptionalParams{Headers: headers, Body: data}
@@ -168,8 +167,8 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 		return bodyErr
 	}
 
-	tokenStructure := &OAuthToken{}
-	jsonErr := json.Unmarshal(body, tokenStructure)
+	tokenStructure := OAuthToken{}
+	jsonErr := json.Unmarshal(body, &tokenStructure)
 
 	if jsonErr != nil {
 		return &HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
@@ -177,7 +176,6 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 
 	tokenStructure.ExpiredTimestamp = current_time + tokenStructure.Expires
 	oauth.Token = tokenStructure
-
 	return nil
 }
 
@@ -260,8 +258,8 @@ func (eduvpn *VPNState) InitializeOAuth() error {
 	}
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
-	oauthSession := &OAuthExchangeSession{ClientID: eduvpn.Name, State: state, Verifier: verifier}
-	eduvpn.Server.OAuth = &OAuth{TokenURL: eduvpn.Server.Endpoints.API.V3.Token, Session: oauthSession}
+	oauthSession := OAuthExchangeSession{ClientID: eduvpn.Name, State: state, Verifier: verifier}
+	eduvpn.Server.OAuth = OAuth{TokenURL: eduvpn.Server.Endpoints.API.V3.Token, Session: oauthSession}
 	eduvpn.GoTransition(OAUTH_STARTED, authURL)
 	return nil
 }
@@ -271,8 +269,7 @@ func (eduvpn *VPNState) FinishOAuth() error {
 	if !eduvpn.HasTransition(AUTHENTICATED) {
 		return errors.New("invalid state to finish oauth")
 	}
-	oauth := eduvpn.Server.OAuth
-	tokenErr := oauth.getTokensWithCallback()
+	tokenErr := eduvpn.Server.OAuth.getTokensWithCallback()
 	if tokenErr != nil {
 		return tokenErr
 	}
@@ -300,6 +297,14 @@ func (oauth *OAuth) Login() error {
 }
 
 func (oauth *OAuth) NeedsRelogin() bool {
+	// Access Token or Refresh Tokens empty, definitely needs a relogin
+	if oauth.Token.Access == "" || oauth.Token.Refresh == "" {
+		GetVPNState().Log(LOG_INFO, "OAuth: Tokens are empty")
+		return true
+	}
+
+	// We have tokens...
+
 	// The tokens are not expired yet
 	// No relogin is needed
 	if !oauth.isTokensExpired() {

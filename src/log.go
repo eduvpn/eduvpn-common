@@ -15,13 +15,16 @@ type FileLogger struct {
 type LogLevel int8
 
 const (
-	LOG_INFO LogLevel = iota
+	LOG_NOTSET LogLevel = iota
+	LOG_INFO
 	LOG_WARNING
 	LOG_ERROR
 )
 
 func (e LogLevel) String() string {
 	switch e {
+	case LOG_NOTSET:
+		return "NOTSET"
 	case LOG_INFO:
 		return "INFO"
 	case LOG_WARNING:
@@ -48,12 +51,12 @@ func (eduvpn *VPNState) InitLog(level LogLevel) error {
 		return logOpenErr
 	}
 	log.SetOutput(logFile)
-	eduvpn.LogFile = &FileLogger{Level: level, File: logFile}
+	eduvpn.LogFile = FileLogger{Level: level, File: logFile}
 	return nil
 }
 
 func (eduvpn *VPNState) Log(level LogLevel, str string) {
-	if level >= eduvpn.LogFile.Level {
+	if level >= eduvpn.LogFile.Level && eduvpn.LogFile.Level != LOG_NOTSET {
 		log.Printf("[%s]: %s", level.String(), str)
 	}
 }

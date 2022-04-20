@@ -33,8 +33,8 @@ func (e *DiscoVerifyError) Error() string {
 }
 
 type DiscoList struct {
-	Organizations *string `json:"organizations"`
-	Servers       *string `json:"servers"`
+	Organizations string `json:"organizations"`
+	Servers       string `json:"servers"`
 }
 
 // Helper function that gets a disco json
@@ -82,45 +82,37 @@ func (e *GetListError) Error() string {
 
 // FIXME: Implement these properly based on version and time info
 func (eduvpn *VPNState) DetermineOrganizationsUpdate() bool {
-	return eduvpn.DiscoList == nil || eduvpn.DiscoList.Organizations == nil
+	return eduvpn.DiscoList.Organizations == ""
 }
 
 func (eduvpn *VPNState) DetermineServersUpdate() bool {
-	return eduvpn.DiscoList == nil || eduvpn.DiscoList.Servers == nil
-}
-
-func (eduvpn *VPNState) EnsureDisco() {
-	if eduvpn.DiscoList == nil {
-		eduvpn.DiscoList = &DiscoList{}
-	}
+	return eduvpn.DiscoList.Servers == ""
 }
 
 // Get the organization list
 func (eduvpn *VPNState) GetOrganizationsList() (string, error) {
 	if !eduvpn.DetermineOrganizationsUpdate() {
-		return *eduvpn.DiscoList.Organizations, nil
+		return eduvpn.DiscoList.Organizations, nil
 	}
 	file := "organization_list.json"
 	body, err := getDiscoFile(file)
 	if err != nil {
 		return "", &GetListError{File: file, Err: err}
 	}
-	eduvpn.EnsureDisco()
-	eduvpn.DiscoList.Organizations = &body
+	eduvpn.DiscoList.Organizations = body
 	return body, nil
 }
 
 // Get the server list
 func (eduvpn *VPNState) GetServersList() (string, error) {
 	if !eduvpn.DetermineServersUpdate() {
-		return *eduvpn.DiscoList.Servers, nil
+		return eduvpn.DiscoList.Servers, nil
 	}
 	file := "server_list.json"
 	body, err := getDiscoFile("server_list.json")
 	if err != nil {
 		return "", &GetListError{File: file, Err: err}
 	}
-	eduvpn.EnsureDisco()
-	eduvpn.DiscoList.Servers = &body
+	eduvpn.DiscoList.Servers = body
 	return body, nil
 }

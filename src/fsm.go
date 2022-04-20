@@ -93,10 +93,6 @@ type FSM struct {
 }
 
 func (eduvpn *VPNState) HasTransition(check FSMStateID) bool {
-	// No fsm
-	if eduvpn.FSM == nil {
-		return false
-	}
 	for _, transition_state := range eduvpn.FSM.States[eduvpn.FSM.Current] {
 		if transition_state.To == check {
 			return true
@@ -107,10 +103,6 @@ func (eduvpn *VPNState) HasTransition(check FSMStateID) bool {
 }
 
 func (eduvpn *VPNState) InState(check FSMStateID) bool {
-	// No fsm
-	if eduvpn.FSM == nil {
-		return false
-	}
 	return check == eduvpn.FSM.Current
 }
 
@@ -184,7 +176,7 @@ func (eduvpn *VPNState) GenerateGraph() string {
 }
 
 func (eduvpn *VPNState) InitializeFSM() {
-	eduvpn.FSM = &FSM{
+	eduvpn.FSM = FSM{
 		States: FSMStates{
 			DEREGISTERED:   {{NO_SERVER, "Client registers"}},
 			NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
