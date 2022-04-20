@@ -47,8 +47,9 @@ def register_callback(eduvpn):
     )
 
 
-def SetProfileID(profile_id):
-    lib.SetProfileID(profile_id.encode("utf-8"))
+def SetProfileID(profile_id) -> str:
+    error_string = lib.SetProfileID(profile_id.encode("utf-8"))
+    return GetPtrString(error_string)
 
 
 class EduVPN(object):
@@ -79,7 +80,7 @@ class EduVPN(object):
     def callback(self, old_state, new_state, data):
         self.event.run(old_state, new_state, data)
 
-    def set_profile(self, profile_id):
+    def set_profile(self, profile_id) -> str:
         return SetProfileID(profile_id)
 
 

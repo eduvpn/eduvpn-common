@@ -76,23 +76,18 @@ func GetServersList() (*C.char, *C.char) {
 }
 
 //export SetProfileID
-func SetProfileID(data *C.char) {
+func SetProfileID(data *C.char) *C.char {
 	state := eduvpn.GetVPNState()
 
-	// No server
-	if state.Server == nil {
-		return
-	}
-
-	// No profiles for server
-	if state.Server.Profiles == nil {
-		return
+	if !state.InState(eduvpn.ASK_PROFILE) {
+		return C.CString("Invalid state for setting a profile")
 	}
 
 	// Set current profile to id
 	profile_id := C.GoString(data)
 
 	state.Server.Profiles.Current = profile_id
+	return C.CString("")
 }
 
 //export FreeString
