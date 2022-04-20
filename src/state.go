@@ -56,9 +56,6 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 }
 
 func (state *VPNState) Deregister() error {
-	if state.InState(DEREGISTERED) {
-		return errors.New("app already deregistered")
-	}
 	// Close the log file
 	state.CloseLog()
 
