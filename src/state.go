@@ -28,10 +28,10 @@ type VPNState struct {
 }
 
 func (state *VPNState) Register(name string, directory string, stateCallback func(string, string, string), debug bool) error {
-	state.InitializeFSM()
 	if !state.InState(DEREGISTERED) {
 		return errors.New("app already registered")
 	}
+	state.InitializeFSM()
 	state.Name = name
 	state.ConfigDirectory = directory
 	state.StateCallback = stateCallback
