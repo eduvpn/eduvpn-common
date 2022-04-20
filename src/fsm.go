@@ -3,9 +3,25 @@ package eduvpn
 import (
 	"fmt"
 	"os"
+	"sort"
 )
 
-type FSMStateID int8
+type (
+	FSMStateID      int8
+	FSMStateIDSlice []FSMStateID
+)
+
+func (v FSMStateIDSlice) Len() int {
+	return len(v)
+}
+
+func (v FSMStateIDSlice) Less(i, j int) bool {
+	return v[i] < v[j]
+}
+
+func (v FSMStateIDSlice) Swap(i, j int) {
+	v[i], v[j] = v[j], v[i]
+}
 
 const (
 	// Deregistered means the app is not registered with the wrapper
@@ -22,6 +38,12 @@ const (
 
 	// Authenticated means the OAuth process has finished and the user is now authenticated with the server
 	AUTHENTICATED
+
+	// Requested config means the user has requested a config for connecting
+	REQUEST_CONFIG
+
+	// Has config means the user has gotten a config
+	HAS_CONFIG
 
 	// Ask profile means the go code is asking for a profile selection from the ui
 	ASK_PROFILE
@@ -40,6 +62,10 @@ func (s FSMStateID) String() string {
 		return "Chosen_Server"
 	case OAUTH_STARTED:
 		return "OAuth_Started"
+	case HAS_CONFIG:
+		return "Has_Config"
+	case REQUEST_CONFIG:
+		return "Request_Config"
 	case ASK_PROFILE:
 		return "Ask_Profile"
 	case AUTHENTICATED:
@@ -52,7 +78,7 @@ func (s FSMStateID) String() string {
 }
 
 type FSMTransition struct {
-	To FSMStateID
+	To          FSMStateID
 	Description string
 }
 
@@ -128,9 +154,19 @@ remincross = false;
 
 func (eduvpn *VPNState) generateMermaidGraph() string {
 	graph := "graph TD\n"
-	graph += "style " + eduvpn.FSM.Current.String() + " fill:cyan\n"
-	for state, transitions := range eduvpn.FSM.States {
+	sorted_fsm := make(FSMStateIDSlice, 0, len(eduvpn.FSM.States))
+	for state_id := range eduvpn.FSM.States {
+		sorted_fsm = append(sorted_fsm, state_id)
+	}
+	sort.Sort(sorted_fsm)
+	for _, state := range sorted_fsm {
+		transitions := eduvpn.FSM.States[state]
 		for _, transition := range transitions {
+			if state == eduvpn.FSM.Current {
+				graph += "\nstyle " + state.String() + " fill:cyan\n"
+			} else {
+				graph += "\nstyle " + state.String() + " fill:white\n"
+			}
 			graph += state.String() + "(" + state.String() + ") " + "-->|" + transition.Description + "| " + transition.To.String() + "\n"
 		}
 	}
@@ -143,14 +179,16 @@ func (eduvpn *VPNState) GenerateGraph() string {
 
 func (eduvpn *VPNState) InitializeFSM() {
 	eduvpn.FSM = &FSM{
-		States: FSMStates {
-			DEREGISTERED: {{NO_SERVER, "Client registers"}},
-			NO_SERVER: {{CHOSEN_SERVER, "User chooses a server"}},
-			CHOSEN_SERVER: {{AUTHENTICATED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
-			OAUTH_STARTED: {{AUTHENTICATED, "User authorizes with browser"}},
-			AUTHENTICATED: {{CONNECTED, "OS reports connected"}, {OAUTH_STARTED, "Re-authenticate with OAuth"}, {ASK_PROFILE, "Connect, multiple profiles detected"}},
-			ASK_PROFILE: {{CONNECTED, "OS reports connected"}},
-			CONNECTED: {{AUTHENTICATED, "OS reports disconnected"}},
+		States: FSMStates{
+			DEREGISTERED:   {{NO_SERVER, "Client registers"}},
+			NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
+			CHOSEN_SERVER:  {{AUTHENTICATED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
+			OAUTH_STARTED:  {{AUTHENTICATED, "User authorizes with browser"}},
+			AUTHENTICATED:  {{OAUTH_STARTED, "Re-authenticate with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},
+			REQUEST_CONFIG: {{ASK_PROFILE, "Multiple profiles found"}, {HAS_CONFIG, "Success, only one profile"}},
+			ASK_PROFILE:    {{HAS_CONFIG, "User chooses profile and success"}},
+			HAS_CONFIG:     {{CONNECTED, "OS reports connected"}},
+			CONNECTED:      {{AUTHENTICATED, "OS reports disconnected"}},
 		},
 		Current: DEREGISTERED,
 	}

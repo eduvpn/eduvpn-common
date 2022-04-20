@@ -40,8 +40,8 @@ func StateCallback(t *testing.T, oldState string, newState string, data string) 
 		go LoginOAuthSelenium(t, data)
 	}
 
-    // We have no data to send back
-    return ""
+	// We have no data to send back
+	return ""
 }
 
 func Test_server(t *testing.T) {
@@ -132,7 +132,6 @@ func Test_token_expired(t *testing.T) {
 	state.Register("org.eduvpn.app.linux", "configsexpired", func(old string, new string, data string) string {
 		return StateCallback(t, old, new, data)
 	}, false)
-
 
 	_, configErr := state.Connect("https://eduvpnserver")
 

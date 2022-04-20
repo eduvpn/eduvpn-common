@@ -6,10 +6,10 @@ import (
 
 type VPNState struct {
 	// Info passed by the client
-	ConfigDirectory string                       `json:"-"`
-	Name            string                       `json:"-"`
-	StateCallback   func(string, string, string) string `json:"-"`
-	StateCallbackData string `json:"-"`
+	ConfigDirectory   string                              `json:"-"`
+	Name              string                              `json:"-"`
+	StateCallback     func(string, string, string) string `json:"-"`
+	StateCallbackData string                              `json:"-"`
 
 	// The chosen server
 	Server *Server `json:"server"`
@@ -93,14 +93,14 @@ func (state *VPNState) Connect(url string) (string, error) {
 		state.GoTransition(AUTHENTICATED, "")
 	}
 
+	state.GoTransition(REQUEST_CONFIG, "")
+
 	config, configErr := state.Server.GetConfig()
 
 	if configErr != nil {
 		return "", configErr
-	}
-
-	if !state.HasTransition(CONNECTED) {
-		return "", errors.New("cannot connect to server, invalid state")
+	} else {
+		state.GoTransition(HAS_CONFIG, "")
 	}
 
 	return config, nil

@@ -6,11 +6,11 @@ import (
 )
 
 type Server struct {
-	BaseURL   string             `json:"base_url"`
-	Endpoints *ServerEndpoints   `json:"endpoints"`
-	OAuth     *OAuth             `json:"oauth"`
-	Profiles  *ServerProfileInfo `json:"profiles"`
-	ProfilesRaw string           `json:"profiles_raw"`
+	BaseURL     string             `json:"base_url"`
+	Endpoints   *ServerEndpoints   `json:"endpoints"`
+	OAuth       *OAuth             `json:"oauth"`
+	Profiles    *ServerProfileInfo `json:"profiles"`
+	ProfilesRaw string             `json:"profiles_raw"`
 }
 
 type ServerProfile struct {
@@ -104,6 +104,9 @@ func (server *Server) getProfileForID(profile_id string) (*ServerProfile, error)
 }
 
 func (server *Server) getConfigWithProfile(profile_id string) (string, error) {
+	if !GetVPNState().HasTransition(HAS_CONFIG) {
+		return "", errors.New("cannot get a config with a profile, invalid state")
+	}
 	profile, profileErr := server.getProfileForID(profile_id)
 
 	if profileErr != nil {
@@ -117,11 +120,17 @@ func (server *Server) getConfigWithProfile(profile_id string) (string, error) {
 }
 
 func (server *Server) askForProfileID() (string, error) {
+	if !GetVPNState().HasTransition(ASK_PROFILE) {
+		return "", errors.New("cannot ask for a profile id, invalid state")
+	}
 	_, profile_id := GetVPNState().GoTransition(ASK_PROFILE, server.ProfilesRaw)
 	return profile_id, nil
 }
 
 func (server *Server) GetConfig() (string, error) {
+	if !GetVPNState().InState(REQUEST_CONFIG) {
+		return "", errors.New("cannot get a config, invalid state")
+	}
 	infoErr := server.APIInfo()
 
 	if infoErr != nil {
