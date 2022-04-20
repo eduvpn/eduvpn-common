@@ -93,6 +93,10 @@ type FSM struct {
 }
 
 func (eduvpn *VPNState) HasTransition(check FSMStateID) bool {
+	// No fsm
+	if eduvpn.FSM == nil {
+		return false
+	}
 	for _, transition_state := range eduvpn.FSM.States[eduvpn.FSM.Current] {
 		if transition_state.To == check {
 			return true
@@ -103,6 +107,10 @@ func (eduvpn *VPNState) HasTransition(check FSMStateID) bool {
 }
 
 func (eduvpn *VPNState) InState(check FSMStateID) bool {
+	// No fsm
+	if eduvpn.FSM == nil {
+		return false
+	}
 	return check == eduvpn.FSM.Current
 }
 
