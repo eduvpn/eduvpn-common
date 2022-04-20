@@ -47,8 +47,8 @@ def register_callback(eduvpn):
     )
 
 
-def SendData(data):
-    lib.SendData(data.encode("utf-8"))
+def SetProfileID(profile_id):
+    lib.SetProfileID(profile_id.encode("utf-8"))
 
 
 class EduVPN(object):
@@ -79,8 +79,8 @@ class EduVPN(object):
     def callback(self, old_state, new_state, data):
         self.event.run(old_state, new_state, data)
 
-    def send_data(self, data):
-        return SendData(data)
+    def set_profile(self, profile_id):
+        return SetProfileID(profile_id)
 
 
 class EventHandler(object):

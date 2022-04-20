@@ -119,10 +119,8 @@ func (eduvpn *VPNState) writeGraph() {
 	f.WriteString(graph)
 }
 
-func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) (bool, string) {
+func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) bool {
 	ok := eduvpn.HasTransition(newState)
-
-	received := ""
 
 	if ok {
 		oldState := eduvpn.FSM.Current
@@ -130,10 +128,10 @@ func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) (bool, st
 		if eduvpn.Debug {
 			eduvpn.writeGraph()
 		}
-		received = eduvpn.StateCallback(oldState.String(), newState.String(), data)
+		eduvpn.StateCallback(oldState.String(), newState.String(), data)
 	}
 
-	return ok, received
+	return ok
 }
 
 func (eduvpn *VPNState) generateDotGraph() string {

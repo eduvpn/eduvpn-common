@@ -6,10 +6,10 @@ import (
 
 type VPNState struct {
 	// Info passed by the client
-	ConfigDirectory   string                              `json:"-"`
-	Name              string                              `json:"-"`
-	StateCallback     func(string, string, string) string `json:"-"`
-	StateCallbackData string                              `json:"-"`
+	ConfigDirectory   string                       `json:"-"`
+	Name              string                       `json:"-"`
+	StateCallback     func(string, string, string) `json:"-"`
+	StateCallbackData string                       `json:"-"`
 
 	// The chosen server
 	Server *Server `json:"server"`
@@ -27,7 +27,7 @@ type VPNState struct {
 	Debug bool `json:"-"`
 }
 
-func (state *VPNState) Register(name string, directory string, stateCallback func(string, string, string) string, debug bool) error {
+func (state *VPNState) Register(name string, directory string, stateCallback func(string, string, string), debug bool) error {
 	state.InitializeFSM()
 	if !state.InState(DEREGISTERED) {
 		return errors.New("app already registered")

@@ -26,7 +26,8 @@ func wireguardConfigAddKey(config string, key wgtypes.Key) string {
 	return interface_re.ReplaceAllString(config, to_replace)
 }
 
-func (server *Server) WireguardGetConfig(profile_id string) (string, error) {
+func (server *Server) WireguardGetConfig() (string, error) {
+	profile_id := server.Profiles.Current
 	wireguardKey, wireguardErr := wireguardGenerateKey()
 
 	if wireguardErr != nil {

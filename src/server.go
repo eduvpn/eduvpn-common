@@ -94,7 +94,8 @@ func (profile *ServerProfile) supportsWireguard() bool {
 	return false
 }
 
-func (server *Server) getProfileForID(profile_id string) (*ServerProfile, error) {
+func (server *Server) getCurrentProfile() (*ServerProfile, error) {
+	profile_id := server.Profiles.Current
 	for _, profile := range server.Profiles.Info.ProfileList {
 		if profile.ID == profile_id {
 			return &profile, nil
@@ -103,28 +104,28 @@ func (server *Server) getProfileForID(profile_id string) (*ServerProfile, error)
 	return nil, errors.New("no profile found for id")
 }
 
-func (server *Server) getConfigWithProfile(profile_id string) (string, error) {
+func (server *Server) getConfigWithProfile() (string, error) {
 	if !GetVPNState().HasTransition(HAS_CONFIG) {
 		return "", errors.New("cannot get a config with a profile, invalid state")
 	}
-	profile, profileErr := server.getProfileForID(profile_id)
+	profile, profileErr := server.getCurrentProfile()
 
 	if profileErr != nil {
 		return "", profileErr
 	}
 
 	if profile.supportsWireguard() {
-		return server.WireguardGetConfig(profile_id)
+		return server.WireguardGetConfig()
 	}
-	return server.OpenVPNGetConfig(profile_id)
+	return server.OpenVPNGetConfig()
 }
 
-func (server *Server) askForProfileID() (string, error) {
+func (server *Server) askForProfileID() error {
 	if !GetVPNState().HasTransition(ASK_PROFILE) {
-		return "", errors.New("cannot ask for a profile id, invalid state")
+		return errors.New("cannot ask for a profile id, invalid state")
 	}
-	_, profile_id := GetVPNState().GoTransition(ASK_PROFILE, server.ProfilesRaw)
-	return profile_id, nil
+	GetVPNState().GoTransition(ASK_PROFILE, server.ProfilesRaw)
+	return nil
 }
 
 func (server *Server) GetConfig() (string, error) {
@@ -139,14 +140,15 @@ func (server *Server) GetConfig() (string, error) {
 
 	// Set the current profile if there is only one profile
 	if len(server.Profiles.Info.ProfileList) == 1 {
-		return server.getConfigWithProfile(server.Profiles.Info.ProfileList[0].ID)
+		server.Profiles.Current = server.Profiles.Info.ProfileList[0].ID
+		return server.getConfigWithProfile()
 	}
 
-	profile_id, profileErr := server.askForProfileID()
+	profileErr := server.askForProfileID()
 
 	if profileErr != nil {
 		return "", nil
 	}
 
-	return server.getConfigWithProfile(profile_id)
+	return server.getConfigWithProfile()
 }

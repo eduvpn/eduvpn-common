@@ -1,6 +1,7 @@
 package eduvpn
 
-func (server *Server) OpenVPNGetConfig(profile_id string) (string, error) {
+func (server *Server) OpenVPNGetConfig() (string, error) {
+	profile_id := server.Profiles.Current
 	configOpenVPN, _, configErr := server.APIConnectOpenVPN(profile_id)
 
 	if configErr != nil {

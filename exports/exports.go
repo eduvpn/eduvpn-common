@@ -18,9 +18,9 @@ import "github.com/jwijenbergh/eduvpn-common/src"
 
 var P_StateCallback C.PythonCB
 
-func StateCallback(old_state string, new_state string, data string) string {
+func StateCallback(old_state string, new_state string, data string) {
 	if P_StateCallback == nil {
-		return ""
+		return
 	}
 	oldState_c := C.CString(old_state)
 	newState_c := C.CString(new_state)
@@ -29,12 +29,6 @@ func StateCallback(old_state string, new_state string, data string) string {
 	C.free(unsafe.Pointer(oldState_c))
 	C.free(unsafe.Pointer(newState_c))
 	C.free(unsafe.Pointer(data_c))
-
-	// Get state data and reset
-	state := eduvpn.GetVPNState()
-	received_data := state.StateCallbackData
-	state.StateCallbackData = ""
-	return received_data
 }
 
 //export Register
@@ -81,9 +75,24 @@ func GetServersList() (*C.char, *C.char) {
 	return C.CString(servers), C.CString(ErrorToString(serversErr))
 }
 
-//export SendData
-func SendData(data *C.char) {
-	eduvpn.GetVPNState().StateCallbackData = C.GoString(data)
+//export SetProfileID
+func SetProfileID(data *C.char) {
+	state := eduvpn.GetVPNState()
+
+	// No server
+	if state.Server == nil {
+		return
+	}
+
+	// No profiles for server
+	if state.Server.Profiles == nil {
+		return
+	}
+
+	// Set current profile to id
+	profile_id := C.GoString(data)
+
+	state.Server.Profiles.Current = profile_id
 }
 
 //export FreeString
