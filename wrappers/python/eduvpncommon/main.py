@@ -59,10 +59,8 @@ class EduVPN(object):
         self.config_directory = config_directory
         register_callback(self)
 
-    def __del__(self):
-        # It could be that lib is garbage collected already
-        if lib:
-            Deregister()
+    def deregister(self):
+        Deregister()
 
     def register(self, debug=False) -> bool:
         return Register(self.name, self.config_directory, callback_function, debug) == ""
