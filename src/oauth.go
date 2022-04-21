@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 )
 
 // Generates a random base64 string to be used for state
@@ -72,11 +71,6 @@ type OAuthExchangeSession struct {
 	// filled in when constructing the callback
 	Context context.Context
 	Server  http.Server
-}
-
-func GenerateTimeSeconds() int64 {
-	current := time.Now()
-	return current.Unix()
 }
 
 // Struct that defines the json format for /.well-known/vpn-user-portal"

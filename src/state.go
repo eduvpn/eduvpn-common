@@ -15,7 +15,7 @@ type VPNState struct {
 	Server Server `json:"server"`
 
 	// The list of servers and organizations from disco
-	DiscoList DiscoList `json:"disco"`
+	DiscoList DiscoLists `json:"-"`
 
 	// The file we keep open for logging
 	LogFile FileLogger `json:"-"`
