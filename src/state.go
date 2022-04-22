@@ -51,7 +51,7 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 		// This error can be safely ignored, as when the config does not load, the struct will not be filled
 		state.Log(LOG_INFO, "Previous configuration not found")
 	}
-	state.GoTransition(NO_SERVER, "")
+	state.GoTransition(NO_SERVER)
 	return nil
 }
 
@@ -87,17 +87,17 @@ func (state *VPNState) Connect(url string) (string, error) {
 			return "", loginErr
 		}
 	} else { // OAuth was valid, ensure we are in the authenticated state
-		state.GoTransition(AUTHENTICATED, "")
+		state.GoTransition(AUTHENTICATED)
 	}
 
-	state.GoTransition(REQUEST_CONFIG, "")
+	state.GoTransition(REQUEST_CONFIG)
 
 	config, configErr := state.Server.GetConfig()
 
 	if configErr != nil {
 		return "", configErr
 	} else {
-		state.GoTransition(HAS_CONFIG, "")
+		state.GoTransition(HAS_CONFIG)
 	}
 
 	return config, nil

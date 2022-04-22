@@ -51,7 +51,7 @@ func (server *Server) Initialize(url string) error {
 	if endpointsErr != nil {
 		return endpointsErr
 	}
-	GetVPNState().GoTransition(CHOSEN_SERVER, "Chosen server")
+	GetVPNState().GoTransition(CHOSEN_SERVER)
 	return nil
 }
 
@@ -119,7 +119,7 @@ func (server *Server) askForProfileID() error {
 	if !GetVPNState().HasTransition(ASK_PROFILE) {
 		return errors.New("cannot ask for a profile id, invalid state")
 	}
-	GetVPNState().GoTransition(ASK_PROFILE, server.ProfilesRaw)
+	GetVPNState().GoTransitionWithData(ASK_PROFILE, server.ProfilesRaw)
 	return nil
 }
 

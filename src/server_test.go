@@ -179,8 +179,8 @@ func Test_token_invalid(t *testing.T) {
 
 	// Fake connect and then back to authenticated so that we can re-authenticate
 	// Going to authenticated fakes a disconnect
-	state.GoTransition(CONNECTED, "")
-	state.GoTransition(AUTHENTICATED, "")
+	state.GoTransition(CONNECTED)
+	state.GoTransition(AUTHENTICATED)
 
 	dummy_value := "37"
 

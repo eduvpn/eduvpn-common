@@ -119,7 +119,7 @@ func (eduvpn *VPNState) writeGraph() {
 	f.WriteString(graph)
 }
 
-func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) bool {
+func (eduvpn *VPNState) GoTransitionWithData(newState FSMStateID, data string) bool {
 	ok := eduvpn.HasTransition(newState)
 
 	if ok {
@@ -132,6 +132,10 @@ func (eduvpn *VPNState) GoTransition(newState FSMStateID, data string) bool {
 	}
 
 	return ok
+}
+
+func (eduvpn *VPNState) GoTransition(newState FSMStateID) bool {
+	return eduvpn.GoTransitionWithData(newState, "")
 }
 
 func (eduvpn *VPNState) generateDotGraph() string {

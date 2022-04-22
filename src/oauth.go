@@ -254,7 +254,7 @@ func (eduvpn *VPNState) InitializeOAuth() error {
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
 	oauthSession := OAuthExchangeSession{ClientID: eduvpn.Name, State: state, Verifier: verifier}
 	eduvpn.Server.OAuth = OAuth{TokenURL: eduvpn.Server.Endpoints.API.V3.Token, Session: oauthSession}
-	eduvpn.GoTransition(OAUTH_STARTED, authURL)
+	eduvpn.GoTransitionWithData(OAUTH_STARTED, authURL)
 	return nil
 }
 
@@ -267,7 +267,7 @@ func (eduvpn *VPNState) FinishOAuth() error {
 	if tokenErr != nil {
 		return tokenErr
 	}
-	eduvpn.GoTransition(AUTHENTICATED, "")
+	eduvpn.GoTransition(AUTHENTICATED)
 	return nil
 }
 
