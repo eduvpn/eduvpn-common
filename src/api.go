@@ -102,3 +102,8 @@ func (server *Server) APIConnectOpenVPN(profile_id string) (string, string, erro
 	expires := header.Get("expires")
 	return string(connectBody), expires, nil
 }
+
+// This needs no further return value as it's best effort
+func (server *Server) APIDisconnect() {
+	server.apiAuthenticatedRetry(http.MethodPost, "/disconnect", nil)
+}
