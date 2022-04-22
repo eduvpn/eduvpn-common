@@ -1,4 +1,4 @@
-package eduvpn
+package internal
 
 import (
 	"encoding/json"
@@ -17,7 +17,7 @@ func (server *Server) apiAuthenticated(method string, endpoint string, opts *HTT
 	url := server.Endpoints.API.V3.API + endpoint
 
 	// Ensure we have valid tokens
-	oauthErr := server.OAuth.EnsureTokens()
+	oauthErr := server.EnsureTokens()
 
 	if oauthErr != nil {
 		return nil, nil, oauthErr
@@ -40,7 +40,7 @@ func (server *Server) apiAuthenticatedRetry(method string, endpoint string, opts
 
 		// Only retry authenticated if we get a HTTP 401
 		if errors.As(bodyErr, &error) && error.Status == 401 {
-			GetVPNState().Log(LOG_INFO, fmt.Sprintf("API: Got HTTP error %v, retrying authenticated", error))
+			server.Logger.Log(LOG_INFO, fmt.Sprintf("API: Got HTTP error %v, retrying authenticated", error))
 			// Tell the method that the token is expired
 			server.OAuth.Token.ExpiredTimestamp = GenerateTimeSeconds()
 			return server.apiAuthenticated(method, endpoint, opts)

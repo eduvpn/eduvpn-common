@@ -1,4 +1,4 @@
-package eduvpn
+package internal
 
 func (server *Server) OpenVPNGetConfig() (string, error) {
 	profile_id := server.Profiles.Current

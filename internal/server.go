@@ -1,8 +1,9 @@
-package eduvpn
+package internal
 
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 type Server struct {
@@ -11,6 +12,8 @@ type Server struct {
 	OAuth       OAuth             `json:"oauth"`
 	Profiles    ServerProfileInfo `json:"profiles"`
 	ProfilesRaw string            `json:"profiles_raw"`
+	Logger      *FileLogger       `json:"-"`
+	FSM         *FSM              `json:"-"`
 }
 
 type Servers struct {
@@ -30,7 +33,27 @@ func (servers *Servers) GetCurrentServer() (*Server, error) {
 	return server, nil
 }
 
-func (servers *Servers) EnsureServer(url string) *Server {
+func (server *Server) Init(url string, fsm *FSM, logger *FileLogger) error {
+	server.BaseURL = url
+	server.FSM = fsm
+	server.Logger = logger
+	server.OAuth.Init(fsm, logger)
+	endpointsErr := server.GetEndpoints()
+	if endpointsErr != nil {
+		return endpointsErr
+	}
+	return nil
+}
+
+func (server *Server) EnsureTokens() error {
+	if server.OAuth.NeedsRelogin() {
+		server.Logger.Log(LOG_INFO, "OAuth: Tokens are invalid, relogging in")
+		return server.Login()
+	}
+	return nil
+}
+
+func (servers *Servers) EnsureServer(url string, fsm *FSM, logger *FileLogger) *Server {
 	if servers.List == nil {
 		servers.List = make(map[string]*Server)
 	}
@@ -39,9 +62,9 @@ func (servers *Servers) EnsureServer(url string) *Server {
 
 	if !exists || server == nil {
 		server = &Server{}
-		server.Initialize(url)
-		servers.List[url] = server
 	}
+	server.Init(url, fsm, logger)
+	servers.List[url] = server
 	servers.Current = url
 	return server
 }
@@ -75,13 +98,8 @@ type ServerEndpoints struct {
 	V string `json:"v"`
 }
 
-func (server *Server) Initialize(url string) error {
-	server.BaseURL = url
-	endpointsErr := server.GetEndpoints()
-	if endpointsErr != nil {
-		return endpointsErr
-	}
-	return nil
+func (server *Server) Login() error {
+	return server.OAuth.Login("org.eduvpn.app.linux", server.Endpoints.API.V3.Authorization, server.Endpoints.API.V3.Token)
 }
 
 func (server *Server) NeedsRelogin() bool {
@@ -129,7 +147,7 @@ func (server *Server) getCurrentProfile() (*ServerProfile, error) {
 }
 
 func (server *Server) getConfigWithProfile() (string, error) {
-	if !GetVPNState().HasTransition(HAS_CONFIG) {
+	if !server.FSM.HasTransition(HAS_CONFIG) {
 		return "", errors.New("cannot get a config with a profile, invalid state")
 	}
 	profile, profileErr := server.getCurrentProfile()
@@ -145,16 +163,16 @@ func (server *Server) getConfigWithProfile() (string, error) {
 }
 
 func (server *Server) askForProfileID() error {
-	if !GetVPNState().HasTransition(ASK_PROFILE) {
+	if !server.FSM.HasTransition(ASK_PROFILE) {
 		return errors.New("cannot ask for a profile id, invalid state")
 	}
-	GetVPNState().GoTransitionWithData(ASK_PROFILE, server.ProfilesRaw)
+	server.FSM.GoTransitionWithData(ASK_PROFILE, server.ProfilesRaw)
 	return nil
 }
 
 func (server *Server) GetConfig() (string, error) {
-	if !GetVPNState().InState(REQUEST_CONFIG) {
-		return "", errors.New("cannot get a config, invalid state")
+	if !server.FSM.InState(REQUEST_CONFIG) {
+		return "", errors.New(fmt.Sprintf("cannot get a config, invalid state %s", server.FSM.Current.String()))
 	}
 	infoErr := server.APIInfo()
 

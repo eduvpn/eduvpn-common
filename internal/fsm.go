@@ -1,4 +1,4 @@
-package eduvpn
+package internal
 
 import (
 	"fmt"
@@ -90,10 +90,37 @@ type (
 type FSM struct {
 	States  FSMStates
 	Current FSMStateID
+
+	// Info to be passed from the parent state
+	StateCallback func(string, string, string)
+	Logger        *FileLogger
+	Debug         bool
 }
 
-func (eduvpn *VPNState) HasTransition(check FSMStateID) bool {
-	for _, transition_state := range eduvpn.FSM.States[eduvpn.FSM.Current] {
+func (fsm *FSM) Init(callback func(string, string, string), logger *FileLogger, debug bool) {
+	fsm.States = FSMStates{
+		DEREGISTERED:   {{NO_SERVER, "Client registers"}},
+		NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
+		CHOSEN_SERVER:  {{AUTHENTICATED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
+		OAUTH_STARTED:  {{AUTHENTICATED, "User authorizes with browser"}},
+		AUTHENTICATED:  {{OAUTH_STARTED, "Re-authenticate with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},
+		REQUEST_CONFIG: {{ASK_PROFILE, "Multiple profiles found"}, {HAS_CONFIG, "Success, only one profile"}},
+		ASK_PROFILE:    {{HAS_CONFIG, "User chooses profile and success"}},
+		HAS_CONFIG:     {{CONNECTED, "OS reports connected"}},
+		CONNECTED:      {{AUTHENTICATED, "OS reports disconnected"}},
+	}
+	fsm.Current = DEREGISTERED
+	fsm.StateCallback = callback
+	fsm.Logger = logger
+	fsm.Debug = debug
+}
+
+func (fsm *FSM) InState(check FSMStateID) bool {
+	return check == fsm.Current
+}
+
+func (fsm *FSM) HasTransition(check FSMStateID) bool {
+	for _, transition_state := range fsm.States[fsm.Current] {
 		if transition_state.To == check {
 			return true
 		}
@@ -102,16 +129,12 @@ func (eduvpn *VPNState) HasTransition(check FSMStateID) bool {
 	return false
 }
 
-func (eduvpn *VPNState) InState(check FSMStateID) bool {
-	return check == eduvpn.FSM.Current
-}
-
-func (eduvpn *VPNState) writeGraph() {
-	graph := eduvpn.GenerateGraph()
+func (fsm *FSM) writeGraph() {
+	graph := fsm.GenerateGraph()
 
 	f, err := os.Create("debug.graph")
 	if err != nil {
-		eduvpn.Log(LOG_INFO, fmt.Sprintf("Failed to write debug fsm graph with error %v", err))
+		fsm.Logger.Log(LOG_INFO, fmt.Sprintf("Failed to write debug fsm graph with error %v", err))
 	}
 
 	defer f.Close()
@@ -119,52 +142,36 @@ func (eduvpn *VPNState) writeGraph() {
 	f.WriteString(graph)
 }
 
-func (eduvpn *VPNState) GoTransitionWithData(newState FSMStateID, data string) bool {
-	ok := eduvpn.HasTransition(newState)
+func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data string) bool {
+	ok := fsm.HasTransition(newState)
 
 	if ok {
-		oldState := eduvpn.FSM.Current
-		eduvpn.FSM.Current = newState
-		if eduvpn.Debug {
-			eduvpn.writeGraph()
+		oldState := fsm.Current
+		fsm.Current = newState
+		if fsm.Debug {
+			fsm.writeGraph()
 		}
-		eduvpn.StateCallback(oldState.String(), newState.String(), data)
+		fsm.StateCallback(oldState.String(), newState.String(), data)
 	}
 
 	return ok
 }
 
-func (eduvpn *VPNState) GoTransition(newState FSMStateID) bool {
-	return eduvpn.GoTransitionWithData(newState, "")
+func (fsm *FSM) GoTransition(newState FSMStateID) bool {
+	return fsm.GoTransitionWithData(newState, "")
 }
 
-func (eduvpn *VPNState) generateDotGraph() string {
-	graph := `digraph eduvpn_fsm {
-nodesep = 2;
-remincross = false;
-`
-	graph += "node[color=blue]; " + eduvpn.FSM.Current.String() + ";\n"
-	graph += "node [color=black];\n"
-	for state, transitions := range eduvpn.FSM.States {
-		for _, transition := range transitions {
-			graph += state.String() + " -> " + transition.To.String() + " [label=\"" + transition.Description + "\"]\n"
-		}
-	}
-	graph += "}"
-	return graph
-}
-
-func (eduvpn *VPNState) generateMermaidGraph() string {
+func (fsm *FSM) generateMermaidGraph() string {
 	graph := "graph TD\n"
-	sorted_fsm := make(FSMStateIDSlice, 0, len(eduvpn.FSM.States))
-	for state_id := range eduvpn.FSM.States {
+	sorted_fsm := make(FSMStateIDSlice, 0, len(fsm.States))
+	for state_id := range fsm.States {
 		sorted_fsm = append(sorted_fsm, state_id)
 	}
 	sort.Sort(sorted_fsm)
 	for _, state := range sorted_fsm {
-		transitions := eduvpn.FSM.States[state]
+		transitions := fsm.States[state]
 		for _, transition := range transitions {
-			if state == eduvpn.FSM.Current {
+			if state == fsm.Current {
 				graph += "\nstyle " + state.String() + " fill:cyan\n"
 			} else {
 				graph += "\nstyle " + state.String() + " fill:white\n"
@@ -175,23 +182,6 @@ func (eduvpn *VPNState) generateMermaidGraph() string {
 	return graph
 }
 
-func (eduvpn *VPNState) GenerateGraph() string {
-	return eduvpn.generateMermaidGraph()
-}
-
-func (eduvpn *VPNState) InitializeFSM() {
-	eduvpn.FSM = FSM{
-		States: FSMStates{
-			DEREGISTERED:   {{NO_SERVER, "Client registers"}},
-			NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
-			CHOSEN_SERVER:  {{AUTHENTICATED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
-			OAUTH_STARTED:  {{AUTHENTICATED, "User authorizes with browser"}},
-			AUTHENTICATED:  {{OAUTH_STARTED, "Re-authenticate with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},
-			REQUEST_CONFIG: {{ASK_PROFILE, "Multiple profiles found"}, {HAS_CONFIG, "Success, only one profile"}},
-			ASK_PROFILE:    {{HAS_CONFIG, "User chooses profile and success"}},
-			HAS_CONFIG:     {{CONNECTED, "OS reports connected"}},
-			CONNECTED:      {{AUTHENTICATED, "OS reports disconnected"}},
-		},
-		Current: DEREGISTERED,
-	}
+func (fsm *FSM) GenerateGraph() string {
+	return fsm.generateMermaidGraph()
 }

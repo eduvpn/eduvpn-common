@@ -1,4 +1,4 @@
-package eduvpn
+package internal
 
 import (
 	"context"
@@ -56,6 +56,8 @@ type OAuth struct {
 	Session  OAuthExchangeSession `json:"-"`
 	Token    OAuthToken           `json:"token"`
 	TokenURL string               `json:"token_url"`
+	Logger   *FileLogger          `json:"-"`
+	FSM      *FSM                 `json:"-"`
 }
 
 // This structure gets passed to the callback for easy access to the current state
@@ -215,12 +217,15 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	go oauth.Session.Server.Shutdown(oauth.Session.Context)
 }
 
-// Initializes the OAuth for eduvpn.
-// It needs a vpn state that was gotten from `Register`
-// It returns the authurl for the browser and an error if present
-func (eduvpn *VPNState) InitializeOAuth() error {
-	if !eduvpn.HasTransition(OAUTH_STARTED) {
-		return errors.New(fmt.Sprintf("Failed starting oauth, invalid state %s", eduvpn.FSM.Current.String()))
+func (oauth *OAuth) Init(fsm *FSM, logger *FileLogger) {
+	oauth.FSM = fsm
+	oauth.Logger = logger
+}
+
+// Starts the OAuth exchange for eduvpn.
+func (oauth *OAuth) start(name string, authorizationURL string, tokenURL string) error {
+	if !oauth.FSM.HasTransition(OAUTH_STARTED) {
+		return errors.New(fmt.Sprintf("Failed starting oauth, invalid state %s", oauth.FSM.Current.String()))
 	}
 	// Generate the state
 	state, stateErr := genState()
@@ -236,7 +241,7 @@ func (eduvpn *VPNState) InitializeOAuth() error {
 	challenge := genChallengeS256(verifier)
 
 	parameters := map[string]string{
-		"client_id":             eduvpn.Name,
+		"client_id":             name,
 		"code_challenge_method": "S256",
 		"code_challenge":        challenge,
 		"response_type":         "code",
@@ -245,48 +250,41 @@ func (eduvpn *VPNState) InitializeOAuth() error {
 		"redirect_uri":          "http://127.0.0.1:8000/callback",
 	}
 
-	server, serverErr := eduvpn.Servers.GetCurrentServer()
-	if serverErr != nil {
-		return errors.New("OAuth Initialize no server found")
-	}
-	authURL, urlErr := HTTPConstructURL(server.Endpoints.API.V3.Authorization, parameters)
+	authURL, urlErr := HTTPConstructURL(authorizationURL, parameters)
 
 	if urlErr != nil { // shouldn't happen
 		panic(urlErr)
 	}
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
-	oauthSession := OAuthExchangeSession{ClientID: eduvpn.Name, State: state, Verifier: verifier}
-	server.OAuth = OAuth{TokenURL: server.Endpoints.API.V3.Token, Session: oauthSession}
-	eduvpn.GoTransitionWithData(OAUTH_STARTED, authURL)
+	oauthSession := OAuthExchangeSession{ClientID: name, State: state, Verifier: verifier}
+	oauth.TokenURL = tokenURL
+	oauth.Session = oauthSession
+	oauth.FSM.GoTransitionWithData(OAUTH_STARTED, authURL)
 	return nil
 }
 
 // Error definitions
-func (eduvpn *VPNState) FinishOAuth() error {
-	if !eduvpn.HasTransition(AUTHENTICATED) {
+func (oauth *OAuth) Finish() error {
+	if !oauth.FSM.HasTransition(AUTHENTICATED) {
 		return errors.New("invalid state to finish oauth")
 	}
-	server, serverErr := eduvpn.Servers.GetCurrentServer()
-	if serverErr != nil {
-		return errors.New("OAuth Initialize No server found")
-	}
-	tokenErr := server.OAuth.getTokensWithCallback()
+	tokenErr := oauth.getTokensWithCallback()
 	if tokenErr != nil {
 		return tokenErr
 	}
-	eduvpn.GoTransition(AUTHENTICATED)
+	oauth.FSM.GoTransition(AUTHENTICATED)
 	return nil
 }
 
-func (state *VPNState) LoginOAuth() error {
-	authInitializeErr := state.InitializeOAuth()
+func (oauth *OAuth) Login(name string, authorizationURL string, tokenURL string) error {
+	authInitializeErr := oauth.start(name, authorizationURL, tokenURL)
 
 	if authInitializeErr != nil {
 		return authInitializeErr
 	}
 
-	oauthErr := state.FinishOAuth()
+	oauthErr := oauth.Finish()
 
 	if oauthErr != nil {
 		return oauthErr
@@ -294,14 +292,10 @@ func (state *VPNState) LoginOAuth() error {
 	return nil
 }
 
-func (oauth *OAuth) Login() error {
-	return GetVPNState().LoginOAuth()
-}
-
 func (oauth *OAuth) NeedsRelogin() bool {
 	// Access Token or Refresh Tokens empty, definitely needs a relogin
 	if oauth.Token.Access == "" || oauth.Token.Refresh == "" {
-		GetVPNState().Log(LOG_INFO, "OAuth: Tokens are empty")
+		oauth.Logger.Log(LOG_INFO, "OAuth: Tokens are empty")
 		return true
 	}
 
@@ -310,27 +304,19 @@ func (oauth *OAuth) NeedsRelogin() bool {
 	// The tokens are not expired yet
 	// No relogin is needed
 	if !oauth.isTokensExpired() {
-		GetVPNState().Log(LOG_INFO, "OAuth: Tokens are not expired, re-login not needed")
+		oauth.Logger.Log(LOG_INFO, "OAuth: Tokens are not expired, re-login not needed")
 		return false
 	}
 
 	refreshErr := oauth.getTokensWithRefresh()
 	// We have obtained new tokens with refresh
 	if refreshErr == nil {
-		GetVPNState().Log(LOG_INFO, "OAuth: Tokens could be re-acquired using the refresh token, re-login not needed")
+		oauth.Logger.Log(LOG_INFO, "OAuth: Tokens could be re-acquired using the refresh token, re-login not needed")
 		return false
 	}
 
 	// Otherwise relogin is really needed
 	return true
-}
-
-func (oauth *OAuth) EnsureTokens() error {
-	if oauth.NeedsRelogin() {
-		GetVPNState().Log(LOG_INFO, "OAuth: Tokens are invalid, relogging in")
-		return oauth.Login()
-	}
-	return nil
 }
 
 type OAuthGenStateUnableError struct {

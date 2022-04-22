@@ -1,4 +1,4 @@
-package eduvpn
+package internal
 
 import (
 	"fmt"

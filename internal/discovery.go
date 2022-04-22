@@ -1,4 +1,4 @@
-package eduvpn
+package internal
 
 import (
 	"encoding/json"
@@ -54,9 +54,11 @@ type ServersList struct {
 	Timestamp int64           `json:"-"`
 }
 
-type DiscoLists struct {
+type Discovery struct {
 	Organizations OrganizationList
 	Servers       ServersList
+	FSM *FSM
+	Logger *FileLogger
 }
 
 // Helper function that gets a disco json
@@ -107,59 +109,64 @@ func (e *GetListError) Error() string {
 	return fmt.Sprintf("failed getting disco list file %s with error %v", e.File, e.Err)
 }
 
+func (discovery *Discovery) Init(fsm *FSM, logger *FileLogger) {
+	discovery.FSM = fsm
+	discovery.Logger = logger
+}
+
 // FIXME: Implement based on
 // https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md
 // - [IMPLEMENTED] on "first launch" when offering the search for "Institute Access" and "Organizations";
 // - [TODO] when the user tries to add new server AND the user did NOT yet choose an organization before;
 // - [TODO] when the authorization for the server associated with an already chosen organization is triggered, e.g. after expiry or revocation.
-func (eduvpn *VPNState) DetermineOrganizationsUpdate() bool {
-	return string(eduvpn.DiscoList.Organizations.JSON) == ""
+func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
+	return string(discovery.Organizations.JSON) == ""
 }
 
 // https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md
 // - [Implemented] The application MUST always fetch the server_list.json at application start.
 // - The application MAY refresh the server_list.json periodically, e.g. once every hour.
-func (eduvpn *VPNState) DetermineServersUpdate() bool {
+func (discovery *Discovery) DetermineServersUpdate() bool {
 	// No servers, we should update
-	if string(eduvpn.DiscoList.Servers.JSON) == "" {
+	if string(discovery.Servers.JSON) == "" {
 		return true
 	}
 	// 1 hour from the last update
-	should_update_time := eduvpn.DiscoList.Servers.Timestamp + 3600
+	should_update_time := discovery.Servers.Timestamp + 3600
 	now := GenerateTimeSeconds()
 	if now >= should_update_time {
 		return true
 	}
-	GetVPNState().Log(LOG_INFO, "No update needed for servers, 1h is not passed yet")
+	discovery.Logger.Log(LOG_INFO, "No update needed for servers, 1h is not passed yet")
 	return false
 }
 
 // Get the organization list
-func (eduvpn *VPNState) GetOrganizationsList() (string, error) {
-	if !eduvpn.DetermineOrganizationsUpdate() {
-		return string(eduvpn.DiscoList.Organizations.JSON), nil
+func (discovery *Discovery) GetOrganizationsList() (string, error) {
+	if !discovery.DetermineOrganizationsUpdate() {
+		return string(discovery.Organizations.JSON), nil
 	}
 	file := "organization_list.json"
-	err := getDiscoFile(file, eduvpn.DiscoList.Organizations.Version, &eduvpn.DiscoList.Organizations)
+	err := getDiscoFile(file, discovery.Organizations.Version, &discovery.Organizations)
 	if err != nil {
 		// Return previous with an error
-		return string(eduvpn.DiscoList.Organizations.JSON), &GetListError{File: file, Err: err}
+		return string(discovery.Organizations.JSON), &GetListError{File: file, Err: err}
 	}
-	return string(eduvpn.DiscoList.Organizations.JSON), nil
+	return string(discovery.Organizations.JSON), nil
 }
 
 // Get the server list
-func (eduvpn *VPNState) GetServersList() (string, error) {
-	if !eduvpn.DetermineServersUpdate() {
-		return string(eduvpn.DiscoList.Servers.JSON), nil
+func (discovery *Discovery) GetServersList() (string, error) {
+	if !discovery.DetermineServersUpdate() {
+		return string(discovery.Servers.JSON), nil
 	}
 	file := "server_list.json"
-	err := getDiscoFile(file, eduvpn.DiscoList.Servers.Version, &eduvpn.DiscoList.Servers)
+	err := getDiscoFile(file, discovery.Servers.Version, &discovery.Servers)
 	if err != nil {
 		// Return previous with an error
-		return string(eduvpn.DiscoList.Servers.JSON), &GetListError{File: file, Err: err}
+		return string(discovery.Servers.JSON), &GetListError{File: file, Err: err}
 	}
 	// Update servers timestamp
-	eduvpn.DiscoList.Servers.Timestamp = GenerateTimeSeconds()
-	return string(eduvpn.DiscoList.Servers.JSON), nil
+	discovery.Servers.Timestamp = GenerateTimeSeconds()
+	return string(discovery.Servers.JSON), nil
 }

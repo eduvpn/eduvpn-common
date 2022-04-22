@@ -14,7 +14,7 @@ void call_callback(PythonCB callback, const char* oldstate, const char* newstate
 */
 import "C"
 import "unsafe"
-import "github.com/jwijenbergh/eduvpn-common/src"
+import "github.com/jwijenbergh/eduvpn-common"
 
 var P_StateCallback C.PythonCB
 
@@ -63,7 +63,7 @@ func Connect(url *C.char) (*C.char, *C.char) {
 //export GetOrganizationsList
 func GetOrganizationsList() (*C.char, *C.char) {
 	state := eduvpn.GetVPNState()
-	organizations, organizationsErr := state.GetOrganizationsList()
+	organizations, organizationsErr := state.GetDiscoOrganizations()
 	return C.CString(organizations), C.CString(ErrorToString(organizationsErr))
 }
 
@@ -71,27 +71,15 @@ func GetOrganizationsList() (*C.char, *C.char) {
 //export GetServersList
 func GetServersList() (*C.char, *C.char) {
 	state := eduvpn.GetVPNState()
-	servers, serversErr := state.GetServersList()
+	servers, serversErr := state.GetDiscoServers()
 	return C.CString(servers), C.CString(ErrorToString(serversErr))
 }
 
 //export SetProfileID
 func SetProfileID(data *C.char) *C.char {
 	state := eduvpn.GetVPNState()
-
-	if !state.InState(eduvpn.ASK_PROFILE) {
-		return C.CString("Invalid state for setting a profile")
-	}
-
-	// Set current profile to id
-	profile_id := C.GoString(data)
-
-	server, serverErr := state.Servers.GetCurrentServer()
-	if serverErr != nil {
-		return C.CString("No server found for setting a profile ID")
-	}
-	server.Profiles.Current = profile_id
-	return C.CString("")
+	profileErr := state.SetProfileID(C.GoString(data))
+	return C.CString(ErrorToString(profileErr))
 }
 
 //export FreeString

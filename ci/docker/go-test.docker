@@ -28,10 +28,11 @@ RUN go mod download && go mod verify
 WORKDIR /eduvpn/go
 
 # Copy go source
-COPY ./src ./src
+COPY *.go ./
+COPY ./internal ./internal
 
 # Copy selenium scripts
 COPY ./selenium_eduvpn.py ./selenium_eduvpn.py
 
 # Run the tests
-CMD ["go", "test", "-mod=readonly", "github.com/jwijenbergh/eduvpn-common/src", "-v"]
+CMD ["go", "test", "-mod=readonly", "./...", "-v"]

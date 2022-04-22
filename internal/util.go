@@ -1,7 +1,8 @@
-package eduvpn
+package internal
 
 import (
 	"crypto/rand"
+	"os"
 	"time"
 )
 
@@ -18,4 +19,12 @@ func MakeRandomByteSlice(size int) ([]byte, error) {
 func GenerateTimeSeconds() int64 {
 	current := time.Now()
 	return current.Unix()
+}
+
+func EnsureDirectory(directory string) error {
+	mkdirErr := os.MkdirAll(directory, os.ModePerm)
+	if mkdirErr != nil {
+		return mkdirErr
+	}
+	return nil
 }

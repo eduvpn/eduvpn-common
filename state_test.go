@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/jwijenbergh/eduvpn-common/internal"
 )
 
 func runCommand(t *testing.T, errBuffer *strings.Builder, name string, args ...string) error {
@@ -29,7 +31,7 @@ func LoginOAuthSelenium(t *testing.T, url string) {
 	// We could use the go selenium library
 	// But it does not support the latest selenium v4 just yet
 	var errBuffer strings.Builder
-	err := runCommand(t, &errBuffer, "python3", "../selenium_eduvpn.py", url)
+	err := runCommand(t, &errBuffer, "python3", "selenium_eduvpn.py", url)
 	if err != nil {
 		t.Errorf("Login OAuth with selenium script failed with error %v and stderr %s", err, errBuffer.String())
 	}
@@ -42,7 +44,7 @@ func StateCallback(t *testing.T, oldState string, newState string, data string) 
 }
 
 func Test_server(t *testing.T) {
-	state := GetVPNState()
+	state := &VPNState{}
 
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
@@ -58,17 +60,17 @@ func Test_server(t *testing.T) {
 	}
 }
 
-func test_connect_oauth_parameter(t *testing.T, parameters URLParameters, expectedErr interface{}) {
-	state := GetVPNState()
-	state.Deregister()
+func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameters, expectedErr interface{}) {
+	state := &VPNState{}
+	configDirectory := "test_oauth_parameters"
 
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	state.Register("org.eduvpn.app.linux", "configsnologin", func(oldState string, newState string, data string) {
+	state.Register("org.eduvpn.app.linux", configDirectory, func(oldState string, newState string, data string) {
 		if newState == "OAuth_Started" {
 			baseURL := "http://127.0.0.1:8000/callback"
-			url, err := HTTPConstructURL(baseURL, parameters)
+			url, err := internal.HTTPConstructURL(baseURL, parameters)
 			if err != nil {
 				t.Errorf("Error: Constructing url %s with parameters %s", baseURL, fmt.Sprint(parameters))
 			}
@@ -85,17 +87,17 @@ func test_connect_oauth_parameter(t *testing.T, parameters URLParameters, expect
 
 func Test_connect_oauth_parameters(t *testing.T) {
 	var (
-		failedCallbackParameterError  *OAuthFailedCallbackParameterError
-		failedCallbackStateMatchError *OAuthFailedCallbackStateMatchError
+		failedCallbackParameterError  *internal.OAuthFailedCallbackParameterError
+		failedCallbackStateMatchError *internal.OAuthFailedCallbackStateMatchError
 	)
 
 	tests := []struct {
 		expectedErr interface{}
-		parameters  URLParameters
+		parameters  internal.URLParameters
 	}{
-		{&failedCallbackParameterError, URLParameters{}},
-		{&failedCallbackParameterError, URLParameters{"code": "42"}},
-		{&failedCallbackStateMatchError, URLParameters{"code": "42", "state": "21"}},
+		{&failedCallbackParameterError, internal.URLParameters{}},
+		{&failedCallbackParameterError, internal.URLParameters{"code": "42"}},
+		{&failedCallbackStateMatchError, internal.URLParameters{"code": "42", "state": "21"}},
 	}
 
 	for _, test := range tests {
@@ -117,9 +119,7 @@ func Test_token_expired(t *testing.T) {
 	}
 
 	// Get a vpn state
-	state := GetVPNState()
-
-	state.Deregister()
+	state := &VPNState{}
 
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
@@ -165,12 +165,10 @@ func Test_token_expired(t *testing.T) {
 }
 
 func Test_token_invalid(t *testing.T) {
-	state := GetVPNState()
+	state := &VPNState{}
 
 	// Do not verify because during testing, the cert is self-signed
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-
-	state.Deregister()
 
 	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old string, new string, data string) {
 		StateCallback(t, old, new, data)
@@ -184,8 +182,8 @@ func Test_token_invalid(t *testing.T) {
 
 	// Fake connect and then back to authenticated so that we can re-authenticate
 	// Going to authenticated fakes a disconnect
-	state.GoTransition(CONNECTED)
-	state.GoTransition(AUTHENTICATED)
+	state.FSM.GoTransition(internal.CONNECTED)
+	state.FSM.GoTransition(internal.AUTHENTICATED)
 
 	dummy_value := "37"
 
