@@ -220,7 +220,7 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 // It returns the authurl for the browser and an error if present
 func (eduvpn *VPNState) InitializeOAuth() error {
 	if !eduvpn.HasTransition(OAUTH_STARTED) {
-		return errors.New("Failed starting oauth, invalid state")
+		return errors.New(fmt.Sprintf("Failed starting oauth, invalid state %s", eduvpn.FSM.Current.String()))
 	}
 	// Generate the state
 	state, stateErr := genState()
@@ -245,7 +245,11 @@ func (eduvpn *VPNState) InitializeOAuth() error {
 		"redirect_uri":          "http://127.0.0.1:8000/callback",
 	}
 
-	authURL, urlErr := HTTPConstructURL(eduvpn.Server.Endpoints.API.V3.Authorization, parameters)
+	server, serverErr := eduvpn.Servers.GetCurrentServer()
+	if serverErr != nil {
+		return errors.New("OAuth Initialize no server found")
+	}
+	authURL, urlErr := HTTPConstructURL(server.Endpoints.API.V3.Authorization, parameters)
 
 	if urlErr != nil { // shouldn't happen
 		panic(urlErr)
@@ -253,7 +257,7 @@ func (eduvpn *VPNState) InitializeOAuth() error {
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
 	oauthSession := OAuthExchangeSession{ClientID: eduvpn.Name, State: state, Verifier: verifier}
-	eduvpn.Server.OAuth = OAuth{TokenURL: eduvpn.Server.Endpoints.API.V3.Token, Session: oauthSession}
+	server.OAuth = OAuth{TokenURL: server.Endpoints.API.V3.Token, Session: oauthSession}
 	eduvpn.GoTransitionWithData(OAUTH_STARTED, authURL)
 	return nil
 }
@@ -263,7 +267,11 @@ func (eduvpn *VPNState) FinishOAuth() error {
 	if !eduvpn.HasTransition(AUTHENTICATED) {
 		return errors.New("invalid state to finish oauth")
 	}
-	tokenErr := eduvpn.Server.OAuth.getTokensWithCallback()
+	server, serverErr := eduvpn.Servers.GetCurrentServer()
+	if serverErr != nil {
+		return errors.New("OAuth Initialize No server found")
+	}
+	tokenErr := server.OAuth.getTokensWithCallback()
 	if tokenErr != nil {
 		return tokenErr
 	}

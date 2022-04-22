@@ -86,7 +86,11 @@ func SetProfileID(data *C.char) *C.char {
 	// Set current profile to id
 	profile_id := C.GoString(data)
 
-	state.Server.Profiles.Current = profile_id
+	server, serverErr := state.Servers.GetCurrentServer()
+	if serverErr != nil {
+		return C.CString("No server found for setting a profile ID")
+	}
+	server.Profiles.Current = profile_id
 	return C.CString("")
 }
 

@@ -13,6 +13,39 @@ type Server struct {
 	ProfilesRaw string            `json:"profiles_raw"`
 }
 
+type Servers struct {
+	List    map[string]*Server `json:"list"`
+	Current string             `json:"current"`
+}
+
+func (servers *Servers) GetCurrentServer() (*Server, error) {
+	if servers.List == nil {
+		return nil, errors.New("No map found to get Current Server")
+	}
+	server, exists := servers.List[servers.Current]
+
+	if !exists || server == nil {
+		return nil, errors.New("Current Server not found")
+	}
+	return server, nil
+}
+
+func (servers *Servers) EnsureServer(url string) *Server {
+	if servers.List == nil {
+		servers.List = make(map[string]*Server)
+	}
+
+	server, exists := servers.List[url]
+
+	if !exists || server == nil {
+		server = &Server{}
+		server.Initialize(url)
+		servers.List[url] = server
+	}
+	servers.Current = url
+	return server
+}
+
 type ServerProfile struct {
 	ID             string   `json:"profile_id"`
 	DisplayName    string   `json:"display_name"`
@@ -43,15 +76,11 @@ type ServerEndpoints struct {
 }
 
 func (server *Server) Initialize(url string) error {
-	if !GetVPNState().HasTransition(CHOSEN_SERVER) {
-		return errors.New("cannot choose a server")
-	}
 	server.BaseURL = url
 	endpointsErr := server.GetEndpoints()
 	if endpointsErr != nil {
 		return endpointsErr
 	}
-	GetVPNState().GoTransition(CHOSEN_SERVER)
 	return nil
 }
 

@@ -12,7 +12,7 @@ type VPNState struct {
 	StateCallbackData string                       `json:"-"`
 
 	// The chosen server
-	Server Server `json:"server"`
+	Servers Servers `json:"servers"`
 
 	// The list of servers and organizations from disco
 	DiscoList DiscoLists `json:"-"`
@@ -62,25 +62,20 @@ func (state *VPNState) Deregister() error {
 	// Write the config
 	state.WriteConfig()
 
-	// Re-initialize the server and FSM
-	state.Server = Server{}
+	// Re-initialize the servers and FSM
+	state.Servers = Servers{}
 	state.InitializeFSM()
 	return nil
 }
 
 func (state *VPNState) Connect(url string) (string, error) {
 	// New server chosen, ensure the server is fresh
-	if state.Server.BaseURL != url {
-		state.Server = Server{}
-	}
-	initializeErr := state.Server.Initialize(url)
-
-	if initializeErr != nil {
-		return "", initializeErr
-	}
+	server := state.Servers.EnsureServer(url)
+	// Make sure we are in the chosen state if available
+	state.GoTransition(CHOSEN_SERVER)
 	// Relogin with oauth
 	// This moves the state to authenticated
-	if state.Server.NeedsRelogin() {
+	if server.NeedsRelogin() {
 		loginErr := state.LoginOAuth()
 
 		if loginErr != nil {
@@ -92,7 +87,7 @@ func (state *VPNState) Connect(url string) (string, error) {
 
 	state.GoTransition(REQUEST_CONFIG)
 
-	config, configErr := state.Server.GetConfig()
+	config, configErr := server.GetConfig()
 
 	if configErr != nil {
 		return "", configErr
