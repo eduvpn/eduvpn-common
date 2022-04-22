@@ -1,9 +1,9 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
-	"errors"
 	"os"
 	"os/exec"
 	"strings"
@@ -33,7 +33,6 @@ func writeGraph(filename string) error {
 	graph := state.GenerateGraph()
 
 	f, err := os.Create(filename)
-
 	if err != nil {
 		return errors.New(fmt.Sprintf("Failed to create file %s with error %v", filename, err))
 	}
@@ -75,6 +74,8 @@ func main() {
 		}
 
 		fmt.Println(config)
+
+		state.Deregister()
 
 		return
 	}
