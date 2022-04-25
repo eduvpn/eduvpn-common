@@ -14,10 +14,10 @@ import (
 	"github.com/jwijenbergh/eduvpn-common/internal"
 )
 
-func getServerURI() string {
+func getServerURI(t *testing.T) string {
 	serverURI := os.Getenv("SERVER_URI")
 	if serverURI == "" {
-		serverURI = "https://eduvpnserver"
+		t.Skip("Skipping server test as no SERVER_URI env var has been passed")
 	}
 	return serverURI
 }
@@ -51,13 +51,14 @@ func stateCallback(t *testing.T, oldState string, newState string, data string) 
 }
 
 func Test_server(t *testing.T) {
+	serverURI := getServerURI(t)
 	state := &VPNState{}
 
 	state.Register("org.eduvpn.app.linux", "configstest", func(old string, new string, data string) {
 		stateCallback(t, old, new, data)
 	}, false)
 
-	_, configErr := state.Connect(getServerURI())
+	_, configErr := state.Connect(serverURI)
 
 	if configErr != nil {
 		t.Errorf("Connect error: %v", configErr)
@@ -65,6 +66,7 @@ func Test_server(t *testing.T) {
 }
 
 func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameters, expectedErr interface{}) {
+	serverURI := getServerURI(t)
 	state := &VPNState{}
 	configDirectory := "test_oauth_parameters"
 
@@ -79,7 +81,7 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 
 		}
 	}, false)
-	_, configErr := state.Connect(getServerURI())
+	_, configErr := state.Connect(serverURI)
 
 	if !errors.As(configErr, expectedErr) {
 		t.Errorf("error %T = %v, wantErr %T", configErr, configErr, expectedErr)
@@ -107,6 +109,7 @@ func Test_connect_oauth_parameters(t *testing.T) {
 }
 
 func Test_token_expired(t *testing.T) {
+	serverURI := getServerURI(t)
 	expiredTTL := os.Getenv("OAUTH_EXPIRED_TTL")
 	if expiredTTL == "" {
 		t.Log("No expired TTL present, skipping this test. Set EXPIRED_TTL env variable to run it")
@@ -126,7 +129,7 @@ func Test_token_expired(t *testing.T) {
 		stateCallback(t, old, new, data)
 	}, false)
 
-	_, configErr := state.Connect(getServerURI())
+	_, configErr := state.Connect(serverURI)
 
 	if configErr != nil {
 		t.Errorf("Connect error before expired: %v", configErr)
@@ -163,13 +166,14 @@ func Test_token_expired(t *testing.T) {
 }
 
 func Test_token_invalid(t *testing.T) {
+	serverURI := getServerURI(t)
 	state := &VPNState{}
 
 	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old string, new string, data string) {
 		stateCallback(t, old, new, data)
 	}, false)
 
-	_, configErr := state.Connect(getServerURI())
+	_, configErr := state.Connect(serverURI)
 
 	if configErr != nil {
 		t.Errorf("Connect error before invalid: %v", configErr)
