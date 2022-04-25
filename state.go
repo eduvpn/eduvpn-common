@@ -77,7 +77,7 @@ func (state *VPNState) Deregister() error {
 	state.Config.Save(&state)
 
 	// Empty out the state
-	state = &VPNState{}
+	*state = VPNState{}
 	return nil
 }
 
