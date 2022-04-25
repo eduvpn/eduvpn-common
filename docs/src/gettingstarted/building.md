@@ -1,8 +1,6 @@
-# Installation and building
-This chapter contains the instructions to build and install the Go library.
-## Dependencies
-This section contains the dependencies needed to build the library on Linux and Windows
-### Linux
+# Building
+To build the Go library, you need the dependencies for your system installed. We will go over the needed dependencies for Linux and Windows. Afterwards, we explain the basic commands to build the library.
+## Linux
 To build the GO shared library using Linux you need the following dependencies:
 
 - [Go](https://go.dev/doc/install) 1.15 or later
@@ -10,7 +8,7 @@ To build the GO shared library using Linux you need the following dependencies:
 - [GNU Make](https://www.gnu.org/software/make/)
 - Dependencies for each wrapper you are interested in
 
-### Windows
+## Windows
 On Windows, you can install gcc and make (or even Go) via MinGW or Cygwin or use WSL. For MinGW:
 
 1. [Install MinGW](https://www.msys2.org/#installation) (you don't need to install any extra packages yet) and open some
@@ -30,16 +28,16 @@ On Windows, you can install gcc and make (or even Go) via MinGW or Cygwin or use
        terminal: `path/to/msys64/msys2_shell.cmd -mingw32 -defterm -no-start -use-full-path`
     3. Run the make commands in the project directory
 
-## Building
+## Commands
 To build the shared library for the current platform issue the following command in the root directory:
 
-```shell
+```bash
 make
 ```
 
 Build shared library for specified OS & architecture (example):
 
-```shell
+```bash
 make GOOS=windows GOARCH=386
 ```
 
@@ -49,38 +47,16 @@ Results will be output in `exports/lib/`.
 
 Usually you will need to specify the compiler when cross compiling, for example:
 
-```shell
+```bash
 make GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc
 ```
 
 For example, you can cross compile for Windows from Linux using [MinGW-w64](https://www.mingw-w64.org/downloads/).
 
-Test Go code:
-
-```shell
-make test-go
-```
-
-## Testing
-
-To test the wrappers, issue the following command in a shell (you will need compilers for all wrappers if you do this):
-
-```shell
-make test-wrappers
-```
-
-Specify `-j` to execute tests in parallel. You can specify specific wrappers to test by appending
-e.g. `WRAPPERS="csharp php"`.
-
-Test both:
-
-```shell
-make test
-```
-
+### Cleaning
 Clean built libraries and wrapper builds:
 
-```shell
+```bash
 make -j clean
 ```
 

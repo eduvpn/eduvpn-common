@@ -1,5 +1,5 @@
 # About
-This chapter contains background information for the library.
+This chapter contains background information for the library. We give a general introduction to eduVPN and explain what problems this library aims to solve.
 
 ## eduVPN introduction
 eduVPN-common is a library for [eduVPN](https://www.eduvpn.org/), which is a VPN by [Surf](https://www.surf.nl) for research institutions such as Universities. Each institution that  uses eduVPN has its own server. To discover these servers and establish a VPN connection with them, eduVPN clients are used. eduVPN has clients for each common platform:
