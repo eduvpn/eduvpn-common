@@ -46,6 +46,8 @@ func (logger *FileLogger) Init(level LogLevel, name string, directory string) er
 		return logOpenErr
 	}
 	log.SetOutput(logFile)
+	logger.File = logFile
+	logger.Level = level
 	return nil
 }
 
