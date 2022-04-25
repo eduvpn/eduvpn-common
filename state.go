@@ -76,8 +76,8 @@ func (state *VPNState) Deregister() error {
 	// Save the config
 	state.Config.Save(&state)
 
-	// Empty out fsm
-	state.FSM = internal.FSM{}
+	// Empty out the state
+	state = &VPNState{}
 	return nil
 }
 
