@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# Get absolute path to current directory this script is in
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 WEB_FQDN="eduvpnserver"
 
@@ -9,6 +11,6 @@ openssl req \
 	-x509 \
 	-sha256 \
 	-newkey rsa:2048 \
-	-keyout "./selfsigned/${WEB_FQDN}.key" \
-	-out "./selfsigned/${WEB_FQDN}.crt" \
+	-keyout "${SCRIPT_DIR}/selfsigned/${WEB_FQDN}.key" \
+	-out "${SCRIPT_DIR}/selfsigned/${WEB_FQDN}.crt" \
 	-days 90
