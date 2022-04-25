@@ -151,6 +151,9 @@ func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data string, backgroun
 		if fsm.Debug {
 			fsm.writeGraph()
 		}
+
+		fsm.Logger.Log(LOG_INFO, fmt.Sprintf("State: %s -> State: %s with data %s\n", oldState.String(), newState.String(), data))
+
 		if background {
 			go fsm.StateCallback(oldState.String(), newState.String(), data)
 		} else {
