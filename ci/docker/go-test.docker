@@ -34,5 +34,9 @@ COPY ./internal ./internal
 # Copy selenium scripts
 COPY ./selenium_eduvpn.py ./selenium_eduvpn.py
 
+# Update certificates
+COPY ./ci/docker/selfsigned/eduvpnserver.crt /usr/local/share/ca-certificates/eduvpnserver.crt
+RUN update-ca-certificates
+
 # Run the tests
 CMD ["go", "test", "-mod=readonly", "./...", "-v"]

@@ -13,5 +13,9 @@ fi
 # Get absolute path to current directory this script is in
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+# Create self-signed certificate
+mkdir -p "$SCRIPT_DIR"/docker/selfsigned
+"$SCRIPT_DIR"/docker/createcert.sh
+
 # Get the parent directory to get the root directory
 docker-compose --file ci/docker/docker-compose.yml --project-directory "$SCRIPT_DIR"/.. up --build --force-recreate --abort-on-container-exit

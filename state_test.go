@@ -1,7 +1,6 @@
 package eduvpn
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -15,6 +14,14 @@ import (
 	"github.com/jwijenbergh/eduvpn-common/internal"
 )
 
+func getServerURI() string {
+	serverURI := os.Getenv("SERVER_URI")
+	if serverURI == "" {
+		serverURI = "https://eduvpnserver"
+	}
+	return serverURI
+}
+
 func runCommand(t *testing.T, errBuffer *strings.Builder, name string, args ...string) error {
 	cmd := exec.Command(name, args...)
 
@@ -27,7 +34,7 @@ func runCommand(t *testing.T, errBuffer *strings.Builder, name string, args ...s
 	return cmd.Wait()
 }
 
-func LoginOAuthSelenium(t *testing.T, url string) {
+func loginOAuthSelenium(t *testing.T, url string) {
 	// We could use the go selenium library
 	// But it does not support the latest selenium v4 just yet
 	var errBuffer strings.Builder
@@ -37,23 +44,20 @@ func LoginOAuthSelenium(t *testing.T, url string) {
 	}
 }
 
-func StateCallback(t *testing.T, oldState string, newState string, data string) {
+func stateCallback(t *testing.T, oldState string, newState string, data string) {
 	if newState == "OAuth_Started" {
-		go LoginOAuthSelenium(t, data)
+		go loginOAuthSelenium(t, data)
 	}
 }
 
 func Test_server(t *testing.T) {
 	state := &VPNState{}
 
-	// Do not verify because during testing, the cert is self-signed
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-
 	state.Register("org.eduvpn.app.linux", "configstest", func(old string, new string, data string) {
-		StateCallback(t, old, new, data)
+		stateCallback(t, old, new, data)
 	}, false)
 
-	_, configErr := state.Connect("https://eduvpnserver")
+	_, configErr := state.Connect(getServerURI())
 
 	if configErr != nil {
 		t.Errorf("Connect error: %v", configErr)
@@ -63,9 +67,6 @@ func Test_server(t *testing.T) {
 func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameters, expectedErr interface{}) {
 	state := &VPNState{}
 	configDirectory := "test_oauth_parameters"
-
-	// Do not verify because during testing, the cert is self-signed
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	state.Register("org.eduvpn.app.linux", configDirectory, func(oldState string, newState string, data string) {
 		if newState == "OAuth_Started" {
@@ -78,7 +79,7 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 
 		}
 	}, false)
-	_, configErr := state.Connect("https://eduvpnserver")
+	_, configErr := state.Connect(getServerURI())
 
 	if !errors.As(configErr, expectedErr) {
 		t.Errorf("error %T = %v, wantErr %T", configErr, configErr, expectedErr)
@@ -121,14 +122,11 @@ func Test_token_expired(t *testing.T) {
 	// Get a vpn state
 	state := &VPNState{}
 
-	// Do not verify because during testing, the cert is self-signed
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-
 	state.Register("org.eduvpn.app.linux", "configsexpired", func(old string, new string, data string) {
-		StateCallback(t, old, new, data)
+		stateCallback(t, old, new, data)
 	}, false)
 
-	_, configErr := state.Connect("https://eduvpnserver")
+	_, configErr := state.Connect(getServerURI())
 
 	if configErr != nil {
 		t.Errorf("Connect error before expired: %v", configErr)
@@ -167,14 +165,11 @@ func Test_token_expired(t *testing.T) {
 func Test_token_invalid(t *testing.T) {
 	state := &VPNState{}
 
-	// Do not verify because during testing, the cert is self-signed
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-
 	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old string, new string, data string) {
-		StateCallback(t, old, new, data)
+		stateCallback(t, old, new, data)
 	}, false)
 
-	_, configErr := state.Connect("https://eduvpnserver")
+	_, configErr := state.Connect(getServerURI())
 
 	if configErr != nil {
 		t.Errorf("Connect error before invalid: %v", configErr)
@@ -190,6 +185,7 @@ func Test_token_invalid(t *testing.T) {
 	server, serverErr := state.Servers.GetCurrentServer()
 	if serverErr != nil {
 		t.Errorf("No server found")
+		return
 	}
 
 	// Override tokens with invalid values

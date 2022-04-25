@@ -53,7 +53,7 @@ func (server *Server) EnsureTokens() error {
 	return nil
 }
 
-func (servers *Servers) EnsureServer(url string, fsm *FSM, logger *FileLogger) *Server {
+func (servers *Servers) EnsureServer(url string, fsm *FSM, logger *FileLogger) (*Server, error) {
 	if servers.List == nil {
 		servers.List = make(map[string]*Server)
 	}
@@ -63,10 +63,14 @@ func (servers *Servers) EnsureServer(url string, fsm *FSM, logger *FileLogger) *
 	if !exists || server == nil {
 		server = &Server{}
 	}
-	server.Init(url, fsm, logger)
+	serverInitErr := server.Init(url, fsm, logger)
+
+	if serverInitErr != nil {
+		return nil, serverInitErr
+	}
 	servers.List[url] = server
 	servers.Current = url
-	return server
+	return server, nil
 }
 
 type ServerProfile struct {

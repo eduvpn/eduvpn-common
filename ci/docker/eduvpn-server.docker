@@ -53,16 +53,9 @@ RUN sed -i "s|fd43::|$(ipcalc -6 -r 64 -n --no-decorate)|" "/etc/vpn-user-portal
 # Update secrets
 RUN cp /etc/vpn-user-portal/keys/node.0.key /etc/vpn-server-node/keys/node.key
 
-# Create self signed cert and key
-RUN openssl req \
-    -nodes \
-    -subj "/CN=${WEB_FQDN}" \
-    -x509 \
-    -sha256 \
-    -newkey rsa:2048 \
-    -keyout "/etc/pki/tls/private/${WEB_FQDN}.key" \
-    -out "/etc/pki/tls/certs/${WEB_FQDN}.crt" \
-    -days 90
+# Copy self signed cert and key
+COPY ./ci/docker/selfsigned/${WEB_FQDN}.key /etc/pki/tls/private/${WEB_FQDN}.key
+COPY ./ci/docker/selfsigned/${WEB_FQDN}.crt /etc/pki/tls/certs/${WEB_FQDN}.crt
 
 # Add the start script and expiry script
 WORKDIR /eduvpn/server

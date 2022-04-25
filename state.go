@@ -86,7 +86,11 @@ func (state *VPNState) Connect(url string) (string, error) {
 		return "", errors.New("app not registered")
 	}
 	// New server chosen, ensure the server is fresh
-	server := state.Servers.EnsureServer(url, &state.FSM, &state.Logger)
+	server, serverErr := state.Servers.EnsureServer(url, &state.FSM, &state.Logger)
+
+	if serverErr != nil {
+		return "", serverErr
+	}
 	// Make sure we are in the chosen state if available
 	state.FSM.GoTransition(internal.CHOSEN_SERVER)
 	// Relogin with oauth
