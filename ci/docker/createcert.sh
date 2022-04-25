@@ -13,4 +13,5 @@ openssl req \
 	-newkey rsa:2048 \
 	-keyout "${SCRIPT_DIR}/selfsigned/${WEB_FQDN}.key" \
 	-out "${SCRIPT_DIR}/selfsigned/${WEB_FQDN}.crt" \
+	-addext "subjectAltName = DNS:${WEB_FQDN}" \
 	-days 90
