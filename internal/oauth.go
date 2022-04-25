@@ -260,7 +260,8 @@ func (oauth *OAuth) start(name string, authorizationURL string, tokenURL string)
 	oauthSession := OAuthExchangeSession{ClientID: name, State: state, Verifier: verifier}
 	oauth.TokenURL = tokenURL
 	oauth.Session = oauthSession
-	oauth.FSM.GoTransitionWithData(OAUTH_STARTED, authURL)
+	// Run the state callback in the background so that the user can login while we start the callback server
+	oauth.FSM.GoTransitionWithData(OAUTH_STARTED, authURL, true)
 	return nil
 }
 

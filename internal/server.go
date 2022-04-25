@@ -170,7 +170,7 @@ func (server *Server) askForProfileID() error {
 	if !server.FSM.HasTransition(ASK_PROFILE) {
 		return errors.New("cannot ask for a profile id, invalid state")
 	}
-	server.FSM.GoTransitionWithData(ASK_PROFILE, server.ProfilesRaw)
+	server.FSM.GoTransitionWithData(ASK_PROFILE, server.ProfilesRaw, false)
 	return nil
 }
 
