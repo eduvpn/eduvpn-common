@@ -21,7 +21,7 @@ The states mean the following:
 - `NO_SERVER`: The client is registered, but has not chosen a server yet
 - `CHOSEN_SERVER`: The client has chosen a server to connect to
 - `OAuth_Started`: The OAuth process has been started. This means that the client needs to redirect to the browser so that the user can login and approve the application
-- `Authenticated`: The OAuth process has finished. The client now has tokens and is thus authenticated
+- `Authorized`: The OAuth process has finished. The client now has tokens and is thus authorized
 - `Request_Config`: The client is in the process of requesting an OpenVPN/Wireguard configuration from the server
 - `Ask_Profile`: The server has multiple profiles for which a config can be obtained, the client must show an UI of the profiles. The user then selects one of these profiles to exit this state
 - `Has_Config`: The client now has a configuration that it can use to connect using OpenVPN/Wireguard
