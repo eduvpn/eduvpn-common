@@ -18,23 +18,29 @@ def Register(name, config_directory, state_callback, debug):
     err_string = GetPtrString(ptr_err)
     return err_string
 
-def CancelOAuth():
-    ptr_err = lib.CancelOAuth()
+def CancelOAuth(name):
+    name_bytes = name.encode("utf-8")
+    ptr_err = lib.CancelOAuth(name_bytes)
     err_string = GetPtrString(ptr_err)
     return err_string
 
-def Deregister():
-    lib.Deregister()
+def Deregister(name):
+    name_bytes = name.encode("utf-8")
+    ptr_err = lib.Deregister(name_bytes)
+    err_string = GetPtrString(ptr_err)
+    return err_string
 
-def GetDiscoServers():
-    servers, serversErr = GetDataError(lib.GetServersList())
-    organizations, organizationsErr = GetDataError(lib.GetOrganizationsList())
+def GetDiscoServers(name):
+    name_bytes = name.encode("utf-8")
+    servers, serversErr = GetDataError(lib.GetServersList(name_bytes))
+    organizations, organizationsErr = GetDataError(lib.GetOrganizationsList(name_bytes))
     return servers, serversErr, organizations, organizationsErr
 
 
-def Connect(url):
+def Connect(name, url):
+    name_bytes = name.encode("utf-8")
     url_bytes = url.encode("utf-8")
-    data_error = lib.Connect(url_bytes)
+    data_error = lib.Connect(name_bytes, url_bytes)
     return GetDataError(data_error)
 
 
@@ -51,8 +57,10 @@ def register_callback(eduvpn):
     )
 
 
-def SetProfileID(profile_id) -> str:
-    error_string = lib.SetProfileID(profile_id.encode("utf-8"))
+def SetProfileID(name, profile_id) -> str:
+    name_bytes = name.encode("utf-8")
+    profile_bytes = profile_id.encode("utf-8")
+    error_string = lib.SetProfileID(name_bytes, profile_bytes)
     return GetPtrString(error_string)
 
 
@@ -64,19 +72,19 @@ class EduVPN(object):
         register_callback(self)
 
     def cancel_oauth(self) -> str:
-        return CancelOAuth()
+        return CancelOAuth(self.name)
 
-    def deregister(self):
-        Deregister()
+    def deregister(self) -> str:
+        return Deregister(self.name)
 
     def register(self, debug=False) -> bool:
         return Register(self.name, self.config_directory, callback_function, debug) == ""
 
     def get_disco(self):
-        return GetDiscoServers()
+        return GetDiscoServers(self.name)
 
     def connect(self, url):
-        return Connect(url)
+        return Connect(self.name, url)
 
     @property
     def event(self):
@@ -86,7 +94,7 @@ class EduVPN(object):
         self.event.run(old_state, new_state, data)
 
     def set_profile(self, profile_id) -> str:
-        return SetProfileID(profile_id)
+        return SetProfileID(self.name, profile_id)
 
 
 class EventHandler(object):

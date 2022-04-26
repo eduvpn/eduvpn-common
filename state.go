@@ -25,15 +25,6 @@ type VPNState struct {
 	Debug bool `json:"-"`
 }
 
-var VPNStateInstance *VPNState
-
-func GetVPNState() *VPNState {
-	if VPNStateInstance == nil {
-		VPNStateInstance = &VPNState{}
-	}
-	return VPNStateInstance
-}
-
 func (state *VPNState) Register(name string, directory string, stateCallback func(string, string, string), debug bool) error {
 	if !state.FSM.InState(internal.DEREGISTERED) {
 		return errors.New("app already registered")

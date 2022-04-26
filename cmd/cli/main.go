@@ -34,7 +34,7 @@ func main() {
 			urlString = "https://" + urlString
 		}
 
-		state := eduvpn.GetVPNState()
+		state := &eduvpn.VPNState{}
 
 		state.Register("org.eduvpn.app.linux", "configs", logState, true)
 		config, configErr := state.Connect(urlString)
