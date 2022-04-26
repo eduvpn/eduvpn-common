@@ -3,7 +3,9 @@ package internal
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"sort"
+	"path"
 )
 
 type (
@@ -92,12 +94,14 @@ type FSM struct {
 	Current FSMStateID
 
 	// Info to be passed from the parent state
+	Name string
 	StateCallback func(string, string, string)
 	Logger        *FileLogger
+	Directory     string
 	Debug         bool
 }
 
-func (fsm *FSM) Init(callback func(string, string, string), logger *FileLogger, debug bool) {
+func (fsm *FSM) Init(name string, callback func(string, string, string), logger *FileLogger, directory string, debug bool) {
 	fsm.States = FSMStates{
 		DEREGISTERED:   {{NO_SERVER, "Client registers"}},
 		NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
@@ -110,8 +114,10 @@ func (fsm *FSM) Init(callback func(string, string, string), logger *FileLogger, 
 		CONNECTED:      {{AUTHENTICATED, "OS reports disconnected"}},
 	}
 	fsm.Current = DEREGISTERED
+	fsm.Name = name
 	fsm.StateCallback = callback
 	fsm.Logger = logger
+	fsm.Directory = directory
 	fsm.Debug = debug
 }
 
@@ -129,17 +135,25 @@ func (fsm *FSM) HasTransition(check FSMStateID) bool {
 	return false
 }
 
+func (fsm *FSM) getGraphFilename(extension string) string {
+	debugPath := path.Join(fsm.Directory, fsm.Name)
+	return fmt.Sprintf("%s%s", debugPath, extension)
+}
+
 func (fsm *FSM) writeGraph() {
 	graph := fsm.GenerateGraph()
-
-	f, err := os.Create("debug.graph")
+	graphFile := fsm.getGraphFilename(".graph")
+	graphImgFile := fsm.getGraphFilename(".png")
+	f, err := os.Create(graphFile)
 	if err != nil {
 		fsm.Logger.Log(LOG_INFO, fmt.Sprintf("Failed to write debug fsm graph with error %v", err))
 	}
 
-	defer f.Close()
-
 	f.WriteString(graph)
+	f.Close()
+	cmd := exec.Command("mmdc", "-i", graphFile, "-o", graphImgFile)
+
+	cmd.Start()
 }
 
 func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data string, background bool) bool {

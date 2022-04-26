@@ -51,7 +51,7 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 	}
 
 	// Initialize the FSM
-	state.FSM.Init(stateCallback, &state.Logger, debug)
+	state.FSM.Init(name, stateCallback, &state.Logger, directory, debug)
 	state.Debug = debug
 
 	// Initialize the Config
