@@ -1,16 +1,18 @@
 # Finite State Machine
 
-The eduvpn-common library uses a Finite State Machine internally to keep track of which state the client is in and to communicate data callbacks(e.g. to communicate the Authorization URL in the OAuth process to the client).
+The eduvpn-common library uses a Finite State Machine internally to keep track of which state the client is in and to communicate data callbacks (e.g. to communicate the Authorization URL in the OAuth process to the client).
 
 ## Viewing the FSM
 To view the FSM in an image, set the debug variable to `True`. This outputs the graph with a `.graph` extension in the client-specified config directory (See [API](../../api/index.html)). The format of this graph is from [Mermaid](https://mermaid-js.github.io/mermaid/#/).
 
 If you have the [Mermaid command line client](https://github.com/mermaid-js/mermaid-cli) installed, the Go library will automatically provide a PNG file in the same directory of the `.graph` file. We recommend to use an image viewer that has auto-reload capabilities, such as [feh](https://feh.finalrewind.org/)[^1] for Linux.
 
+If you do not want to install additional tools to view the graph, you can submit the contents of the `.graph` file to the [Mermaid Live Editor](https://mermaid.live/) to see the image.
+
 ## FSM Example
 The following is an example of the FSM when the client has obtained a Wireguard/OpenVPN configuration from an eduVPN server
 
-![](./fsm_example.png)
+![](./fsm_example.svg)
 
 The current state is highlighted in the <span style="color:cyan">cyan</span> color.
 
