@@ -8,8 +8,8 @@ import (
 	"net/url"
 )
 
-// Authenticated wrappers on top of HTTP
-func (server *Server) apiAuthenticated(method string, endpoint string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
+// Authorized wrappers on top of HTTP
+func (server *Server) apiAuthorized(method string, endpoint string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
 	// Ensure optional is not nil as we will fill it with headers
 	if opts == nil {
 		opts = &HTTPOptionalParams{}
@@ -33,17 +33,17 @@ func (server *Server) apiAuthenticated(method string, endpoint string, opts *HTT
 	return HTTPMethodWithOpts(method, url, opts)
 }
 
-func (server *Server) apiAuthenticatedRetry(method string, endpoint string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
-	header, body, bodyErr := server.apiAuthenticated(method, endpoint, opts)
+func (server *Server) apiAuthorizedRetry(method string, endpoint string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
+	header, body, bodyErr := server.apiAuthorized(method, endpoint, opts)
 	if bodyErr != nil {
 		var error *HTTPStatusError
 
-		// Only retry authenticated if we get a HTTP 401
+		// Only retry authroized if we get a HTTP 401
 		if errors.As(bodyErr, &error) && error.Status == 401 {
-			server.Logger.Log(LOG_INFO, fmt.Sprintf("API: Got HTTP error %v, retrying authenticated", error))
+			server.Logger.Log(LOG_INFO, fmt.Sprintf("API: Got HTTP error %v, retrying authorized", error))
 			// Tell the method that the token is expired
 			server.OAuth.Token.ExpiredTimestamp = GenerateTimeSeconds()
-			return server.apiAuthenticated(method, endpoint, opts)
+			return server.apiAuthorized(method, endpoint, opts)
 		}
 		return header, nil, bodyErr
 	}
@@ -51,7 +51,7 @@ func (server *Server) apiAuthenticatedRetry(method string, endpoint string, opts
 }
 
 func (server *Server) APIInfo() error {
-	_, body, bodyErr := server.apiAuthenticatedRetry(http.MethodGet, "/info", nil)
+	_, body, bodyErr := server.apiAuthorizedRetry(http.MethodGet, "/info", nil)
 	if bodyErr != nil {
 		return bodyErr
 	}
@@ -77,7 +77,7 @@ func (server *Server) APIConnectWireguard(profile_id string, pubkey string) (str
 		"profile_id": {profile_id},
 		"public_key": {pubkey},
 	}
-	header, connectBody, connectErr := server.apiAuthenticatedRetry(http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
+	header, connectBody, connectErr := server.apiAuthorizedRetry(http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {
 		return "", "", connectErr
 	}
@@ -95,7 +95,7 @@ func (server *Server) APIConnectOpenVPN(profile_id string) (string, string, erro
 	urlForm := url.Values{
 		"profile_id": {profile_id},
 	}
-	header, connectBody, connectErr := server.apiAuthenticatedRetry(http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
+	header, connectBody, connectErr := server.apiAuthorizedRetry(http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {
 		return "", "", connectErr
 	}
@@ -106,5 +106,5 @@ func (server *Server) APIConnectOpenVPN(profile_id string) (string, string, erro
 
 // This needs no further return value as it's best effort
 func (server *Server) APIDisconnect() {
-	server.apiAuthenticatedRetry(http.MethodPost, "/disconnect", nil)
+	server.apiAuthorizedRetry(http.MethodPost, "/disconnect", nil)
 }

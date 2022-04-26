@@ -108,7 +108,7 @@ func (state *VPNState) Connect(url string) (string, error) {
 	// Make sure we are in the chosen state if available
 	state.FSM.GoTransition(internal.CHOSEN_SERVER)
 	// Relogin with oauth
-	// This moves the state to authenticated
+	// This moves the state to authorized
 	if server.NeedsRelogin() {
 		loginErr := server.Login()
 
@@ -118,8 +118,8 @@ func (state *VPNState) Connect(url string) (string, error) {
 			state.FSM.GoTransition(internal.CHOSEN_SERVER)
 			return "", loginErr
 		}
-	} else { // OAuth was valid, ensure we are in the authenticated state
-		state.FSM.GoTransition(internal.AUTHENTICATED)
+	} else { // OAuth was valid, ensure we are in the authorized state
+		state.FSM.GoTransition(internal.AUTHORIZED)
 	}
 
 	state.FSM.GoTransition(internal.REQUEST_CONFIG)

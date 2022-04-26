@@ -180,10 +180,10 @@ func Test_token_invalid(t *testing.T) {
 		t.Errorf("Connect error before invalid: %v", configErr)
 	}
 
-	// Fake connect and then back to authenticated so that we can re-authenticate
-	// Going to authenticated fakes a disconnect
+	// Fake connect and then back to authorized so that we can re-authorize
+	// Going to authorized fakes a disconnect
 	state.FSM.GoTransition(internal.CONNECTED)
-	state.FSM.GoTransition(internal.AUTHENTICATED)
+	state.FSM.GoTransition(internal.AUTHORIZED)
 
 	dummy_value := "37"
 

@@ -84,7 +84,7 @@ type OAuthToken struct {
 	ExpiredTimestamp int64  `json:"expires_in_timestamp"`
 }
 
-// Gets an authenticated HTTP client by obtaining refresh and access tokens
+// Gets an authorized HTTP client by obtaining refresh and access tokens
 func (oauth *OAuth) getTokensWithCallback() error {
 	oauth.Session.Context = context.Background()
 	mux := http.NewServeMux()
@@ -267,7 +267,7 @@ func (oauth *OAuth) start(name string, authorizationURL string, tokenURL string)
 
 // Error definitions
 func (oauth *OAuth) Finish() error {
-	if !oauth.FSM.HasTransition(AUTHENTICATED) {
+	if !oauth.FSM.HasTransition(AUTHORIZED) {
 		return errors.New("invalid state to finish oauth")
 	}
 	tokenErr := oauth.getTokensWithCallback()
@@ -275,7 +275,7 @@ func (oauth *OAuth) Finish() error {
 	if tokenErr != nil {
 		return tokenErr
 	}
-	oauth.FSM.GoTransition(AUTHENTICATED)
+	oauth.FSM.GoTransition(AUTHORIZED)
 	return nil
 }
 

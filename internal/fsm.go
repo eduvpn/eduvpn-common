@@ -38,8 +38,8 @@ const (
 	// OAuth Started means the OAuth process has started
 	OAUTH_STARTED
 
-	// Authenticated means the OAuth process has finished and the user is now authenticated with the server
-	AUTHENTICATED
+	// Authorized means the OAuth process has finished and the user is now authorized with the server
+	AUTHORIZED
 
 	// Requested config means the user has requested a config for connecting
 	REQUEST_CONFIG
@@ -70,8 +70,8 @@ func (s FSMStateID) String() string {
 		return "Request_Config"
 	case ASK_PROFILE:
 		return "Ask_Profile"
-	case AUTHENTICATED:
-		return "Authenticated"
+	case AUTHORIZED:
+		return "Authorized"
 	case CONNECTED:
 		return "Connected"
 	default:
@@ -105,13 +105,13 @@ func (fsm *FSM) Init(name string, callback func(string, string, string), logger 
 	fsm.States = FSMStates{
 		DEREGISTERED:   {{NO_SERVER, "Client registers"}},
 		NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
-		CHOSEN_SERVER:  {{AUTHENTICATED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
-		OAUTH_STARTED:  {{AUTHENTICATED, "User authorizes with browser"}, {CHOSEN_SERVER, "Cancel OAuth"}},
-		AUTHENTICATED:  {{OAUTH_STARTED, "Re-authenticate with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},
+		CHOSEN_SERVER:  {{AUTHORIZED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
+		OAUTH_STARTED:  {{AUTHORIZED, "User authorizes with browser"}, {CHOSEN_SERVER, "Cancel OAuth"}},
+		AUTHORIZED:  {{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},
 		REQUEST_CONFIG: {{ASK_PROFILE, "Multiple profiles found"}, {HAS_CONFIG, "Success, only one profile"}},
 		ASK_PROFILE:    {{HAS_CONFIG, "User chooses profile and success"}},
 		HAS_CONFIG:     {{CONNECTED, "OS reports connected"}},
-		CONNECTED:      {{AUTHENTICATED, "OS reports disconnected"}},
+		CONNECTED:      {{AUTHORIZED, "OS reports disconnected"}},
 	}
 	fsm.Current = DEREGISTERED
 	fsm.Name = name
