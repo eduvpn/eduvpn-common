@@ -106,7 +106,7 @@ func (fsm *FSM) Init(name string, callback func(string, string, string), logger 
 		DEREGISTERED:   {{NO_SERVER, "Client registers"}},
 		NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
 		CHOSEN_SERVER:  {{AUTHENTICATED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
-		OAUTH_STARTED:  {{AUTHENTICATED, "User authorizes with browser"}},
+		OAUTH_STARTED:  {{AUTHENTICATED, "User authorizes with browser"}, {CHOSEN_SERVER, "Cancel OAuth"}},
 		AUTHENTICATED:  {{OAUTH_STARTED, "Re-authenticate with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},
 		REQUEST_CONFIG: {{ASK_PROFILE, "Multiple profiles found"}, {HAS_CONFIG, "Success, only one profile"}},
 		ASK_PROFILE:    {{HAS_CONFIG, "User chooses profile and success"}},

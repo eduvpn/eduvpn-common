@@ -271,11 +271,17 @@ func (oauth *OAuth) Finish() error {
 		return errors.New("invalid state to finish oauth")
 	}
 	tokenErr := oauth.getTokensWithCallback()
+
 	if tokenErr != nil {
 		return tokenErr
 	}
 	oauth.FSM.GoTransition(AUTHENTICATED)
 	return nil
+}
+
+func (oauth *OAuth) Cancel() {
+	oauth.Session.CallbackError = &OAuthCancelledCallbackError{}
+	oauth.Session.Server.Shutdown(oauth.Session.Context)
 }
 
 func (oauth *OAuth) Login(name string, authorizationURL string, tokenURL string) error {
@@ -318,6 +324,13 @@ func (oauth *OAuth) NeedsRelogin() bool {
 
 	// Otherwise relogin is really needed
 	return true
+}
+
+type OAuthCancelledCallbackError struct {
+}
+
+func (e *OAuthCancelledCallbackError) Error() string {
+	return fmt.Sprintf("Client cancelled OAuth")
 }
 
 type OAuthGenStateUnableError struct {

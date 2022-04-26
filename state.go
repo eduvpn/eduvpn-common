@@ -81,6 +81,20 @@ func (state *VPNState) Deregister() error {
 	return nil
 }
 
+func (state *VPNState) CancelOAuth() error {
+	if !state.FSM.InState(internal.OAUTH_STARTED) {
+		return errors.New("cannot cancel oauth, oauth not started")
+	}
+
+	server, serverErr := state.Servers.GetCurrentServer()
+
+	if serverErr != nil {
+		return serverErr
+	}
+	server.CancelOAuth()
+	return nil
+}
+
 func (state *VPNState) Connect(url string) (string, error) {
 	if state.FSM.InState(internal.DEREGISTERED) {
 		return "", errors.New("app not registered")
@@ -99,6 +113,9 @@ func (state *VPNState) Connect(url string) (string, error) {
 		loginErr := server.Login()
 
 		if loginErr != nil {
+			// We are possibly in oauth started
+			// So go to chosen server
+			state.FSM.GoTransition(internal.CHOSEN_SERVER)
 			return "", loginErr
 		}
 	} else { // OAuth was valid, ensure we are in the authenticated state

@@ -38,6 +38,7 @@ lib.Deregister.argtypes, lib.Deregister.restype = [], None
 lib.Register.argtypes, lib.Register.restype = [c_char_p, c_char_p, VPNStateChange, c_int], c_void_p
 lib.GetOrganizationsList.argtypes, lib.GetOrganizationsList.restype = [], DataError
 lib.GetServersList.argtypes, lib.GetServersList.restype = [], DataError
+lib.CancelOAuth.argtypes, lib.CancelOAuth.restype = [], c_void_p
 lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p], c_void_p
 # We have to use c_void_p instead of c_char_p to free it properly
 # See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error

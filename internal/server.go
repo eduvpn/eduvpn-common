@@ -33,6 +33,10 @@ func (servers *Servers) GetCurrentServer() (*Server, error) {
 	return server, nil
 }
 
+func (server *Server) CancelOAuth() {
+	server.OAuth.Cancel()
+}
+
 func (server *Server) Init(url string, fsm *FSM, logger *FileLogger) error {
 	server.BaseURL = url
 	server.FSM = fsm

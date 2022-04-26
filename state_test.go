@@ -34,19 +34,20 @@ func runCommand(t *testing.T, errBuffer *strings.Builder, name string, args ...s
 	return cmd.Wait()
 }
 
-func loginOAuthSelenium(t *testing.T, url string) {
+func loginOAuthSelenium(t *testing.T, url string, state *VPNState) {
 	// We could use the go selenium library
 	// But it does not support the latest selenium v4 just yet
 	var errBuffer strings.Builder
 	err := runCommand(t, &errBuffer, "python3", "selenium_eduvpn.py", url)
 	if err != nil {
 		t.Errorf("Login OAuth with selenium script failed with error %v and stderr %s", err, errBuffer.String())
+		state.CancelOAuth()
 	}
 }
 
-func stateCallback(t *testing.T, oldState string, newState string, data string) {
+func stateCallback(t *testing.T, oldState string, newState string, data string, state *VPNState) {
 	if newState == "OAuth_Started" {
-		go loginOAuthSelenium(t, data)
+		loginOAuthSelenium(t, data, state)
 	}
 }
 
@@ -55,7 +56,7 @@ func Test_server(t *testing.T) {
 	state := &VPNState{}
 
 	state.Register("org.eduvpn.app.linux", "configstest", func(old string, new string, data string) {
-		stateCallback(t, old, new, data)
+		stateCallback(t, old, new, data, state)
 	}, false)
 
 	_, configErr := state.Connect(serverURI)
@@ -126,7 +127,7 @@ func Test_token_expired(t *testing.T) {
 	state := &VPNState{}
 
 	state.Register("org.eduvpn.app.linux", "configsexpired", func(old string, new string, data string) {
-		stateCallback(t, old, new, data)
+		stateCallback(t, old, new, data, state)
 	}, false)
 
 	_, configErr := state.Connect(serverURI)
@@ -170,7 +171,7 @@ func Test_token_invalid(t *testing.T) {
 	state := &VPNState{}
 
 	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old string, new string, data string) {
-		stateCallback(t, old, new, data)
+		stateCallback(t, old, new, data, state)
 	}, false)
 
 	_, configErr := state.Connect(serverURI)

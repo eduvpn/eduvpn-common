@@ -18,6 +18,11 @@ def Register(name, config_directory, state_callback, debug):
     err_string = GetPtrString(ptr_err)
     return err_string
 
+def CancelOAuth():
+    ptr_err = lib.CancelOAuth()
+    err_string = GetPtrString(ptr_err)
+    return err_string
+
 def Deregister():
     lib.Deregister()
 
@@ -57,6 +62,9 @@ class EduVPN(object):
         self.name = name
         self.config_directory = config_directory
         register_callback(self)
+
+    def cancel_oauth(self) -> str:
+        return CancelOAuth()
 
     def deregister(self):
         Deregister()

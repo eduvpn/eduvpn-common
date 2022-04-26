@@ -53,6 +53,14 @@ func ErrorToString(error error) string {
 	return error.Error()
 }
 
+//export CancelOAuth
+func CancelOAuth() (*C.char) {
+	state := eduvpn.GetVPNState()
+	cancelErr := state.CancelOAuth()
+	cancelErrString := ErrorToString(cancelErr)
+	return C.CString(cancelErrString)
+}
+
 //export Connect
 func Connect(url *C.char) (*C.char, *C.char) {
 	state := eduvpn.GetVPNState()
