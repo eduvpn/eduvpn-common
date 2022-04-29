@@ -133,6 +133,7 @@ func storeSecureInternetConfig(state *eduvpn.VPNState, url string, directory str
 
 	if configErr != nil {
 		fmt.Printf("Failed obtaining config for url %s with error %v\n", url, configErr)
+		return
 	}
 
 	cleanURL := filepath.Base(url)
