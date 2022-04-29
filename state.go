@@ -2,6 +2,7 @@ package eduvpn
 
 import (
 	"errors"
+
 	"github.com/jwijenbergh/eduvpn-common/internal"
 )
 
@@ -86,16 +87,26 @@ func (state *VPNState) CancelOAuth() error {
 	return nil
 }
 
-func (state *VPNState) Connect(url string) (string, error) {
+func (state *VPNState) connectWithOptions(url string, isSecureInternet bool) (string, error) {
 	if state.FSM.InState(internal.DEREGISTERED) {
 		return "", errors.New("app not registered")
 	}
 	// New server chosen, ensure the server is fresh
-	server, serverErr := state.Servers.EnsureServer(url, &state.FSM, &state.Logger)
+	server, serverErr := state.Servers.EnsureServer(url, &state.FSM, &state.Logger, true)
 
 	if serverErr != nil {
 		return "", serverErr
 	}
+
+	// When we connect to secure internet, copy over the tokens from the home server
+	if isSecureInternet {
+		// Ensure the secure home server
+		state.Servers.EnsureServer(state.Servers.SecureHome, &state.FSM, &state.Logger, false)
+
+		// Copy the tokens
+		state.Servers.CopySecureInternetOAuth(server)
+	}
+
 	// Make sure we are in the chosen state if available
 	state.FSM.GoTransition(internal.CHOSEN_SERVER)
 	// Relogin with oauth
@@ -113,6 +124,9 @@ func (state *VPNState) Connect(url string) (string, error) {
 		state.FSM.GoTransition(internal.AUTHORIZED)
 	}
 
+	// Set the home server if it is not set already
+	state.Servers.EnsureSecureHome(server)
+
 	state.FSM.GoTransition(internal.REQUEST_CONFIG)
 
 	config, configErr := server.GetConfig()
@@ -126,13 +140,20 @@ func (state *VPNState) Connect(url string) (string, error) {
 	return config, nil
 }
 
+func (state *VPNState) ConnectInstituteAccess(url string) (string, error) {
+	return state.connectWithOptions(url, false)
+}
+
+func (state *VPNState) ConnectSecureInternet(url string) (string, error) {
+	return state.connectWithOptions(url, true)
+}
+
 func (state *VPNState) GetDiscoOrganizations() (string, error) {
 	if state.FSM.InState(internal.DEREGISTERED) {
 		return "", errors.New("app not registered")
 	}
 	return state.Discovery.GetOrganizationsList()
 }
-
 
 func (state *VPNState) GetDiscoServers() (string, error) {
 	if state.FSM.InState(internal.DEREGISTERED) {

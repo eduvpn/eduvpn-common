@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"sort"
 	"path"
+	"sort"
 )
 
 type (
@@ -94,7 +94,7 @@ type FSM struct {
 	Current FSMStateID
 
 	// Info to be passed from the parent state
-	Name string
+	Name          string
 	StateCallback func(string, string, string)
 	Logger        *FileLogger
 	Directory     string
@@ -107,7 +107,7 @@ func (fsm *FSM) Init(name string, callback func(string, string, string), logger 
 		NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
 		CHOSEN_SERVER:  {{AUTHORIZED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
 		OAUTH_STARTED:  {{AUTHORIZED, "User authorizes with browser"}, {CHOSEN_SERVER, "Cancel OAuth"}},
-		AUTHORIZED:  {{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},
+		AUTHORIZED:     {{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},
 		REQUEST_CONFIG: {{ASK_PROFILE, "Multiple profiles found"}, {HAS_CONFIG, "Success, only one profile"}},
 		ASK_PROFILE:    {{HAS_CONFIG, "User chooses profile and success"}},
 		HAS_CONFIG:     {{CONNECTED, "OS reports connected"}},

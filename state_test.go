@@ -59,7 +59,7 @@ func Test_server(t *testing.T) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
-	_, configErr := state.Connect(serverURI)
+	_, configErr := state.ConnectInstituteAccess(serverURI)
 
 	if configErr != nil {
 		t.Errorf("Connect error: %v", configErr)
@@ -82,7 +82,7 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 
 		}
 	}, false)
-	_, configErr := state.Connect(serverURI)
+	_, configErr := state.ConnectInstituteAccess(serverURI)
 
 	if !errors.As(configErr, expectedErr) {
 		t.Errorf("error %T = %v, wantErr %T", configErr, configErr, expectedErr)
@@ -130,7 +130,7 @@ func Test_token_expired(t *testing.T) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
-	_, configErr := state.Connect(serverURI)
+	_, configErr := state.ConnectInstituteAccess(serverURI)
 
 	if configErr != nil {
 		t.Errorf("Connect error before expired: %v", configErr)
@@ -174,7 +174,7 @@ func Test_token_invalid(t *testing.T) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
-	_, configErr := state.Connect(serverURI)
+	_, configErr := state.ConnectInstituteAccess(serverURI)
 
 	if configErr != nil {
 		t.Errorf("Connect error before invalid: %v", configErr)

@@ -326,8 +326,7 @@ func (oauth *OAuth) NeedsRelogin() bool {
 	return true
 }
 
-type OAuthCancelledCallbackError struct {
-}
+type OAuthCancelledCallbackError struct{}
 
 func (e *OAuthCancelledCallbackError) Error() string {
 	return fmt.Sprintf("Client cancelled OAuth")

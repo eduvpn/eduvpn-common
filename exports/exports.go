@@ -103,7 +103,7 @@ func Connect(name *C.char, url *C.char) (*C.char, *C.char) {
 	if stateErr != nil {
 		return nil, C.CString(ErrorToString(stateErr))
 	}
-	config, configErr := state.Connect(C.GoString(url))
+	config, configErr := state.ConnectInstituteAccess(C.GoString(url))
 	return C.CString(config), C.CString(ErrorToString(configErr))
 }
 

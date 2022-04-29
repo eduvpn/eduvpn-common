@@ -17,8 +17,9 @@ type Server struct {
 }
 
 type Servers struct {
-	List    map[string]*Server `json:"list"`
-	Current string             `json:"current"`
+	List       map[string]*Server `json:"list"`
+	Current    string             `json:"current"`
+	SecureHome string             `json:"secure_home"`
 }
 
 func (servers *Servers) GetCurrentServer() (*Server, error) {
@@ -57,7 +58,10 @@ func (server *Server) EnsureTokens() error {
 	return nil
 }
 
-func (servers *Servers) EnsureServer(url string, fsm *FSM, logger *FileLogger) (*Server, error) {
+func (servers *Servers) EnsureServer(url string, fsm *FSM, logger *FileLogger, makeCurrent bool) (*Server, error) {
+	if url == "" {
+		return nil, errors.New("Emtpy URL to ensure Server")
+	}
 	if servers.List == nil {
 		servers.List = make(map[string]*Server)
 	}
@@ -73,8 +77,39 @@ func (servers *Servers) EnsureServer(url string, fsm *FSM, logger *FileLogger) (
 		return nil, serverInitErr
 	}
 	servers.List[url] = server
-	servers.Current = url
+
+	if makeCurrent {
+		servers.Current = url
+	}
 	return server, nil
+}
+
+func (servers *Servers) getSecureInternetHome() (*Server, error) {
+	server, exists := servers.List[servers.SecureHome]
+
+	if !exists || server == nil {
+		return nil, errors.New("No secure internet home found")
+	}
+
+	return server, nil
+}
+
+func (servers *Servers) EnsureSecureHome(server *Server) {
+	if servers.SecureHome == "" {
+		servers.SecureHome = server.BaseURL
+	}
+}
+
+func (servers *Servers) CopySecureInternetOAuth(server *Server) error {
+	secureHome, secureHomeErr := servers.getSecureInternetHome()
+
+	if secureHomeErr != nil {
+		return secureHomeErr
+	}
+
+	// Forward token properties
+	server.OAuth = secureHome.OAuth
+	return nil
 }
 
 type ServerProfile struct {
@@ -151,7 +186,7 @@ func (server *Server) getCurrentProfile() (*ServerProfile, error) {
 			return &profile, nil
 		}
 	}
-	return nil, errors.New("no profile found for id")
+	return nil, errors.New(fmt.Sprintf("no profile found for id %s", profile_id))
 }
 
 func (server *Server) getConfigWithProfile() (string, error) {

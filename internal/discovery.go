@@ -57,8 +57,8 @@ type ServersList struct {
 type Discovery struct {
 	Organizations OrganizationList
 	Servers       ServersList
-	FSM *FSM
-	Logger *FileLogger
+	FSM           *FSM
+	Logger        *FileLogger
 }
 
 // Helper function that gets a disco json
