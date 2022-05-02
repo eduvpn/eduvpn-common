@@ -9,52 +9,6 @@ import (
 	"strings"
 )
 
-type HTTPResourceError struct {
-	URL string
-	Err error
-}
-
-func (e *HTTPResourceError) Error() string {
-	return fmt.Sprintf("failed obtaining HTTP resource %s with error %v", e.URL, e.Err)
-}
-
-type HTTPStatusError struct {
-	URL    string
-	Status int
-}
-
-func (e *HTTPStatusError) Error() string {
-	return fmt.Sprintf("failed obtaining HTTP resource %s as it gave an unsuccesful status code %d", e.URL, e.Status)
-}
-
-type HTTPReadError struct {
-	URL string
-	Err error
-}
-
-func (e *HTTPReadError) Error() string {
-	return fmt.Sprintf("failed reading HTTP resource %s with error %v", e.URL, e.Err)
-}
-
-type HTTPParseJsonError struct {
-	URL  string
-	Body string
-	Err  error
-}
-
-func (e *HTTPParseJsonError) Error() string {
-	return fmt.Sprintf("failed parsing json %s for HTTP resource %s with error %v", e.Body, e.URL, e.Err)
-}
-
-type HTTPRequestCreateError struct {
-	URL string
-	Err error
-}
-
-func (e *HTTPRequestCreateError) Error() string {
-	return fmt.Sprintf("failed to create HTTP request with url %s and error %v", e.URL, e.Err)
-}
-
 type URLParameters map[string]string
 
 type HTTPOptionalParams struct {
@@ -65,9 +19,9 @@ type HTTPOptionalParams struct {
 
 // Construct an URL including on parameters
 func HTTPConstructURL(baseURL string, parameters URLParameters) (string, error) {
-	url, err := url.Parse(baseURL)
-	if err != nil {
-		return "", err
+	url, parseErr := url.Parse(baseURL)
+	if parseErr != nil {
+		return "", &HTTPConstructURLError{URL: baseURL, Parameters: parameters, Err: parseErr}
 	}
 
 	q := url.Query()
@@ -130,6 +84,7 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (ht
 	// it already has the right error so so we don't wrap it further
 	url, urlErr := httpOptionalURL(url, opts)
 	if urlErr != nil {
+		// No further type wrapping is needed here
 		return nil, nil, urlErr
 	}
 
@@ -169,4 +124,60 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (ht
 
 	// Return the body in bytes and signal the status error if there was one
 	return resp.Header, body, nil
+}
+
+type HTTPResourceError struct {
+	URL string
+	Err error
+}
+
+func (e *HTTPResourceError) Error() string {
+	return fmt.Sprintf("failed obtaining HTTP resource: %s with error: %v", e.URL, e.Err)
+}
+
+type HTTPStatusError struct {
+	URL    string
+	Status int
+}
+
+func (e *HTTPStatusError) Error() string {
+	return fmt.Sprintf("failed obtaining HTTP resource: %s as it gave an unsuccesful status code: %d", e.URL, e.Status)
+}
+
+type HTTPReadError struct {
+	URL string
+	Err error
+}
+
+func (e *HTTPReadError) Error() string {
+	return fmt.Sprintf("failed reading HTTP resource: %s with error: %v", e.URL, e.Err)
+}
+
+type HTTPParseJsonError struct {
+	URL  string
+	Body string
+	Err  error
+}
+
+func (e *HTTPParseJsonError) Error() string {
+	return fmt.Sprintf("failed parsing json %s for HTTP resource: %s with error: %v", e.Body, e.URL, e.Err)
+}
+
+type HTTPRequestCreateError struct {
+	URL string
+	Err error
+}
+
+func (e *HTTPRequestCreateError) Error() string {
+	return fmt.Sprintf("failed to create HTTP request with url: %s and error: %v", e.URL, e.Err)
+}
+
+type HTTPConstructURLError struct {
+	URL        string
+	Parameters URLParameters
+	Err        error
+}
+
+func (e *HTTPConstructURLError) Error() string {
+	return fmt.Sprintf("failed to construct url: %s including parameters: %v with error: %v", e.URL, e.Parameters, e.Err)
 }

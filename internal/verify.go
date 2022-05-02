@@ -58,84 +58,6 @@ func InsecureTestingSetExtraKey(keyString string) {
 	extraKey = keyString
 }
 
-type VerifyUnknownExpectedFilenameError struct {
-	Filename string
-	Expected string
-}
-
-func (e *VerifyUnknownExpectedFilenameError) Error() string {
-	return fmt.Sprintf("invalid filename %s, expected %s", e.Filename, e.Expected)
-}
-
-type VerifyInvalidSignatureFormatError struct {
-	Err error
-}
-
-func (e *VerifyInvalidSignatureFormatError) Error() string {
-	return fmt.Sprintf("invalid signature format, error %v", e.Err)
-}
-
-type VerifyInvalidSignatureAlgorithmError struct {
-	Algorithm       string
-	WantedAlgorithm string
-}
-
-func (e *VerifyInvalidSignatureAlgorithmError) Error() string {
-	return fmt.Sprintf("invalid signature algorithm %s, wanted %s", e.Algorithm, e.WantedAlgorithm)
-}
-
-type VerifyCreatePublicKeyError struct {
-	PublicKey string
-	Err       error
-}
-
-func (e *VerifyCreatePublicKeyError) Error() string {
-	return fmt.Sprintf("failed to create public key %s with error %v", e.PublicKey, e.Err)
-}
-
-type VerifyInvalidSignatureError struct {
-	Err error
-}
-
-func (e *VerifyInvalidSignatureError) Error() string {
-	return fmt.Sprintf("invalid signature with error %v", e.Err)
-}
-
-type VerifyInvalidTrustedCommentError struct {
-	TrustedComment string
-	Err            error
-}
-
-func (e *VerifyInvalidTrustedCommentError) Error() string {
-	return fmt.Sprintf("invalid trusted comment %s with error %v", e.TrustedComment, e.Err)
-}
-
-type VerifyWrongSigFilenameError struct {
-	Filename    string
-	SigFilename string
-}
-
-func (e *VerifyWrongSigFilenameError) Error() string {
-	return fmt.Sprintf("wrong filename %s, expected filename %s for signature", e.Filename, e.SigFilename)
-}
-
-type VerifySigTimeEarlierError struct {
-	SigTime    uint64
-	MinSigTime uint64
-}
-
-func (e *VerifySigTimeEarlierError) Error() string {
-	return fmt.Sprintf("Sign time %d is earlier than sign time %d", e.SigTime, e.MinSigTime)
-}
-
-type VerifyUnknownKeyError struct {
-	Filename string
-}
-
-func (e *VerifyUnknownKeyError) Error() string {
-	return fmt.Sprintf("signature for filename %s was created with an unknown key", e.Filename)
-}
-
 // verifyWithKeys verifies the Minisign signature in signatureFileContent (minisig file format) over the server_list/organization_list JSON in signedJson.
 //
 // Verification is performed using a matching key in allowedPublicKeys.
@@ -202,4 +124,82 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, filename str
 
 	// No matching allowed key found
 	return false, &VerifyUnknownKeyError{Filename: filename}
+}
+
+type VerifyUnknownExpectedFilenameError struct {
+	Filename string
+	Expected string
+}
+
+func (e *VerifyUnknownExpectedFilenameError) Error() string {
+	return fmt.Sprintf("invalid filename: %s, expected: %s", e.Filename, e.Expected)
+}
+
+type VerifyInvalidSignatureFormatError struct {
+	Err error
+}
+
+func (e *VerifyInvalidSignatureFormatError) Error() string {
+	return fmt.Sprintf("invalid signature format with error: %v", e.Err)
+}
+
+type VerifyInvalidSignatureAlgorithmError struct {
+	Algorithm       string
+	WantedAlgorithm string
+}
+
+func (e *VerifyInvalidSignatureAlgorithmError) Error() string {
+	return fmt.Sprintf("invalid signature algorithm: %s, wanted: %s", e.Algorithm, e.WantedAlgorithm)
+}
+
+type VerifyCreatePublicKeyError struct {
+	PublicKey string
+	Err       error
+}
+
+func (e *VerifyCreatePublicKeyError) Error() string {
+	return fmt.Sprintf("failed to create public key: %s with error: %v", e.PublicKey, e.Err)
+}
+
+type VerifyInvalidSignatureError struct {
+	Err error
+}
+
+func (e *VerifyInvalidSignatureError) Error() string {
+	return fmt.Sprintf("invalid signature with error: %v", e.Err)
+}
+
+type VerifyInvalidTrustedCommentError struct {
+	TrustedComment string
+	Err            error
+}
+
+func (e *VerifyInvalidTrustedCommentError) Error() string {
+	return fmt.Sprintf("invalid trusted comment: %s with error: %v", e.TrustedComment, e.Err)
+}
+
+type VerifyWrongSigFilenameError struct {
+	Filename    string
+	SigFilename string
+}
+
+func (e *VerifyWrongSigFilenameError) Error() string {
+	return fmt.Sprintf("wrong filename: %s, expected filename: %s for signature", e.Filename, e.SigFilename)
+}
+
+type VerifySigTimeEarlierError struct {
+	SigTime    uint64
+	MinSigTime uint64
+}
+
+func (e *VerifySigTimeEarlierError) Error() string {
+	return fmt.Sprintf("Sign time: %d is earlier than sign time: %d", e.SigTime, e.MinSigTime)
+}
+
+type VerifyUnknownKeyError struct {
+	Filename string
+}
+
+func (e *VerifyUnknownKeyError) Error() string {
+	return fmt.Sprintf("signature for filename: %s was created with an unknown key", e.Filename)
 }

@@ -25,11 +25,11 @@ func (config *Config) GetFilename() string {
 func (config *Config) Save(readStruct interface{}) error {
 	configDirErr := EnsureDirectory(config.Directory)
 	if configDirErr != nil {
-		return configDirErr
+		return &ConfigSaveError{Err: configDirErr}
 	}
 	jsonString, marshalErr := json.Marshal(readStruct)
 	if marshalErr != nil {
-		return marshalErr
+		return &ConfigSaveError{Err: marshalErr}
 	}
 	return ioutil.WriteFile(config.GetFilename(), jsonString, 0o644)
 }
@@ -37,7 +37,23 @@ func (config *Config) Save(readStruct interface{}) error {
 func (config *Config) Load(writeStruct interface{}) error {
 	bytes, readErr := ioutil.ReadFile(config.GetFilename())
 	if readErr != nil {
-		return readErr
+		return &ConfigLoadError{Err: readErr}
 	}
 	return json.Unmarshal(bytes, writeStruct)
+}
+
+type ConfigSaveError struct {
+	Err error
+}
+
+func (e *ConfigSaveError) Error() string {
+	return fmt.Sprintf("failed to save config with error: %v", e.Err)
+}
+
+type ConfigLoadError struct {
+	Err error
+}
+
+func (e *ConfigLoadError) Error() string {
+	return fmt.Sprintf("failed to load config with error: %v", e.Err)
 }

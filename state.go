@@ -1,7 +1,7 @@
 package eduvpn
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/jwijenbergh/eduvpn-common/internal"
 )
@@ -28,7 +28,7 @@ type VPNState struct {
 
 func (state *VPNState) Register(name string, directory string, stateCallback func(string, string, string), debug bool) error {
 	if !state.FSM.InState(internal.DEREGISTERED) {
-		return errors.New("app already registered")
+		return &StateWrongFSMStateError{Got: state.FSM.Current, Want: internal.DEREGISTERED}
 	}
 	// Initialize the logger
 	logLevel := internal.LOG_WARNING
@@ -39,7 +39,7 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 
 	loggerErr := state.Logger.Init(logLevel, name, directory)
 	if loggerErr != nil {
-		return errors.New("Failed to create a logger")
+		return &StateRegisterError{Err: loggerErr}
 	}
 
 	// Initialize the FSM
@@ -75,13 +75,13 @@ func (state *VPNState) Deregister() error {
 
 func (state *VPNState) CancelOAuth() error {
 	if !state.FSM.InState(internal.OAUTH_STARTED) {
-		return errors.New("cannot cancel oauth, oauth not started")
+		return &StateWrongFSMStateError{Got: state.FSM.Current, Want: internal.OAUTH_STARTED}
 	}
 
 	server, serverErr := state.Servers.GetCurrentServer()
 
 	if serverErr != nil {
-		return serverErr
+		return &StateOAuthCancelError{Err: serverErr}
 	}
 	server.CancelOAuth()
 	return nil
@@ -89,13 +89,13 @@ func (state *VPNState) CancelOAuth() error {
 
 func (state *VPNState) connectWithOptions(url string, isSecureInternet bool) (string, error) {
 	if state.FSM.InState(internal.DEREGISTERED) {
-		return "", errors.New("app not registered")
+		return "", &StateFSMNotRegisteredError{}
 	}
 	// New server chosen, ensure the server is fresh
 	server, serverErr := state.Servers.EnsureServer(url, &state.FSM, &state.Logger, true)
 
 	if serverErr != nil {
-		return "", serverErr
+		return "", &StateConnectError{URL: url, IsSecureInternet: isSecureInternet, Err: serverErr}
 	}
 
 	// When we connect to secure internet, copy over the tokens from the home server
@@ -118,7 +118,7 @@ func (state *VPNState) connectWithOptions(url string, isSecureInternet bool) (st
 			// We are possibly in oauth started
 			// So go to chosen server
 			state.FSM.GoTransition(internal.CHOSEN_SERVER)
-			return "", loginErr
+			return "", &StateConnectError{URL: url, IsSecureInternet: isSecureInternet, Err: loginErr}
 		}
 	} else { // OAuth was valid, ensure we are in the authorized state
 		state.FSM.GoTransition(internal.AUTHORIZED)
@@ -132,7 +132,7 @@ func (state *VPNState) connectWithOptions(url string, isSecureInternet bool) (st
 	config, configErr := server.GetConfig()
 
 	if configErr != nil {
-		return "", configErr
+		return "", &StateConnectError{URL: url, IsSecureInternet: isSecureInternet, Err: configErr}
 	} else {
 		state.FSM.GoTransition(internal.HAS_CONFIG)
 	}
@@ -150,27 +150,77 @@ func (state *VPNState) ConnectSecureInternet(url string) (string, error) {
 
 func (state *VPNState) GetDiscoOrganizations() (string, error) {
 	if state.FSM.InState(internal.DEREGISTERED) {
-		return "", errors.New("app not registered")
+		return "", &StateWrongFSMStateError{Got: state.FSM.Current, Want: internal.DEREGISTERED}
 	}
 	return state.Discovery.GetOrganizationsList()
 }
 
 func (state *VPNState) GetDiscoServers() (string, error) {
 	if state.FSM.InState(internal.DEREGISTERED) {
-		return "", errors.New("app not registered")
+		return "", &StateFSMNotRegisteredError{}
 	}
 	return state.Discovery.GetServersList()
 }
 
 func (state *VPNState) SetProfileID(profileID string) error {
 	if !state.FSM.InState(internal.ASK_PROFILE) {
-		return errors.New("Invalid state for setting a profile")
+		return &StateWrongFSMStateError{Got: state.FSM.Current, Want: internal.ASK_PROFILE}
 	}
 
 	server, serverErr := state.Servers.GetCurrentServer()
 	if serverErr != nil {
-		return errors.New("No server found for setting a profile ID")
+		return &StateSetProfileError{ProfileID: profileID, Err: serverErr}
 	}
 	server.Profiles.Current = profileID
 	return nil
+}
+
+type StateSetProfileError struct {
+	ProfileID string
+	Err       error
+}
+
+func (e *StateSetProfileError) Error() string {
+	return fmt.Sprintf("failed to set profile ID %s with error %v", e.ProfileID, e.Err)
+}
+
+type StateRegisterError struct {
+	Err error
+}
+
+func (e *StateRegisterError) Error() string {
+	return fmt.Sprintf("failed to register with error %v", e.Err)
+}
+
+type StateFSMNotRegisteredError struct{}
+
+func (e *StateFSMNotRegisteredError) Error() string {
+	return fmt.Sprintf("state is not registered. Current FSM state: %s", internal.DEREGISTERED.String())
+}
+
+type StateWrongFSMStateError struct {
+	Got  internal.FSMStateID
+	Want internal.FSMStateID
+}
+
+func (e *StateWrongFSMStateError) Error() string {
+	return fmt.Sprintf("wrong FSM state, got: %s, want: %s", e.Got.String(), e.Want.String())
+}
+
+type StateOAuthCancelError struct {
+	Err error
+}
+
+func (e *StateOAuthCancelError) Error() string {
+	return fmt.Sprintf("failed cancelling OAuth for state with error: %v", e.Err)
+}
+
+type StateConnectError struct {
+	URL              string
+	IsSecureInternet bool
+	Err              error
+}
+
+func (e *StateConnectError) Error() string {
+	return fmt.Sprintf("failed connecting to server: %s (is secure internet: %v) with error: %v", e.URL, e.IsSecureInternet, e.Err)
 }

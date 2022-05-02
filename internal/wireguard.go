@@ -8,8 +8,12 @@ import (
 )
 
 func wireguardGenerateKey() (wgtypes.Key, error) {
-	key, error := wgtypes.GeneratePrivateKey()
-	return key, error
+	key, keyErr := wgtypes.GeneratePrivateKey()
+
+	if keyErr != nil {
+		return key, &WireguardGenerateKeyError{Err: keyErr}
+	}
+	return key, nil
 }
 
 // FIXME: Instead of doing a regex replace, decide if we should use a parser
@@ -31,14 +35,14 @@ func (server *Server) WireguardGetConfig() (string, error) {
 	wireguardKey, wireguardErr := wireguardGenerateKey()
 
 	if wireguardErr != nil {
-		return "", wireguardErr
+		return "", &WireguardGetConfigError{Err: wireguardErr}
 	}
 
 	wireguardPublicKey := wireguardKey.PublicKey().String()
 	configWireguard, _, configErr := server.APIConnectWireguard(profile_id, wireguardPublicKey)
 
 	if configErr != nil {
-		return "", configErr
+		return "", &WireguardGetConfigError{Err: wireguardErr}
 	}
 
 	// FIXME: Store expiry
@@ -49,4 +53,20 @@ func (server *Server) WireguardGetConfig() (string, error) {
 	configWireguardKey := wireguardConfigAddKey(configWireguard, wireguardKey)
 
 	return configWireguardKey, nil
+}
+
+type WireguardGenerateKeyError struct {
+	Err error
+}
+
+func (e *WireguardGenerateKeyError) Error() string {
+	return fmt.Sprintf("failed generating Wireguard key with error: %v", e.Err)
+}
+
+type WireguardGetConfigError struct {
+	Err error
+}
+
+func (e *WireguardGetConfigError) Error() string {
+	return fmt.Sprintf("failed getting Wireguard config with error: %v", e.Err)
 }

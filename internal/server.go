@@ -24,12 +24,12 @@ type Servers struct {
 
 func (servers *Servers) GetCurrentServer() (*Server, error) {
 	if servers.List == nil {
-		return nil, errors.New("No map found to get Current Server")
+		return nil, &ServerGetCurrentNoMapError{}
 	}
 	server, exists := servers.List[servers.Current]
 
 	if !exists || server == nil {
-		return nil, errors.New("Current Server not found")
+		return nil, &ServerGetCurrentNotFoundError{}
 	}
 	return server, nil
 }
@@ -45,7 +45,7 @@ func (server *Server) Init(url string, fsm *FSM, logger *FileLogger) error {
 	server.OAuth.Init(fsm, logger)
 	endpointsErr := server.GetEndpoints()
 	if endpointsErr != nil {
-		return endpointsErr
+		return &ServerInitializeError{URL: url, Err: endpointsErr}
 	}
 	return nil
 }
@@ -60,7 +60,7 @@ func (server *Server) EnsureTokens() error {
 
 func (servers *Servers) EnsureServer(url string, fsm *FSM, logger *FileLogger, makeCurrent bool) (*Server, error) {
 	if url == "" {
-		return nil, errors.New("Emtpy URL to ensure Server")
+		return nil, &ServerEnsureServerEmptyURLError{}
 	}
 	if servers.List == nil {
 		servers.List = make(map[string]*Server)
@@ -74,7 +74,7 @@ func (servers *Servers) EnsureServer(url string, fsm *FSM, logger *FileLogger, m
 	serverInitErr := server.Init(url, fsm, logger)
 
 	if serverInitErr != nil {
-		return nil, serverInitErr
+		return nil, &ServerEnsureServerError{Err: serverInitErr}
 	}
 	servers.List[url] = server
 
@@ -88,7 +88,7 @@ func (servers *Servers) getSecureInternetHome() (*Server, error) {
 	server, exists := servers.List[servers.SecureHome]
 
 	if !exists || server == nil {
-		return nil, errors.New("No secure internet home found")
+		return nil, &ServerGetSecureInternetHomeError{}
 	}
 
 	return server, nil
@@ -104,7 +104,7 @@ func (servers *Servers) CopySecureInternetOAuth(server *Server) error {
 	secureHome, secureHomeErr := servers.getSecureInternetHome()
 
 	if secureHomeErr != nil {
-		return secureHomeErr
+		return &ServerCopySecureInternetOAuthError{Err: secureHomeErr}
 	}
 
 	// Forward token properties
@@ -155,14 +155,14 @@ func (server *Server) GetEndpoints() error {
 	_, body, bodyErr := HTTPGet(url)
 
 	if bodyErr != nil {
-		return bodyErr
+		return &ServerGetEndpointsError{Err: bodyErr}
 	}
 
 	endpoints := ServerEndpoints{}
 	jsonErr := json.Unmarshal(body, &endpoints)
 
 	if jsonErr != nil {
-		return jsonErr
+		return &ServerGetEndpointsError{Err: jsonErr}
 	}
 
 	server.Endpoints = endpoints
@@ -180,23 +180,23 @@ func (profile *ServerProfile) supportsWireguard() bool {
 }
 
 func (server *Server) getCurrentProfile() (*ServerProfile, error) {
-	profile_id := server.Profiles.Current
+	profileID := server.Profiles.Current
 	for _, profile := range server.Profiles.Info.ProfileList {
-		if profile.ID == profile_id {
+		if profile.ID == profileID {
 			return &profile, nil
 		}
 	}
-	return nil, errors.New(fmt.Sprintf("no profile found for id %s", profile_id))
+	return nil, &ServerGetCurrentProfileNotFoundError{ProfileID: profileID}
 }
 
 func (server *Server) getConfigWithProfile() (string, error) {
 	if !server.FSM.HasTransition(HAS_CONFIG) {
-		return "", errors.New("cannot get a config with a profile, invalid state")
+		return "", &FSMWrongStateTransitionError{Got: server.FSM.Current, Want: HAS_CONFIG}
 	}
 	profile, profileErr := server.getCurrentProfile()
 
 	if profileErr != nil {
-		return "", profileErr
+		return "", &ServerGetConfigWithProfileError{Err: profileErr}
 	}
 
 	if profile.supportsWireguard() {
@@ -207,7 +207,7 @@ func (server *Server) getConfigWithProfile() (string, error) {
 
 func (server *Server) askForProfileID() error {
 	if !server.FSM.HasTransition(ASK_PROFILE) {
-		return errors.New("cannot ask for a profile id, invalid state")
+		return &FSMWrongStateTransitionError{Got: server.FSM.Current, Want: ASK_PROFILE}
 	}
 	server.FSM.GoTransitionWithData(ASK_PROFILE, server.ProfilesRaw, false)
 	return nil
@@ -220,7 +220,7 @@ func (server *Server) GetConfig() (string, error) {
 	infoErr := server.APIInfo()
 
 	if infoErr != nil {
-		return "", infoErr
+		return "", &ServerGetConfigError{Err: infoErr}
 	}
 
 	// Set the current profile if there is only one profile
@@ -232,8 +232,89 @@ func (server *Server) GetConfig() (string, error) {
 	profileErr := server.askForProfileID()
 
 	if profileErr != nil {
-		return "", nil
+		return "", &ServerGetConfigError{Err: profileErr}
 	}
 
 	return server.getConfigWithProfile()
+}
+
+type ServerGetCurrentProfileNotFoundError struct {
+	ProfileID string
+}
+
+func (e *ServerGetCurrentProfileNotFoundError) Error() string {
+	return fmt.Sprintf("failed to get current profile, profile with ID: %s not found", e.ProfileID)
+}
+
+type ServerGetConfigWithProfileError struct {
+	Err error
+}
+
+func (e *ServerGetConfigWithProfileError) Error() string {
+	return fmt.Sprintf("failed to get config including profile with error %v", e.Err)
+}
+
+type ServerGetEndpointsError struct {
+	Err error
+}
+
+func (e *ServerGetEndpointsError) Error() string {
+	return fmt.Sprintf("failed to get server endpoint with error %v", e.Err)
+}
+
+type ServerGetSecureInternetHomeError struct{}
+
+func (e *ServerGetSecureInternetHomeError) Error() string {
+	return "failed to get secure internet home server, not found"
+}
+
+type ServerCopySecureInternetOAuthError struct {
+	Err error
+}
+
+func (e *ServerCopySecureInternetOAuthError) Error() string {
+	return fmt.Sprintf("failed to copy oauth tokens from home server with error %v", e.Err)
+}
+
+type ServerEnsureServerEmptyURLError struct{}
+
+func (e *ServerEnsureServerEmptyURLError) Error() string {
+	return "failed ensuring server, empty url provided"
+}
+
+type ServerEnsureServerError struct {
+	Err error
+}
+
+func (e *ServerEnsureServerError) Error() string {
+	return fmt.Sprintf("failed ensuring server with error %v", e.Err)
+}
+
+type ServerGetCurrentNoMapError struct{}
+
+func (e *ServerGetCurrentNoMapError) Error() string {
+	return "failed getting current server, no servers available"
+}
+
+type ServerGetCurrentNotFoundError struct{}
+
+func (e *ServerGetCurrentNotFoundError) Error() string {
+	return "failed getting current server, not found"
+}
+
+type ServerGetConfigError struct {
+	Err error
+}
+
+func (e *ServerGetConfigError) Error() string {
+	return fmt.Sprintf("failed getting server config with error %v", e.Err)
+}
+
+type ServerInitializeError struct {
+	URL string
+	Err error
+}
+
+func (e *ServerInitializeError) Error() string {
+	return fmt.Sprintf("failed initializing server with url %s and error %v", e.URL, e.Err)
 }

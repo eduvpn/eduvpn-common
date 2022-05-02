@@ -206,3 +206,21 @@ func (fsm *FSM) generateMermaidGraph() string {
 func (fsm *FSM) GenerateGraph() string {
 	return fsm.generateMermaidGraph()
 }
+
+type FSMWrongStateTransitionError struct {
+	Got  FSMStateID
+	Want FSMStateID
+}
+
+func (e *FSMWrongStateTransitionError) Error() string {
+	return fmt.Sprintf("wrong FSM state, got: %s, want a state with a transition to: %s", e.Got.String(), e.Want.String())
+}
+
+type FSMWrongStateError struct {
+	Got  FSMStateID
+	Want FSMStateID
+}
+
+func (e *FSMWrongStateError) Error() string {
+	return fmt.Sprintf("wrong FSM state, got: %s, want: %s", e.Got.String(), e.Want.String())
+}

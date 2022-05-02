@@ -84,15 +84,43 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 	}, false)
 	_, configErr := state.ConnectInstituteAccess(serverURI)
 
-	if !errors.As(configErr, expectedErr) {
-		t.Errorf("error %T = %v, wantErr %T", configErr, configErr, expectedErr)
+	var stateErr *StateConnectError
+	var loginErr *internal.OAuthLoginError
+	var finishErr *internal.OAuthFinishError
+
+	// We go through the chain of errors by unwrapping them one by one
+
+	// First ensure we get a state connect error
+	if !errors.As(configErr, &stateErr) {
+		t.Errorf("error %T = %v, wantErr %T", configErr, configErr, stateErr)
+	}
+
+	// Then ensure we get a login error
+	gotLoginErr := stateErr.Err
+
+	if !errors.As(gotLoginErr, &loginErr) {
+		t.Errorf("error %T = %v, wantErr %T", gotLoginErr, gotLoginErr, loginErr)
+	}
+
+	// Then ensure we get a finish error
+	gotFinishErr := loginErr.Err
+
+	if !errors.As(gotFinishErr, &finishErr) {
+		t.Errorf("error %T = %v, wantErr %T", gotFinishErr, gotFinishErr, finishErr)
+	}
+
+	// Then ensure we get the expected inner error
+	gotExpectedErr := finishErr.Err
+
+	if !errors.As(gotExpectedErr, expectedErr) {
+		t.Errorf("error %T = %v, wantErr %T", gotExpectedErr, gotExpectedErr, expectedErr)
 	}
 }
 
 func Test_connect_oauth_parameters(t *testing.T) {
 	var (
-		failedCallbackParameterError  *internal.OAuthFailedCallbackParameterError
-		failedCallbackStateMatchError *internal.OAuthFailedCallbackStateMatchError
+		failedCallbackParameterError  *internal.OAuthCallbackParameterError
+		failedCallbackStateMatchError *internal.OAuthCallbackStateMatchError
 	)
 
 	tests := []struct {
