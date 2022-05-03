@@ -83,36 +83,38 @@ func (state *VPNState) CancelOAuth() error {
 	if serverErr != nil {
 		return &StateOAuthCancelError{Err: serverErr}
 	}
-	server.CancelOAuth()
+	internal.CancelOAuth(server)
 	return nil
+}
+
+func (state *VPNState) chooseServer(url string, isSecureInternet bool) (internal.Server, error) {
+	// New server chosen, ensure the server is fresh
+	server, serverErr := state.Servers.EnsureServer(url, isSecureInternet, &state.FSM, &state.Logger)
+
+	if serverErr != nil {
+		return nil, serverErr
+	}
+
+	// Make sure we are in the chosen state if available
+	state.FSM.GoTransition(internal.CHOSEN_SERVER)
+	return server, nil
 }
 
 func (state *VPNState) connectWithOptions(url string, isSecureInternet bool) (string, error) {
 	if state.FSM.InState(internal.DEREGISTERED) {
 		return "", &StateFSMNotRegisteredError{}
 	}
-	// New server chosen, ensure the server is fresh
-	server, serverErr := state.Servers.EnsureServer(url, &state.FSM, &state.Logger, true)
+
+	// Make sure the server is chosen
+	server, serverErr := state.chooseServer(url, isSecureInternet)
 
 	if serverErr != nil {
 		return "", &StateConnectError{URL: url, IsSecureInternet: isSecureInternet, Err: serverErr}
 	}
-
-	// When we connect to secure internet, copy over the tokens from the home server
-	if isSecureInternet {
-		// Ensure the secure home server
-		state.Servers.EnsureServer(state.Servers.SecureHome, &state.FSM, &state.Logger, false)
-
-		// Copy the tokens
-		state.Servers.CopySecureInternetOAuth(server)
-	}
-
-	// Make sure we are in the chosen state if available
-	state.FSM.GoTransition(internal.CHOSEN_SERVER)
 	// Relogin with oauth
 	// This moves the state to authorized
-	if server.NeedsRelogin() {
-		loginErr := server.Login()
+	if internal.NeedsRelogin(server) {
+		loginErr := internal.Login(server)
 
 		if loginErr != nil {
 			// We are possibly in oauth started
@@ -124,12 +126,9 @@ func (state *VPNState) connectWithOptions(url string, isSecureInternet bool) (st
 		state.FSM.GoTransition(internal.AUTHORIZED)
 	}
 
-	// Set the home server if it is not set already
-	state.Servers.EnsureSecureHome(server)
-
 	state.FSM.GoTransition(internal.REQUEST_CONFIG)
 
-	config, configErr := server.GetConfig()
+	config, configErr := internal.GetConfig(server)
 
 	if configErr != nil {
 		return "", &StateConnectError{URL: url, IsSecureInternet: isSecureInternet, Err: configErr}
@@ -171,7 +170,13 @@ func (state *VPNState) SetProfileID(profileID string) error {
 	if serverErr != nil {
 		return &StateSetProfileError{ProfileID: profileID, Err: serverErr}
 	}
-	server.Profiles.Current = profileID
+
+	base, baseErr := server.GetBase()
+
+	if baseErr != nil {
+		return &StateSetProfileError{ProfileID: profileID, Err: baseErr}
+	}
+	base.Profiles.Current = profileID
 	return nil
 }
 

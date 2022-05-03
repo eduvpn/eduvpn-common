@@ -30,8 +30,14 @@ func wireguardConfigAddKey(config string, key wgtypes.Key) string {
 	return interface_re.ReplaceAllString(config, to_replace)
 }
 
-func (server *Server) WireguardGetConfig() (string, error) {
-	profile_id := server.Profiles.Current
+func WireguardGetConfig(server Server) (string, error) {
+	base, baseErr := server.GetBase()
+
+	if baseErr != nil {
+		return "", &WireguardGetConfigError{Err: baseErr}
+	}
+
+	profile_id := base.Profiles.Current
 	wireguardKey, wireguardErr := wireguardGenerateKey()
 
 	if wireguardErr != nil {
@@ -39,7 +45,7 @@ func (server *Server) WireguardGetConfig() (string, error) {
 	}
 
 	wireguardPublicKey := wireguardKey.PublicKey().String()
-	configWireguard, _, configErr := server.APIConnectWireguard(profile_id, wireguardPublicKey)
+	configWireguard, _, configErr := APIConnectWireguard(server, profile_id, wireguardPublicKey)
 
 	if configErr != nil {
 		return "", &WireguardGetConfigError{Err: wireguardErr}

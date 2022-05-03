@@ -161,29 +161,31 @@ func Test_token_expired(t *testing.T) {
 	_, configErr := state.ConnectInstituteAccess(serverURI)
 
 	if configErr != nil {
-		t.Errorf("Connect error before expired: %v", configErr)
+		t.Fatalf("Connect error before expired: %v", configErr)
 	}
 
 	server, serverErr := state.Servers.GetCurrentServer()
 	if serverErr != nil {
-		t.Errorf("No server found")
+		t.Fatalf("No server found")
 	}
 
-	accessToken := server.OAuth.Token.Access
-	refreshToken := server.OAuth.Token.Refresh
+	oauth := server.GetOAuth()
+
+	accessToken := oauth.Token.Access
+	refreshToken := oauth.Token.Refresh
 
 	// Wait for TTL so that the tokens expire
 	time.Sleep(time.Duration(expiredInt) * time.Second)
 
-	infoErr := server.APIInfo()
+	infoErr := internal.APIInfo(server)
 
 	if infoErr != nil {
 		t.Errorf("Info error after expired: %v", infoErr)
 	}
 
 	// Check if tokens have changed
-	accessTokenAfter := server.OAuth.Token.Access
-	refreshTokenAfter := server.OAuth.Token.Refresh
+	accessTokenAfter := oauth.Token.Access
+	refreshTokenAfter := oauth.Token.Refresh
 
 	if accessToken == accessTokenAfter {
 		t.Errorf("Access token is the same after refresh")
@@ -221,21 +223,23 @@ func Test_token_invalid(t *testing.T) {
 		return
 	}
 
-	// Override tokens with invalid values
-	server.OAuth.Token.Access = dummy_value
-	server.OAuth.Token.Refresh = dummy_value
+	oauth := server.GetOAuth()
 
-	infoErr := server.APIInfo()
+	// Override tokens with invalid values
+	oauth.Token.Access = dummy_value
+	oauth.Token.Refresh = dummy_value
+
+	infoErr := internal.APIInfo(server)
 
 	if infoErr != nil {
 		t.Errorf("Info error after invalid: %v", infoErr)
 	}
 
-	if server.OAuth.Token.Access == dummy_value {
+	if oauth.Token.Access == dummy_value {
 		t.Errorf("Access token is equal to dummy value: %s", dummy_value)
 	}
 
-	if server.OAuth.Token.Refresh == dummy_value {
+	if oauth.Token.Refresh == dummy_value {
 		t.Errorf("Refresh token is equal to dummy value: %s", dummy_value)
 	}
 }

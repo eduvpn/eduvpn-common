@@ -52,11 +52,12 @@ func genVerifier() (string, error) {
 }
 
 type OAuth struct {
-	Session  OAuthExchangeSession `json:"-"`
-	Token    OAuthToken           `json:"token"`
-	TokenURL string               `json:"token_url"`
-	Logger   *FileLogger          `json:"-"`
-	FSM      *FSM                 `json:"-"`
+	Session              OAuthExchangeSession `json:"-"`
+	Token                OAuthToken           `json:"token"`
+	BaseAuthorizationURL string               `json:"base_authorization_url"`
+	TokenURL             string               `json:"token_url"`
+	Logger               *FileLogger          `json:"-"`
+	FSM                  *FSM                 `json:"-"`
 }
 
 // This structure gets passed to the callback for easy access to the current state
@@ -216,13 +217,20 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	go oauth.Session.Server.Shutdown(oauth.Session.Context)
 }
 
-func (oauth *OAuth) Init(fsm *FSM, logger *FileLogger) {
+func (oauth *OAuth) Update(fsm *FSM, logger *FileLogger) {
+	oauth.FSM = fsm
+	oauth.Logger = logger
+}
+
+func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string, fsm *FSM, logger *FileLogger) {
+	oauth.BaseAuthorizationURL = baseAuthorizationURL
+	oauth.TokenURL = tokenURL
 	oauth.FSM = fsm
 	oauth.Logger = logger
 }
 
 // Starts the OAuth exchange for eduvpn.
-func (oauth *OAuth) start(name string, authorizationURL string, tokenURL string) error {
+func (oauth *OAuth) start(name string) error {
 	if !oauth.FSM.HasTransition(OAUTH_STARTED) {
 		return &FSMWrongStateTransitionError{Got: oauth.FSM.Current, Want: OAUTH_STARTED}
 	}
@@ -249,7 +257,7 @@ func (oauth *OAuth) start(name string, authorizationURL string, tokenURL string)
 		"redirect_uri":          "http://127.0.0.1:8000/callback",
 	}
 
-	authURL, urlErr := HTTPConstructURL(authorizationURL, parameters)
+	authURL, urlErr := HTTPConstructURL(oauth.BaseAuthorizationURL, parameters)
 
 	if urlErr != nil {
 		return &OAuthInitializeError{Err: urlErr}
@@ -257,7 +265,6 @@ func (oauth *OAuth) start(name string, authorizationURL string, tokenURL string)
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
 	oauthSession := OAuthExchangeSession{ClientID: name, State: state, Verifier: verifier}
-	oauth.TokenURL = tokenURL
 	oauth.Session = oauthSession
 	// Run the state callback in the background so that the user can login while we start the callback server
 	oauth.FSM.GoTransitionWithData(OAUTH_STARTED, authURL, true)
@@ -283,8 +290,8 @@ func (oauth *OAuth) Cancel() {
 	oauth.Session.Server.Shutdown(oauth.Session.Context)
 }
 
-func (oauth *OAuth) Login(name string, authorizationURL string, tokenURL string) error {
-	authInitializeErr := oauth.start(name, authorizationURL, tokenURL)
+func (oauth *OAuth) Login(name string) error {
+	authInitializeErr := oauth.start(name)
 
 	if authInitializeErr != nil {
 		return &OAuthLoginError{Err: authInitializeErr}
