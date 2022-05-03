@@ -8,7 +8,8 @@ test: test-go test-wrappers
 test-go:
 	go test ./...
 
-WRAPPERS ?= $(notdir $(patsubst %/,%,$(wildcard wrappers/*/)))
+#WRAPPERS ?= $(notdir $(patsubst %/,%,$(wildcard wrappers/*/)))
+WRAPPERS=python
 
 # Enable parallelism if -j is specified, but first execute build
 test-wrappers: build
