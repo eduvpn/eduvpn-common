@@ -9,6 +9,7 @@ endif
 
 # Build for current platform only
 pack:
+	mkdir -p eduvpncommon/lib
 	./setup.py bdist_wheel $(SETUP_ARGS) --exports-lib-path="$(EXPORTS_LIB_PATH)"
 
 test: .try-build-lib
