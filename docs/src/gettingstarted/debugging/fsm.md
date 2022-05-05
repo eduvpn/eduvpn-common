@@ -19,9 +19,9 @@ The current state is highlighted in the <span style="color:cyan">cyan</span> col
 ## State explanation
 The states mean the following:
 
-- `DEREGISTERED`: The client has not registered with the library yet, the state variables are not initialized
-- `NO_SERVER`: The client is registered, but has not chosen a server yet
-- `CHOSEN_SERVER`: The client has chosen a server to connect to
+- `Deregistered`: The client has not registered with the library yet, the state variables are not initialized
+- `No_Server`: The client is registered, but has not chosen a server yet
+- `Chosen_ServeR`: The client has chosen a server to connect to
 - `OAuth_Started`: The OAuth process has been started. This means that the client needs to redirect to the browser so that the user can login and approve the application
 - `Authorized`: The OAuth process has finished. The client now has tokens and is thus authorized
 - `Request_Config`: The client is in the process of requesting an OpenVPN/Wireguard configuration from the server

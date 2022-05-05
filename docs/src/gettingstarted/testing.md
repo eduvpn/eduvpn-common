@@ -1,7 +1,6 @@
 # Testing
 To test the Go code, issue the following command in a shell
 
-## Testing the Go code
 ```bash
 make test-go
 ```
@@ -13,12 +12,13 @@ SERVER_URI="eduvpn.example.com" PORTAL_USER="example" PORTAL_PASS="example" make
 ```
 
 If you have [Docker](https://www.docker.com/get-started/) installed and [Docker-compose](https://docs.docker.com/compose/install/) you can use a convenient helper script which starts up two containers
-- An eduvpnserver for testing
+- An EduVPN Server for testing
 - A Go container that builds and runs the test-suite
 
 ```bash
 PORTAL_USER="example" PORTAL_PASS="example" ./ci/startcompose.sh
 ```
+Note that this helper script also assumes you have the `openssl` command line tool installed. This is used to install the self-signed certificates for testing.
 
 This script is also used in the continuous integration, so we recommend to run this before you submit any changes.
 ## Testing the wrappers
