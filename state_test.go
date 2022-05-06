@@ -152,7 +152,7 @@ func Test_token_expired(t *testing.T) {
 	serverURI := getServerURI(t)
 	expiredTTL := os.Getenv("OAUTH_EXPIRED_TTL")
 	if expiredTTL == "" {
-		t.Log("No expired TTL present, skipping this test. Set EXPIRED_TTL env variable to run it")
+		t.Log("No expired TTL present, skipping this test. Set OAUTH_EXPIRED_TTL env variable to run this test")
 		return
 	}
 
