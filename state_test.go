@@ -40,7 +40,7 @@ func loginOAuthSelenium(t *testing.T, url string, state *VPNState) {
 	var errBuffer strings.Builder
 	err := runCommand(t, &errBuffer, "python3", "selenium_eduvpn.py", url)
 	if err != nil {
-		t.Errorf("Login OAuth with selenium script failed with error %v and stderr %s", err, errBuffer.String())
+		t.Fatalf("Login OAuth with selenium script failed with error %v and stderr %s", err, errBuffer.String())
 		state.CancelOAuth()
 	}
 }
@@ -62,7 +62,7 @@ func Test_server(t *testing.T) {
 	_, configErr := state.ConnectInstituteAccess(serverURI)
 
 	if configErr != nil {
-		t.Errorf("Connect error: %v", configErr)
+		t.Fatalf("Connect error: %v", configErr)
 	}
 }
 
@@ -76,7 +76,7 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 			baseURL := "http://127.0.0.1:8000/callback"
 			url, err := internal.HTTPConstructURL(baseURL, parameters)
 			if err != nil {
-				t.Errorf("Error: Constructing url %s with parameters %s", baseURL, fmt.Sprint(parameters))
+				t.Fatalf("Error: Constructing url %s with parameters %s", baseURL, fmt.Sprint(parameters))
 			}
 			go http.Get(url)
 
@@ -92,28 +92,28 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 
 	// First ensure we get a state connect error
 	if !errors.As(configErr, &stateErr) {
-		t.Errorf("error %T = %v, wantErr %T", configErr, configErr, stateErr)
+		t.Fatalf("error %T = %v, wantErr %T", configErr, configErr, stateErr)
 	}
 
 	// Then ensure we get a login error
 	gotLoginErr := stateErr.Err
 
 	if !errors.As(gotLoginErr, &loginErr) {
-		t.Errorf("error %T = %v, wantErr %T", gotLoginErr, gotLoginErr, loginErr)
+		t.Fatalf("error %T = %v, wantErr %T", gotLoginErr, gotLoginErr, loginErr)
 	}
 
 	// Then ensure we get a finish error
 	gotFinishErr := loginErr.Err
 
 	if !errors.As(gotFinishErr, &finishErr) {
-		t.Errorf("error %T = %v, wantErr %T", gotFinishErr, gotFinishErr, finishErr)
+		t.Fatalf("error %T = %v, wantErr %T", gotFinishErr, gotFinishErr, finishErr)
 	}
 
 	// Then ensure we get the expected inner error
 	gotExpectedErr := finishErr.Err
 
 	if !errors.As(gotExpectedErr, expectedErr) {
-		t.Errorf("error %T = %v, wantErr %T", gotExpectedErr, gotExpectedErr, expectedErr)
+		t.Fatalf("error %T = %v, wantErr %T", gotExpectedErr, gotExpectedErr, expectedErr)
 	}
 }
 
@@ -148,7 +148,7 @@ func Test_token_expired(t *testing.T) {
 	// Convert the env variable to an int and signal error if it is not possible
 	expiredInt, expiredErr := strconv.Atoi(expiredTTL)
 	if expiredErr != nil {
-		t.Errorf("Cannot convert EXPIRED_TTL env variable to an int with error %v", expiredErr)
+		t.Fatalf("Cannot convert EXPIRED_TTL env variable to an int with error %v", expiredErr)
 	}
 
 	// Get a vpn state
@@ -180,7 +180,7 @@ func Test_token_expired(t *testing.T) {
 	infoErr := internal.APIInfo(server)
 
 	if infoErr != nil {
-		t.Errorf("Info error after expired: %v", infoErr)
+		t.Fatalf("Info error after expired: %v", infoErr)
 	}
 
 	// Check if tokens have changed
@@ -207,7 +207,7 @@ func Test_token_invalid(t *testing.T) {
 	_, configErr := state.ConnectInstituteAccess(serverURI)
 
 	if configErr != nil {
-		t.Errorf("Connect error before invalid: %v", configErr)
+		t.Fatalf("Connect error before invalid: %v", configErr)
 	}
 
 	// Fake connect and then back to authorized so that we can re-authorize
@@ -219,8 +219,7 @@ func Test_token_invalid(t *testing.T) {
 
 	server, serverErr := state.Servers.GetCurrentServer()
 	if serverErr != nil {
-		t.Errorf("No server found")
-		return
+		t.Fatalf("No server found")
 	}
 
 	oauth := server.GetOAuth()
@@ -232,7 +231,7 @@ func Test_token_invalid(t *testing.T) {
 	infoErr := internal.APIInfo(server)
 
 	if infoErr != nil {
-		t.Errorf("Info error after invalid: %v", infoErr)
+		t.Fatalf("Info error after invalid: %v", infoErr)
 	}
 
 	if oauth.Token.Access == dummy_value {
