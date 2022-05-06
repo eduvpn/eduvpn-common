@@ -2,7 +2,7 @@ import os
 import sys
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from pyvirtualdisplay import Display
+from selenium.webdriver.firefox.options import Options
 
 
 # Logs in to the default vpn user portal with selenium
@@ -51,12 +51,11 @@ if __name__ == "__main__":
         print("Error: no auth url specified")
         sys.exit(1)
 
-    # Start a virtual display using xvfb
-    disp = Display()
-    disp.start()
+    options = Options()
+    options.headless = True
 
     # Use the firefox driver
-    driver = webdriver.Firefox()
+    driver = webdriver.Firefox(options=options)
 
     # Login to the portal
     authURL = sys.argv[1]
@@ -64,4 +63,3 @@ if __name__ == "__main__":
 
     # Cleanup
     driver.close()
-    disp.stop()
