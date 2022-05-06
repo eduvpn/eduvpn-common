@@ -14,6 +14,14 @@ import (
 	"github.com/jwijenbergh/eduvpn-common/internal"
 )
 
+func ensureLocalWellKnown() {
+	wellKnown := os.Getenv("SERVER_IS_LOCAL")
+
+	if wellKnown == "1" {
+		internal.WellKnownPath = "well-known.php"
+	}
+}
+
 func getServerURI(t *testing.T) string {
 	serverURI := os.Getenv("SERVER_URI")
 	if serverURI == "" {
@@ -54,6 +62,7 @@ func stateCallback(t *testing.T, oldState string, newState string, data string, 
 func Test_server(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &VPNState{}
+	ensureLocalWellKnown()
 
 	state.Register("org.eduvpn.app.linux", "configstest", func(old string, new string, data string) {
 		stateCallback(t, old, new, data, state)
@@ -132,6 +141,8 @@ func Test_connect_oauth_parameters(t *testing.T) {
 		{&failedCallbackStateMatchError, internal.URLParameters{"code": "42", "state": "21"}},
 	}
 
+	ensureLocalWellKnown()
+
 	for _, test := range tests {
 		test_connect_oauth_parameter(t, test.parameters, test.expectedErr)
 	}
@@ -144,6 +155,8 @@ func Test_token_expired(t *testing.T) {
 		t.Log("No expired TTL present, skipping this test. Set EXPIRED_TTL env variable to run it")
 		return
 	}
+
+	ensureLocalWellKnown()
 
 	// Convert the env variable to an int and signal error if it is not possible
 	expiredInt, expiredErr := strconv.Atoi(expiredTTL)
@@ -199,6 +212,8 @@ func Test_token_expired(t *testing.T) {
 func Test_token_invalid(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &VPNState{}
+
+	ensureLocalWellKnown()
 
 	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old string, new string, data string) {
 		stateCallback(t, old, new, data, state)

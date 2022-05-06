@@ -252,8 +252,11 @@ type ServerEndpoints struct {
 	V string `json:"v"`
 }
 
+// Make this a var which we can overwrite in the tests
+var WellKnownPath string = ".well-known/vpn-user-portal"
+
 func getEndpoints(baseURL string) (*ServerEndpoints, error) {
-	url := fmt.Sprintf("%s/.well-known/vpn-user-portal", baseURL)
+	url := fmt.Sprintf("%s/%s", baseURL, WellKnownPath)
 	_, body, bodyErr := HTTPGet(url)
 
 	if bodyErr != nil {
