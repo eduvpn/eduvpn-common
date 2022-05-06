@@ -86,6 +86,7 @@ setup(
     version="0.1.0",
     packages=["eduvpncommon"],
     python_requires=">=3.6",
+    package_dir={"eduvpncommon": "src"},
     package_data={"eduvpncommon": [f"lib/*{_libname}*"]},
     cmdclass={"bdist_wheel": bdist_wheel},
 )
