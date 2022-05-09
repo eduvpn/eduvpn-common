@@ -42,6 +42,8 @@ lib.CancelOAuth.argtypes, lib.CancelOAuth.restype = [c_char_p], c_void_p
 lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p, c_char_p], c_void_p
 # We have to use c_void_p instead of c_char_p to free it properly
 # See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
+lib.SetConnected.argtypes, lib.SetConnected.restype = [c_char_p], c_void_p
+lib.SetDisconnected.argtypes, lib.SetDisconnected.restype = [c_char_p], c_void_p
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
 
 

@@ -141,6 +141,28 @@ func SetProfileID(name *C.char, data *C.char) *C.char {
 	return C.CString(ErrorToString(profileErr))
 }
 
+//export SetDisconnected
+func SetDisconnected(name *C.char) *C.char {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	setDisconnectedErr := state.SetDisconnected()
+	return C.CString(ErrorToString(setDisconnectedErr))
+}
+
+//export SetConnected
+func SetConnected(name *C.char) *C.char {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	setConnectedErr := state.SetConnected()
+	return C.CString(ErrorToString(setConnectedErr))
+}
+
 //export FreeString
 func FreeString(addr *C.char) {
 	C.free(unsafe.Pointer(addr))

@@ -43,6 +43,18 @@ def Connect(name, url):
     data_error = lib.Connect(name_bytes, url_bytes)
     return GetDataError(data_error)
 
+def SetConnected(name):
+    name_bytes = name.encode("utf-8")
+    ptr_err = lib.SetConnected(name_bytes)
+    err_string = GetPtrString(ptr_err)
+    return err_string
+
+def SetDisconnected(name):
+    name_bytes = name.encode("utf-8")
+    ptr_err = lib.SetDisconnected(name_bytes)
+    err_string = GetPtrString(ptr_err)
+    return err_string
+
 
 # This has to be global as otherwise the callback is not alive
 callback_function = None
@@ -85,6 +97,11 @@ class EduVPN(object):
 
     def connect(self, url):
         return Connect(self.name, url)
+    def set_disconnected(self):
+        return SetDisconnected(self.name)
+
+    def set_connected(self):
+        return SetConnected(self.name)
 
     @property
     def event(self):

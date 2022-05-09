@@ -180,6 +180,24 @@ func (state *VPNState) SetProfileID(profileID string) error {
 	return nil
 }
 
+func (state *VPNState) SetConnected() error {
+	if !state.FSM.HasTransition(internal.CONNECTED) {
+		return &internal.FSMWrongStateTransitionError{Got: state.FSM.Current, Want: internal.CONNECTED}
+	}
+
+	state.FSM.GoTransition(internal.CONNECTED)
+	return nil
+}
+
+func (state *VPNState) SetDisconnected() error {
+	if !state.FSM.HasTransition(internal.HAS_CONFIG) {
+		return &internal.FSMWrongStateTransitionError{Got: state.FSM.Current, Want: internal.HAS_CONFIG}
+	}
+
+	state.FSM.GoTransition(internal.HAS_CONFIG)
+	return nil
+}
+
 type StateSetProfileError struct {
 	ProfileID string
 	Err       error
