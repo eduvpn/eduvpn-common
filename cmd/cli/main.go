@@ -82,17 +82,10 @@ func stateCallback(state *eduvpn.VPNState, oldState string, newState string, dat
 	}
 }
 
-func getConfig(url string, isInstitute bool) (string, error) {
+func getConfig(state *eduvpn.VPNState, url string, isInstitute bool) (string, error) {
 	if !strings.HasPrefix(url, "https://") {
 		url = "https://" + url
 	}
-	state := &eduvpn.VPNState{}
-	state.Register("org.eduvpn.app.linux", "configs", func(old string, new string, data string) {
-		stateCallback(state, old, new, data)
-	}, false)
-
-	defer state.Deregister()
-
 	if isInstitute {
 		return state.GetConfigInstituteAccess(url, false)
 	}
@@ -129,7 +122,7 @@ func storeSecureInternetConfig(state *eduvpn.VPNState, url string, directory str
 
 	fmt.Println("Creating and storing cert for", url)
 
-	config, configErr := getConfig(url, false)
+	config, configErr := getConfig(state, url, false)
 
 	if configErr != nil {
 		fmt.Printf("Failed obtaining config for url %s with error %v\n", url, configErr)
@@ -150,6 +143,8 @@ func getSecureInternetAll(homeURL string) {
 	state.Register("org.eduvpn.app.linux", "configs", func(old string, new string, data string) {
 		stateCallback(state, old, new, data)
 	}, false)
+
+	defer state.Deregister()
 
 	// Get the disco servers
 	servers, serversErr := state.GetDiscoServers()
@@ -183,7 +178,15 @@ func getSecureInternetAll(homeURL string) {
 }
 
 func printConfig(url string, isInstitute bool) {
-	config, configErr := getConfig(url, isInstitute)
+	state := &eduvpn.VPNState{}
+
+	state.Register("org.eduvpn.app.linux", "configs", func(old string, new string, data string) {
+		stateCallback(state, old, new, data)
+	}, false)
+
+	defer state.Deregister()
+
+	config, configErr := getConfig(state, url, isInstitute)
 
 	if configErr != nil {
 		fmt.Println("Error getting config", configErr)
