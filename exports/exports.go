@@ -96,14 +96,21 @@ func CancelOAuth(name *C.char) *C.char {
 	return C.CString(cancelErrString)
 }
 
-//export Connect
-func Connect(name *C.char, url *C.char) (*C.char, *C.char) {
+//export GetConnectConfig
+func GetConnectConfig(name *C.char, url *C.char, isSecureInternet C.int, forceTCP C.int) (*C.char, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
 		return nil, C.CString(ErrorToString(stateErr))
 	}
-	config, configErr := state.ConnectInstituteAccess(C.GoString(url))
+	var config string
+	var configErr error
+	forceTCPBool := forceTCP == 1
+	if isSecureInternet == 1 {
+		config, configErr = state.GetConfigSecureInternet(C.GoString(url), forceTCPBool)
+	} else {
+		config, configErr = state.GetConfigInstituteAccess(C.GoString(url), forceTCPBool)
+	}
 	return C.CString(config), C.CString(ErrorToString(configErr))
 }
 

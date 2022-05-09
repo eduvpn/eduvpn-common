@@ -106,12 +106,12 @@ func (fsm *FSM) Init(name string, callback func(string, string, string), logger 
 		DEREGISTERED:   {{NO_SERVER, "Client registers"}},
 		NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
 		CHOSEN_SERVER:  {{AUTHORIZED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
-		OAUTH_STARTED:  {{AUTHORIZED, "User authorizes with browser"}, {CHOSEN_SERVER, "Cancel OAuth"}},
+		OAUTH_STARTED:  {{AUTHORIZED, "User authorizes with browser"}, {NO_SERVER, "Cancel or Error"}},
 		AUTHORIZED:     {{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},
-		REQUEST_CONFIG: {{ASK_PROFILE, "Multiple profiles found"}, {HAS_CONFIG, "Success, only one profile"}},
-		ASK_PROFILE:    {{HAS_CONFIG, "User chooses profile and success"}},
-		HAS_CONFIG:     {{CONNECTED, "OS reports connected"}},
-		CONNECTED:      {{AUTHORIZED, "OS reports disconnected"}},
+		REQUEST_CONFIG: {{ASK_PROFILE, "Multiple profiles found and no profile chosen"}, {HAS_CONFIG, "Only one profile or profile already chosen"}, {NO_SERVER, "Cancel or Error"}, {OAUTH_STARTED, "Re-authorize"}},
+		ASK_PROFILE:    {{HAS_CONFIG, "User chooses profile"}, {NO_SERVER, "Done but no profile selected"}},
+		HAS_CONFIG:     {{CONNECTED, "OS reports connected"}, {REQUEST_CONFIG, "User chooses a new profile"}, {NO_SERVER, "User wants to choose a new server"}},
+		CONNECTED:      {{HAS_CONFIG, "OS reports disconnected"}},
 	}
 	fsm.Current = DEREGISTERED
 	fsm.Name = name

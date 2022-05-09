@@ -94,9 +94,9 @@ func getConfig(url string, isInstitute bool) (string, error) {
 	defer state.Deregister()
 
 	if isInstitute {
-		return state.ConnectInstituteAccess(url)
+		return state.GetConfigInstituteAccess(url, false)
 	}
-	return state.ConnectSecureInternet(url)
+	return state.GetConfigSecureInternet(url, false)
 }
 
 type ServerDiscoEntry struct {

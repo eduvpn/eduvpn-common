@@ -36,11 +36,10 @@ def GetDiscoServers(name):
     organizations, organizationsErr = GetDataError(lib.GetOrganizationsList(name_bytes))
     return servers, serversErr, organizations, organizationsErr
 
-
-def Connect(name, url):
+def GetConnectConfig(name, url, is_secure_internet, force_tcp):
     name_bytes = name.encode("utf-8")
     url_bytes = url.encode("utf-8")
-    data_error = lib.Connect(name_bytes, url_bytes)
+    data_error = lib.GetConnectConfig(name_bytes, url_bytes, is_secure_internet, force_tcp)
     return GetDataError(data_error)
 
 def SetConnected(name):
@@ -95,8 +94,12 @@ class EduVPN(object):
     def get_disco(self):
         return GetDiscoServers(self.name)
 
-    def connect(self, url):
-        return Connect(self.name, url)
+    def get_config_institute_access(self, url, force_tcp=False):
+        return GetConnectConfig(self.name, url, False, force_tcp)
+
+    def get_config_secure_internet(self, url, force_tcp=False):
+        return GetConnectConfig(self.name, url, True, force_tcp)
+
     def set_disconnected(self):
         return SetDisconnected(self.name)
 

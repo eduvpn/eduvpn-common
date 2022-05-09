@@ -24,7 +24,7 @@ if not success:
 
 print(_eduvpn.get_disco())
 
-config, error = _eduvpn.connect("https://eduvpn.jwijenbergh.com")
+config, error = _eduvpn.get_config_institute_access("https://eduvpn.jwijenbergh.com")
 
 if error:
     print("Got connect error", error)

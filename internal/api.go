@@ -24,7 +24,11 @@ func apiAuthorized(server Server, method string, endpoint string, opts *HTTPOpti
 	url := base.Endpoints.API.V3.API + endpoint
 
 	// Ensure we have valid tokens
+	stateBefore := base.FSM.Current
 	oauthErr := EnsureTokens(server)
+
+	// we reset the state so that we go from the authorized state to the state we want
+	base.FSM.Current = stateBefore
 
 	if oauthErr != nil {
 		return nil, nil, oauthErr
@@ -83,7 +87,11 @@ func APIInfo(server Server) error {
 	if baseErr != nil {
 		return &APIInfoError{Err: baseErr}
 	}
+
+	// Store the profiles and make sure that the current profile is not overwritten
+	previousProfile := base.Profiles.Current
 	base.Profiles = structure
+	base.Profiles.Current = previousProfile
 	base.ProfilesRaw = string(body)
 	return nil
 }

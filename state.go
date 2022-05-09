@@ -100,9 +100,15 @@ func (state *VPNState) chooseServer(url string, isSecureInternet bool) (internal
 	return server, nil
 }
 
-func (state *VPNState) connectWithOptions(url string, isSecureInternet bool) (string, error) {
+func (state *VPNState) getConfigWithOptions(url string, isSecureInternet bool, forceTCP bool) (string, error) {
+	// FIXME: Do something with force tcp
 	if state.FSM.InState(internal.DEREGISTERED) {
 		return "", &StateFSMNotRegisteredError{}
+	}
+
+	// Go to no server if possible, else return an error
+	if !state.FSM.InState(internal.NO_SERVER) && !state.FSM.GoTransition(internal.NO_SERVER) {
+		return "", &internal.FSMWrongStateTransitionError{Got: state.FSM.Current, Want: internal.NO_SERVER}
 	}
 
 	// Make sure the server is chosen
@@ -118,8 +124,8 @@ func (state *VPNState) connectWithOptions(url string, isSecureInternet bool) (st
 
 		if loginErr != nil {
 			// We are possibly in oauth started
-			// So go to chosen server
-			state.FSM.GoTransition(internal.CHOSEN_SERVER)
+			// So go to no server
+			state.FSM.GoTransition(internal.NO_SERVER)
 			return "", &StateConnectError{URL: url, IsSecureInternet: isSecureInternet, Err: loginErr}
 		}
 	} else { // OAuth was valid, ensure we are in the authorized state
@@ -131,6 +137,8 @@ func (state *VPNState) connectWithOptions(url string, isSecureInternet bool) (st
 	config, configErr := internal.GetConfig(server)
 
 	if configErr != nil {
+		// Go back to no server if possible
+		state.FSM.GoTransition(internal.NO_SERVER)
 		return "", &StateConnectError{URL: url, IsSecureInternet: isSecureInternet, Err: configErr}
 	} else {
 		state.FSM.GoTransition(internal.HAS_CONFIG)
@@ -139,12 +147,12 @@ func (state *VPNState) connectWithOptions(url string, isSecureInternet bool) (st
 	return config, nil
 }
 
-func (state *VPNState) ConnectInstituteAccess(url string) (string, error) {
-	return state.connectWithOptions(url, false)
+func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (string, error) {
+	return state.getConfigWithOptions(url, false, forceTCP)
 }
 
-func (state *VPNState) ConnectSecureInternet(url string) (string, error) {
-	return state.connectWithOptions(url, true)
+func (state *VPNState) GetConfigSecureInternet(url string, forceTCP bool) (string, error) {
+	return state.getConfigWithOptions(url, true, forceTCP)
 }
 
 func (state *VPNState) GetDiscoOrganizations() (string, error) {
@@ -204,7 +212,7 @@ type StateSetProfileError struct {
 }
 
 func (e *StateSetProfileError) Error() string {
-	return fmt.Sprintf("failed to set profile ID %s with error %v", e.ProfileID, e.Err)
+	return fmt.Sprintf("failed to set profile ID: %s with error: %v", e.ProfileID, e.Err)
 }
 
 type StateRegisterError struct {
@@ -212,7 +220,7 @@ type StateRegisterError struct {
 }
 
 func (e *StateRegisterError) Error() string {
-	return fmt.Sprintf("failed to register with error %v", e.Err)
+	return fmt.Sprintf("failed to register with error: %v", e.Err)
 }
 
 type StateFSMNotRegisteredError struct{}

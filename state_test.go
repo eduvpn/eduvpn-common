@@ -68,7 +68,7 @@ func Test_server(t *testing.T) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
-	_, configErr := state.ConnectInstituteAccess(serverURI)
+	_, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error: %v", configErr)
@@ -91,7 +91,7 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 
 		}
 	}, false)
-	_, configErr := state.ConnectInstituteAccess(serverURI)
+	_, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
 	var stateErr *StateConnectError
 	var loginErr *internal.OAuthLoginError
@@ -171,7 +171,7 @@ func Test_token_expired(t *testing.T) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
-	_, configErr := state.ConnectInstituteAccess(serverURI)
+	_, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error before expired: %v", configErr)
@@ -219,16 +219,16 @@ func Test_token_invalid(t *testing.T) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
-	_, configErr := state.ConnectInstituteAccess(serverURI)
+	_, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error before invalid: %v", configErr)
 	}
 
-	// Fake connect and then back to authorized so that we can re-authorize
-	// Going to authorized fakes a disconnect
-	state.FSM.GoTransition(internal.CONNECTED)
-	state.FSM.GoTransition(internal.AUTHORIZED)
+	// Go to request_config so we can re-authorize
+	// This is needed as the only actual authenticated requests we do in request_config (for profiles) and /connect
+	// /disconnect is best effort so this does not need re-auth
+	state.FSM.GoTransition(internal.REQUEST_CONFIG)
 
 	dummy_value := "37"
 
@@ -243,10 +243,10 @@ func Test_token_invalid(t *testing.T) {
 	oauth.Token.Access = dummy_value
 	oauth.Token.Refresh = dummy_value
 
-	infoErr := internal.APIInfo(server)
+	_, configErr = state.GetConfigInstituteAccess(serverURI, false)
 
-	if infoErr != nil {
-		t.Fatalf("Info error after invalid: %v", infoErr)
+	if configErr != nil {
+		t.Fatalf("Connect error after invalid: %v", configErr)
 	}
 
 	if oauth.Token.Access == dummy_value {
@@ -255,5 +255,46 @@ func Test_token_invalid(t *testing.T) {
 
 	if oauth.Token.Refresh == dummy_value {
 		t.Errorf("Refresh token is equal to dummy value: %s", dummy_value)
+	}
+}
+
+// Test if an invalid profile will be corrected
+func Test_invalid_profile_corrected(t *testing.T) {
+	serverURI := getServerURI(t)
+	state := &VPNState{}
+
+	ensureLocalWellKnown()
+
+	state.Register("org.eduvpn.app.linux", "configscancelprofile", func(old string, new string, data string) {
+		stateCallback(t, old, new, data, state)
+	}, false)
+
+	_, configErr := state.GetConfigInstituteAccess(serverURI, false)
+
+	if configErr != nil {
+		t.Fatalf("First connect error: %v", configErr)
+	}
+
+	server, serverErr := state.Servers.GetCurrentServer()
+	if serverErr != nil {
+		t.Fatalf("No server found")
+	}
+
+	base, baseErr := server.GetBase()
+	if baseErr != nil {
+		t.Fatalf("No base found")
+	}
+
+	previousProfile := base.Profiles.Current
+	base.Profiles.Current = "IDONOTEXIST"
+
+	_, configErr = state.GetConfigInstituteAccess(serverURI, false)
+
+	if configErr != nil {
+		t.Fatalf("Second connect error: %v", configErr)
+	}
+
+	if base.Profiles.Current != previousProfile {
+		t.Fatalf("Profiles do no match: current %s and previous %s", base.Profiles.Current, previousProfile)
 	}
 }

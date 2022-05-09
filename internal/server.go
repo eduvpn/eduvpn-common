@@ -340,15 +340,29 @@ func GetConfig(server Server) (string, error) {
 	if !base.FSM.InState(REQUEST_CONFIG) {
 		return "", &FSMWrongStateError{Got: base.FSM.Current, Want: REQUEST_CONFIG}
 	}
-	infoErr := APIInfo(server)
 
+	// Get new profiles using the info call
+	// This does not override the current profile
+	infoErr := APIInfo(server)
 	if infoErr != nil {
 		return "", &ServerGetConfigError{Err: infoErr}
 	}
 
-	// Set the current profile if there is only one profile
-	if len(base.Profiles.Info.ProfileList) == 1 {
-		base.Profiles.Current = base.Profiles.Info.ProfileList[0].ID
+	// If there was a profile chosen and it doesn't exist anymore, reset it
+	if base.Profiles.Current != "" {
+		_, existsProfileErr := getCurrentProfile(server)
+		if existsProfileErr != nil {
+			base.Logger.Log(LOG_INFO, fmt.Sprintf("Profile %s no longer exists, resetting the profile", base.Profiles.Current))
+			base.Profiles.Current = ""
+		}
+	}
+
+	// Set the current profile if there is only one profile or profile is already selected
+	if len(base.Profiles.Info.ProfileList) == 1 || base.Profiles.Current != "" {
+		// Set the first profile if none is selected
+		if base.Profiles.Current == "" {
+			base.Profiles.Current = base.Profiles.Info.ProfileList[0].ID
+		}
 		return getConfigWithProfile(server)
 	}
 

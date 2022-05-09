@@ -33,15 +33,15 @@ class DataError(Structure):
 VPNStateChange = CFUNCTYPE(None, c_char_p, c_char_p, c_char_p)
 
 # Exposed functions
-lib.Connect.argtypes, lib.Connect.restype = [c_char_p, c_char_p], DataError
+# We have to use c_void_p instead of c_char_p to free it properly
+# See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
+lib.GetConnectConfig.argtypes, lib.GetConnectConfig.restype = [c_char_p, c_char_p, c_int, c_int], DataError
 lib.Deregister.argtypes, lib.Deregister.restype = [c_char_p], c_void_p
 lib.Register.argtypes, lib.Register.restype = [c_char_p, c_char_p, VPNStateChange, c_int], c_void_p
 lib.GetOrganizationsList.argtypes, lib.GetOrganizationsList.restype = [c_char_p], DataError
 lib.GetServersList.argtypes, lib.GetServersList.restype = [c_char_p], DataError
 lib.CancelOAuth.argtypes, lib.CancelOAuth.restype = [c_char_p], c_void_p
 lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p, c_char_p], c_void_p
-# We have to use c_void_p instead of c_char_p to free it properly
-# See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
 lib.SetConnected.argtypes, lib.SetConnected.restype = [c_char_p], c_void_p
 lib.SetDisconnected.argtypes, lib.SetDisconnected.restype = [c_char_p], c_void_p
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
