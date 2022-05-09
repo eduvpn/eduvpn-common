@@ -86,6 +86,9 @@ func getConfig(state *eduvpn.VPNState, url string, isInstitute bool) (string, er
 	if !strings.HasPrefix(url, "https://") {
 		url = "https://" + url
 	}
+	if !strings.HasSuffix(url, "/") {
+		url += "/"
+	}
 	if isInstitute {
 		return state.GetConfigInstituteAccess(url, false)
 	}
