@@ -134,7 +134,7 @@ func (state *VPNState) getConfigWithOptions(url string, isSecureInternet bool, f
 
 	state.FSM.GoTransition(internal.REQUEST_CONFIG)
 
-	config, configErr := internal.GetConfig(server)
+	config, configErr := internal.GetConfig(server, forceTCP)
 
 	if configErr != nil {
 		// Go back to no server if possible

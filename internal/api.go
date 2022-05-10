@@ -96,10 +96,14 @@ func APIInfo(server Server) error {
 	return nil
 }
 
-func APIConnectWireguard(server Server, profile_id string, pubkey string) (string, string, error) {
+func APIConnectWireguard(server Server, profile_id string, pubkey string, supportsOpenVPN bool) (string, string, string, error) {
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 		"accept":       {"application/x-wireguard-profile"},
+	}
+
+	if supportsOpenVPN {
+		headers.Add("accept", "application/x-openvpn-profile")
 	}
 
 	urlForm := url.Values{
@@ -108,11 +112,17 @@ func APIConnectWireguard(server Server, profile_id string, pubkey string) (strin
 	}
 	header, connectBody, connectErr := apiAuthorizedRetry(server, http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {
-		return "", "", &APIConnectWireguardError{Err: connectErr}
+		return "", "", "", &APIConnectWireguardError{Err: connectErr}
 	}
 
 	expires := header.Get("expires")
-	return string(connectBody), expires, nil
+	contentType := header.Get("content-type")
+
+	content := "openvpn"
+	if contentType == "application/x-wireguard-profile" {
+		content = "wireguard"
+	}
+	return string(connectBody), content, expires, nil
 }
 
 func APIConnectOpenVPN(server Server, profile_id string) (string, string, error) {
@@ -124,6 +134,7 @@ func APIConnectOpenVPN(server Server, profile_id string) (string, string, error)
 	urlForm := url.Values{
 		"profile_id": {profile_id},
 	}
+
 	header, connectBody, connectErr := apiAuthorizedRetry(server, http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {
 		return "", "", &APIConnectOpenVPNError{Err: connectErr}
