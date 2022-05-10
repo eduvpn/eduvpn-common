@@ -76,7 +76,7 @@ class bdist_wheel(_bdist_wheel):
         print(f"Building wheel for platform {self.plat_name}")
 
         # setuptools will only use paths inside the package for package_data, so we copy the library
-        tmp_lib = shutil.copy(f"{self.exports_lib_path}/{libpath}", "eduvpncommon/lib/")
+        tmp_lib = shutil.copy(f"{self.exports_lib_path}/{libpath}", "src/lib/")
         _bdist_wheel.run(self)
         os.remove(tmp_lib)
 

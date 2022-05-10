@@ -9,13 +9,13 @@ endif
 
 # Build for current platform only
 pack:
-	mkdir -p eduvpncommon/lib
+	mkdir -p ./src/lib
 	./setup.py bdist_wheel $(SETUP_ARGS) --exports-lib-path="$(EXPORTS_LIB_PATH)"
 
 test: .try-build-lib
-	install "$(EXPORTS_LIB_SUBFOLDER_PATH)/$(LIB_FILE)" -Dt "eduvpncommon/lib"
+	install "$(EXPORTS_LIB_SUBFOLDER_PATH)/$(LIB_FILE)" -Dt "src/lib"
 	python3 -m unittest tests
-	rm eduvpncommon/lib/*
+	rm src/lib/*
 
 clean:
 	rm -rf build/ dist/ *.egg-info/ lib/*
