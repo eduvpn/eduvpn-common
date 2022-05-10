@@ -8,35 +8,41 @@ WORKDIR /eduvpn
 # Firefox
 RUN echo "deb http://deb.debian.org/debian/ unstable main contrib non-free" >> /etc/apt/sources.list.d/debian.list
 RUN apt-get update
-RUN apt-get -y install openjdk-11-jre xvfb python3-selenium firefox python3-pyvirtualdisplay
+RUN apt-get -y install openjdk-11-jre xvfb python3-selenium firefox python3-pyvirtualdisplay python3-pip
 
 # Install geckodriver and add to path
-WORKDIR /eduvpn/go/vendor
-
+WORKDIR /eduvpn/vendor
 RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz
 RUN tar xzvf geckodriver-v0.30.0-linux64.tar.gz
-ENV PATH="/eduvpn/go/vendor:$PATH"
-
-# Set up file tree
-WORKDIR /eduvpn/go
-
-# Taken from golang docker example
-# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
-COPY ./go.mod go.sum ./
-RUN go mod download && go mod verify
-
-WORKDIR /eduvpn/go
-
-# Copy go source
-COPY *.go ./
-COPY ./internal ./internal
-
-# Copy selenium scripts
-COPY ./selenium_eduvpn.py ./selenium_eduvpn.py
+ENV PATH="/eduvpn/vendor:$PATH"
 
 # Update certificates
 COPY ./ci/docker/selfsigned/eduvpnserver.crt /usr/local/share/ca-certificates/eduvpnserver.crt
 RUN update-ca-certificates
 
+# Run tests as a new user for pip
+RUN useradd --create-home test
+USER test
+
+WORKDIR /home/test
+
+# Copy sources with correct permissions
+COPY --chown=test:test . ./
+
+# Download and verify go dependencies
+RUN go mod download && go mod verify
+
+# Clean because there might be previous builds copied over
+RUN make clean
+
+# Build go
+RUN make build
+
+# Make python lib
+RUN make -C wrappers/python
+
+# Install python lib
+RUN pip3 install wrappers/python/dist/*.whl
+
 # Run the tests
-CMD ["go", "test", "-mod=readonly", "./...", "-v"]
+CMD ["make", "test"]

@@ -14,7 +14,7 @@ pack:
 
 test: .try-build-lib
 	install "$(EXPORTS_LIB_SUBFOLDER_PATH)/$(LIB_FILE)" -Dt "eduvpncommon/lib"
-	#python3 -m unittest test_discovery
+	python3 -m unittest tests
 	rm eduvpncommon/lib/*
 
 clean:

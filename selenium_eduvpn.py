@@ -5,6 +5,18 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
 
 
+def login_eduvpn(authURL):
+    options = Options()
+    options.headless = True
+
+    # Use the firefox driver
+    driver = webdriver.Firefox(options=options)
+
+    login_oauth(driver, authURL)
+
+    # Cleanup
+    driver.close()
+
 # Logs in to the default vpn user portal with selenium
 def login_oauth(driver, authURL):
     # Go to the oauth url and verify the title
@@ -51,15 +63,6 @@ if __name__ == "__main__":
         print("Error: no auth url specified")
         sys.exit(1)
 
-    options = Options()
-    options.headless = True
-
-    # Use the firefox driver
-    driver = webdriver.Firefox(options=options)
-
     # Login to the portal
     authURL = sys.argv[1]
-    login_oauth(driver, authURL)
-
-    # Cleanup
-    driver.close()
+    login_eduvpn(authURL)
