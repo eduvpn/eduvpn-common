@@ -12,5 +12,8 @@ eduVPN-common is a library for [eduVPN](https://www.eduvpn.org/), which is a VPN
 However, as these clients are rather similar in functionality, apart from platform specific differences, right now there is duplicate code between them. For example, the process to discover institution's servers, the authorization process (OAuth) and Wireguard key generation.
 This goal of this library is to provide the common functionality between these clients into one codebase. The library is written in the [Go](https://go.dev/) language and has wrapper code for each of the languages that are used by the current clients.
 
+## License
+[MIT](https://github.com/jwijenbergh/eduvpn-common/blob/main/LICENSE)
+
 ## Authors
 This library is written by [Steven Wallis de Vries](https://github.com/stevenwdv) and [Jeroen Wijenbergh](https://github.com/jwijenbergh), two Radboud University students that worked at Surf for their research internship.

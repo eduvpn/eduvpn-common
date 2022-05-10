@@ -20,7 +20,7 @@ The documentation for this library can be found at https://jwijenbergh.github.io
 Contributions are welcome.
 
 ## License
-This code does not have a license yet.
+[MIT](./LICENSE)
 
 ## Authors
 This work is done by @stevenwdv and @jwijenbergh at the [Surf](https://www.surf.nl/) organisation.
