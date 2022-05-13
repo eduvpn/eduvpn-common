@@ -1,4 +1,4 @@
-# API Overview
+# API overview
 
 This section defines the API in high-level, we explain what functions there are, what their use is and what a typical flow is for creating an eduVPN client with this library. The language specific documentation will be given in separate sections.
 

@@ -2,20 +2,20 @@ package internal
 
 import "fmt"
 
-func OpenVPNGetConfig(server Server) (string, error) {
+func OpenVPNGetConfig(server Server) (string, string, error) {
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return "", &OpenVPNGetConfigError{Err: baseErr}
+		return "", "", &OpenVPNGetConfigError{Err: baseErr}
 	}
 	profile_id := base.Profiles.Current
 	configOpenVPN, _, configErr := APIConnectOpenVPN(server, profile_id)
 
 	if configErr != nil {
-		return "", &OpenVPNGetConfigError{Err: configErr}
+		return "", "", &OpenVPNGetConfigError{Err: configErr}
 	}
 
-	return configOpenVPN, nil
+	return configOpenVPN, "openvpn", nil
 }
 
 type OpenVPNGetConfigError struct {

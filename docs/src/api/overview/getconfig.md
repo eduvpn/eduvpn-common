@@ -1,6 +1,6 @@
 # Getting an OpenVPN/Wireguard config
 ## Summary
-name: `Get Connect Config`
+name: `Get Config Institute Access` and `Get Config Secure Internet`
 
 | Arguments | Description                             | type     |
 | --------- | --------------------------------------  | -------- |
@@ -13,9 +13,10 @@ Used to obtain the OpenVPN/Wireguard config
 
 ## Detailed information
 
-To get a configuration that is used to actually establish a tunnel with the VPN server, we have the Get Connect Config (the exact name depends on the language you're using) function in the library. This function has two parameters *URL* and *Force TCP*.
+To get a configuration that is used to actually establish a tunnel with the VPN server, we have the Get Config function for Institute Access and Secure Internet (the exact name depends on the language you're using) function in the library. This function has two parameters *URL* and *Force TCP*.
 
-*URL* is the base url of the server to connect to e.g. `nl.eduvpn.org`. Note that this function does not need any further input whether or not we want to connect for institute access or secure internet. This is handled in the library by checking the discovery list. If it does not find the server in the discovery list, it assumes it wants to connect as an institute server.
+*URL* is the base url of the server to connect to
+e.g. `nl.eduvpn.org`. Use the correct function to indicate if it is an Institute Access server or a Secure Internet server. A user configured server is often an Institute Access server.
 
 The *Force TCP* flag is a boolean that indicates whether or not we want to use TCP to connect over the VPN. This flag is useful if the user has enabled e.g. a setting that forces the use of TCP, which is only supported by OpenVPN. If the Force TCP flag is set to true but the server only supports Wireguard then an error is returned and the config will be empty.
 
@@ -32,6 +33,8 @@ The callback for this is triggered whenever the OAuth Started state is triggered
 The format of the authorization URL is e.g. this:
 
 `https://eduvpn.example.com/vpn-user-portal/oauth/authorize?client_id=org.eduvpn.app.linux&code_challenge=DsmGyWFBkvDXiIO33Fs40Z0fn4pxtzDCW2jKvAMptBg&code_challenge_method=S256&redirect_uri=http%3A%2F%2F127.0.0.1%3A8000%2Fcallback&response_type=code&scope=config&state=vha2Krx-HpOyvFkWsWYmey0jrHQ6bnb06PQ6zBXX_bg`
+
+This callback can be cancelled by using a `Cancel OAuth` function.
 
 ### Callback: Selecting a profile
 

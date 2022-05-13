@@ -5,7 +5,6 @@ package main
 
 typedef void (*PythonCB)(const char* oldstate, const char* newstate, const char* data);
 
-// FIXME: Remove this, see: https://stackoverflow.com/questions/58606884/multiple-definition-when-using-cgo
 __attribute__((weak))
 void call_callback(PythonCB callback, const char* oldstate, const char* newstate, const char* data)
 {
@@ -49,9 +48,11 @@ func GetVPNState(name string) (*eduvpn.VPNState, error) {
 
 //export Register
 func Register(name *C.char, config_directory *C.char, stateCallback C.PythonCB, debug C.int) *C.char {
-	state := &eduvpn.VPNState{}
 	nameStr := C.GoString(name)
-
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		state = &eduvpn.VPNState{}
+	}
 	if VPNStates == nil {
 		VPNStates = make(map[string]*eduvpn.VPNState)
 	}
@@ -97,21 +98,22 @@ func CancelOAuth(name *C.char) *C.char {
 }
 
 //export GetConnectConfig
-func GetConnectConfig(name *C.char, url *C.char, isSecureInternet C.int, forceTCP C.int) (*C.char, *C.char) {
+func GetConnectConfig(name *C.char, url *C.char, isSecureInternet C.int, forceTCP C.int) (*C.char, *C.char, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, C.CString(ErrorToString(stateErr))
+		return nil, nil, C.CString(ErrorToString(stateErr))
 	}
 	var config string
+	var configType string
 	var configErr error
 	forceTCPBool := forceTCP == 1
 	if isSecureInternet == 1 {
-		config, configErr = state.GetConfigSecureInternet(C.GoString(url), forceTCPBool)
+		config, configType, configErr = state.GetConfigSecureInternet(C.GoString(url), forceTCPBool)
 	} else {
-		config, configErr = state.GetConfigInstituteAccess(C.GoString(url), forceTCPBool)
+		config, configType, configErr = state.GetConfigInstituteAccess(C.GoString(url), forceTCPBool)
 	}
-	return C.CString(config), C.CString(ErrorToString(configErr))
+	return C.CString(config), C.CString(configType), C.CString(ErrorToString(configErr))
 }
 
 //export GetOrganizationsList

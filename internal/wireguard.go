@@ -30,29 +30,29 @@ func wireguardConfigAddKey(config string, key wgtypes.Key) string {
 	return interface_re.ReplaceAllString(config, to_replace)
 }
 
-func WireguardGetConfig(server Server, supportsOpenVPN bool) (string, error) {
+func WireguardGetConfig(server Server, supportsOpenVPN bool) (string, string, error) {
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return "", &WireguardGetConfigError{Err: baseErr}
+		return "", "", &WireguardGetConfigError{Err: baseErr}
 	}
 
 	profile_id := base.Profiles.Current
 	wireguardKey, wireguardErr := wireguardGenerateKey()
 
 	if wireguardErr != nil {
-		return "", &WireguardGetConfigError{Err: wireguardErr}
+		return "", "", &WireguardGetConfigError{Err: wireguardErr}
 	}
 
 	wireguardPublicKey := wireguardKey.PublicKey().String()
 	config, content, _, configErr := APIConnectWireguard(server, profile_id, wireguardPublicKey, supportsOpenVPN)
 
 	if configErr != nil {
-		return "", &WireguardGetConfigError{Err: wireguardErr}
+		return "", "", &WireguardGetConfigError{Err: wireguardErr}
 	}
 
+	// FIXME: Store expiry
 	if content == "wireguard" {
-		// FIXME: Store expiry
 		// This needs the go code a way to identify a connection
 		// Use the uuid of the connection e.g. on Linux
 		// This needs the client code to call the go code
@@ -60,7 +60,7 @@ func WireguardGetConfig(server Server, supportsOpenVPN bool) (string, error) {
 		config = wireguardConfigAddKey(config, wireguardKey)
 	}
 
-	return config, nil
+	return config, content, nil
 }
 
 type WireguardGenerateKeyError struct {

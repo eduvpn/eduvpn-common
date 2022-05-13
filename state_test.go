@@ -68,7 +68,7 @@ func Test_server(t *testing.T) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
-	_, configErr := state.GetConfigInstituteAccess(serverURI, false)
+	_, _, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error: %v", configErr)
@@ -91,7 +91,7 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 
 		}
 	}, false)
-	_, configErr := state.GetConfigInstituteAccess(serverURI, false)
+	_, _, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
 	var stateErr *StateConnectError
 	var loginErr *internal.OAuthLoginError
@@ -171,7 +171,7 @@ func Test_token_expired(t *testing.T) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
-	_, configErr := state.GetConfigInstituteAccess(serverURI, false)
+	_, _, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error before expired: %v", configErr)
@@ -219,7 +219,7 @@ func Test_token_invalid(t *testing.T) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
-	_, configErr := state.GetConfigInstituteAccess(serverURI, false)
+	_, _, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error before invalid: %v", configErr)
@@ -243,7 +243,7 @@ func Test_token_invalid(t *testing.T) {
 	oauth.Token.Access = dummy_value
 	oauth.Token.Refresh = dummy_value
 
-	_, configErr = state.GetConfigInstituteAccess(serverURI, false)
+	_, _, configErr = state.GetConfigInstituteAccess(serverURI, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error after invalid: %v", configErr)
@@ -269,7 +269,7 @@ func Test_invalid_profile_corrected(t *testing.T) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
-	_, configErr := state.GetConfigInstituteAccess(serverURI, false)
+	_, _, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
 	if configErr != nil {
 		t.Fatalf("First connect error: %v", configErr)
@@ -288,7 +288,7 @@ func Test_invalid_profile_corrected(t *testing.T) {
 	previousProfile := base.Profiles.Current
 	base.Profiles.Current = "IDONOTEXIST"
 
-	_, configErr = state.GetConfigInstituteAccess(serverURI, false)
+	_, _, configErr = state.GetConfigInstituteAccess(serverURI, false)
 
 	if configErr != nil {
 		t.Fatalf("Second connect error: %v", configErr)

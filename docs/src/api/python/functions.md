@@ -12,59 +12,70 @@ def __init__(self, name: str, directory: str)
 ## Registering
 See [Overview](../overview/registering.html)
 ```python
-def register(self, debug=False: bool) -> Optional[str]
+def register(self, debug: bool = False) -> None
 ```
-- `debug`: Whether or not we want to enable debugging
+- `debug`: Whether or not we want to enable debugging, default: `False`
 
-Returns an optional `string` for the error message
+Returns nothing. Raises an exception in case of an error.
 
 ## Discovery
 See [Overview](../overview/discovery.html)
 ```python
-def get_disco_servers(self) -> (Optional[str], Optional[str])
+def get_disco_servers(self) -> str
 ```
 ```python
-def get_disco_organizations(self) -> (Optional[str], Optional[str])
+def get_disco_organizations(self) -> str
 ```
 
-Returns an optional `string` of JSON data with the servers/organizations and an optional error message
+Returns a `string` of JSON data with the servers/organizations. Raises an exception in case of an error.
 
 ## OpenVPN/Wireguard config
 See [Overview](../overview/getconfig.html)
 ```python
-def get_connect_config(self, url: str, forceTCP: bool) -> (Optional[str], Optional[str], Optional[str])
+def get_config_institute_access(self, url: str, forceTCP: bool = False) -> Tuple[str, str]
 ```
-- `url`: The url of the server to get a connect config for
-- `forceTCP`: Whether or not we want to force enable TCP
+```python
+def get_config_secure_internet(self, url: str, forceTCP: bool = False) -> Tuple[str, str]
+```
+- `url`: The url of the Secure Internet or Institute Access server to get a connect config for
+- `forceTCP`: Whether or not we want to force enable TCP, default: `False`
 
 Returns:
-- An optional `string` of the OpenVPN/Wireguard config
-- An optional `string`, `openvpn` or `wireguard` indicating if it is an OpenVPN or Wireguard config
-- An optional error message `string`
+- A `string` of the OpenVPN/Wireguard config
+- An `string`, `openvpn` or `wireguard` indicating if it is an OpenVPN or Wireguard config
+
+Raises an exception in case of an error.
+
+### Cancelling OAuth
+```python
+def cancel_oauth(self) -> None
+```
+
+Returns nothing. Raises an exception in case of an error.
 
 ### Setting a profile ID
 ```python
-def set_profile(self, profile_id: str) -> Optional[str]
+def set_profile(self, profile_id: str) -> None
 ```
 - `profile_id`: The profile ID to connect to
 
-Returns an optional `string`, which is the error message
+Returns nothing. Raises an exception in case of an errorr.
 
 ## Connecting/Disconnecting
 See [Overview](../overview/connecting.html)
 ```python
-def set_connected(self) -> Optional[str]
+def set_connected(self) -> None
 ```
 ```python
-def set_disconnected(self) -> Optional[str]
+def set_disconnected(self) -> None
 ```
 
-Returns an optional `string`, which is the error message
+Returns an nothing. Raises an exception in case of an error.
 
 ## Deregister
 See [Overview](../overview/deregistering.html)
 ```python
-def deregister() -> Optional[str]
+def deregister() -> None
 ```
 
-Returns an optional `string`, which is the error message
+Returns nothing. Raises an exception in case of an error.

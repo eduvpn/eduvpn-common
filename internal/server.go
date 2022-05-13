@@ -305,19 +305,19 @@ func getCurrentProfile(server Server) (*ServerProfile, error) {
 	return nil, &ServerGetCurrentProfileNotFoundError{ProfileID: profileID}
 }
 
-func getConfigWithProfile(server Server, forceTCP bool) (string, error) {
+func getConfigWithProfile(server Server, forceTCP bool) (string, string, error) {
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return "", &ServerGetConfigWithProfileError{Err: baseErr}
+		return "", "", &ServerGetConfigWithProfileError{Err: baseErr}
 	}
 	if !base.FSM.HasTransition(HAS_CONFIG) {
-		return "", &FSMWrongStateTransitionError{Got: base.FSM.Current, Want: HAS_CONFIG}
+		return "", "", &FSMWrongStateTransitionError{Got: base.FSM.Current, Want: HAS_CONFIG}
 	}
 	profile, profileErr := getCurrentProfile(server)
 
 	if profileErr != nil {
-		return "", &ServerGetConfigWithProfileError{Err: profileErr}
+		return "", "", &ServerGetConfigWithProfileError{Err: profileErr}
 	}
 
 	supportsOpenVPN := profile.supportsOpenVPN()
@@ -325,15 +325,26 @@ func getConfigWithProfile(server Server, forceTCP bool) (string, error) {
 
 	// If forceTCP we must be able to get a config with OpenVPN
 	if forceTCP && supportsOpenVPN {
-		return "", &ServerGetConfigForceTCPError{}
+		return "", "", &ServerGetConfigForceTCPError{}
 	}
+
+	var config string
+	var configType string
+	var configErr error
 
 	if supportsWireguard {
 		// A wireguard connect call needs to generate a wireguard key and add it to the config
 		// Also the server could send back an OpenVPN config if it supports OpenVPN
-		return WireguardGetConfig(server, supportsOpenVPN)
+		config, configType, configErr = WireguardGetConfig(server, supportsOpenVPN)
+	} else {
+		config, configType, configErr = OpenVPNGetConfig(server)
 	}
-	return OpenVPNGetConfig(server)
+
+	if configErr != nil {
+		return "", "", &ServerGetConfigWithProfileError{Err: configErr}
+	}
+
+	return config, configType, nil
 }
 
 func askForProfileID(server Server) error {
@@ -349,21 +360,21 @@ func askForProfileID(server Server) error {
 	return nil
 }
 
-func GetConfig(server Server, forceTCP bool) (string, error) {
+func GetConfig(server Server, forceTCP bool) (string, string, error) {
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return "", &ServerGetConfigError{Err: baseErr}
+		return "", "", &ServerGetConfigError{Err: baseErr}
 	}
 	if !base.FSM.InState(REQUEST_CONFIG) {
-		return "", &FSMWrongStateError{Got: base.FSM.Current, Want: REQUEST_CONFIG}
+		return "", "", &FSMWrongStateError{Got: base.FSM.Current, Want: REQUEST_CONFIG}
 	}
 
 	// Get new profiles using the info call
 	// This does not override the current profile
 	infoErr := APIInfo(server)
 	if infoErr != nil {
-		return "", &ServerGetConfigError{Err: infoErr}
+		return "", "", &ServerGetConfigError{Err: infoErr}
 	}
 
 	// If there was a profile chosen and it doesn't exist anymore, reset it
@@ -387,7 +398,7 @@ func GetConfig(server Server, forceTCP bool) (string, error) {
 	profileErr := askForProfileID(server)
 
 	if profileErr != nil {
-		return "", &ServerGetConfigError{Err: profileErr}
+		return "", "", &ServerGetConfigError{Err: profileErr}
 	}
 
 	return getConfigWithProfile(server, forceTCP)

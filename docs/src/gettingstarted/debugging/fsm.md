@@ -1,6 +1,6 @@
-# Finite State Machine
+# Finite state machine
 
-The eduvpn-common library uses a Finite State Machine internally to keep track of which state the client is in and to communicate data callbacks (e.g. to communicate the Authorization URL in the OAuth process to the client).
+The eduvpn-common library uses a finite state machine internally to keep track of which state the client is in and to communicate data callbacks (e.g. to communicate the Authorization URL in the OAuth process to the client).
 
 ## Viewing the FSM
 To view the FSM in an image, set the debug variable to `True`. This outputs the graph with a `.graph` extension in the client-specified config directory (See [API](../../api/index.html)). The format of this graph is from [Mermaid](https://mermaid-js.github.io/mermaid/#/).
@@ -9,7 +9,7 @@ If you have the [Mermaid command line client](https://github.com/mermaid-js/merm
 
 If you do not want to install additional tools to view the graph, you can submit the contents of the `.graph` file to the [Mermaid Live Editor](https://mermaid.live/) to see the image.
 
-## FSM Example
+## FSM example
 The following is an example of the FSM when the client has obtained a Wireguard/OpenVPN configuration from an eduVPN server
 
 ![](./fsm_example.svg)
@@ -21,7 +21,7 @@ The states mean the following:
 
 - `Deregistered`: The client has not registered with the library yet, the state variables are not initialized
 - `No_Server`: The client is registered, but has not chosen a server yet
-- `Chosen_ServeR`: The client has chosen a server to connect to
+- `Chosen_Server`: The client has chosen a server to connect to
 - `OAuth_Started`: The OAuth process has been started. This means that the client needs to redirect to the browser so that the user can login and approve the application
 - `Authorized`: The OAuth process has finished. The client now has tokens and is thus authorized
 - `Request_Config`: The client is in the process of requesting an OpenVPN/Wireguard configuration from the server

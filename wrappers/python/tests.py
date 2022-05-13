@@ -13,20 +13,33 @@ from selenium_eduvpn import login_eduvpn
 
 class ConfigTests(unittest.TestCase):
     def testConfig(self):
-        self._eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "testconfigs")
-        assert self._eduvpn.register()
-        @self._eduvpn.event.on("OAuth_Started", eduvpn.StateType.Enter)
-        def oauth_initialized(url):
+        _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "testconfigs")
+        # This can throw an exception
+        _eduvpn.register()
+        @_eduvpn.event.on("OAuth_Started", eduvpn.StateType.Enter)
+        def oauth_initialized(old_state, url):
             login_eduvpn(url)
 
         server_uri = os.getenv("SERVER_URI")
         if not server_uri:
             self.fail("No SERVER_URI environment variable given")
 
-        config, error = self._eduvpn.get_config_institute_access(server_uri)
+        # This can throw an exception
+        _eduvpn.get_config_institute_access(server_uri)
 
-        if error != "":
-            self.fail(f"Got error: {error} when connecting to {server_uri}")
+        # Deregister
+        _eduvpn.deregister()
+
+    def testDoubleRegister(self):
+        _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "testconfigs")
+        # This can throw an exception
+        _eduvpn.register()
+        # This should throw
+        try:
+            _eduvpn.register()
+        except Exception as e:
+            return
+        self.fail("No exception thrown on second register")
 
 if __name__ == "__main__":
     unittest.main()

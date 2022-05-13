@@ -13,6 +13,7 @@ import (
 	eduvpn "github.com/jwijenbergh/eduvpn-common"
 )
 
+// Open a browser with xdg-open
 func openBrowser(urlString string) {
 	fmt.Printf("OAuth: Initialized with AuthURL %s\n", urlString)
 	fmt.Println("OAuth: Opening browser with xdg-open...")
@@ -20,13 +21,13 @@ func openBrowser(urlString string) {
 }
 
 // Taken from internal/server.go as it's an internal API for now
+// These are used to parse the profile info
 type ServerProfile struct {
 	ID             string   `json:"profile_id"`
 	DisplayName    string   `json:"display_name"`
 	VPNProtoList   []string `json:"vpn_proto_list"`
 	DefaultGateway bool     `json:"default_gateway"`
 }
-
 type ServerProfileInfo struct {
 	Current string `json:"current_profile"`
 	Info    struct {
@@ -34,6 +35,7 @@ type ServerProfileInfo struct {
 	} `json:"info"`
 }
 
+// Ask for a profile in the command line
 func sendProfile(state *eduvpn.VPNState, data string) {
 	fmt.Printf("Multiple VPN profiles found. Please select a profile by entering e.g. 1")
 	serverProfiles := &ServerProfileInfo{}
@@ -72,6 +74,9 @@ func sendProfile(state *eduvpn.VPNState, data string) {
 	}
 }
 
+// The callback function
+// If OAuth is started we open the browser with the Auth URL
+// If we ask for a profile, we send the profile using command line input
 func stateCallback(state *eduvpn.VPNState, oldState string, newState string, data string) {
 	if newState == "OAuth_Started" {
 		openBrowser(data)
@@ -82,24 +87,28 @@ func stateCallback(state *eduvpn.VPNState, oldState string, newState string, dat
 	}
 }
 
-func getConfig(state *eduvpn.VPNState, url string, isInstitute bool) (string, error) {
+// Get a config for Institute Access or Secure Internet Server
+func getConfig(state *eduvpn.VPNState, url string, isInstitute bool) (string, string, error) {
 	if !strings.HasPrefix(url, "https://") {
 		url = "https://" + url
 	}
 	if !strings.HasSuffix(url, "/") {
 		url += "/"
 	}
+	// Force TCP is set to False
 	if isInstitute {
 		return state.GetConfigInstituteAccess(url, false)
 	}
 	return state.GetConfigSecureInternet(url, false)
 }
 
+// A discovery entry for a server
 type ServerDiscoEntry struct {
 	ServerType string `json:"server_type"`
 	BaseURL    string `json:"base_url"`
 }
 
+// Gets all different Secure Internet server by parsing the JSON from the discovery
 func getAllSecureInternetServers(serverList string) ([]string, error) {
 	var secureInternet []string
 
@@ -120,12 +129,13 @@ func getAllSecureInternetServers(serverList string) ([]string, error) {
 	return secureInternet, nil
 }
 
+// Store the Secure Internet config in a certificate folder
 func storeSecureInternetConfig(state *eduvpn.VPNState, url string, directory string) {
 	os.MkdirAll(directory, os.ModePerm)
 
 	fmt.Println("Creating and storing cert for", url)
 
-	config, configErr := getConfig(state, url, false)
+	config, _, configErr := getConfig(state, url, false)
 
 	if configErr != nil {
 		fmt.Printf("Failed obtaining config for url %s with error %v\n", url, configErr)
@@ -140,12 +150,13 @@ func storeSecureInternetConfig(state *eduvpn.VPNState, url string, directory str
 	}
 }
 
+// This is basically used to get a certificate for all Secure Internet servers
 func getSecureInternetAll(homeURL string) {
 	state := &eduvpn.VPNState{}
 
 	state.Register("org.eduvpn.app.linux", "configs", func(old string, new string, data string) {
 		stateCallback(state, old, new, data)
-	}, false)
+	}, true)
 
 	defer state.Deregister()
 
@@ -180,16 +191,17 @@ func getSecureInternetAll(homeURL string) {
 	fmt.Println("Done storing all certs in directory:", directory)
 }
 
+// Get a config for a single server, Institute Access or Secure Internet
 func printConfig(url string, isInstitute bool) {
 	state := &eduvpn.VPNState{}
 
 	state.Register("org.eduvpn.app.linux", "configs", func(old string, new string, data string) {
 		stateCallback(state, old, new, data)
-	}, false)
+	}, true)
 
 	defer state.Deregister()
 
-	config, configErr := getConfig(state, url, isInstitute)
+	config, _, configErr := getConfig(state, url, isInstitute)
 
 	if configErr != nil {
 		fmt.Println("Error getting config", configErr)
@@ -199,6 +211,8 @@ func printConfig(url string, isInstitute bool) {
 	fmt.Println("Obtained config", config)
 }
 
+// The main function
+// It parses the arguments and executes the correct functions
 func main() {
 	urlArg := flag.String("get-institute", "", "The url of an institute to connect to")
 	secureInternet := flag.String("get-secure", "", "Gets secure internet servers.")

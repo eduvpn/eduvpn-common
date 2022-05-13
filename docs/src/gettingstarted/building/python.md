@@ -1,4 +1,4 @@
-# Python Wrapper
+# Python wrapper
 
 To build the python wrapper issue the following command (in the root directory of the eduvpn-common project):
 
