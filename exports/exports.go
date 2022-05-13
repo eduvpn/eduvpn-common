@@ -12,13 +12,15 @@ void call_callback(PythonCB callback, const char* oldstate, const char* newstate
 }
 */
 import "C"
-import "errors"
-import "fmt"
-import "unsafe"
-import "github.com/jwijenbergh/eduvpn-common"
+
+import (
+	"errors"
+	"fmt"
+	"unsafe"
+	"github.com/jwijenbergh/eduvpn-common"
+)
 
 var P_StateCallback C.PythonCB
-
 
 var VPNStates map[string]*eduvpn.VPNState
 
@@ -34,7 +36,6 @@ func StateCallback(old_state string, new_state string, data string) {
 	C.free(unsafe.Pointer(newState_c))
 	C.free(unsafe.Pointer(data_c))
 }
-
 
 func GetVPNState(name string) (*eduvpn.VPNState, error) {
 	state, exists := VPNStates[name]
@@ -126,7 +127,6 @@ func GetOrganizationsList(name *C.char) (*C.char, *C.char) {
 	organizations, organizationsErr := state.GetDiscoOrganizations()
 	return C.CString(organizations), C.CString(ErrorToString(organizationsErr))
 }
-
 
 //export GetServersList
 func GetServersList(name *C.char) (*C.char, *C.char) {

@@ -17,6 +17,7 @@ def login_eduvpn(authURL):
     # Cleanup
     driver.close()
 
+
 # Logs in to the default vpn user portal with selenium
 def login_oauth(driver, authURL):
     # Go to the oauth url and verify the title

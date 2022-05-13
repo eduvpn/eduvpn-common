@@ -15,46 +15,64 @@ _libname = "eduvpn_common"
 def getlibpath(plat_name: str) -> typing.Union[str, None]:
     """Get library path for plat_name relative to exports/lib/ folder."""
 
-    _plat_map = defaultdict(lambda: plat_name, {
-        "win32": "win-x86",
-    })
+    _plat_map = defaultdict(
+        lambda: plat_name,
+        {
+            "win32": "win-x86",
+        },
+    )
 
     plat_split = _plat_map[plat_name].split("-", 1)
     if len(plat_split) != 2:
         return None
     plat_os, plat_arch = plat_split
 
-    _os_map = defaultdict(lambda: plat_os, {
-        "win": "windows",
-    })
-    _lib_prefixes = defaultdict(lambda: "lib", {
-        "windows": "",
-    })
-    _lib_suffixes = defaultdict(lambda: ".so", {
-        "windows": ".dll",
-        "darwin": ".dylib",
-    })
-    _arch_map = defaultdict(lambda: plat_arch, {
-        "aarch64_be": "arm64",
-        "aarch64": "arm64",
-        "armv8b": "arm64",
-        "armv8l": "arm64",
-        "x86": "386",
-        "x86pc": "386",
-        "i86pc": "386",
-        "i386": "386",
-        "i686": "386",
-        "x86_64": "amd64",
-        "i686-64": "amd64",
-    })
+    _os_map = defaultdict(
+        lambda: plat_os,
+        {
+            "win": "windows",
+        },
+    )
+    _lib_prefixes = defaultdict(
+        lambda: "lib",
+        {
+            "windows": "",
+        },
+    )
+    _lib_suffixes = defaultdict(
+        lambda: ".so",
+        {
+            "windows": ".dll",
+            "darwin": ".dylib",
+        },
+    )
+    _arch_map = defaultdict(
+        lambda: plat_arch,
+        {
+            "aarch64_be": "arm64",
+            "aarch64": "arm64",
+            "armv8b": "arm64",
+            "armv8l": "arm64",
+            "x86": "386",
+            "x86pc": "386",
+            "i86pc": "386",
+            "i386": "386",
+            "i686": "386",
+            "x86_64": "amd64",
+            "i686-64": "amd64",
+        },
+    )
 
     processed_os = _os_map[plat_os]
-    return f"{processed_os}/{_arch_map[plat_arch]}/" \
-           f"{_lib_prefixes[processed_os]}{_libname}{_lib_suffixes[processed_os]}"
+    return (
+        f"{processed_os}/{_arch_map[plat_arch]}/"
+        f"{_lib_prefixes[processed_os]}{_libname}{_lib_suffixes[processed_os]}"
+    )
 
 
 # Adapted from https://stackoverflow.com/a/51794740
 # You would say there would be a better way to do all of this, but I couldn't find it
+
 
 class bdist_wheel(_bdist_wheel):
     user_options = _bdist_wheel.user_options + [

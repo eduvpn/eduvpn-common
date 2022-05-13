@@ -21,6 +21,7 @@ def ask_profile_input(total: int) -> int:
     # The profile is one based, move to zero based input
     return profile_index - 1
 
+
 # Sets up the callbacks using the provided class
 def setup_callbacks(_eduvpn: eduvpn.EduVPN) -> None:
     # The callback that starst OAuth
@@ -33,7 +34,9 @@ def setup_callbacks(_eduvpn: eduvpn.EduVPN) -> None:
     # The callback which asks the user for a profile
     @_eduvpn.event.on("Ask_Profile", eduvpn.StateType.Enter)
     def ask_profile(old_state: str, profiles: str):
-        print("Multiple profiles found, you need to select a profile, old state: {old_state}")
+        print(
+            "Multiple profiles found, you need to select a profile, old state: {old_state}"
+        )
 
         # Parse the profiles as JSON
         data = json.loads(profiles)

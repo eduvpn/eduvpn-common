@@ -22,7 +22,9 @@ class EventHandler(object):
 
         return wrapped_f
 
-    def run_state(self, state: str, other_state: str, state_type: StateType, data: str) -> None:
+    def run_state(
+        self, state: str, other_state: str, state_type: StateType, data: str
+    ) -> None:
         if (state, state_type) not in self.handlers:
             return
         for func in self.handlers[(state, state_type)]:
