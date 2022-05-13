@@ -31,7 +31,7 @@ func (config *Config) Save(readStruct interface{}) error {
 	if marshalErr != nil {
 		return &ConfigSaveError{Err: marshalErr}
 	}
-	return ioutil.WriteFile(config.GetFilename(), jsonString, 0o644)
+	return ioutil.WriteFile(config.GetFilename(), jsonString, 0o600)
 }
 
 func (config *Config) Load(writeStruct interface{}) error {
