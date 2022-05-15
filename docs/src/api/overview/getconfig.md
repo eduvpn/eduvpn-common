@@ -16,15 +16,15 @@ Used to obtain the OpenVPN/Wireguard config
 To get a configuration that is used to actually establish a tunnel with the VPN server, we have the Get Config function for Institute Access and Secure Internet (the exact name depends on the language you're using) function in the library. This function has two parameters *URL* and *Force TCP*.
 
 *URL* is the base url of the server to connect to
-e.g. `nl.eduvpn.org`. Use the correct function to indicate if it is an Institute Access server or a Secure Internet server. A user configured server is often an Institute Access server.
+e.g. `nl.eduvpn.org`. Use the correct function to indicate if it is an Institute Access server or a Secure Internet server. A user configured server is often an Institute Access server. In case of a Secure Internet server and no Secure Internet was configured previously, this URL is set as the home server. This means that this server is set as the authorization server for all secure internet servers.
 
-The *Force TCP* flag is a boolean that indicates whether or not we want to use TCP to connect over the VPN. This flag is useful if the user has enabled e.g. a setting that forces the use of TCP, which is only supported by OpenVPN. If the Force TCP flag is set to true but the server only supports Wireguard then an error is returned and the config will be empty.
+The *Force TCP* flag is a boolean that indicates whether or not we want to use TCP to connect over the VPN. This flag is useful if the user has enabled e.g. a setting that forces the use of TCP, which is only supported by OpenVPN. If the Force TCP flag is set to `true` but the server only supports Wireguard then an error is returned and the config will be empty.
 
 This function takes care of OAuth which has certain callbacks with data. Additionally, there are also callbacks that need to be registered for selecting the right profile to connect to. These callbacks will be explained now.
 
 The data that this function returns is the OpenVPN/Wireguard config as a string, the type of config (a string: "wireguard" or "openvpn") and an error if present.
 
-### Callback: OAuth started
+### Callback: OAuth started (OAuth_Started)
 
 OAuth has an important callback which is used to obtain the authorization URL by the client. This client needs to open this authorization URL in a web browser such that the user can authenticate with the VPN portal and then authorize the client to obtain OpenVPN/Wireguard configs.
 
@@ -36,7 +36,7 @@ The format of the authorization URL is e.g. this:
 
 This callback can be cancelled by using a `Cancel OAuth` function.
 
-### Callback: Selecting a profile
+### Callback: Selecting a profile (Ask_Profile)
 
 Another aspect that needs to be taken into account is the fact that there can be multiple profiles that a client can connect to. When the function gets called for obtaining an OpenVPN/Wireguard configuration, it asks the client which profile it wants to connect to using the callback that gets triggered on the Ask Profile state. The data is the list of profiles in JSON format, e.g.
 

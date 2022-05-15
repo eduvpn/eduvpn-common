@@ -79,3 +79,23 @@ def deregister() -> None
 ```
 
 Returns nothing. Raises an exception in case of an error.
+
+# Note on Callbacks
+Some functions (e.g. [the API for getting an OpenVPN/Wireguard config](http://localhost:3000/api/overview/getconfig.html)) need a (or multiple) callbacks set. In Python, the callback function is set using decorators.
+For this, the `eduvpn.EduVPN` class has the following syntax:
+
+```python
+# Where _eduvpn is the eduvpn.EduVPN class instance
+# This gets called when the New_State_Example state is entered
+# old_state is then the old state
+@_eduvpn.event.on("New_State_Example", eduvpn.StateType.Enter)
+def example_enter(old_state: str, data: str)
+```
+```python
+# Where _eduvpn is the eduvpn.EduVPN class instance
+# This gets called when the New_State_Example state is left
+# new_state is then the new state
+@_eduvpn.event.on("New_State_Example", eduvpn.StateType.Leave)
+def example_leave(new_state: str, data: str)
+```
+To show how this can be done in practice, we will give an example in the next section.

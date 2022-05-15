@@ -77,6 +77,7 @@ func sendProfile(state *eduvpn.VPNState, data string) {
 // The callback function
 // If OAuth is started we open the browser with the Auth URL
 // If we ask for a profile, we send the profile using command line input
+// Note that this has an additional argument, the vpn state which was wrapped into this callback function below
 func stateCallback(state *eduvpn.VPNState, oldState string, newState string, data string) {
 	if newState == "OAuth_Started" {
 		openBrowser(data)

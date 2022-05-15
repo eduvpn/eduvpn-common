@@ -8,7 +8,7 @@ func Register(name string, directory string, stateCallback func, debug bool) err
 - `directory`: The directory where the configs and logging should be stored
 - `stateCallback`: function with three arguments, full type:
   ```go
-  func(oldState string, newState string, data string)
+  func StateCallback(oldState string, newState string, data string)
   ```
 - `debug`: Whether or not we want to enable debugging
 
@@ -67,3 +67,10 @@ func Deregister() error
 ```
 
 Returns an `error`, can be nil indicating no error
+
+# Note on Callbacks
+Some functions (e.g. [the API for getting an OpenVPN/Wireguard config](http://localhost:3000/api/overview/getconfig.html)) need a (or multiple) callback(s) set. In Go, the callback function is given in the [Register function](#registering). The signature of this function is the following:
+```go
+func StateCallback(oldState string, newState string, data string)
+```
+Because certain callbacks need to be set, you can simply compare against `oldState` and `newState`. To show how this can be done in practice, we will give an example in the next section.
