@@ -147,6 +147,7 @@ func (fsm *FSM) writeGraph() {
 	f, err := os.Create(graphFile)
 	if err != nil {
 		fsm.Logger.Log(LOG_INFO, fmt.Sprintf("Failed to write debug fsm graph with error %v", err))
+		return
 	}
 
 	f.WriteString(graph)
