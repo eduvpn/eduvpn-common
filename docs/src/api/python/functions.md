@@ -93,9 +93,9 @@ def example_enter(old_state: str, data: str)
 ```
 ```python
 # Where _eduvpn is the eduvpn.EduVPN class instance
-# This gets called when the New_State_Example state is left
+# This gets called when the Old_State_Example state is left
 # new_state is then the new state
-@_eduvpn.event.on("New_State_Example", eduvpn.StateType.Leave)
+@_eduvpn.event.on("Old_State_Example", eduvpn.StateType.Leave)
 def example_leave(new_state: str, data: str)
 ```
 To show how this can be done in practice, we will give an example in the next section.
