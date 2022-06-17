@@ -11,14 +11,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jwijenbergh/eduvpn-common/internal"
+	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
+	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
+	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
+	"github.com/jwijenbergh/eduvpn-common/internal/server"
 )
 
 func ensureLocalWellKnown() {
 	wellKnown := os.Getenv("SERVER_IS_LOCAL")
 
 	if wellKnown == "1" {
-		internal.WellKnownPath = "well-known.php"
+		server.WellKnownPath = "well-known.php"
 	}
 }
 
@@ -75,7 +78,7 @@ func Test_server(t *testing.T) {
 	}
 }
 
-func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameters, expectedErr interface{}) {
+func test_connect_oauth_parameter(t *testing.T, parameters httpw.URLParameters, expectedErr interface{}) {
 	serverURI := getServerURI(t)
 	state := &VPNState{}
 	configDirectory := "test_oauth_parameters"
@@ -83,7 +86,7 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 	state.Register("org.eduvpn.app.linux", configDirectory, func(oldState string, newState string, data string) {
 		if newState == "OAuth_Started" {
 			baseURL := "http://127.0.0.1:8000/callback"
-			url, err := internal.HTTPConstructURL(baseURL, parameters)
+			url, err := httpw.HTTPConstructURL(baseURL, parameters)
 			if err != nil {
 				t.Fatalf("Error: Constructing url %s with parameters %s", baseURL, fmt.Sprint(parameters))
 			}
@@ -94,8 +97,8 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 	_, _, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
 	var stateErr *StateConnectError
-	var loginErr *internal.OAuthLoginError
-	var finishErr *internal.OAuthFinishError
+	var loginErr *oauth.OAuthLoginError
+	var finishErr *oauth.OAuthFinishError
 
 	// We go through the chain of errors by unwrapping them one by one
 
@@ -128,17 +131,17 @@ func test_connect_oauth_parameter(t *testing.T, parameters internal.URLParameter
 
 func Test_connect_oauth_parameters(t *testing.T) {
 	var (
-		failedCallbackParameterError  *internal.OAuthCallbackParameterError
-		failedCallbackStateMatchError *internal.OAuthCallbackStateMatchError
+		failedCallbackParameterError  *oauth.OAuthCallbackParameterError
+		failedCallbackStateMatchError *oauth.OAuthCallbackStateMatchError
 	)
 
 	tests := []struct {
 		expectedErr interface{}
-		parameters  internal.URLParameters
+		parameters  httpw.URLParameters
 	}{
-		{&failedCallbackParameterError, internal.URLParameters{}},
-		{&failedCallbackParameterError, internal.URLParameters{"code": "42"}},
-		{&failedCallbackStateMatchError, internal.URLParameters{"code": "42", "state": "21"}},
+		{&failedCallbackParameterError, httpw.URLParameters{}},
+		{&failedCallbackParameterError, httpw.URLParameters{"code": "42"}},
+		{&failedCallbackStateMatchError, httpw.URLParameters{"code": "42", "state": "21"}},
 	}
 
 	ensureLocalWellKnown()
@@ -177,12 +180,12 @@ func Test_token_expired(t *testing.T) {
 		t.Fatalf("Connect error before expired: %v", configErr)
 	}
 
-	server, serverErr := state.Servers.GetCurrentServer()
+	currentServer, serverErr := state.Servers.GetCurrentServer()
 	if serverErr != nil {
 		t.Fatalf("No server found")
 	}
 
-	oauth := server.GetOAuth()
+	oauth := currentServer.GetOAuth()
 
 	accessToken := oauth.Token.Access
 	refreshToken := oauth.Token.Refresh
@@ -190,7 +193,7 @@ func Test_token_expired(t *testing.T) {
 	// Wait for TTL so that the tokens expire
 	time.Sleep(time.Duration(expiredInt) * time.Second)
 
-	infoErr := internal.APIInfo(server)
+	infoErr := server.APIInfo(currentServer)
 
 	if infoErr != nil {
 		t.Fatalf("Info error after expired: %v", infoErr)
@@ -228,16 +231,16 @@ func Test_token_invalid(t *testing.T) {
 	// Go to request_config so we can re-authorize
 	// This is needed as the only actual authenticated requests we do in request_config (for profiles) and /connect
 	// /disconnect is best effort so this does not need re-auth
-	state.FSM.GoTransition(internal.REQUEST_CONFIG)
+	state.FSM.GoTransition(fsm.REQUEST_CONFIG)
 
 	dummy_value := "37"
 
-	server, serverErr := state.Servers.GetCurrentServer()
+	currentServer, serverErr := state.Servers.GetCurrentServer()
 	if serverErr != nil {
 		t.Fatalf("No server found")
 	}
 
-	oauth := server.GetOAuth()
+	oauth := currentServer.GetOAuth()
 
 	// Override tokens with invalid values
 	oauth.Token.Access = dummy_value
@@ -275,12 +278,12 @@ func Test_invalid_profile_corrected(t *testing.T) {
 		t.Fatalf("First connect error: %v", configErr)
 	}
 
-	server, serverErr := state.Servers.GetCurrentServer()
+	currentServer, serverErr := state.Servers.GetCurrentServer()
 	if serverErr != nil {
 		t.Fatalf("No server found")
 	}
 
-	base, baseErr := server.GetBase()
+	base, baseErr := currentServer.GetBase()
 	if baseErr != nil {
 		t.Fatalf("No base found")
 	}

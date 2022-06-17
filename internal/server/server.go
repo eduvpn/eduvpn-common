@@ -1,8 +1,12 @@
-package internal
+package server
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
+	"github.com/jwijenbergh/eduvpn-common/internal/log"
+	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
+	"github.com/jwijenbergh/eduvpn-common/internal/util"
+	"github.com/jwijenbergh/eduvpn-common/internal/wireguard"
 )
 
 // The base type for servers
@@ -11,16 +15,16 @@ type ServerBase struct {
 	Endpoints   ServerEndpoints   `json:"endpoints"`
 	Profiles    ServerProfileInfo `json:"profiles"`
 	ProfilesRaw string            `json:"profiles_raw"`
-	Logger      *FileLogger       `json:"-"`
-	FSM         *FSM              `json:"-"`
 	StartTime   int64             `json:"start-time"`
 	EndTime     int64             `json:"end-time"`
+	Logger      *log.FileLogger       `json:"-"`
+	FSM         *fsm.FSM              `json:"-"`
 }
 
 // An instute access server
 type InstituteAccessServer struct {
 	// An instute access server has its own OAuth
-	OAuth OAuth `json:"oauth"`
+	OAuth oauth.OAuth `json:"oauth"`
 
 	// Embed the server base
 	Base ServerBase `json:"base"`
@@ -29,7 +33,7 @@ type InstituteAccessServer struct {
 // A secure internet server which has its own OAuth tokens
 // It specifies the current location url it is connected to
 type SecureInternetHomeServer struct {
-	OAuth OAuth `json:"oauth"`
+	OAuth oauth.OAuth `json:"oauth"`
 
 	// The home server has a list of info for each configured server
 	BaseMap map[string]*ServerBase `json:"base_map"`
@@ -69,21 +73,21 @@ type Servers struct {
 
 type Server interface {
 	// Gets the current OAuth object
-	GetOAuth() *OAuth
+	GetOAuth() *oauth.OAuth
 
 	// Gets the server base
 	GetBase() (*ServerBase, error)
 
 	// initialize method
-	init(url string, fsm *FSM, logger *FileLogger) error
+	init(url string, fsm *fsm.FSM, logger *log.FileLogger) error
 }
 
 // For an institute, we can simply get the OAuth
-func (institute *InstituteAccessServer) GetOAuth() *OAuth {
+func (institute *InstituteAccessServer) GetOAuth() *oauth.OAuth {
 	return &institute.OAuth
 }
 
-func (secure *SecureInternetHomeServer) GetOAuth() *OAuth {
+func (secure *SecureInternetHomeServer) GetOAuth() *oauth.OAuth {
 	return &secure.OAuth
 }
 
@@ -104,11 +108,11 @@ func (server *SecureInternetHomeServer) GetBase() (*ServerBase, error) {
 	return base, nil
 }
 
-func (institute *InstituteAccessServer) init(url string, fsm *FSM, logger *FileLogger) error {
+func (institute *InstituteAccessServer) init(url string, fsm *fsm.FSM, logger *log.FileLogger) error {
 	institute.Base.URL = url
 	institute.Base.FSM = fsm
 	institute.Base.Logger = logger
-	endpoints, endpointsErr := getEndpoints(url)
+	endpoints, endpointsErr := APIGetEndpoints(url)
 	if endpointsErr != nil {
 		return &ServerInitializeError{URL: url, Err: endpointsErr}
 	}
@@ -117,7 +121,7 @@ func (institute *InstituteAccessServer) init(url string, fsm *FSM, logger *FileL
 	return nil
 }
 
-func (secure *SecureInternetHomeServer) init(url string, fsm *FSM, logger *FileLogger) error {
+func (secure *SecureInternetHomeServer) init(url string, fsm *fsm.FSM, logger *log.FileLogger) error {
 	// Initialize the base map if it is non-nil
 	if secure.BaseMap == nil {
 		secure.BaseMap = make(map[string]*ServerBase)
@@ -130,7 +134,7 @@ func (secure *SecureInternetHomeServer) init(url string, fsm *FSM, logger *FileL
 		// Create the base to be added to the map
 		base = &ServerBase{}
 		base.URL = url
-		endpoints, endpointsErr := getEndpoints(url)
+		endpoints, endpointsErr := APIGetEndpoints(url)
 		if endpointsErr != nil {
 			return &ServerInitializeError{URL: url, Err: endpointsErr}
 		}
@@ -158,6 +162,37 @@ func (secure *SecureInternetHomeServer) init(url string, fsm *FSM, logger *FileL
 	return nil
 }
 
+func ShouldRenewButton(server Server) (bool, error) {
+	base, baseErr := server.GetBase()
+
+	if baseErr != nil {
+		//return false, &GetRenewButtonTimeError{Err: baseErr}
+		return false, nil
+	}
+
+	// Get current time
+	current := util.GenerateTimeSeconds()
+
+	// 30 minutes have not passed
+	if current <= (base.StartTime + 30*60) {
+		return false, nil
+	}
+
+	// Session will not expire today
+	if current <= (base.EndTime - 24*60*60) {
+		return false, nil
+	}
+
+	// Session duration is less than 24 hours but not 75% has passed
+	duration := base.EndTime - base.StartTime
+	// TODO: Is converting to float64 okay here?
+	if duration < 24*60*60 && float64(current) <= (float64(base.StartTime) + 0.75*float64(duration)) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func Login(server Server) error {
 	return server.GetOAuth().Login("org.eduvpn.app.linux")
 }
@@ -169,7 +204,7 @@ func EnsureTokens(server Server) error {
 		return &ServerEnsureTokensError{Err: baseErr}
 	}
 	if server.GetOAuth().NeedsRelogin() {
-		base.Logger.Log(LOG_INFO, "OAuth: Tokens are invalid, relogging in")
+		base.Logger.Log(log.LOG_INFO, "OAuth: Tokens are invalid, relogging in")
 		loginErr := Login(server)
 
 		if loginErr != nil {
@@ -187,7 +222,7 @@ func CancelOAuth(server Server) {
 	server.GetOAuth().Cancel()
 }
 
-func (servers *Servers) EnsureServer(url string, isSecureInternet bool, fsm *FSM, logger *FileLogger) (Server, error) {
+func (servers *Servers) EnsureServer(url string, isSecureInternet bool, fsm *fsm.FSM, logger *log.FileLogger) (Server, error) {
 	// Intialize the secure internet server
 	// This calls the init method which takes care of the rest
 	if isSecureInternet {
@@ -257,24 +292,6 @@ type ServerEndpoints struct {
 // Make this a var which we can overwrite in the tests
 var WellKnownPath string = ".well-known/vpn-user-portal"
 
-func getEndpoints(baseURL string) (*ServerEndpoints, error) {
-	url := fmt.Sprintf("%s/%s", baseURL, WellKnownPath)
-	_, body, bodyErr := HTTPGet(url)
-
-	if bodyErr != nil {
-		return nil, &ServerGetEndpointsError{Err: bodyErr}
-	}
-
-	endpoints := &ServerEndpoints{}
-	jsonErr := json.Unmarshal(body, endpoints)
-
-	if jsonErr != nil {
-		return nil, &ServerGetEndpointsError{Err: jsonErr}
-	}
-
-	return endpoints, nil
-}
-
 func (profile *ServerProfile) supportsProtocol(protocol string) bool {
 	for _, proto := range profile.VPNProtoList {
 		if proto == protocol {
@@ -307,14 +324,70 @@ func getCurrentProfile(server Server) (*ServerProfile, error) {
 	return nil, &ServerGetCurrentProfileNotFoundError{ProfileID: profileID}
 }
 
+func wireguardGetConfig(server Server, supportsOpenVPN bool) (string, string, error) {
+	base, baseErr := server.GetBase()
+
+	if baseErr != nil {
+		return "", "", baseErr
+	}
+
+	profile_id := base.Profiles.Current
+	wireguardKey, wireguardErr := wireguard.GenerateKey()
+
+	if wireguardErr != nil {
+		return "", "", wireguardErr
+	}
+
+	wireguardPublicKey := wireguardKey.PublicKey().String()
+	config, content, expires, configErr := APIConnectWireguard(server, profile_id, wireguardPublicKey, supportsOpenVPN)
+
+	if configErr != nil {
+		return "", "", wireguardErr
+	}
+
+	// Store start and end time
+	base.StartTime = util.GenerateTimeSeconds()
+	base.EndTime = expires
+
+	if content == "wireguard" {
+		// This needs the go code a way to identify a connection
+		// Use the uuid of the connection e.g. on Linux
+		// This needs the client code to call the go code
+
+		config = wireguard.ConfigAddKey(config, wireguardKey)
+	}
+
+	return config, content, nil
+}
+
+func openVPNGetConfig(server Server) (string, string, error) {
+	base, baseErr := server.GetBase()
+
+	if baseErr != nil {
+		return "", "", baseErr
+	}
+	profile_id := base.Profiles.Current
+	configOpenVPN, expires, configErr := APIConnectOpenVPN(server, profile_id)
+
+	// Store start and end time
+	base.StartTime = util.GenerateTimeSeconds()
+	base.EndTime = expires
+
+	if configErr != nil {
+		return "", "", configErr
+	}
+
+	return configOpenVPN, "openvpn", nil
+}
+
 func getConfigWithProfile(server Server, forceTCP bool) (string, string, error) {
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
 		return "", "", &ServerGetConfigWithProfileError{Err: baseErr}
 	}
-	if !base.FSM.HasTransition(HAS_CONFIG) {
-		return "", "", &FSMWrongStateTransitionError{Got: base.FSM.Current, Want: HAS_CONFIG}
+	if !base.FSM.HasTransition(fsm.HAS_CONFIG) {
+		return "", "", &fsm.FSMWrongStateTransitionError{Got: base.FSM.Current, Want: fsm.HAS_CONFIG}
 	}
 	profile, profileErr := getCurrentProfile(server)
 
@@ -337,9 +410,9 @@ func getConfigWithProfile(server Server, forceTCP bool) (string, string, error) 
 	if supportsWireguard {
 		// A wireguard connect call needs to generate a wireguard key and add it to the config
 		// Also the server could send back an OpenVPN config if it supports OpenVPN
-		config, configType, configErr = WireguardGetConfig(server, supportsOpenVPN)
+		config, configType, configErr = wireguardGetConfig(server, supportsOpenVPN)
 	} else {
-		config, configType, configErr = OpenVPNGetConfig(server)
+		config, configType, configErr = openVPNGetConfig(server)
 	}
 
 	if configErr != nil {
@@ -355,10 +428,10 @@ func askForProfileID(server Server) error {
 	if baseErr != nil {
 		return &ServerAskForProfileIDError{Err: baseErr}
 	}
-	if !base.FSM.HasTransition(ASK_PROFILE) {
-		return &FSMWrongStateTransitionError{Got: base.FSM.Current, Want: ASK_PROFILE}
+	if !base.FSM.HasTransition(fsm.ASK_PROFILE) {
+		return &fsm.FSMWrongStateTransitionError{Got: base.FSM.Current, Want: fsm.ASK_PROFILE}
 	}
-	base.FSM.GoTransitionWithData(ASK_PROFILE, base.ProfilesRaw, false)
+	base.FSM.GoTransitionWithData(fsm.ASK_PROFILE, base.ProfilesRaw, false)
 	return nil
 }
 
@@ -368,8 +441,8 @@ func GetConfig(server Server, forceTCP bool) (string, string, error) {
 	if baseErr != nil {
 		return "", "", &ServerGetConfigError{Err: baseErr}
 	}
-	if !base.FSM.InState(REQUEST_CONFIG) {
-		return "", "", &FSMWrongStateError{Got: base.FSM.Current, Want: REQUEST_CONFIG}
+	if !base.FSM.InState(fsm.REQUEST_CONFIG) {
+		return "", "", &fsm.FSMWrongStateError{Got: base.FSM.Current, Want: fsm.REQUEST_CONFIG}
 	}
 
 	// Get new profiles using the info call
@@ -383,7 +456,7 @@ func GetConfig(server Server, forceTCP bool) (string, string, error) {
 	if base.Profiles.Current != "" {
 		_, existsProfileErr := getCurrentProfile(server)
 		if existsProfileErr != nil {
-			base.Logger.Log(LOG_INFO, fmt.Sprintf("Profile %s no longer exists, resetting the profile", base.Profiles.Current))
+			base.Logger.Log(log.LOG_INFO, fmt.Sprintf("Profile %s no longer exists, resetting the profile", base.Profiles.Current))
 			base.Profiles.Current = ""
 		}
 	}
@@ -426,14 +499,6 @@ type ServerGetConfigForceTCPError struct{}
 
 func (e *ServerGetConfigForceTCPError) Error() string {
 	return fmt.Sprintf("failed to get config, force TCP is on but the server does not support OpenVPN")
-}
-
-type ServerGetEndpointsError struct {
-	Err error
-}
-
-func (e *ServerGetEndpointsError) Error() string {
-	return fmt.Sprintf("failed to get server endpoint with error %v", e.Err)
 }
 
 type ServerGetSecureInternetHomeError struct{}

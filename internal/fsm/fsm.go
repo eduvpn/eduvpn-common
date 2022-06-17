@@ -1,4 +1,4 @@
-package internal
+package fsm
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path"
 	"sort"
+	"github.com/jwijenbergh/eduvpn-common/internal/log"
 )
 
 type (
@@ -96,12 +97,12 @@ type FSM struct {
 	// Info to be passed from the parent state
 	Name          string
 	StateCallback func(string, string, string)
-	Logger        *FileLogger
+	Logger        *log.FileLogger
 	Directory     string
 	Debug         bool
 }
 
-func (fsm *FSM) Init(name string, callback func(string, string, string), logger *FileLogger, directory string, debug bool) {
+func (fsm *FSM) Init(name string, callback func(string, string, string), logger *log.FileLogger, directory string, debug bool) {
 	fsm.States = FSMStates{
 		DEREGISTERED:   {{NO_SERVER, "Client registers"}},
 		NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
@@ -146,7 +147,7 @@ func (fsm *FSM) writeGraph() {
 	graphImgFile := fsm.getGraphFilename(".png")
 	f, err := os.Create(graphFile)
 	if err != nil {
-		fsm.Logger.Log(LOG_INFO, fmt.Sprintf("Failed to write debug fsm graph with error %v", err))
+		fsm.Logger.Log(log.LOG_INFO, fmt.Sprintf("Failed to write debug fsm graph with error %v", err))
 		return
 	}
 
@@ -167,7 +168,7 @@ func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data string, backgroun
 			fsm.writeGraph()
 		}
 
-		fsm.Logger.Log(LOG_INFO, fmt.Sprintf("State: %s -> State: %s with data %s\n", oldState.String(), newState.String(), data))
+		fsm.Logger.Log(log.LOG_INFO, fmt.Sprintf("State: %s -> State: %s with data %s\n", oldState.String(), newState.String(), data))
 
 		if background {
 			go fsm.StateCallback(oldState.String(), newState.String(), data)

@@ -1,8 +1,13 @@
-package internal
+package discovery
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
+	"github.com/jwijenbergh/eduvpn-common/internal/http"
+	"github.com/jwijenbergh/eduvpn-common/internal/log"
+	"github.com/jwijenbergh/eduvpn-common/internal/util"
+	"github.com/jwijenbergh/eduvpn-common/internal/verify"
 )
 
 type DiscoFileError struct {
@@ -57,8 +62,8 @@ type ServersList struct {
 type Discovery struct {
 	Organizations OrganizationList
 	Servers       ServersList
-	FSM           *FSM
-	Logger        *FileLogger
+	FSM           *fsm.FSM
+	Logger        *log.FileLogger
 }
 
 // Helper function that gets a disco json
@@ -66,7 +71,7 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	// Get json data
 	discoURL := "https://disco.eduvpn.org/v2/"
 	fileURL := discoURL + jsonFile
-	_, fileBody, fileErr := HTTPGet(fileURL)
+	_, fileBody, fileErr := http.HTTPGet(fileURL)
 
 	if fileErr != nil {
 		return &DiscoFileError{fileURL, fileErr}
@@ -75,7 +80,7 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	// Get signature
 	sigFile := jsonFile + ".minisig"
 	sigURL := discoURL + sigFile
-	_, sigBody, sigFileErr := HTTPGet(sigURL)
+	_, sigBody, sigFileErr := http.HTTPGet(sigURL)
 
 	if sigFileErr != nil {
 		return &DiscoSigFileError{URL: sigURL, Err: sigFileErr}
@@ -84,7 +89,7 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	// Verify signature
 	// Set this to true when we want to force prehash
 	forcePrehash := false
-	verifySuccess, verifyErr := Verify(string(sigBody), fileBody, jsonFile, previousVersion, forcePrehash)
+	verifySuccess, verifyErr := verify.Verify(string(sigBody), fileBody, jsonFile, previousVersion, forcePrehash)
 
 	if !verifySuccess || verifyErr != nil {
 		return &DiscoVerifyError{File: jsonFile, Sigfile: sigFile, Err: verifyErr}
@@ -109,7 +114,7 @@ func (e *GetListError) Error() string {
 	return fmt.Sprintf("failed getting disco list file %s with error %v", e.File, e.Err)
 }
 
-func (discovery *Discovery) Init(fsm *FSM, logger *FileLogger) {
+func (discovery *Discovery) Init(fsm *fsm.FSM, logger *log.FileLogger) {
 	discovery.FSM = fsm
 	discovery.Logger = logger
 }
@@ -133,11 +138,11 @@ func (discovery *Discovery) DetermineServersUpdate() bool {
 	}
 	// 1 hour from the last update
 	should_update_time := discovery.Servers.Timestamp + 3600
-	now := GenerateTimeSeconds()
+	now := util.GenerateTimeSeconds()
 	if now >= should_update_time {
 		return true
 	}
-	discovery.Logger.Log(LOG_INFO, "No update needed for servers, 1h is not passed yet")
+	discovery.Logger.Log(log.LOG_INFO, "No update needed for servers, 1h is not passed yet")
 	return false
 }
 
@@ -167,6 +172,6 @@ func (discovery *Discovery) GetServersList() (string, error) {
 		return string(discovery.Servers.JSON), &GetListError{File: file, Err: err}
 	}
 	// Update servers timestamp
-	discovery.Servers.Timestamp = GenerateTimeSeconds()
+	discovery.Servers.Timestamp = util.GenerateTimeSeconds()
 	return string(discovery.Servers.JSON), nil
 }

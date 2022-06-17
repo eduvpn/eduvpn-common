@@ -1,4 +1,4 @@
-package internal
+package oauth
 
 import (
 	"context"
@@ -8,6 +8,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
+	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
+	"github.com/jwijenbergh/eduvpn-common/internal/util"
+	"github.com/jwijenbergh/eduvpn-common/internal/log"
 )
 
 // Generates a random base64 string to be used for state
@@ -17,7 +21,7 @@ import (
 // includes this value when redirecting the user agent back to the
 // client.
 func genState() (string, error) {
-	randomBytes, err := MakeRandomByteSlice(32)
+	randomBytes, err := util.MakeRandomByteSlice(32)
 	if err != nil {
 		return "", &OAuthGenStateError{Err: err}
 	}
@@ -43,7 +47,7 @@ func genChallengeS256(verifier string) string {
 // minimum length of 43 characters and a maximum length of 128
 // characters.
 func genVerifier() (string, error) {
-	randomBytes, err := MakeRandomByteSlice(32)
+	randomBytes, err := util.MakeRandomByteSlice(32)
 	if err != nil {
 		return "", &OAuthGenVerifierError{Err: err}
 	}
@@ -56,8 +60,8 @@ type OAuth struct {
 	Token                OAuthToken           `json:"token"`
 	BaseAuthorizationURL string               `json:"base_authorization_url"`
 	TokenURL             string               `json:"token_url"`
-	Logger               *FileLogger          `json:"-"`
-	FSM                  *FSM                 `json:"-"`
+	Logger               *log.FileLogger          `json:"-"`
+	FSM                  *fsm.FSM                 `json:"-"`
 }
 
 // This structure gets passed to the callback for easy access to the current state
@@ -118,9 +122,9 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
-	opts := &HTTPOptionalParams{Headers: headers, Body: data}
-	current_time := GenerateTimeSeconds()
-	_, body, bodyErr := HTTPPostWithOpts(reqURL, opts)
+	opts := &httpw.HTTPOptionalParams{Headers: headers, Body: data}
+	current_time := util.GenerateTimeSeconds()
+	_, body, bodyErr := httpw.HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return &OAuthAuthError{Err: bodyErr}
 	}
@@ -130,7 +134,7 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 	jsonErr := json.Unmarshal(body, &tokenStructure)
 
 	if jsonErr != nil {
-		return &HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
+		return &httpw.HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
 	}
 
 	tokenStructure.ExpiredTimestamp = current_time + tokenStructure.Expires
@@ -140,7 +144,7 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 
 func (oauth *OAuth) isTokensExpired() bool {
 	expired_time := oauth.Token.ExpiredTimestamp
-	current_time := GenerateTimeSeconds()
+	current_time := util.GenerateTimeSeconds()
 	return current_time >= expired_time
 }
 
@@ -156,9 +160,9 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
-	opts := &HTTPOptionalParams{Headers: headers, Body: data}
-	current_time := GenerateTimeSeconds()
-	_, body, bodyErr := HTTPPostWithOpts(reqURL, opts)
+	opts := &httpw.HTTPOptionalParams{Headers: headers, Body: data}
+	current_time := util.GenerateTimeSeconds()
+	_, body, bodyErr := httpw.HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return &OAuthRefreshError{Err: bodyErr}
 	}
@@ -167,7 +171,7 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 	jsonErr := json.Unmarshal(body, &tokenStructure)
 
 	if jsonErr != nil {
-		return &HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
+		return &httpw.HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}
 	}
 
 	tokenStructure.ExpiredTimestamp = current_time + tokenStructure.Expires
@@ -217,12 +221,12 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	go oauth.Session.Server.Shutdown(oauth.Session.Context)
 }
 
-func (oauth *OAuth) Update(fsm *FSM, logger *FileLogger) {
+func (oauth *OAuth) Update(fsm *fsm.FSM, logger *log.FileLogger) {
 	oauth.FSM = fsm
 	oauth.Logger = logger
 }
 
-func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string, fsm *FSM, logger *FileLogger) {
+func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string, fsm *fsm.FSM, logger *log.FileLogger) {
 	oauth.BaseAuthorizationURL = baseAuthorizationURL
 	oauth.TokenURL = tokenURL
 	oauth.FSM = fsm
@@ -231,8 +235,8 @@ func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string, fsm *FSM,
 
 // Starts the OAuth exchange for eduvpn.
 func (oauth *OAuth) start(name string) error {
-	if !oauth.FSM.HasTransition(OAUTH_STARTED) {
-		return &FSMWrongStateTransitionError{Got: oauth.FSM.Current, Want: OAUTH_STARTED}
+	if !oauth.FSM.HasTransition(fsm.OAUTH_STARTED) {
+		return &fsm.FSMWrongStateTransitionError{Got: oauth.FSM.Current, Want: fsm.OAUTH_STARTED}
 	}
 	// Generate the state
 	state, stateErr := genState()
@@ -257,7 +261,7 @@ func (oauth *OAuth) start(name string) error {
 		"redirect_uri":          "http://127.0.0.1:8000/callback",
 	}
 
-	authURL, urlErr := HTTPConstructURL(oauth.BaseAuthorizationURL, parameters)
+	authURL, urlErr := httpw.HTTPConstructURL(oauth.BaseAuthorizationURL, parameters)
 
 	if urlErr != nil {
 		return &OAuthInitializeError{Err: urlErr}
@@ -267,21 +271,21 @@ func (oauth *OAuth) start(name string) error {
 	oauthSession := OAuthExchangeSession{ClientID: name, State: state, Verifier: verifier}
 	oauth.Session = oauthSession
 	// Run the state callback in the background so that the user can login while we start the callback server
-	oauth.FSM.GoTransitionWithData(OAUTH_STARTED, authURL, true)
+	oauth.FSM.GoTransitionWithData(fsm.OAUTH_STARTED, authURL, true)
 	return nil
 }
 
 // Error definitions
 func (oauth *OAuth) Finish() error {
-	if !oauth.FSM.HasTransition(AUTHORIZED) {
-		return &FSMWrongStateError{Got: oauth.FSM.Current, Want: AUTHORIZED}
+	if !oauth.FSM.HasTransition(fsm.AUTHORIZED) {
+		return &fsm.FSMWrongStateError{Got: oauth.FSM.Current, Want: fsm.AUTHORIZED}
 	}
 	tokenErr := oauth.getTokensWithCallback()
 
 	if tokenErr != nil {
 		return &OAuthFinishError{Err: tokenErr}
 	}
-	oauth.FSM.GoTransition(AUTHORIZED)
+	oauth.FSM.GoTransition(fsm.AUTHORIZED)
 	return nil
 }
 
@@ -308,7 +312,7 @@ func (oauth *OAuth) Login(name string) error {
 func (oauth *OAuth) NeedsRelogin() bool {
 	// Access Token or Refresh Tokens empty, definitely needs a relogin
 	if oauth.Token.Access == "" || oauth.Token.Refresh == "" {
-		oauth.Logger.Log(LOG_INFO, "OAuth: Tokens are empty")
+		oauth.Logger.Log(log.LOG_INFO, "OAuth: Tokens are empty")
 		return true
 	}
 
@@ -317,14 +321,14 @@ func (oauth *OAuth) NeedsRelogin() bool {
 	// The tokens are not expired yet
 	// No relogin is needed
 	if !oauth.isTokensExpired() {
-		oauth.Logger.Log(LOG_INFO, "OAuth: Tokens are not expired, re-login not needed")
+		oauth.Logger.Log(log.LOG_INFO, "OAuth: Tokens are not expired, re-login not needed")
 		return false
 	}
 
 	refreshErr := oauth.getTokensWithRefresh()
 	// We have obtained new tokens with refresh
 	if refreshErr == nil {
-		oauth.Logger.Log(LOG_INFO, "OAuth: Tokens could be re-acquired using the refresh token, re-login not needed")
+		oauth.Logger.Log(log.LOG_INFO, "OAuth: Tokens could be re-acquired using the refresh token, re-login not needed")
 		return false
 	}
 

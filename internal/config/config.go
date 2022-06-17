@@ -1,10 +1,11 @@
-package internal
+package config
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path"
+	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
 
 type Config struct {
@@ -23,7 +24,7 @@ func (config *Config) GetFilename() string {
 }
 
 func (config *Config) Save(readStruct interface{}) error {
-	configDirErr := EnsureDirectory(config.Directory)
+	configDirErr := util.EnsureDirectory(config.Directory)
 	if configDirErr != nil {
 		return &ConfigSaveError{Err: configDirErr}
 	}

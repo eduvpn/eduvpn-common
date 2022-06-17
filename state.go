@@ -3,38 +3,42 @@ package eduvpn
 import (
 	"fmt"
 
-	"github.com/jwijenbergh/eduvpn-common/internal"
+	"github.com/jwijenbergh/eduvpn-common/internal/config"
+	"github.com/jwijenbergh/eduvpn-common/internal/discovery"
+	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
+	"github.com/jwijenbergh/eduvpn-common/internal/log"
+	"github.com/jwijenbergh/eduvpn-common/internal/server"
 )
 
 type VPNState struct {
 	// The chosen server
-	Servers internal.Servers `json:"servers"`
+	Servers server.Servers `json:"servers"`
 
 	// The list of servers and organizations from disco
-	Discovery internal.Discovery `json:"-"`
+	Discovery discovery.Discovery `json:"-"`
 
 	// The fsm
-	FSM internal.FSM `json:"-"`
+	FSM fsm.FSM `json:"-"`
 
 	// The logger
-	Logger internal.FileLogger `json:"-"`
+	Logger log.FileLogger `json:"-"`
 
 	// The config
-	Config internal.Config `json:"-"`
+	Config config.Config `json:"-"`
 
 	// Whether to enable debugging
 	Debug bool `json:"-"`
 }
 
 func (state *VPNState) Register(name string, directory string, stateCallback func(string, string, string), debug bool) error {
-	if !state.FSM.InState(internal.DEREGISTERED) {
-		return &StateWrongFSMStateError{Got: state.FSM.Current, Want: internal.DEREGISTERED}
+	if !state.FSM.InState(fsm.DEREGISTERED) {
+		return &StateWrongFSMStateError{Got: state.FSM.Current, Want: fsm.DEREGISTERED}
 	}
 	// Initialize the logger
-	logLevel := internal.LOG_WARNING
+	logLevel := log.LOG_WARNING
 
 	if debug {
-		logLevel = internal.LOG_INFO
+		logLevel = log.LOG_INFO
 	}
 
 	loggerErr := state.Logger.Init(logLevel, name, directory)
@@ -55,9 +59,9 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 	// Try to load the previous configuration
 	if state.Config.Load(&state) != nil {
 		// This error can be safely ignored, as when the config does not load, the struct will not be filled
-		state.Logger.Log(internal.LOG_INFO, "Previous configuration not found")
+		state.Logger.Log(log.LOG_INFO, "Previous configuration not found")
 	}
-	state.FSM.GoTransition(internal.NO_SERVER)
+	state.FSM.GoTransition(fsm.NO_SERVER)
 	return nil
 }
 
@@ -74,20 +78,20 @@ func (state *VPNState) Deregister() error {
 }
 
 func (state *VPNState) CancelOAuth() error {
-	if !state.FSM.InState(internal.OAUTH_STARTED) {
-		return &StateWrongFSMStateError{Got: state.FSM.Current, Want: internal.OAUTH_STARTED}
+	if !state.FSM.InState(fsm.OAUTH_STARTED) {
+		return &StateWrongFSMStateError{Got: state.FSM.Current, Want: fsm.OAUTH_STARTED}
 	}
 
-	server, serverErr := state.Servers.GetCurrentServer()
+	currentServer, serverErr := state.Servers.GetCurrentServer()
 
 	if serverErr != nil {
 		return &StateOAuthCancelError{Err: serverErr}
 	}
-	internal.CancelOAuth(server)
+	server.CancelOAuth(currentServer)
 	return nil
 }
 
-func (state *VPNState) chooseServer(url string, isSecureInternet bool) (internal.Server, error) {
+func (state *VPNState) chooseServer(url string, isSecureInternet bool) (server.Server, error) {
 	// New server chosen, ensure the server is fresh
 	server, serverErr := state.Servers.EnsureServer(url, isSecureInternet, &state.FSM, &state.Logger)
 
@@ -96,51 +100,51 @@ func (state *VPNState) chooseServer(url string, isSecureInternet bool) (internal
 	}
 
 	// Make sure we are in the chosen state if available
-	state.FSM.GoTransition(internal.CHOSEN_SERVER)
+	state.FSM.GoTransition(fsm.CHOSEN_SERVER)
 	return server, nil
 }
 
 func (state *VPNState) getConfigWithOptions(url string, isSecureInternet bool, forceTCP bool) (string, string, error) {
-	if state.FSM.InState(internal.DEREGISTERED) {
+	if state.FSM.InState(fsm.DEREGISTERED) {
 		return "", "", &StateFSMNotRegisteredError{}
 	}
 
 	// Go to no server if possible, else return an error
-	if !state.FSM.InState(internal.NO_SERVER) && !state.FSM.GoTransition(internal.NO_SERVER) {
-		return "", "", &internal.FSMWrongStateTransitionError{Got: state.FSM.Current, Want: internal.NO_SERVER}
+	if !state.FSM.InState(fsm.NO_SERVER) && !state.FSM.GoTransition(fsm.NO_SERVER) {
+		return "", "", &fsm.FSMWrongStateTransitionError{Got: state.FSM.Current, Want: fsm.NO_SERVER}
 	}
 
 	// Make sure the server is chosen
-	server, serverErr := state.chooseServer(url, isSecureInternet)
+	chosenServer, serverErr := state.chooseServer(url, isSecureInternet)
 
 	if serverErr != nil {
 		return "", "", &StateConnectError{URL: url, IsSecureInternet: isSecureInternet, Err: serverErr}
 	}
 	// Relogin with oauth
 	// This moves the state to authorized
-	if internal.NeedsRelogin(server) {
-		loginErr := internal.Login(server)
+	if server.NeedsRelogin(chosenServer) {
+		loginErr := server.Login(chosenServer)
 
 		if loginErr != nil {
 			// We are possibly in oauth started
 			// So go to no server
-			state.FSM.GoTransition(internal.NO_SERVER)
+			state.FSM.GoTransition(fsm.NO_SERVER)
 			return "", "", &StateConnectError{URL: url, IsSecureInternet: isSecureInternet, Err: loginErr}
 		}
 	} else { // OAuth was valid, ensure we are in the authorized state
-		state.FSM.GoTransition(internal.AUTHORIZED)
+		state.FSM.GoTransition(fsm.AUTHORIZED)
 	}
 
-	state.FSM.GoTransition(internal.REQUEST_CONFIG)
+	state.FSM.GoTransition(fsm.REQUEST_CONFIG)
 
-	config, configType, configErr := internal.GetConfig(server, forceTCP)
+	config, configType, configErr := server.GetConfig(chosenServer, forceTCP)
 
 	if configErr != nil {
 		// Go back to no server if possible
-		state.FSM.GoTransition(internal.NO_SERVER)
+		state.FSM.GoTransition(fsm.NO_SERVER)
 		return "", "", &StateConnectError{URL: url, IsSecureInternet: isSecureInternet, Err: configErr}
 	} else {
-		state.FSM.GoTransition(internal.HAS_CONFIG)
+		state.FSM.GoTransition(fsm.HAS_CONFIG)
 	}
 
 	return config, configType, nil
@@ -155,22 +159,22 @@ func (state *VPNState) GetConfigSecureInternet(url string, forceTCP bool) (strin
 }
 
 func (state *VPNState) GetDiscoOrganizations() (string, error) {
-	if state.FSM.InState(internal.DEREGISTERED) {
-		return "", &StateWrongFSMStateError{Got: state.FSM.Current, Want: internal.DEREGISTERED}
+	if state.FSM.InState(fsm.DEREGISTERED) {
+		return "", &StateWrongFSMStateError{Got: state.FSM.Current, Want: fsm.DEREGISTERED}
 	}
 	return state.Discovery.GetOrganizationsList()
 }
 
 func (state *VPNState) GetDiscoServers() (string, error) {
-	if state.FSM.InState(internal.DEREGISTERED) {
+	if state.FSM.InState(fsm.DEREGISTERED) {
 		return "", &StateFSMNotRegisteredError{}
 	}
 	return state.Discovery.GetServersList()
 }
 
 func (state *VPNState) SetProfileID(profileID string) error {
-	if !state.FSM.InState(internal.ASK_PROFILE) {
-		return &StateWrongFSMStateError{Got: state.FSM.Current, Want: internal.ASK_PROFILE}
+	if !state.FSM.InState(fsm.ASK_PROFILE) {
+		return &StateWrongFSMStateError{Got: state.FSM.Current, Want: fsm.ASK_PROFILE}
 	}
 
 	server, serverErr := state.Servers.GetCurrentServer()
@@ -188,20 +192,20 @@ func (state *VPNState) SetProfileID(profileID string) error {
 }
 
 func (state *VPNState) SetConnected() error {
-	if !state.FSM.HasTransition(internal.CONNECTED) {
-		return &internal.FSMWrongStateTransitionError{Got: state.FSM.Current, Want: internal.CONNECTED}
+	if !state.FSM.HasTransition(fsm.CONNECTED) {
+		return &fsm.FSMWrongStateTransitionError{Got: state.FSM.Current, Want: fsm.CONNECTED}
 	}
 
-	state.FSM.GoTransition(internal.CONNECTED)
+	state.FSM.GoTransition(fsm.CONNECTED)
 	return nil
 }
 
 func (state *VPNState) SetDisconnected() error {
-	if !state.FSM.HasTransition(internal.HAS_CONFIG) {
-		return &internal.FSMWrongStateTransitionError{Got: state.FSM.Current, Want: internal.HAS_CONFIG}
+	if !state.FSM.HasTransition(fsm.HAS_CONFIG) {
+		return &fsm.FSMWrongStateTransitionError{Got: state.FSM.Current, Want: fsm.HAS_CONFIG}
 	}
 
-	state.FSM.GoTransition(internal.HAS_CONFIG)
+	state.FSM.GoTransition(fsm.HAS_CONFIG)
 	return nil
 }
 
@@ -225,12 +229,12 @@ func (e *StateRegisterError) Error() string {
 type StateFSMNotRegisteredError struct{}
 
 func (e *StateFSMNotRegisteredError) Error() string {
-	return fmt.Sprintf("state is not registered. Current FSM state: %s", internal.DEREGISTERED.String())
+	return fmt.Sprintf("state is not registered. Current FSM state: %s", fsm.DEREGISTERED.String())
 }
 
 type StateWrongFSMStateError struct {
-	Got  internal.FSMStateID
-	Want internal.FSMStateID
+	Got  fsm.FSMStateID
+	Want fsm.FSMStateID
 }
 
 func (e *StateWrongFSMStateError) Error() string {

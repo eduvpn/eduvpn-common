@@ -1,10 +1,11 @@
-package internal
+package log
 
 import (
 	"fmt"
 	"log"
 	"os"
 	"path"
+	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
 
 type FileLogger struct {
@@ -37,7 +38,7 @@ func (e LogLevel) String() string {
 }
 
 func (logger *FileLogger) Init(level LogLevel, name string, directory string) error {
-	configDirErr := EnsureDirectory(directory)
+	configDirErr := util.EnsureDirectory(directory)
 	if configDirErr != nil {
 		return &LogInitializeError{Name: name, Directory: directory, Err: configDirErr}
 	}
