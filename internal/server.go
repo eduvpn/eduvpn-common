@@ -13,6 +13,8 @@ type ServerBase struct {
 	ProfilesRaw string            `json:"profiles_raw"`
 	Logger      *FileLogger       `json:"-"`
 	FSM         *FSM              `json:"-"`
+	StartTime   int64             `json:"start-time"`
+	EndTime     int64             `json:"end-time"`
 }
 
 // An instute access server

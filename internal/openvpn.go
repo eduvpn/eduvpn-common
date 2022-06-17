@@ -9,7 +9,11 @@ func OpenVPNGetConfig(server Server) (string, string, error) {
 		return "", "", &OpenVPNGetConfigError{Err: baseErr}
 	}
 	profile_id := base.Profiles.Current
-	configOpenVPN, _, configErr := APIConnectOpenVPN(server, profile_id)
+	configOpenVPN, expires, configErr := APIConnectOpenVPN(server, profile_id)
+
+	// Store start and end time
+	base.StartTime = GenerateTimeSeconds()
+	base.EndTime = expires
 
 	if configErr != nil {
 		return "", "", &OpenVPNGetConfigError{Err: configErr}

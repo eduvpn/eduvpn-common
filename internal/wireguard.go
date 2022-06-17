@@ -3,7 +3,6 @@ package internal
 import (
 	"fmt"
 	"regexp"
-
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
@@ -45,13 +44,16 @@ func WireguardGetConfig(server Server, supportsOpenVPN bool) (string, string, er
 	}
 
 	wireguardPublicKey := wireguardKey.PublicKey().String()
-	config, content, _, configErr := APIConnectWireguard(server, profile_id, wireguardPublicKey, supportsOpenVPN)
+	config, content, expires, configErr := APIConnectWireguard(server, profile_id, wireguardPublicKey, supportsOpenVPN)
 
 	if configErr != nil {
 		return "", "", &WireguardGetConfigError{Err: wireguardErr}
 	}
 
-	// FIXME: Store expiry
+	// Store start and end time
+	base.StartTime = GenerateTimeSeconds()
+	base.EndTime = expires
+
 	if content == "wireguard" {
 		// This needs the go code a way to identify a connection
 		// Use the uuid of the connection e.g. on Linux

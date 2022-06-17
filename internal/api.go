@@ -96,7 +96,7 @@ func APIInfo(server Server) error {
 	return nil
 }
 
-func APIConnectWireguard(server Server, profile_id string, pubkey string, supportsOpenVPN bool) (string, string, string, error) {
+func APIConnectWireguard(server Server, profile_id string, pubkey string, supportsOpenVPN bool) (string, string, int64, error) {
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 		"accept":       {"application/x-wireguard-profile"},
@@ -112,20 +112,26 @@ func APIConnectWireguard(server Server, profile_id string, pubkey string, suppor
 	}
 	header, connectBody, connectErr := apiAuthorizedRetry(server, http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {
-		return "", "", "", &APIConnectWireguardError{Err: connectErr}
+		return "", "", 0, &APIConnectWireguardError{Err: connectErr}
 	}
 
 	expires := header.Get("expires")
+
+	pTime, pTimeErr := http.ParseTime(expires)
+	if pTimeErr != nil {
+		return "", "", 0, &APIConnectWireguardError{Err: pTimeErr}
+	}
+
 	contentType := header.Get("content-type")
 
 	content := "openvpn"
 	if contentType == "application/x-wireguard-profile" {
 		content = "wireguard"
 	}
-	return string(connectBody), content, expires, nil
+	return string(connectBody), content, pTime.Unix(), nil
 }
 
-func APIConnectOpenVPN(server Server, profile_id string) (string, string, error) {
+func APIConnectOpenVPN(server Server, profile_id string) (string, int64, error) {
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 		"accept":       {"application/x-openvpn-profile"},
@@ -137,11 +143,15 @@ func APIConnectOpenVPN(server Server, profile_id string) (string, string, error)
 
 	header, connectBody, connectErr := apiAuthorizedRetry(server, http.MethodPost, "/connect", &HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {
-		return "", "", &APIConnectOpenVPNError{Err: connectErr}
+		return "", 0, &APIConnectOpenVPNError{Err: connectErr}
 	}
 
 	expires := header.Get("expires")
-	return string(connectBody), expires, nil
+	pTime, pTimeErr := http.ParseTime(expires)
+	if pTimeErr != nil {
+		return "", 0, &APIConnectOpenVPNError{Err: pTimeErr}
+	}
+	return string(connectBody), pTime.Unix(), nil
 }
 
 // This needs no further return value as it's best effort
