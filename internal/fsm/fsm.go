@@ -1,12 +1,15 @@
 package fsm
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
 	"sort"
+
 	"github.com/jwijenbergh/eduvpn-common/internal/log"
+	"github.com/jwijenbergh/eduvpn-common/internal/types"
 )
 
 type (
@@ -209,20 +212,26 @@ func (fsm *FSM) GenerateGraph() string {
 	return fsm.generateMermaidGraph()
 }
 
-type FSMWrongStateTransitionError struct {
+type DeregisteredError struct{}
+
+func (e DeregisteredError) CustomError() *types.WrappedErrorMessage {
+	return &types.WrappedErrorMessage{Message: "Client not registered with the GO library", Err: errors.New("the current FSM state is deregistered, but the function needs a state that is not deregistered")}
+}
+
+type WrongStateTransitionError struct {
 	Got  FSMStateID
 	Want FSMStateID
 }
 
-func (e *FSMWrongStateTransitionError) Error() string {
-	return fmt.Sprintf("wrong FSM state, got: %s, want a state with a transition to: %s", e.Got.String(), e.Want.String())
+func (e WrongStateTransitionError) CustomError() *types.WrappedErrorMessage {
+	return &types.WrappedErrorMessage{Message: "Wrong FSM transition", Err: errors.New(fmt.Sprintf("wrong FSM state, got: %s, want: a state with a transition to: %s", e.Got.String(), e.Want.String()))}
 }
 
-type FSMWrongStateError struct {
+type WrongStateError struct {
 	Got  FSMStateID
 	Want FSMStateID
 }
 
-func (e *FSMWrongStateError) Error() string {
-	return fmt.Sprintf("wrong FSM state, got: %s, want: %s", e.Got.String(), e.Want.String())
+func (e WrongStateError) CustomError() *types.WrappedErrorMessage {
+	return &types.WrappedErrorMessage{Message: "Wrong FSM State", Err: errors.New(fmt.Sprintf("wrong FSM state, got: %s, want: %s", e.Got.String(), e.Want.String()))}
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jedisct1/go-minisign"
+	"github.com/jwijenbergh/eduvpn-common/internal/types"
 )
 
 // getKeys returns keys taken from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys.
@@ -28,16 +29,19 @@ func getKeys() []string {
 //
 // Verify is a wrapper around verifyWithKeys where allowedPublicKeys is set to the list from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys.
 func Verify(signatureFileContent string, signedJson []byte, expectedFileName string, minSignTime uint64, forcePrehash bool) (bool, error) {
+	errorMessage := "failed signature verify"
 	keyStrs := getKeys()
 	if extraKey != "" {
 		keyStrs = append(keyStrs, extraKey)
 		_, err := fmt.Fprintf(os.Stderr, "INSECURE TEST MODE ENABLED WITH KEY %q\n", extraKey)
+		err = &types.WrappedErrorMessage{Message: errorMessage, Err: err}
 		if err != nil {
 			panic(err)
 		}
 	}
 	valid, err := verifyWithKeys(signatureFileContent, signedJson, expectedFileName, minSignTime, keyStrs, forcePrehash)
 	if err != nil {
+		err = &types.WrappedErrorMessage{Message: errorMessage, Err: err}
 		var verifyCreatePublickeyError *VerifyCreatePublicKeyError
 		if errors.As(err, &verifyCreatePublickeyError) {
 			panic(err) // This should not happen unless keyStrs has an invalid key
@@ -67,6 +71,7 @@ func InsecureTestingSetExtraKey(keyString string) {
 // The signature is checked to have a timestamp with a value of at least minSignTime, which is a UNIX timestamp without milliseconds.
 //
 // The return value will either be (true, nil) on success or (false, detailedVerifyError) on failure.
+// Note that every error path is wrapped in a custom type here because minisign does not return custom error types, they use errors.New
 func verifyWithKeys(signatureFileContent string, signedJson []byte, filename string, minSignTime uint64, allowedPublicKeys []string, forcePrehash bool) (bool, error) {
 	switch filename {
 	case "server_list.json", "organization_list.json":
@@ -143,6 +148,10 @@ func (e *VerifyInvalidSignatureFormatError) Error() string {
 	return fmt.Sprintf("invalid signature format with error: %v", e.Err)
 }
 
+func (e *VerifyInvalidSignatureFormatError) Unwrap() error {
+	return e.Err
+}
+
 type VerifyInvalidSignatureAlgorithmError struct {
 	Algorithm       string
 	WantedAlgorithm string
@@ -161,12 +170,20 @@ func (e *VerifyCreatePublicKeyError) Error() string {
 	return fmt.Sprintf("failed to create public key: %s with error: %v", e.PublicKey, e.Err)
 }
 
+func (e *VerifyCreatePublicKeyError) Unwrap() error {
+	return e.Err
+}
+
 type VerifyInvalidSignatureError struct {
 	Err error
 }
 
 func (e *VerifyInvalidSignatureError) Error() string {
 	return fmt.Sprintf("invalid signature with error: %v", e.Err)
+}
+
+func (e *VerifyInvalidSignatureError) Unwrap() error {
+	return e.Err
 }
 
 type VerifyInvalidTrustedCommentError struct {
@@ -176,6 +193,10 @@ type VerifyInvalidTrustedCommentError struct {
 
 func (e *VerifyInvalidTrustedCommentError) Error() string {
 	return fmt.Sprintf("invalid trusted comment: %s with error: %v", e.TrustedComment, e.Err)
+}
+
+func (e *VerifyInvalidTrustedCommentError) Unwrap() error {
+	return e.Err
 }
 
 type VerifyWrongSigFilenameError struct {

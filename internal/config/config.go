@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
+
+	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
 
@@ -24,13 +26,14 @@ func (config *Config) GetFilename() string {
 }
 
 func (config *Config) Save(readStruct interface{}) error {
+	errorMessage := "failed saving configuration"
 	configDirErr := util.EnsureDirectory(config.Directory)
 	if configDirErr != nil {
-		return &ConfigSaveError{Err: configDirErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: configDirErr}
 	}
 	jsonString, marshalErr := json.Marshal(readStruct)
 	if marshalErr != nil {
-		return &ConfigSaveError{Err: marshalErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: marshalErr}
 	}
 	return ioutil.WriteFile(config.GetFilename(), jsonString, 0o600)
 }
@@ -38,23 +41,7 @@ func (config *Config) Save(readStruct interface{}) error {
 func (config *Config) Load(writeStruct interface{}) error {
 	bytes, readErr := ioutil.ReadFile(config.GetFilename())
 	if readErr != nil {
-		return &ConfigLoadError{Err: readErr}
+		return &types.WrappedErrorMessage{Message: "failed loading configuration", Err: readErr}
 	}
 	return json.Unmarshal(bytes, writeStruct)
-}
-
-type ConfigSaveError struct {
-	Err error
-}
-
-func (e *ConfigSaveError) Error() string {
-	return fmt.Sprintf("failed to save config with error: %v", e.Err)
-}
-
-type ConfigLoadError struct {
-	Err error
-}
-
-func (e *ConfigLoadError) Error() string {
-	return fmt.Sprintf("failed to load config with error: %v", e.Err)
 }

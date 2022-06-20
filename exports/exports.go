@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"unsafe"
+
 	"github.com/jwijenbergh/eduvpn-common"
 )
 

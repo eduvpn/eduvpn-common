@@ -3,49 +3,14 @@ package discovery
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 	"github.com/jwijenbergh/eduvpn-common/internal/http"
 	"github.com/jwijenbergh/eduvpn-common/internal/log"
+	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
 	"github.com/jwijenbergh/eduvpn-common/internal/verify"
 )
-
-type DiscoFileError struct {
-	URL string
-	Err error
-}
-
-func (e *DiscoFileError) Error() string {
-	return fmt.Sprintf("failed obtaining disco file %s with error %v", e.URL, e.Err)
-}
-
-type DiscoSigFileError struct {
-	URL string
-	Err error
-}
-
-func (e *DiscoSigFileError) Error() string {
-	return fmt.Sprintf("failed obtaining disco signature file %s with error %v", e.URL, e.Err)
-}
-
-type DiscoVerifyError struct {
-	File    string
-	Sigfile string
-	Err     error
-}
-
-func (e *DiscoVerifyError) Error() string {
-	return fmt.Sprintf("failed verifying file %s with signature %s due to error %v", e.File, e.Sigfile, e.Err)
-}
-
-type DiscoJSONError struct {
-	Body string
-	Err  error
-}
-
-func (e *DiscoJSONError) Error() string {
-	return fmt.Sprintf("failed parsing JSON for contents %s with error %v", e.Body, e.Err)
-}
 
 type OrganizationList struct {
 	JSON      json.RawMessage `json:"organization_list"`
@@ -68,13 +33,14 @@ type Discovery struct {
 
 // Helper function that gets a disco json
 func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}) error {
+	errorMessage := fmt.Sprintf("failed getting file: %s from the Discovery server", jsonFile)
 	// Get json data
 	discoURL := "https://disco.eduvpn.org/v2/"
 	fileURL := discoURL + jsonFile
 	_, fileBody, fileErr := http.HTTPGet(fileURL)
 
 	if fileErr != nil {
-		return &DiscoFileError{fileURL, fileErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: fileErr}
 	}
 
 	// Get signature
@@ -83,7 +49,7 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	_, sigBody, sigFileErr := http.HTTPGet(sigURL)
 
 	if sigFileErr != nil {
-		return &DiscoSigFileError{URL: sigURL, Err: sigFileErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: sigFileErr}
 	}
 
 	// Verify signature
@@ -92,26 +58,17 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	verifySuccess, verifyErr := verify.Verify(string(sigBody), fileBody, jsonFile, previousVersion, forcePrehash)
 
 	if !verifySuccess || verifyErr != nil {
-		return &DiscoVerifyError{File: jsonFile, Sigfile: sigFile, Err: verifyErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: verifyErr}
 	}
 
 	// Parse JSON to extract version and list
 	jsonErr := json.Unmarshal(fileBody, structure)
 
 	if jsonErr != nil {
-		return &DiscoJSONError{Body: string(fileBody), Err: jsonErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: jsonErr}
 	}
 
 	return nil
-}
-
-type GetListError struct {
-	File string
-	Err  error
-}
-
-func (e *GetListError) Error() string {
-	return fmt.Sprintf("failed getting disco list file %s with error %v", e.File, e.Err)
 }
 
 func (discovery *Discovery) Init(fsm *fsm.FSM, logger *log.FileLogger) {
@@ -155,7 +112,7 @@ func (discovery *Discovery) GetOrganizationsList() (string, error) {
 	err := getDiscoFile(file, discovery.Organizations.Version, &discovery.Organizations)
 	if err != nil {
 		// Return previous with an error
-		return string(discovery.Organizations.JSON), &GetListError{File: file, Err: err}
+		return string(discovery.Organizations.JSON), &types.WrappedErrorMessage{Message: "failed getting organizations in Discovery", Err: err}
 	}
 	return string(discovery.Organizations.JSON), nil
 }
@@ -169,7 +126,7 @@ func (discovery *Discovery) GetServersList() (string, error) {
 	err := getDiscoFile(file, discovery.Servers.Version, &discovery.Servers)
 	if err != nil {
 		// Return previous with an error
-		return string(discovery.Servers.JSON), &GetListError{File: file, Err: err}
+		return string(discovery.Servers.JSON), &types.WrappedErrorMessage{Message: "failed getting servers in Discovery", Err: err}
 	}
 	// Update servers timestamp
 	discovery.Servers.Timestamp = util.GenerateTimeSeconds()

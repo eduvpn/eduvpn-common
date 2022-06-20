@@ -6,32 +6,34 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+
 	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
 	"github.com/jwijenbergh/eduvpn-common/internal/log"
+	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
 
 func APIGetEndpoints(baseURL string) (*ServerEndpoints, error) {
+	errorMessage := "failed getting server endpoints"
 	url := fmt.Sprintf("%s/%s", baseURL, WellKnownPath)
 	_, body, bodyErr := httpw.HTTPGet(url)
 
 	if bodyErr != nil {
-		return nil, &APIGetEndpointsError{Err: bodyErr}
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: bodyErr}
 	}
 
 	endpoints := &ServerEndpoints{}
 	jsonErr := json.Unmarshal(body, endpoints)
 
 	if jsonErr != nil {
-		return nil, &APIGetEndpointsError{Err: jsonErr}
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: jsonErr}
 	}
 
 	return endpoints, nil
 }
 
-// Authorized wrappers on top of HTTP
-// the errors will not be wrapped here so that the caller can check if we got a status error, to retry oauth
 func apiAuthorized(server Server, method string, endpoint string, opts *httpw.HTTPOptionalParams) (http.Header, []byte, error) {
+	errorMessage := "failed API authorized"
 	// Ensure optional is not nil as we will fill it with headers
 	if opts == nil {
 		opts = &httpw.HTTPOptionalParams{}
@@ -39,7 +41,7 @@ func apiAuthorized(server Server, method string, endpoint string, opts *httpw.HT
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return nil, nil, baseErr
+		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 
 	url := base.Endpoints.API.V3.API + endpoint
@@ -52,7 +54,7 @@ func apiAuthorized(server Server, method string, endpoint string, opts *httpw.HT
 	base.FSM.Current = stateBefore
 
 	if oauthErr != nil {
-		return nil, nil, oauthErr
+		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: oauthErr}
 	}
 
 	headerKey := "Authorization"
@@ -66,11 +68,12 @@ func apiAuthorized(server Server, method string, endpoint string, opts *httpw.HT
 }
 
 func apiAuthorizedRetry(server Server, method string, endpoint string, opts *httpw.HTTPOptionalParams) (http.Header, []byte, error) {
+	errorMessage := "failed authorized API retry"
 	header, body, bodyErr := apiAuthorized(server, method, endpoint, opts)
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return nil, nil, &APIAuthorizedError{Err: baseErr}
+		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 	if bodyErr != nil {
 		var error *httpw.HTTPStatusError
@@ -82,31 +85,32 @@ func apiAuthorizedRetry(server Server, method string, endpoint string, opts *htt
 			server.GetOAuth().Token.ExpiredTimestamp = util.GenerateTimeSeconds()
 			retryHeader, retryBody, retryErr := apiAuthorized(server, method, endpoint, opts)
 			if retryErr != nil {
-				return nil, nil, &APIAuthorizedError{Err: retryErr}
+				return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: retryErr}
 			}
 			return retryHeader, retryBody, nil
 		}
-		return nil, nil, &APIAuthorizedError{Err: bodyErr}
+		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: bodyErr}
 	}
 	return header, body, nil
 }
 
 func APIInfo(server Server) error {
+	errorMessage := "failed API /info"
 	_, body, bodyErr := apiAuthorizedRetry(server, http.MethodGet, "/info", nil)
 	if bodyErr != nil {
-		return &APIInfoError{Err: bodyErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: bodyErr}
 	}
 	structure := ServerProfileInfo{}
 	jsonErr := json.Unmarshal(body, &structure)
 
 	if jsonErr != nil {
-		return &APIInfoError{Err: jsonErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: jsonErr}
 	}
 
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return &APIInfoError{Err: baseErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 
 	// Store the profiles and make sure that the current profile is not overwritten
@@ -118,6 +122,7 @@ func APIInfo(server Server) error {
 }
 
 func APIConnectWireguard(server Server, profile_id string, pubkey string, supportsOpenVPN bool) (string, string, int64, error) {
+	errorMessage := "failed obtaining a WireGuard configuration"
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 		"accept":       {"application/x-wireguard-profile"},
@@ -133,14 +138,14 @@ func APIConnectWireguard(server Server, profile_id string, pubkey string, suppor
 	}
 	header, connectBody, connectErr := apiAuthorizedRetry(server, http.MethodPost, "/connect", &httpw.HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {
-		return "", "", 0, &APIConnectWireguardError{Err: connectErr}
+		return "", "", 0, &types.WrappedErrorMessage{Message: errorMessage, Err: connectErr}
 	}
 
 	expires := header.Get("expires")
 
 	pTime, pTimeErr := http.ParseTime(expires)
 	if pTimeErr != nil {
-		return "", "", 0, &APIConnectWireguardError{Err: pTimeErr}
+		return "", "", 0, &types.WrappedErrorMessage{Message: errorMessage, Err: pTimeErr}
 	}
 
 	contentType := header.Get("content-type")
@@ -153,6 +158,7 @@ func APIConnectWireguard(server Server, profile_id string, pubkey string, suppor
 }
 
 func APIConnectOpenVPN(server Server, profile_id string) (string, int64, error) {
+	errorMessage := "failed obtaining an OpenVPN configuration"
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 		"accept":       {"application/x-openvpn-profile"},
@@ -164,13 +170,13 @@ func APIConnectOpenVPN(server Server, profile_id string) (string, int64, error) 
 
 	header, connectBody, connectErr := apiAuthorizedRetry(server, http.MethodPost, "/connect", &httpw.HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {
-		return "", 0, &APIConnectOpenVPNError{Err: connectErr}
+		return "", 0, &types.WrappedErrorMessage{Message: errorMessage, Err: connectErr}
 	}
 
 	expires := header.Get("expires")
 	pTime, pTimeErr := http.ParseTime(expires)
 	if pTimeErr != nil {
-		return "", 0, &APIConnectOpenVPNError{Err: pTimeErr}
+		return "", 0, &types.WrappedErrorMessage{Message: errorMessage, Err: pTimeErr}
 	}
 	return string(connectBody), pTime.Unix(), nil
 }
@@ -178,44 +184,4 @@ func APIConnectOpenVPN(server Server, profile_id string) (string, int64, error) 
 // This needs no further return value as it's best effort
 func APIDisconnect(server Server) {
 	apiAuthorizedRetry(server, http.MethodPost, "/disconnect", nil)
-}
-
-type APIAuthorizedError struct {
-	Err error
-}
-
-func (e *APIAuthorizedError) Error() string {
-	return fmt.Sprintf("failed api authorized call with error: %v", e.Err)
-}
-
-type APIConnectWireguardError struct {
-	Err error
-}
-
-func (e *APIConnectWireguardError) Error() string {
-	return fmt.Sprintf("failed api /connect wireguard call with error: %v", e.Err)
-}
-
-type APIConnectOpenVPNError struct {
-	Err error
-}
-
-func (e *APIConnectOpenVPNError) Error() string {
-	return fmt.Sprintf("failed api /connect OpenVPN call with error: %v", e.Err)
-}
-
-type APIInfoError struct {
-	Err error
-}
-
-func (e *APIInfoError) Error() string {
-	return fmt.Sprintf("failed api /info call with error: %v", e.Err)
-}
-
-type APIGetEndpointsError struct {
-	Err error
-}
-
-func (e *APIGetEndpointsError) Error() string {
-	return fmt.Sprintf("failed to get server endpoint with error %v", e.Err)
 }

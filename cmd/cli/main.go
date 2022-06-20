@@ -205,7 +205,9 @@ func printConfig(url string, isInstitute bool) {
 	config, _, configErr := getConfig(state, url, isInstitute)
 
 	if configErr != nil {
-		fmt.Println("Error getting config", configErr)
+		// Show the usage of tracebacks and causes
+		fmt.Println("Error getting config:", state.GetErrorTraceback(configErr))
+		fmt.Println("Error getting config, cause:", state.GetErrorCause(configErr))
 		return
 	}
 

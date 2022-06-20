@@ -15,6 +15,7 @@ import (
 	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
 	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
 	"github.com/jwijenbergh/eduvpn-common/internal/server"
+	"github.com/jwijenbergh/eduvpn-common/internal/types"
 )
 
 func ensureLocalWellKnown() {
@@ -96,34 +97,16 @@ func test_connect_oauth_parameter(t *testing.T, parameters httpw.URLParameters, 
 	}, false)
 	_, _, configErr := state.GetConfigInstituteAccess(serverURI, false)
 
-	var stateErr *StateConnectError
-	var loginErr *oauth.OAuthLoginError
-	var finishErr *oauth.OAuthFinishError
+	var wrappedErr *types.WrappedErrorMessage
 
-	// We go through the chain of errors by unwrapping them one by one
-
-	// First ensure we get a state connect error
-	if !errors.As(configErr, &stateErr) {
-		t.Fatalf("error %T = %v, wantErr %T", configErr, configErr, stateErr)
+	// We ensure the error is of a wrappedErrorMessage
+	if !errors.As(configErr, &wrappedErr) {
+		t.Fatalf("error %T = %v, wantErr %T", configErr, configErr, wrappedErr)
 	}
 
-	// Then ensure we get a login error
-	gotLoginErr := stateErr.Err
+	gotExpectedErr := wrappedErr.Cause()
 
-	if !errors.As(gotLoginErr, &loginErr) {
-		t.Fatalf("error %T = %v, wantErr %T", gotLoginErr, gotLoginErr, loginErr)
-	}
-
-	// Then ensure we get a finish error
-	gotFinishErr := loginErr.Err
-
-	if !errors.As(gotFinishErr, &finishErr) {
-		t.Fatalf("error %T = %v, wantErr %T", gotFinishErr, gotFinishErr, finishErr)
-	}
-
-	// Then ensure we get the expected inner error
-	gotExpectedErr := finishErr.Err
-
+	// Then we check if the cause is correct
 	if !errors.As(gotExpectedErr, expectedErr) {
 		t.Fatalf("error %T = %v, wantErr %T", gotExpectedErr, gotExpectedErr, expectedErr)
 	}

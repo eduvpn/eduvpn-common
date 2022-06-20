@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"path"
+
+	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
 
@@ -38,13 +40,15 @@ func (e LogLevel) String() string {
 }
 
 func (logger *FileLogger) Init(level LogLevel, name string, directory string) error {
+	errorMessage := "failed creating log"
+
 	configDirErr := util.EnsureDirectory(directory)
 	if configDirErr != nil {
-		return &LogInitializeError{Name: name, Directory: directory, Err: configDirErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: configDirErr}
 	}
 	logFile, logOpenErr := os.OpenFile(logger.getFilename(directory, name), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o666)
 	if logOpenErr != nil {
-		return &LogInitializeError{Name: name, Directory: directory, Err: logOpenErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: logOpenErr}
 	}
 	log.SetOutput(logFile)
 	logger.File = logFile
@@ -65,14 +69,4 @@ func (logger *FileLogger) Log(level LogLevel, str string) {
 
 func (logger *FileLogger) Close() {
 	logger.File.Close()
-}
-
-type LogInitializeError struct {
-	Name      string
-	Directory string
-	Err       error
-}
-
-func (e *LogInitializeError) Error() string {
-	return fmt.Sprintf("failed initializing logging with name: %s and directory: %s with error: %v", e.Name, e.Directory, e.Err)
 }

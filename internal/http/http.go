@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/jwijenbergh/eduvpn-common/internal/types"
 )
 
 type URLParameters map[string]string
@@ -21,7 +23,7 @@ type HTTPOptionalParams struct {
 func HTTPConstructURL(baseURL string, parameters URLParameters) (string, error) {
 	url, parseErr := url.Parse(baseURL)
 	if parseErr != nil {
-		return "", &HTTPConstructURLError{URL: baseURL, Parameters: parameters, Err: parseErr}
+		return "", &types.WrappedErrorMessage{Message: fmt.Sprintf("failed to construct url: %s including parameters: %v", url, parameters), Err: parseErr}
 	}
 
 	q := url.Query()
@@ -55,7 +57,7 @@ func httpOptionalURL(url string, opts *HTTPOptionalParams) (string, error) {
 		url, urlErr := HTTPConstructURL(url, opts.URLParameters)
 
 		if urlErr != nil {
-			return url, &HTTPRequestCreateError{URL: url, Err: urlErr}
+			return url, &types.WrappedErrorMessage{Message: fmt.Sprintf("failed to create HTTP request with url: %s", url), Err: urlErr}
 		}
 		return url, nil
 	}
@@ -91,10 +93,12 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (ht
 	// Create a client
 	client := &http.Client{}
 
+	errorMessage := fmt.Sprintf("failed HTTP request with method %s and url %s", method, url)
+
 	// Create request object with the body reader generated from the optional arguments
 	req, reqErr := http.NewRequest(method, url, httpOptionalBodyReader(opts))
 	if reqErr != nil {
-		return nil, nil, &HTTPRequestCreateError{URL: url, Err: reqErr}
+		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: reqErr}
 	}
 
 	// See https://stackoverflow.com/questions/17714494/golang-http-request-results-in-eof-errors-when-making-multiple-requests-successi
@@ -106,7 +110,7 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (ht
 	// Do request
 	resp, respErr := client.Do(req)
 	if respErr != nil {
-		return nil, nil, &HTTPResourceError{URL: url, Err: respErr}
+		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: respErr}
 	}
 
 	// Request successful, make sure body is closed at the end
@@ -115,24 +119,17 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (ht
 	// Return a string
 	body, readErr := ioutil.ReadAll(resp.Body)
 	if readErr != nil {
-		return resp.Header, nil, &HTTPReadError{URL: url, Err: readErr}
+		return resp.Header, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: readErr}
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return resp.Header, body, &HTTPStatusError{URL: url, Status: resp.StatusCode}
+		// We make this a custom error because we want to extract the status code later
+		statusErr := &HTTPStatusError{URL: url, Status: resp.StatusCode}
+		return resp.Header, body, &types.WrappedErrorMessage{Message: errorMessage, Err: statusErr}
 	}
 
 	// Return the body in bytes and signal the status error if there was one
 	return resp.Header, body, nil
-}
-
-type HTTPResourceError struct {
-	URL string
-	Err error
-}
-
-func (e *HTTPResourceError) Error() string {
-	return fmt.Sprintf("failed obtaining HTTP resource: %s with error: %v", e.URL, e.Err)
 }
 
 type HTTPStatusError struct {
@@ -144,15 +141,6 @@ func (e *HTTPStatusError) Error() string {
 	return fmt.Sprintf("failed obtaining HTTP resource: %s as it gave an unsuccesful status code: %d", e.URL, e.Status)
 }
 
-type HTTPReadError struct {
-	URL string
-	Err error
-}
-
-func (e *HTTPReadError) Error() string {
-	return fmt.Sprintf("failed reading HTTP resource: %s with error: %v", e.URL, e.Err)
-}
-
 type HTTPParseJsonError struct {
 	URL  string
 	Body string
@@ -161,23 +149,4 @@ type HTTPParseJsonError struct {
 
 func (e *HTTPParseJsonError) Error() string {
 	return fmt.Sprintf("failed parsing json %s for HTTP resource: %s with error: %v", e.Body, e.URL, e.Err)
-}
-
-type HTTPRequestCreateError struct {
-	URL string
-	Err error
-}
-
-func (e *HTTPRequestCreateError) Error() string {
-	return fmt.Sprintf("failed to create HTTP request with url: %s and error: %v", e.URL, e.Err)
-}
-
-type HTTPConstructURLError struct {
-	URL        string
-	Parameters URLParameters
-	Err        error
-}
-
-func (e *HTTPConstructURLError) Error() string {
-	return fmt.Sprintf("failed to construct url: %s including parameters: %v with error: %v", e.URL, e.Parameters, e.Err)
 }
