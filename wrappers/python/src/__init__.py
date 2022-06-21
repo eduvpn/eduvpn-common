@@ -35,7 +35,7 @@ class MultipleDataError(Structure):
     _fields_ = [("data", c_void_p), ("other_data", c_void_p), ("error", c_void_p)]
 
 
-VPNStateChange = CFUNCTYPE(None, c_char_p, c_char_p, c_char_p)
+VPNStateChange = CFUNCTYPE(None, c_char_p, c_char_p, c_char_p, c_char_p)
 
 # Exposed functions
 # We have to use c_void_p instead of c_char_p to free it properly
@@ -67,7 +67,19 @@ lib.SetSearchServer.argtypes, lib.SetSearchServer.restype = [c_char_p], c_void_p
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
 
 
-def GetPtrString(ptr: c_void_p) -> str:
+def encode_args(args, types):
+    for arg, t in zip(args, types):
+        # c_char_p needs the str to be encoded to bytes
+        if t is c_char_p:
+            arg = arg.encode("utf-8")
+        yield arg
+
+
+def decode_res(t):
+    return decode_map.get(t, lambda x: x)
+
+
+def get_ptr_string(ptr: c_void_p) -> str:
     if ptr:
         string = cast(ptr, c_char_p).value
         lib.FreeString(ptr)
@@ -76,16 +88,23 @@ def GetPtrString(ptr: c_void_p) -> str:
     return ""
 
 
-def GetDataError(data_error: DataError) -> Tuple[str, str]:
-    data = GetPtrString(data_error.data)
-    error = GetPtrString(data_error.error)
+def get_data_error(data_error: DataError) -> Tuple[str, str]:
+    data = get_ptr_string(data_error.data)
+    error = get_ptr_string(data_error.error)
     return data, error
 
 
-def GetMultipleDataError(
+def get_multiple_data_error(
     multiple_data_error: MultipleDataError,
 ) -> Tuple[str, str, str]:
-    data = GetPtrString(multiple_data_error.data)
-    other_data = GetPtrString(multiple_data_error.other_data)
-    error = GetPtrString(multiple_data_error.error)
+    data = get_ptr_string(multiple_data_error.data)
+    other_data = get_ptr_string(multiple_data_error.other_data)
+    error = get_ptr_string(multiple_data_error.error)
     return data, other_data, error
+
+
+decode_map = {
+    c_void_p: get_ptr_string,
+    DataError: get_data_error,
+    MultipleDataError: get_multiple_data_error,
+}

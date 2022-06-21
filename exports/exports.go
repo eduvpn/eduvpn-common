@@ -3,12 +3,12 @@ package main
 /*
 #include <stdlib.h>
 
-typedef void (*PythonCB)(const char* oldstate, const char* newstate, const char* data);
+typedef void (*PythonCB)(const char* name, const char* oldstate, const char* newstate, const char* data);
 
 __attribute__((weak))
-void call_callback(PythonCB callback, const char* oldstate, const char* newstate, const char* data)
+void call_callback(PythonCB callback, const char *name, const char* oldstate, const char* newstate, const char* data)
 {
-    callback(oldstate, newstate, data);
+    callback(name, oldstate, newstate, data);
 }
 */
 import "C"
@@ -21,18 +21,21 @@ import (
 	"github.com/jwijenbergh/eduvpn-common"
 )
 
-var P_StateCallback C.PythonCB
+var P_StateCallbacks map[string]C.PythonCB
 
 var VPNStates map[string]*eduvpn.VPNState
 
-func StateCallback(old_state string, new_state string, data string) {
-	if P_StateCallback == nil {
+func StateCallback(name string, old_state string, new_state string, data string) {
+	P_StateCallback, exists := P_StateCallbacks[name]
+	if !exists || P_StateCallback == nil {
 		return
 	}
+	name_c := C.CString(name)
 	oldState_c := C.CString(old_state)
 	newState_c := C.CString(new_state)
 	data_c := C.CString(data)
-	C.call_callback(P_StateCallback, oldState_c, newState_c, data_c)
+	C.call_callback(P_StateCallback, name_c, oldState_c, newState_c, data_c)
+	C.free(unsafe.Pointer(name_c))
 	C.free(unsafe.Pointer(oldState_c))
 	C.free(unsafe.Pointer(newState_c))
 	C.free(unsafe.Pointer(data_c))
@@ -58,9 +61,14 @@ func Register(name *C.char, config_directory *C.char, stateCallback C.PythonCB, 
 	if VPNStates == nil {
 		VPNStates = make(map[string]*eduvpn.VPNState)
 	}
+	if P_StateCallbacks == nil {
+		P_StateCallbacks = make(map[string]C.PythonCB)
+	}
 	VPNStates[nameStr] = state
-	P_StateCallback = stateCallback
-	registerErr := state.Register(nameStr, C.GoString(config_directory), StateCallback, debug != 0)
+	P_StateCallbacks[nameStr] = stateCallback
+	registerErr := state.Register(nameStr, C.GoString(config_directory), func(old string, new string, data string) {
+		StateCallback(nameStr, old, new, data)
+	}, debug != 0)
 
 	if registerErr != nil {
 		delete(VPNStates, nameStr)
