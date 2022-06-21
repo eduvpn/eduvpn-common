@@ -7,14 +7,6 @@ import (
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
 )
 
-// getKeys returns keys taken from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys.
-func getKeys() []string {
-	return []string{
-		"RWRtBSX1alxyGX+Xn3LuZnWUT0w//B6EmTJvgaAxBMYzlQeI+jdrO6KF", // fkooman@tuxed.net, kolla@uninett.no
-		"RWQKqtqvd0R7rUDp0rWzbtYPA3towPWcLDCl7eY9pBMMI/ohCmrS0WiM", // RoSp
-	}
-}
-
 // Verify verifies the signature (.minisig file format) on signedJson.
 //
 // expectedFileName must be set to the file type to be verified, either "server_list.json" or "organization_list.json".
@@ -27,7 +19,11 @@ func getKeys() []string {
 //
 // Verify is a wrapper around verifyWithKeys where allowedPublicKeys is set to the list from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys.
 func Verify(signatureFileContent string, signedJson []byte, expectedFileName string, minSignTime uint64, forcePrehash bool) (bool, error) {
-	keyStrs := getKeys()
+	// keys taken from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys
+	keyStrs := []string{
+		"RWRtBSX1alxyGX+Xn3LuZnWUT0w//B6EmTJvgaAxBMYzlQeI+jdrO6KF", // fkooman@tuxed.net, kolla@uninett.no
+		"RWQKqtqvd0R7rUDp0rWzbtYPA3towPWcLDCl7eY9pBMMI/ohCmrS0WiM", // RoSp
+	}
 	valid, err := verifyWithKeys(signatureFileContent, signedJson, expectedFileName, minSignTime, keyStrs, forcePrehash)
 	if err != nil {
 		return valid, &types.WrappedErrorMessage{Message: "failed signature verify", Err: err}
