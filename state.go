@@ -32,6 +32,16 @@ type VPNState struct {
 	Identifier string `json:"identifier"`
 }
 
+func (state *VPNState) GetSavedServers() string {
+	serversJSON, serversJSONErr := state.Servers.GetJSON()
+
+	if serversJSONErr != nil {
+		return ""
+	}
+
+	return serversJSON
+}
+
 func (state *VPNState) Register(name string, directory string, stateCallback func(string, string, string), debug bool) error {
 	errorMessage := "failed to register with the GO library"
 	if !state.FSM.InState(fsm.DEREGISTERED) {
@@ -64,7 +74,9 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 		// This error can be safely ignored, as when the config does not load, the struct will not be filled
 		state.Logger.Log(log.LOG_INFO, "Previous configuration not found")
 	}
-	state.FSM.GoTransition(fsm.NO_SERVER)
+
+	// Go to the No Server state with the saved servers
+	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
 	return nil
 }
 
@@ -205,9 +217,18 @@ func (state *VPNState) SetIdentifier(identifier string) {
 	state.Identifier = identifier
 }
 
+func (state *VPNState) SetSearchServer() error {
+	if !state.FSM.HasTransition(fsm.SEARCH_SERVER) {
+		return &types.WrappedErrorMessage{Message: "failed to set search server", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.CONNECTED}.CustomError()}
+	}
+
+	state.FSM.GoTransition(fsm.SEARCH_SERVER)
+	return nil
+}
+
 func (state *VPNState) SetConnected() error {
 	if !state.FSM.HasTransition(fsm.CONNECTED) {
-		return fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.CONNECTED}.CustomError()
+		return &types.WrappedErrorMessage{Message: "failed to set connected", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.CONNECTED}.CustomError()}
 	}
 
 	state.FSM.GoTransition(fsm.CONNECTED)
@@ -216,7 +237,7 @@ func (state *VPNState) SetConnected() error {
 
 func (state *VPNState) SetDisconnected() error {
 	if !state.FSM.HasTransition(fsm.HAS_CONFIG) {
-		return fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.HAS_CONFIG}.CustomError()
+		return &types.WrappedErrorMessage{Message: "failed to set disconnected", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.HAS_CONFIG}.CustomError()}
 	}
 
 	state.FSM.GoTransition(fsm.HAS_CONFIG)

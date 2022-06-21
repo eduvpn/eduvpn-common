@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
@@ -66,6 +67,16 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerGetCurrentNotFoundError{}}
 	}
 	return institute, nil
+}
+
+func (servers *Servers) GetJSON() (string, error) {
+	bytes, bytesErr := json.Marshal(servers)
+
+	if bytesErr != nil {
+		return "", bytesErr
+	}
+
+	return string(bytes), nil
 }
 
 type Servers struct {
