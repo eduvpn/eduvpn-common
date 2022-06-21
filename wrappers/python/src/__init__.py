@@ -61,6 +61,8 @@ lib.CancelOAuth.argtypes, lib.CancelOAuth.restype = [c_char_p], c_void_p
 lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p, c_char_p], c_void_p
 lib.SetConnected.argtypes, lib.SetConnected.restype = [c_char_p], c_void_p
 lib.SetDisconnected.argtypes, lib.SetDisconnected.restype = [c_char_p], c_void_p
+lib.GetIdentifier.argtypes, lib.GetIdentifier.restype = [c_char_p], DataError
+lib.SetIdentifier.argtypes, lib.SetIdentifier.restype = [c_char_p, c_char_p], c_void_p
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
 
 

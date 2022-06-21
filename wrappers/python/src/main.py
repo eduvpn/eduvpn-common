@@ -105,6 +105,20 @@ def SetDisconnected(name: str) -> str:
     return err_string
 
 
+def SetIdentifier(name: str, identifier: str) -> str:
+    name_bytes = name.encode("utf-8")
+    identifier_bytes = identifier.encode("utf-8")
+    ptr_err = lib.SetIdentifier(name_bytes, identifier_bytes)
+    err_string = GetPtrString(ptr_err)
+    return err_string
+
+
+def GetIdentifier(name: str) -> Tuple[str, str]:
+    name_bytes = name.encode("utf-8")
+    identifier, identifier_err = GetDataError(lib.GetIdentifier(name_bytes))
+    return identifier, identifier_err
+
+
 # This has to be global as otherwise the callback is not alive
 callback_function = None
 
@@ -189,8 +203,12 @@ class EduVPN(object):
 
         if config_err:
             raise Exception(config_err)
+    def set_connected(self) -> None:
+        connect_err = SetConnected(self.name)
 
         return config, config_type
+        if connect_err:
+            raise Exception(connect_err)
 
     def set_disconnected(self) -> None:
         disconnect_err = SetDisconnected(self.name)
@@ -198,11 +216,19 @@ class EduVPN(object):
         if disconnect_err:
             raise Exception(disconnect_err)
 
-    def set_connected(self) -> None:
-        connect_err = SetConnected(self.name)
+    def get_identifier(self) -> str:
+        identifier, identifier_err = GetIdentifier(self.name)
 
-        if connect_err:
-            raise Exception(connect_err)
+        if identifier_err:
+            raise Exception(identifier_err)
+
+        return identifier
+
+    def set_identifier(self, identifier: str) -> None:
+        identifier_err = SetIdentifier(self.name, identifier)
+
+        if identifier_err:
+            raise Exception(identifier_err)
 
     @property
     def event(self) -> EventHandler:
