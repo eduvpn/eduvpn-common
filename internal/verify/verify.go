@@ -1,9 +1,7 @@
 package verify
 
 import (
-	"errors"
 	"fmt"
-	"os"
 
 	"github.com/jedisct1/go-minisign"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
@@ -29,37 +27,12 @@ func getKeys() []string {
 //
 // Verify is a wrapper around verifyWithKeys where allowedPublicKeys is set to the list from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys.
 func Verify(signatureFileContent string, signedJson []byte, expectedFileName string, minSignTime uint64, forcePrehash bool) (bool, error) {
-	errorMessage := "failed signature verify"
 	keyStrs := getKeys()
-	if extraKey != "" {
-		keyStrs = append(keyStrs, extraKey)
-		_, err := fmt.Fprintf(os.Stderr, "INSECURE TEST MODE ENABLED WITH KEY %q\n", extraKey)
-		err = &types.WrappedErrorMessage{Message: errorMessage, Err: err}
-		if err != nil {
-			panic(err)
-		}
-	}
 	valid, err := verifyWithKeys(signatureFileContent, signedJson, expectedFileName, minSignTime, keyStrs, forcePrehash)
 	if err != nil {
-		err = &types.WrappedErrorMessage{Message: errorMessage, Err: err}
-		var verifyCreatePublickeyError *VerifyCreatePublicKeyError
-		if errors.As(err, &verifyCreatePublickeyError) {
-			panic(err) // This should not happen unless keyStrs has an invalid key
-		}
-		return valid, err
+		return valid, &types.WrappedErrorMessage{Message: "failed signature verify", Err: err}
 	}
 	return valid, nil
-}
-
-// extraKey is an extra allowed key for testing.
-var extraKey = ""
-
-// InsecureTestingSetExtraKey adds an extra allowed key for verification with Verify.
-// ONLY USE FOR TESTING. Applies to all threads. Probably not thread-safe. Do not call in parallel to Verify.
-//
-// keyString must be a Base64-encoded Minisign key, or empty to reset.
-func InsecureTestingSetExtraKey(keyString string) {
-	extraKey = keyString
 }
 
 // verifyWithKeys verifies the Minisign signature in signatureFileContent (minisig file format) over the server_list/organization_list JSON in signedJson.
