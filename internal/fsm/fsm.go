@@ -36,6 +36,9 @@ const (
 	// No Server means the user has not chosen a server yet
 	NO_SERVER
 
+	// The user is currently selecting a server in the UI
+	SEARCH_SERVER
+
 	// Chosen Server means the user has chosen a server to connect to
 	CHOSEN_SERVER
 
@@ -51,7 +54,7 @@ const (
 	// Has config means the user has gotten a config
 	HAS_CONFIG
 
-	// Ask profile means the go code is asking for a profile selection from the ui
+	// Ask profile means the go code is asking for a profile selection from the UI
 	ASK_PROFILE
 
 	// Connected means the user has been connected to the server
@@ -64,6 +67,8 @@ func (s FSMStateID) String() string {
 		return "Deregistered"
 	case NO_SERVER:
 		return "No_Server"
+	case SEARCH_SERVER:
+		return "Search_Server"
 	case CHOSEN_SERVER:
 		return "Chosen_Server"
 	case OAUTH_STARTED:
@@ -108,7 +113,8 @@ type FSM struct {
 func (fsm *FSM) Init(name string, callback func(string, string, string), logger *log.FileLogger, directory string, debug bool) {
 	fsm.States = FSMStates{
 		DEREGISTERED:   {{NO_SERVER, "Client registers"}},
-		NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}},
+		NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}, {SEARCH_SERVER, "The user is trying to choose a Server in the UI"}},
+		SEARCH_SERVER:  {{CHOSEN_SERVER, "User clicks a server in the UI"}, {NO_SERVER, "Cancel or Error"}},
 		CHOSEN_SERVER:  {{AUTHORIZED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
 		OAUTH_STARTED:  {{AUTHORIZED, "User authorizes with browser"}, {NO_SERVER, "Cancel or Error"}},
 		AUTHORIZED:     {{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},

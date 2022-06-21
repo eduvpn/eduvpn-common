@@ -105,6 +105,13 @@ def SetDisconnected(name: str) -> str:
     return err_string
 
 
+def SetSearchServer(name: str) -> str:
+    name_bytes = name.encode("utf-8")
+    ptr_err = lib.SetSearchServer(name_bytes)
+    err_string = GetPtrString(ptr_err)
+    return err_string
+
+
 def SetIdentifier(name: str, identifier: str) -> str:
     name_bytes = name.encode("utf-8")
     identifier_bytes = identifier.encode("utf-8")
@@ -229,6 +236,12 @@ class EduVPN(object):
 
         if identifier_err:
             raise Exception(identifier_err)
+
+    def set_search_server(self) -> None:
+        search_err = SetSearchServer(self.name)
+
+        if search_err:
+            raise Exception(search_err)
 
     @property
     def event(self) -> EventHandler:

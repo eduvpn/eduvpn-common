@@ -174,6 +174,17 @@ func SetIdentifier(name *C.char, identifier *C.char) *C.char {
 	return C.CString("")
 }
 
+//export SetSearchServer
+func SetSearchServer(name *C.char) *C.char {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	setSearchErr := state.SetSearchServer()
+	return C.CString(ErrorToString(setSearchErr))
+}
+
 //export SetDisconnected
 func SetDisconnected(name *C.char) *C.char {
 	nameStr := C.GoString(name)
