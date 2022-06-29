@@ -23,8 +23,15 @@ _os = platform.system().lower()
 
 _libname = "eduvpn_common"
 _libfile = f"{_lib_prefixes[_os]}{_libname}{_lib_suffixes[_os]}"
-# Library should have been copied to the lib/ folder
-lib = cdll.LoadLibrary(str(pathlib.Path(__file__).parent / "lib" / _libfile))
+
+lib = None
+
+# Try to load in the normal path
+try:
+    lib = cdll.LoadLibrary(_libfile)
+# Otherwise, library should have been copied to the lib/ folder
+except:
+    lib = cdll.LoadLibrary(str(pathlib.Path(__file__).parent / "lib" / _libfile))
 
 
 class DataError(Structure):
