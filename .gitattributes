@@ -1,5 +1,5 @@
 # Interpret .json & .blake2b test data files as binary (not text)
 # Otherwise test signatures made with different line endings will become invalid
 # Use LF for created .json files, also on Windows
-internal/test_data/**/*.json -text eol=lf
-internal/test_data/**/*.blake2b -text
+internal/verify/test_data/**/*.json -text eol=lf
+internal/verify/test_data/**/*.blake2b -text
