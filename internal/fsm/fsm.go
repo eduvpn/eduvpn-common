@@ -162,7 +162,7 @@ func (fsm *FSM) writeGraph() {
 
 	f.WriteString(graph)
 	f.Close()
-	cmd := exec.Command("mmdc", "-i", graphFile, "-o", graphImgFile)
+	cmd := exec.Command("mmdc", "-i", graphFile, "-o", graphImgFile, "--scale", "4")
 
 	cmd.Start()
 }
