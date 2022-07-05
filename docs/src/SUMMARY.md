@@ -6,6 +6,7 @@
 	- [Go library](./gettingstarted/building/go.md)
 	- [Python wrapper](./gettingstarted/building/python.md)
 	- [Example from scratch](./gettingstarted/building/example.md)
+	- [Package Formats](./gettingstarted/building/packageformats.md)
   - [Testing](./gettingstarted/testing.md)
   - [Debugging](./gettingstarted/debugging/README.md)
 	- [Logging](./gettingstarted/debugging/logging.md)

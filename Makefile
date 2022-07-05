@@ -43,7 +43,7 @@ srpm:
 # Cleanup
 	rm -rf dist/*
 
-# build SRPM and RPM and copy to dist
+# build SRPM and copy to dist
 	rpmbuild -bs eduvpncommon.spec
 	cp ~/rpmbuild/SRPMS/* dist/
 	echo "Done building SRPM, go to ./dist/ to view it"
