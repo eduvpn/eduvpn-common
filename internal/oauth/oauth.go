@@ -223,11 +223,6 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (oauth *OAuth) Update(fsm *fsm.FSM, logger *log.FileLogger) {
-	oauth.FSM = fsm
-	oauth.Logger = logger
-}
-
 func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string, fsm *fsm.FSM, logger *log.FileLogger) {
 	oauth.BaseAuthorizationURL = baseAuthorizationURL
 	oauth.TokenURL = tokenURL
@@ -236,7 +231,7 @@ func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string, fsm *fsm.
 }
 
 // Starts the OAuth exchange for eduvpn.
-func (oauth *OAuth) start(name string) error {
+func (oauth *OAuth) start(name string, postprocessAuth func(string) string) error {
 	errorMessage := "failed starting OAuth exchange"
 	if !oauth.FSM.HasTransition(fsm.OAUTH_STARTED) {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateTransitionError{Got: oauth.FSM.Current, Want: fsm.OAUTH_STARTED}.CustomError()}
@@ -274,7 +269,7 @@ func (oauth *OAuth) start(name string) error {
 	oauthSession := OAuthExchangeSession{ClientID: name, State: state, Verifier: verifier}
 	oauth.Session = oauthSession
 	// Run the state callback in the background so that the user can login while we start the callback server
-	oauth.FSM.GoTransitionWithData(fsm.OAUTH_STARTED, authURL, true)
+	oauth.FSM.GoTransitionWithData(fsm.OAUTH_STARTED, postprocessAuth(authURL), true)
 	return nil
 }
 
@@ -298,9 +293,9 @@ func (oauth *OAuth) Cancel() {
 	oauth.Session.Server.Shutdown(oauth.Session.Context)
 }
 
-func (oauth *OAuth) Login(name string) error {
+func (oauth *OAuth) Login(name string, postprocessAuth func(string) string) error {
 	errorMessage := "failed OAuth login"
-	authInitializeErr := oauth.start(name)
+	authInitializeErr := oauth.start(name, postprocessAuth)
 
 	if authInitializeErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: authInitializeErr}

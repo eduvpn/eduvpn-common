@@ -107,22 +107,39 @@ func CancelOAuth(name *C.char) *C.char {
 	return C.CString(cancelErrString)
 }
 
-//export GetConnectConfig
-func GetConnectConfig(name *C.char, url *C.char, isSecureInternet C.int, forceTCP C.int) (*C.char, *C.char, *C.char) {
+//export GetConfigSecureInternet
+func GetConfigSecureInternet(name *C.char, orgID *C.char, forceTCP C.int) (*C.char, *C.char, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
 		return nil, nil, C.CString(ErrorToString(stateErr))
 	}
-	var config string
-	var configType string
-	var configErr error
 	forceTCPBool := forceTCP == 1
-	if isSecureInternet == 1 {
-		config, configType, configErr = state.GetConfigSecureInternet(C.GoString(url), forceTCPBool)
-	} else {
-		config, configType, configErr = state.GetConfigInstituteAccess(C.GoString(url), forceTCPBool)
+	config, configType, configErr := state.GetConfigSecureInternet(C.GoString(orgID), forceTCPBool)
+	return C.CString(config), C.CString(configType), C.CString(ErrorToString(configErr))
+}
+
+//export GetConfigInstituteAccess
+func GetConfigInstituteAccess(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char, *C.char) {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return nil, nil, C.CString(ErrorToString(stateErr))
 	}
+	forceTCPBool := forceTCP == 1
+	config, configType, configErr := state.GetConfigInstituteAccess(C.GoString(url), forceTCPBool)
+	return C.CString(config), C.CString(configType), C.CString(ErrorToString(configErr))
+}
+
+//export GetConfigCustomServer
+func GetConfigCustomServer(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char, *C.char) {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return nil, nil, C.CString(ErrorToString(stateErr))
+	}
+	forceTCPBool := forceTCP == 1
+	config, configType, configErr := state.GetConfigCustomServer(C.GoString(url), forceTCPBool)
 	return C.CString(config), C.CString(configType), C.CString(ErrorToString(configErr))
 }
 

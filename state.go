@@ -1,6 +1,7 @@
 package eduvpn
 
 import (
+	"fmt"
 	"github.com/jwijenbergh/eduvpn-common/internal/config"
 	"github.com/jwijenbergh/eduvpn-common/internal/discovery"
 	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
@@ -77,6 +78,9 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 
 	// Go to the No Server state with the saved servers
 	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+
+	state.GetDiscoServers()
+	state.GetDiscoOrganizations()
 	return nil
 }
 
@@ -92,51 +96,12 @@ func (state *VPNState) Deregister() error {
 	return nil
 }
 
-func (state *VPNState) CancelOAuth() error {
-	errorMessage := "failed to cancel OAuth"
-	if !state.FSM.InState(fsm.OAUTH_STARTED) {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateError{Got: state.FSM.Current, Want: fsm.OAUTH_STARTED}.CustomError()}
-	}
-
-	currentServer, serverErr := state.Servers.GetCurrentServer()
-
-	if serverErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
-	}
-	server.CancelOAuth(currentServer)
-	return nil
-}
-
-func (state *VPNState) chooseServer(url string, isSecureInternet bool) (server.Server, error) {
-	// New server chosen, ensure the server is fresh
-	server, serverErr := state.Servers.EnsureServer(url, isSecureInternet, &state.FSM, &state.Logger)
-
-	if serverErr != nil {
-		return nil, &types.WrappedErrorMessage{Message: "failed to choose server", Err: serverErr}
-	}
-
-	// Make sure we are in the chosen state if available
-	state.FSM.GoTransition(fsm.CHOSEN_SERVER)
-	return server, nil
-}
-
-func (state *VPNState) getConfigWithOptions(url string, isSecureInternet bool, forceTCP bool) (string, string, error) {
+func (state *VPNState) getConfig(chosenServer server.Server, forceTCP bool) (string, string, error) {
 	errorMessage := "failed to get a configuration for OpenVPN/Wireguard"
 	if state.FSM.InState(fsm.DEREGISTERED) {
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.DeregisteredError{}.CustomError()}
 	}
 
-	// Go to no server if possible, else return an error
-	if !state.FSM.InState(fsm.NO_SERVER) && !state.FSM.GoTransition(fsm.NO_SERVER) {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.NO_SERVER}.CustomError()}
-	}
-
-	// Make sure the server is chosen
-	chosenServer, serverErr := state.chooseServer(url, isSecureInternet)
-
-	if serverErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
-	}
 	// Relogin with oauth
 	// This moves the state to authorized
 	if server.NeedsRelogin(chosenServer) {
@@ -167,13 +132,133 @@ func (state *VPNState) getConfigWithOptions(url string, isSecureInternet bool, f
 	return config, configType, nil
 }
 
-func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (string, string, error) {
-	return state.getConfigWithOptions(url, false, forceTCP)
+func (state *VPNState) AskSecureLocation() error {
+	fmt.Println("locations: ", state.Discovery.GetSecureLocationList())
+	server, serverErr := state.Discovery.GetServerByCountryCode("NL", "secure_internet")
+
+	if serverErr != nil {
+		return &types.WrappedErrorMessage{Message: "failed asking secure location", Err: serverErr}
+	}
+
+	state.Servers.SetSecureLocation(server, &state.FSM, &state.Logger)
+
+	return nil
 }
 
-func (state *VPNState) GetConfigSecureInternet(url string, forceTCP bool) (string, string, error) {
-	return state.getConfigWithOptions(url, true, forceTCP)
+
+func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server, error) {
+	errorMessage := fmt.Sprintf("failed adding Secure Internet home server with organization ID %s", orgID)
+	// Get the secure internet URL from discovery
+	secureOrg, secureServer, discoErr := state.Discovery.GetSecureHomeArgs(orgID)
+	if discoErr != nil {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: discoErr}
+	}
+
+	// Add the secure internet server
+	server, serverErr := state.Servers.AddSecureInternet(secureOrg, secureServer, &state.FSM, &state.Logger)
+
+	if serverErr != nil {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+	}
+
+	if !state.Servers.HasSecureLocation() {
+		locationErr := state.AskSecureLocation()
+
+		if locationErr != nil {
+			return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: locationErr}
+		}
+	}
+
+	return server, nil
 }
+
+func (state *VPNState) GetConfigSecureInternet(orgID string, forceTCP bool) (string, string, error) {
+	errorMessage := fmt.Sprintf("failed getting a configuration for Secure Internet organization %s", orgID)
+	server, serverErr := state.addSecureInternetHomeServer(orgID)
+
+	if serverErr != nil {
+		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+	}
+
+	state.FSM.GoTransition(fsm.CHOSEN_SERVER)
+
+	return state.getConfig(server, forceTCP)
+}
+
+func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
+	errorMessage := fmt.Sprintf("failed adding Institute Access server with url %s", url)
+	instituteServer, discoErr := state.Discovery.GetServerByURL(url, "institute_access")
+	if discoErr != nil {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: discoErr}
+	}
+	// Add the secure internet server
+	server, serverErr := state.Servers.AddInstituteAccess(instituteServer, &state.FSM, &state.Logger)
+
+	if serverErr != nil {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+	}
+
+	state.FSM.GoTransition(fsm.CHOSEN_SERVER)
+
+	return server, nil
+
+}
+
+func (state *VPNState) addCustomServer(url string) (server.Server, error) {
+	errorMessage := fmt.Sprintf("failed adding Custom server with url %s", url)
+
+	instituteServer := &types.DiscoveryServer{BaseURL: url, CountryCode: "NL", Type: "custom", SupportContact: []string{"custom"}}
+
+	// A custom server is just an institute access server under the hood
+	server, serverErr := state.Servers.AddInstituteAccess(instituteServer, &state.FSM, &state.Logger)
+
+	if serverErr != nil {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+	}
+
+	state.FSM.GoTransition(fsm.CHOSEN_SERVER)
+
+	return server, nil
+
+}
+
+func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (string, string, error) {
+	errorMessage := fmt.Sprintf("failed getting a configuration for Institute Access %s", url)
+	server, serverErr := state.addInstituteServer(url)
+
+	if serverErr != nil {
+		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+	}
+
+	return state.getConfig(server, forceTCP)
+}
+
+func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string, string, error) {
+	errorMessage := fmt.Sprintf("failed getting a configuration for custom server %s", url)
+	server, serverErr := state.addCustomServer(url)
+
+	if serverErr != nil {
+		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+	}
+
+	return state.getConfig(server, forceTCP)
+}
+
+func (state *VPNState) CancelOAuth() error {
+	errorMessage := "failed to cancel OAuth"
+	if !state.FSM.InState(fsm.OAUTH_STARTED) {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateError{Got: state.FSM.Current, Want: fsm.OAUTH_STARTED}.CustomError()}
+	}
+
+	currentServer, serverErr := state.Servers.GetCurrentServer()
+
+	if serverErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+	}
+	server.CancelOAuth(currentServer)
+	return nil
+}
+
 
 func (state *VPNState) GetDiscoOrganizations() (string, error) {
 	if state.FSM.InState(fsm.DEREGISTERED) {

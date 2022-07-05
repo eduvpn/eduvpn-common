@@ -36,14 +36,16 @@ type InstituteAccessServer struct {
 // A secure internet server which has its own OAuth tokens
 // It specifies the current location url it is connected to
 type SecureInternetHomeServer struct {
+	DisplayName string `json:"display_name"`
 	OAuth oauth.OAuth `json:"oauth"`
 
-	// The home server has a list of info for each configured server
+	// The home server has a list of info for each configured server location
 	BaseMap map[string]*ServerBase `json:"base_map"`
 
-	// We have the home url and the current url
-	HomeURL    string `json:"home_url"`
-	CurrentURL string `json:"current_url"`
+	// We have the authorization URL template, the home organization ID and the current location
+	AuthorizationTemplate string `json:"authorization_template"`
+	HomeOrganizationID    string `json:"home_organization_id"`
+	CurrentLocation string `json:"current_location"`
 }
 
 type InstituteServers struct {
@@ -89,11 +91,11 @@ type Server interface {
 	// Gets the current OAuth object
 	GetOAuth() *oauth.OAuth
 
+	// Get the authorization URL template function
+	GetTemplateAuth() func(string) string
+
 	// Gets the server base
 	GetBase() (*ServerBase, error)
-
-	// initialize method
-	init(url string, fsm *fsm.FSM, logger *log.FileLogger) error
 }
 
 // For an institute, we can simply get the OAuth
@@ -103,6 +105,19 @@ func (institute *InstituteAccessServer) GetOAuth() *oauth.OAuth {
 
 func (secure *SecureInternetHomeServer) GetOAuth() *oauth.OAuth {
 	return &secure.OAuth
+}
+
+
+func (institute *InstituteAccessServer) GetTemplateAuth() (func(string) string) {
+    return func(authURL string) string {
+        return authURL
+    }
+}
+
+func (secure *SecureInternetHomeServer) GetTemplateAuth() (func(string) string) {
+    return func(authURL string) string {
+        return util.ReplaceWAYF(secure.AuthorizationTemplate, authURL, secure.HomeOrganizationID)
+    }
 }
 
 func (institute *InstituteAccessServer) GetBase() (*ServerBase, error) {
@@ -115,10 +130,10 @@ func (server *SecureInternetHomeServer) GetBase() (*ServerBase, error) {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerSecureInternetMapNotFoundError{}}
 	}
 
-	base, exists := server.BaseMap[server.CurrentURL]
+	base, exists := server.BaseMap[server.CurrentLocation]
 
 	if !exists {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerSecureInternetBaseNotFoundError{Current: server.CurrentURL}}
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerSecureInternetBaseNotFoundError{Current: server.CurrentLocation}}
 	}
 	return base, nil
 }
@@ -137,23 +152,27 @@ func (institute *InstituteAccessServer) init(url string, fsm *fsm.FSM, logger *l
 	return nil
 }
 
-func (secure *SecureInternetHomeServer) init(url string, fsm *fsm.FSM, logger *log.FileLogger) error {
-	errorMessage := fmt.Sprintf("failed initializing secure internet home server %s", url)
+func (servers *Servers) HasSecureLocation() bool {
+	return servers.SecureInternetHomeServer.CurrentLocation != ""
+}
+
+func (secure *SecureInternetHomeServer) addLocation(locationServer *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) (*ServerBase, error) {
+	errorMessage := "failed adding a location"
 	// Initialize the base map if it is non-nil
 	if secure.BaseMap == nil {
 		secure.BaseMap = make(map[string]*ServerBase)
 	}
 
-	// Add it if not present
-	base, exists := secure.BaseMap[url]
+	// Add the location to the base map
+	base, exists := secure.BaseMap[locationServer.CountryCode]
 
 	if !exists || base == nil {
 		// Create the base to be added to the map
 		base = &ServerBase{}
-		base.URL = url
-		endpoints, endpointsErr := APIGetEndpoints(url)
+		base.URL = locationServer.BaseURL
+		endpoints, endpointsErr := APIGetEndpoints(locationServer.BaseURL)
 		if endpointsErr != nil {
-			return &types.WrappedErrorMessage{Message: errorMessage, Err: endpointsErr}
+			return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: endpointsErr}
 		}
 		base.Endpoints = *endpoints
 	}
@@ -163,19 +182,34 @@ func (secure *SecureInternetHomeServer) init(url string, fsm *fsm.FSM, logger *l
 	base.Logger = logger
 
 	// Ensure it is in the map
-	secure.BaseMap[url] = base
+	secure.BaseMap[locationServer.CountryCode] = base
+	return base, nil
+}
 
-	// Set the home url if it is not set yet
-	if secure.HomeURL == "" {
-		secure.HomeURL = url
-		// Make sure oauth contains our endpoints
-		secure.OAuth.Init(base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token, fsm, logger)
-	} else { // Else just pass in the fsm and logger
-		secure.OAuth.Update(fsm, logger)
+
+// Initializes the home server and adds its own location
+func (secure *SecureInternetHomeServer) init(homeOrg *types.DiscoveryOrganization, homeLocation *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) error {
+	errorMessage := "failed initializing secure internet home server"
+
+	if secure.HomeOrganizationID != homeOrg.OrgId {
+		// New home organisation, clear everything
+		*secure = *&SecureInternetHomeServer{}
+	}
+	
+
+	base, baseErr := secure.addLocation(homeLocation, fsm, logger)
+
+	if baseErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 
-	// Set the current url
-	secure.CurrentURL = url
+	// Make sure to set the organization ID
+	secure.HomeOrganizationID = homeOrg.OrgId
+
+	// Make sure to set the authorization URL template
+	secure.AuthorizationTemplate = homeLocation.AuthenticationURLTemplate
+	// Make sure oauth contains our endpoints
+	secure.OAuth.Init(base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token, fsm, logger)
 	return nil
 }
 
@@ -211,7 +245,7 @@ func ShouldRenewButton(server Server) (bool, error) {
 }
 
 func Login(server Server) error {
-	return server.GetOAuth().Login("org.eduvpn.app.linux")
+	return server.GetOAuth().Login("org.eduvpn.app.linux", server.GetTemplateAuth())
 }
 
 func EnsureTokens(server Server) error {
@@ -240,21 +274,9 @@ func CancelOAuth(server Server) {
 	server.GetOAuth().Cancel()
 }
 
-func (servers *Servers) EnsureServer(url string, isSecureInternet bool, fsm *fsm.FSM, logger *log.FileLogger) (Server, error) {
-	errorMessage := "failed ensuring server"
-	// Intialize the secure internet server
-	// This calls the init method which takes care of the rest
-	if isSecureInternet {
-		initErr := servers.SecureInternetHomeServer.init(url, fsm, logger)
-
-		if initErr != nil {
-			return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: initErr}
-		}
-
-		servers.IsSecureInternet = true
-		return &servers.SecureInternetHomeServer, nil
-	}
-
+func (servers *Servers) AddInstituteAccess(instituteServer *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) (Server, error) {
+	url := instituteServer.BaseURL
+	errorMessage := fmt.Sprintf("failed adding institute access server: %s", url)
 	instituteServers := &servers.InstituteServers
 
 	if instituteServers.Map == nil {
@@ -277,6 +299,33 @@ func (servers *Servers) EnsureServer(url string, isSecureInternet bool, fsm *fsm
 	instituteServers.Map[url] = institute
 	servers.IsSecureInternet = false
 	return institute, nil
+}
+
+func (servers *Servers) SetSecureLocation(chosenLocationServer *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) error {
+	errorMessage := "failed to set secure location"
+	// Make sure to add the current location
+	_, addLocationErr := servers.SecureInternetHomeServer.addLocation(chosenLocationServer, fsm, logger)
+
+	if addLocationErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: addLocationErr}
+	}
+
+	servers.SecureInternetHomeServer.CurrentLocation = chosenLocationServer.CountryCode
+	return nil
+}
+
+func (servers *Servers) AddSecureInternet(secureOrg *types.DiscoveryOrganization, secureServer *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) (Server, error) {
+	errorMessage := "failed adding secure internet server"
+	// If we have specified an organization ID
+	// We also need to get an authorization template
+	initErr := servers.SecureInternetHomeServer.init(secureOrg, secureServer, fsm, logger)
+
+	if initErr != nil {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: initErr}
+	}
+
+	servers.IsSecureInternet = true
+	return &servers.SecureInternetHomeServer, nil
 }
 
 type ServerProfile struct {
@@ -554,5 +603,5 @@ type ServerSecureInternetBaseNotFoundError struct {
 }
 
 func (e *ServerSecureInternetBaseNotFoundError) Error() string {
-	return fmt.Sprintf("secure internet base not found with current: %s", e.Current)
+	return fmt.Sprintf("secure internet base not found with current location: %s", e.Current)
 }

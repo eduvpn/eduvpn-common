@@ -68,7 +68,7 @@ if __name__ == "__main__":
         print("Failed registering:", e)
 
     server = input(
-        "Which Institute Access server do you want to connect to? (e.g. https://eduvpn.example.com): "
+        "Which server (Custom/Institute Access) do you want to connect to? (e.g. https://eduvpn.example.com): "
     )
 
     # Ensure we have a valid http prefix
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     # Get a Wireguard/OpenVPN config
     try:
-        config, config_type = _eduvpn.get_config_institute_access(server)
+        config, config_type = _eduvpn.get_config_custom_server(server)
     except Exception as e:
         print("Failed to connect:", e)
     print(f"Got a config with type: {config_type} and contents:\n{config}")

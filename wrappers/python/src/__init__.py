@@ -47,10 +47,19 @@ VPNStateChange = CFUNCTYPE(None, c_char_p, c_char_p, c_char_p, c_char_p)
 # Exposed functions
 # We have to use c_void_p instead of c_char_p to free it properly
 # See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error
-lib.GetConnectConfig.argtypes, lib.GetConnectConfig.restype = [
+lib.GetConfigSecureInternet.argtypes, lib.GetConfigSecureInternet.restype = [
     c_char_p,
     c_char_p,
     c_int,
+], MultipleDataError
+lib.GetConfigInstituteAccess.argtypes, lib.GetConfigInstituteAccess.restype = [
+    c_char_p,
+    c_char_p,
+    c_int,
+], MultipleDataError
+lib.GetConfigCustomServer.argtypes, lib.GetConfigCustomServer.restype = [
+    c_char_p,
+    c_char_p,
     c_int,
 ], MultipleDataError
 lib.Deregister.argtypes, lib.Deregister.restype = [c_char_p], c_void_p

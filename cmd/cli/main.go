@@ -13,6 +13,13 @@ import (
 	eduvpn "github.com/jwijenbergh/eduvpn-common"
 )
 
+type ServerTypes int8
+const (
+	ServerTypeInstituteAccess ServerTypes = iota
+	ServerTypeSecureInternet
+	ServerTypeCustom
+)
+
 // Open a browser with xdg-open
 func openBrowser(urlString string) {
 	fmt.Printf("OAuth: Initialized with AuthURL %s\n", urlString)
@@ -89,16 +96,15 @@ func stateCallback(state *eduvpn.VPNState, oldState string, newState string, dat
 }
 
 // Get a config for Institute Access or Secure Internet Server
-func getConfig(state *eduvpn.VPNState, url string, isInstitute bool) (string, string, error) {
-	if !strings.HasPrefix(url, "https://") {
+func getConfig(state *eduvpn.VPNState, url string, serverType ServerTypes) (string, string, error) {
+	if !strings.HasPrefix(url, "http") {
 		url = "https://" + url
 	}
-	if !strings.HasSuffix(url, "/") {
-		url += "/"
-	}
 	// Force TCP is set to False
-	if isInstitute {
+	if serverType == ServerTypeInstituteAccess {
 		return state.GetConfigInstituteAccess(url, false)
+	} else if serverType == ServerTypeCustom {
+		return state.GetConfigCustomServer(url, false)
 	}
 	return state.GetConfigSecureInternet(url, false)
 }
@@ -136,7 +142,7 @@ func storeSecureInternetConfig(state *eduvpn.VPNState, url string, directory str
 
 	fmt.Println("Creating and storing cert for", url)
 
-	config, _, configErr := getConfig(state, url, false)
+	config, _, configErr := getConfig(state, url, ServerTypeSecureInternet)
 
 	if configErr != nil {
 		fmt.Printf("Failed obtaining config for url %s with error %v\n", url, configErr)
@@ -193,7 +199,7 @@ func getSecureInternetAll(homeURL string) {
 }
 
 // Get a config for a single server, Institute Access or Secure Internet
-func printConfig(url string, isInstitute bool) {
+func printConfig(url string, serverType ServerTypes) {
 	state := &eduvpn.VPNState{}
 
 	state.Register("org.eduvpn.app.linux", "configs", func(old string, new string, data string) {
@@ -202,7 +208,7 @@ func printConfig(url string, isInstitute bool) {
 
 	defer state.Deregister()
 
-	config, _, configErr := getConfig(state, url, isInstitute)
+	config, _, configErr := getConfig(state, url, serverType)
 
 	if configErr != nil {
 		// Show the usage of tracebacks and causes
@@ -217,20 +223,25 @@ func printConfig(url string, isInstitute bool) {
 // The main function
 // It parses the arguments and executes the correct functions
 func main() {
+	customUrlArg := flag.String("get-custom", "", "The url of a custom server to connect to")
 	urlArg := flag.String("get-institute", "", "The url of an institute to connect to")
 	secureInternet := flag.String("get-secure", "", "Gets secure internet servers.")
 	secureInternetAll := flag.String("get-secure-all", "", "Gets certificates for all secure internet servers. It stores them in ./certs. Provide an URL for the home server e.g. nl.eduvpn.org.")
 	flag.Parse()
 
 	// Connect to a VPN by getting an Institute Access config
+	customUrlString := *customUrlArg
 	urlString := *urlArg
 	secureInternetString := *secureInternet
 	secureInternetAllString := *secureInternetAll
-	if urlString != "" {
-		printConfig(urlString, true)
+	if customUrlString != "" {
+		printConfig(customUrlString, ServerTypeCustom)
+		return
+	} else if urlString != "" {
+		printConfig(urlString, ServerTypeInstituteAccess)
 		return
 	} else if secureInternetString != "" {
-		printConfig(secureInternetString, false)
+		printConfig(secureInternetString, ServerTypeSecureInternet)
 		return
 	} else if secureInternetAllString != "" {
 		getSecureInternetAll(secureInternetAllString)

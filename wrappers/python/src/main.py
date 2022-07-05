@@ -1,4 +1,5 @@
 from . import lib, VPNStateChange, encode_args, decode_res
+from enum import Enum
 from typing import Optional, Tuple
 import threading
 from .event import StateType, EventHandler
@@ -90,14 +91,15 @@ class EduVPN(object):
         return organizations
 
     def get_config(
-        self, url: str, is_secure_internet: bool = False, force_tcp: bool = False
+        self, url: str, func: callable, force_tcp: bool = False
     ):
         # Because it could be the case that a profile callback is started, store a threading event
         # In the constructor, we have defined a wait event for Ask_Profile, this waits for this event to be set
         # The event is set in self.set_profile
         self.profile_event = threading.Event()
+
         config, config_type, config_err = self.go_function(
-            lib.GetConnectConfig, url, is_secure_internet, force_tcp
+            func, url, force_tcp
         )
 
         if config_err:
@@ -107,15 +109,20 @@ class EduVPN(object):
 
         return config, config_type
 
+    def get_config_custom_server(
+        self, url: str, force_tcp: bool = False
+    ) -> Tuple[str, str]:
+        return self.get_config(url, lib.GetConfigCustomServer, force_tcp)
+
     def get_config_institute_access(
         self, url: str, force_tcp: bool = False
     ) -> Tuple[str, str]:
-        return self.get_config(url, False, force_tcp)
+        return self.get_config(url, lib.GetConfigInstituteAccess, force_tcp)
 
     def get_config_secure_internet(
         self, url: str, force_tcp: bool = False
     ) -> Tuple[str, str]:
-        return self.get_config(url, True, force_tcp)
+        return self.get_config(url, lib.GetConfigSecureInternet, force_tcp)
 
     def set_connected(self) -> None:
         connect_err = self.go_function(lib.SetConnected)
