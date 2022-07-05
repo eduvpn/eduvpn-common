@@ -21,4 +21,4 @@ This library tries to remove non-platform specific common functionality. This wa
 [MIT](https://github.com/jwijenbergh/eduvpn-common/blob/main/LICENSE)
 
 ## Authors
-This library is written by [Steven Wallis de Vries](https://github.com/stevenwdv) and [Jeroen Wijenbergh](https://github.com/jwijenbergh), two Radboud University students that worked at SURF for their research internship.
+This library is written by [Steven Wallis de Vries](https://github.com/stevenwdv) and [Jeroen Wijenbergh](https://github.com/jwijenbergh) at the [SURF](https://www.surf.nl/) and [GÉANT](https://geant.org/) organization.

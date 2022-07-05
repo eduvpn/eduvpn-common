@@ -23,4 +23,4 @@ Contributions are welcome.
 [MIT](./LICENSE)
 
 ## Authors
-This work is done by [@stevenwdv](https://github.com/stevenwdv) and [@jwijenbergh](https://github.com/jwijenbergh) at the [SURF](https://www.surf.nl/) organization.
+This work is done by [@stevenwdv](https://github.com/stevenwdv) and [@jwijenbergh](https://github.com/jwijenbergh) at the [SURF](https://www.surf.nl/) and [GÉANT](https://geant.org/) organization.
