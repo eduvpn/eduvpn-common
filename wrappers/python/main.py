@@ -1,6 +1,7 @@
 import eduvpncommon.main as eduvpn
 import webbrowser
 import json
+import sys
 
 # Asks the user for a profile index
 # It loops up until a valid input is given
@@ -30,6 +31,11 @@ def setup_callbacks(_eduvpn: eduvpn.EduVPN) -> None:
     def oauth_initialized(old_state: str, url: str) -> None:
         print(f"Got OAuth URL {url}, old state: {old_state}")
         webbrowser.open(url)
+
+    @_eduvpn.event.on("Ask_Location", eduvpn.StateType.Enter)
+    def ask_location(old_state: str, locations: str):
+        print("Locations: ", locations)
+        _eduvpn.set_secure_location("NL")
 
     # The callback which asks the user for a profile
     @_eduvpn.event.on("Ask_Profile", eduvpn.StateType.Enter)
@@ -79,9 +85,12 @@ if __name__ == "__main__":
     # Get a Wireguard/OpenVPN config
     try:
         config, config_type = _eduvpn.get_config_custom_server(server)
+        print(f"Got a config with type: {config_type} and contents:\n{config}")
     except Exception as e:
         print("Failed to connect:", e)
-    print(f"Got a config with type: {config_type} and contents:\n{config}")
+        # Save and exit
+        _eduvpn.deregister()
+        sys.exit(1)
 
     # Set the internal FSM state to connected
     try:

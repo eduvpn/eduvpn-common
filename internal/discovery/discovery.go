@@ -73,14 +73,21 @@ func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
 	return discovery.Organizations.Timestamp == 0
 }
 
-func (discovery *Discovery) GetSecureLocationList() []string {
+func (discovery *Discovery) GetSecureLocationList() (string, error) {
 	var locations []string
 	for _, server := range discovery.Servers.List {
 		if server.Type == "secure_internet" {
 			locations = append(locations, server.CountryCode)
 		}
 	}
-	return locations
+
+	jsonBytes, jsonErr := json.Marshal(locations)
+
+	if jsonErr != nil {
+		return "", &types.WrappedErrorMessage{Message: "failed getting Secure Internet locations list", Err: jsonErr}
+	}
+
+	return string(jsonBytes), nil
 }
 
 func (discovery *Discovery) GetServerByURL(url string, _type string) (*types.DiscoveryServer, error) {

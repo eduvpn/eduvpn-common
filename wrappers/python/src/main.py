@@ -38,11 +38,17 @@ class EduVPN(object):
         # The ask profile callback needs to wait for the UI thread to select a profile
         # This is stored in the profile_event
         self.profile_event: Optional[threading.Event] = None
+        self.location_event: Optional[threading.Event] = None
 
         @self.event.on("Ask_Profile", StateType.Wait)
         def wait_profile_event(old_state: str, profiles: str):
             if self.profile_event:
                 self.profile_event.wait()
+
+        @self.event.on("Ask_Location", StateType.Wait)
+        def wait_location_event(old_state: str, locations: str):
+            if self.location_event:
+                self.location_event.wait()
 
     def go_function(self, func, *args):
         # The functions all have at least one arg type which is the name of the client
@@ -102,10 +108,11 @@ class EduVPN(object):
             func, url, force_tcp
         )
 
+        self.profile_event = None
+        self.location_event = None
+
         if config_err:
             raise Exception(config_err)
-
-        self.profile_event = None
 
         return config, config_type
 
@@ -122,6 +129,7 @@ class EduVPN(object):
     def get_config_secure_internet(
         self, url: str, force_tcp: bool = False
     ) -> Tuple[str, str]:
+        self.location_event = threading.Event()
         return self.get_config(url, lib.GetConfigSecureInternet, force_tcp)
 
     def set_connected(self) -> None:
@@ -173,10 +181,22 @@ class EduVPN(object):
         # Set the profile id
         profile_err = self.go_function(lib.SetProfileID, profile_id)
 
-        if profile_err:
-            raise Exception(profile_err)
-
         # If there is a profile event, set it so that the wait callback finishes
         # And so that the Go code can move to the next state
         if self.profile_event:
             self.profile_event.set()
+
+        if profile_err:
+            raise Exception(profile_err)
+
+    def set_secure_location(self, country_code: str) -> None:
+        # Set the location by country code
+        location_err = self.go_function(lib.SetSecureLocation, country_code)
+
+        # If there is a location event, set it so that the wait callback finishes
+        # And so that the Go code can move to the next state
+        if self.location_event:
+            self.location_event.set()
+
+        if location_err:
+            raise Exception(location_err)

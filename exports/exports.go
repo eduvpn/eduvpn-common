@@ -176,6 +176,17 @@ func SetProfileID(name *C.char, data *C.char) *C.char {
 	return C.CString(ErrorToString(profileErr))
 }
 
+//export SetSecureLocation
+func SetSecureLocation(name *C.char, data *C.char) *C.char {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	locationErr := state.SetSecureLocation(C.GoString(data))
+	return C.CString(ErrorToString(locationErr))
+}
+
 //export GetIdentifier
 func GetIdentifier(name *C.char) (*C.char, *C.char) {
 	nameStr := C.GoString(name)

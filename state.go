@@ -133,16 +133,26 @@ func (state *VPNState) getConfig(chosenServer server.Server, forceTCP bool) (str
 	return config, configType, nil
 }
 
-func (state *VPNState) AskSecureLocation() error {
-	fmt.Println("locations: ", state.Discovery.GetSecureLocationList())
-	server, serverErr := state.Discovery.GetServerByCountryCode("NL", "secure_internet")
+func (state *VPNState) SetSecureLocation(countryCode string) error {
+	server, serverErr := state.Discovery.GetServerByCountryCode(countryCode, "secure_internet")
 
 	if serverErr != nil {
 		return &types.WrappedErrorMessage{Message: "failed asking secure location", Err: serverErr}
 	}
 
 	state.Servers.SetSecureLocation(server, &state.FSM, &state.Logger)
+	return nil
+}
 
+func (state *VPNState) AskSecureLocation() error {
+	errorMessage := "failed asking Secure Internet location"
+	locations, locationsErr := state.Discovery.GetSecureLocationList()
+	if locationsErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: locationsErr}
+	}
+
+	// Ask for the location in the callback
+	state.FSM.GoTransitionWithData(fsm.ASK_LOCATION, locations, false)
 	return nil
 }
 
