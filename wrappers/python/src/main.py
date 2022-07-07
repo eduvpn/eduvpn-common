@@ -14,6 +14,7 @@ def add_as_global_object(eduvpn) -> bool:
         return True
     return False
 
+
 def remove_as_global_object(eduvpn):
     global eduvpn_objects
     eduvpn_objects.pop(eduvpn.name, None)
@@ -96,17 +97,13 @@ class EduVPN(object):
 
         return organizations
 
-    def get_config(
-        self, url: str, func: callable, force_tcp: bool = False
-    ):
+    def get_config(self, url: str, func: callable, force_tcp: bool = False):
         # Because it could be the case that a profile callback is started, store a threading event
         # In the constructor, we have defined a wait event for Ask_Profile, this waits for this event to be set
         # The event is set in self.set_profile
         self.profile_event = threading.Event()
 
-        config, config_type, config_err = self.go_function(
-            func, url, force_tcp
-        )
+        config, config_type, config_err = self.go_function(func, url, force_tcp)
 
         self.profile_event = None
         self.location_event = None
