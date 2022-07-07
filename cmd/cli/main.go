@@ -14,6 +14,7 @@ import (
 )
 
 type ServerTypes int8
+
 const (
 	ServerTypeInstituteAccess ServerTypes = iota
 	ServerTypeSecureInternet

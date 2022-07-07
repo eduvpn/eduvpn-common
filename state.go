@@ -2,6 +2,7 @@ package eduvpn
 
 import (
 	"fmt"
+
 	"github.com/jwijenbergh/eduvpn-common/internal/config"
 	"github.com/jwijenbergh/eduvpn-common/internal/discovery"
 	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
@@ -145,7 +146,6 @@ func (state *VPNState) AskSecureLocation() error {
 	return nil
 }
 
-
 func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server, error) {
 	errorMessage := fmt.Sprintf("failed adding Secure Internet home server with organization ID %s", orgID)
 	// Get the secure internet URL from discovery
@@ -201,7 +201,6 @@ func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
 	state.FSM.GoTransition(fsm.CHOSEN_SERVER)
 
 	return server, nil
-
 }
 
 func (state *VPNState) addCustomServer(url string) (server.Server, error) {
@@ -219,7 +218,6 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 	state.FSM.GoTransition(fsm.CHOSEN_SERVER)
 
 	return server, nil
-
 }
 
 func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (string, string, error) {
@@ -258,7 +256,6 @@ func (state *VPNState) CancelOAuth() error {
 	server.CancelOAuth(currentServer)
 	return nil
 }
-
 
 func (state *VPNState) GetDiscoOrganizations() (string, error) {
 	if state.FSM.InState(fsm.DEREGISTERED) {

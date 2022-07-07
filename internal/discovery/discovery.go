@@ -70,7 +70,7 @@ func (discovery *Discovery) Init(fsm *fsm.FSM, logger *log.FileLogger) {
 // - [TODO] when the user tries to add new server AND the user did NOT yet choose an organization before;
 // - [TODO] when the authorization for the server associated with an already chosen organization is triggered, e.g. after expiry or revocation.
 func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
-	return discovery.Organizations.Timestamp == 0 
+	return discovery.Organizations.Timestamp == 0
 }
 
 func (discovery *Discovery) GetSecureLocationList() []string {
@@ -189,7 +189,7 @@ func (e GetOrgByIDNotFoundError) Error() string {
 }
 
 type GetServerByURLNotFoundError struct {
-	URL string
+	URL  string
 	Type string
 }
 
@@ -199,7 +199,7 @@ func (e GetServerByURLNotFoundError) Error() string {
 
 type GetServerByCountryCodeNotFoundError struct {
 	CountryCode string
-	Type string
+	Type        string
 }
 
 func (e GetServerByCountryCodeNotFoundError) Error() string {

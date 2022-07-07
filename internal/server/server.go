@@ -36,8 +36,8 @@ type InstituteAccessServer struct {
 // A secure internet server which has its own OAuth tokens
 // It specifies the current location url it is connected to
 type SecureInternetHomeServer struct {
-	DisplayName string `json:"display_name"`
-	OAuth oauth.OAuth `json:"oauth"`
+	DisplayName string      `json:"display_name"`
+	OAuth       oauth.OAuth `json:"oauth"`
 
 	// The home server has a list of info for each configured server location
 	BaseMap map[string]*ServerBase `json:"base_map"`
@@ -45,7 +45,7 @@ type SecureInternetHomeServer struct {
 	// We have the authorization URL template, the home organization ID and the current location
 	AuthorizationTemplate string `json:"authorization_template"`
 	HomeOrganizationID    string `json:"home_organization_id"`
-	CurrentLocation string `json:"current_location"`
+	CurrentLocation       string `json:"current_location"`
 }
 
 type InstituteServers struct {
@@ -107,17 +107,16 @@ func (secure *SecureInternetHomeServer) GetOAuth() *oauth.OAuth {
 	return &secure.OAuth
 }
 
-
-func (institute *InstituteAccessServer) GetTemplateAuth() (func(string) string) {
-    return func(authURL string) string {
-        return authURL
-    }
+func (institute *InstituteAccessServer) GetTemplateAuth() func(string) string {
+	return func(authURL string) string {
+		return authURL
+	}
 }
 
-func (secure *SecureInternetHomeServer) GetTemplateAuth() (func(string) string) {
-    return func(authURL string) string {
-        return util.ReplaceWAYF(secure.AuthorizationTemplate, authURL, secure.HomeOrganizationID)
-    }
+func (secure *SecureInternetHomeServer) GetTemplateAuth() func(string) string {
+	return func(authURL string) string {
+		return util.ReplaceWAYF(secure.AuthorizationTemplate, authURL, secure.HomeOrganizationID)
+	}
 }
 
 func (institute *InstituteAccessServer) GetBase() (*ServerBase, error) {
@@ -186,7 +185,6 @@ func (secure *SecureInternetHomeServer) addLocation(locationServer *types.Discov
 	return base, nil
 }
 
-
 // Initializes the home server and adds its own location
 func (secure *SecureInternetHomeServer) init(homeOrg *types.DiscoveryOrganization, homeLocation *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) error {
 	errorMessage := "failed initializing secure internet home server"
@@ -195,7 +193,6 @@ func (secure *SecureInternetHomeServer) init(homeOrg *types.DiscoveryOrganizatio
 		// New home organisation, clear everything
 		*secure = *&SecureInternetHomeServer{}
 	}
-	
 
 	base, baseErr := secure.addLocation(homeLocation, fsm, logger)
 

@@ -3,11 +3,10 @@ package util
 import (
 	"crypto/rand"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 	"time"
-
-	"net/url"
 
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
 )
