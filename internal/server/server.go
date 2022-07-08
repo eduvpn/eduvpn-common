@@ -210,12 +210,12 @@ func (secure *SecureInternetHomeServer) init(homeOrg *types.DiscoveryOrganizatio
 	return nil
 }
 
-func ShouldRenewButton(server Server) (bool, error) {
+func ShouldRenewButton(server Server) bool {
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		// return false, &GetRenewButtonTimeError{Err: baseErr}
-		return false, nil
+		// FIXME: Log error here?
+		return false
 	}
 
 	// Get current time
@@ -223,22 +223,23 @@ func ShouldRenewButton(server Server) (bool, error) {
 
 	// 30 minutes have not passed
 	if current <= (base.StartTime + 30*60) {
-		return false, nil
+		return false
 	}
 
 	// Session will not expire today
 	if current <= (base.EndTime - 24*60*60) {
-		return false, nil
+		return false
 	}
 
 	// Session duration is less than 24 hours but not 75% has passed
 	duration := base.EndTime - base.StartTime
+
 	// TODO: Is converting to float64 okay here?
 	if duration < 24*60*60 && float64(current) <= (float64(base.StartTime)+0.75*float64(duration)) {
-		return false, nil
+		return false
 	}
 
-	return true, nil
+	return true
 }
 
 func Login(server Server) error {
