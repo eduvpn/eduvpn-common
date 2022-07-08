@@ -69,10 +69,10 @@ lib.Register.argtypes, lib.Register.restype = [
     VPNStateChange,
     c_int,
 ], c_void_p
-lib.GetOrganizationsList.argtypes, lib.GetOrganizationsList.restype = [
+lib.GetDiscoOrganizations.argtypes, lib.GetDiscoOrganizations.restype = [
     c_char_p
 ], DataError
-lib.GetServersList.argtypes, lib.GetServersList.restype = [c_char_p], DataError
+lib.GetDiscoServers.argtypes, lib.GetDiscoServers.restype = [c_char_p], DataError
 lib.CancelOAuth.argtypes, lib.CancelOAuth.restype = [c_char_p], c_void_p
 lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p, c_char_p], c_void_p
 lib.SetSecureLocation.argtypes, lib.SetSecureLocation.restype = [

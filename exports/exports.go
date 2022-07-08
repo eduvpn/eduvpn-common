@@ -143,8 +143,8 @@ func GetConfigCustomServer(name *C.char, url *C.char, forceTCP C.int) (*C.char, 
 	return C.CString(config), C.CString(configType), C.CString(ErrorToString(configErr))
 }
 
-//export GetOrganizationsList
-func GetOrganizationsList(name *C.char) (*C.char, *C.char) {
+//export GetDiscoOrganizations
+func GetDiscoOrganizations(name *C.char) (*C.char, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
@@ -154,8 +154,8 @@ func GetOrganizationsList(name *C.char) (*C.char, *C.char) {
 	return C.CString(organizations), C.CString(ErrorToString(organizationsErr))
 }
 
-//export GetServersList
-func GetServersList(name *C.char) (*C.char, *C.char) {
+//export GetDiscoServers
+func GetDiscoServers(name *C.char) (*C.char, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
