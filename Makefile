@@ -35,10 +35,10 @@ srpm:
 	rm -rf dist/*
 
 # Archive code with vendored dependencies
-	git clone . dist/libeduvpncommon-0.1.0
+	git clone . dist/libeduvpn-common-0.1.0
 	go mod vendor
-	cp -r vendor dist/libeduvpncommon-0.1.0/vendor
-	tar -zcvf ~/rpmbuild/SOURCES/libeduvpncommon.tar.gz -C dist .
+	cp -r vendor dist/libeduvpn-common-0.1.0/vendor
+	tar -zcvf ~/rpmbuild/SOURCES/libeduvpn-common.tar.gz -C dist .
 
 # Cleanup
 	rm -rf dist/*
@@ -54,7 +54,7 @@ rpm: srpm
 	echo "Done building RPM, go to ./dist/ to view them"
 
 rpm-mock: srpm
-	mock -r "$(MOCK_TARGET)" --resultdir ./dist rebuild ~/rpmbuild/SRPMS/libeduvpncommon*.src.rpm
+	mock -r "$(MOCK_TARGET)" --resultdir ./dist rebuild ~/rpmbuild/SRPMS/libeduvpn-common*.src.rpm
 	echo "Done building RPM, go to ./dist/ to view them"
 
 # Enable parallelism if -j is specified, but first execute build

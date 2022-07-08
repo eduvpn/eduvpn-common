@@ -1,4 +1,4 @@
-import eduvpncommon.main as eduvpn
+import eduvpn_common.main as eduvpn
 import webbrowser
 import json
 import sys

@@ -100,11 +100,11 @@ class bdist_wheel(_bdist_wheel):
 
 
 setup(
-    name="eduvpncommon",
+    name="eduvpn_common",
     version="0.1.0",
-    packages=["eduvpncommon"],
+    packages=["eduvpn_common"],
     python_requires=">=3.6",
-    package_dir={"eduvpncommon": "src"},
-    package_data={"eduvpncommon": [f"lib/*{_libname}*"]},
+    package_dir={"eduvpn_common": "src"},
+    package_data={"eduvpn_common": [f"lib/*{_libname}*"]},
     cmdclass={"bdist_wheel": bdist_wheel},
 )

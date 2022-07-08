@@ -1,7 +1,8 @@
-%global modname eduvpncommon
+%global name eduvpn-common
+%global modname eduvpn_common
 %global sum eduVPN common Go library
 
-Name:           lib%{modname}
+Name:           lib%{name}
 Version:        0.1.0
 Release:        1%{?dist}
 Summary:        %{sum}
@@ -38,14 +39,14 @@ popd
 %prep
 %autosetup -n %{name}-%{version}
 
-%package -n python3-%{modname}
+%package -n python3-%{name}
 BuildArch: noarch
 Requires: %{name}
 Summary: Python3 eduvpncommon wrapper
 
-%description -n python3-%{modname}
+%description -n python3-%{name}
 The python wrapper for the eduVPN common Go shared library
 
-%files -n python3-%{modname}
+%files -n python3-%{name}
 %{python3_sitelib}/%{modname}/
 %{python3_sitelib}/%{modname}-%{version}*
