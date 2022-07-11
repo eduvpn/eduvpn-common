@@ -289,7 +289,7 @@ func (oauth *OAuth) Finish() error {
 }
 
 func (oauth *OAuth) Cancel() {
-	oauth.Session.CallbackError = &types.WrappedErrorMessage{Message: "failed cancelling OAuth", Err: &OAuthCancelledCallbackError{}}
+	oauth.Session.CallbackError = &types.WrappedErrorMessage{Message: "cancelled OAuth", Err: &OAuthCancelledCallbackError{}}
 	oauth.Session.Server.Shutdown(oauth.Session.Context)
 }
 
