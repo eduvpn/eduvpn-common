@@ -92,7 +92,7 @@ func ErrorToString(error error) string {
 		return ""
 	}
 
-	return error.Error()
+	return eduvpn.GetErrorTraceback(error)
 }
 
 //export CancelOAuth
