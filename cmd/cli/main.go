@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	eduvpn "github.com/jwijenbergh/eduvpn-common"
+	"github.com/jwijenbergh/eduvpn-common"
 )
 
 type ServerTypes int8
@@ -213,8 +213,8 @@ func printConfig(url string, serverType ServerTypes) {
 
 	if configErr != nil {
 		// Show the usage of tracebacks and causes
-		fmt.Println("Error getting config:", state.GetErrorTraceback(configErr))
-		fmt.Println("Error getting config, cause:", state.GetErrorCause(configErr))
+		fmt.Println("Error getting config:", eduvpn.GetErrorTraceback(configErr))
+		fmt.Println("Error getting config, cause:", eduvpn.GetErrorCause(configErr))
 		return
 	}
 
