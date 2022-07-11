@@ -15,6 +15,7 @@ import "C"
 
 import (
 	"errors"
+	"encoding/json"
 	"fmt"
 	"unsafe"
 
@@ -92,7 +93,7 @@ func ErrorToString(error error) string {
 		return ""
 	}
 
-	return eduvpn.GetErrorTraceback(error)
+	return eduvpn.GetErrorJSONString(error)
 }
 
 //export CancelOAuth
@@ -107,40 +108,55 @@ func CancelOAuth(name *C.char) *C.char {
 	return C.CString(cancelErrString)
 }
 
+type configJSON struct {
+	config string `json:"config"`
+	configType string `json:"config_type"`
+}
+
+func getConfigJSON(config string, configType string) *C.char {
+	json, jsonErr := json.Marshal(&configJSON{config, configType})
+
+	if jsonErr != nil {
+		panic(jsonErr)
+	}
+
+	return C.CString(string(json))
+}
+
 //export GetConfigSecureInternet
-func GetConfigSecureInternet(name *C.char, orgID *C.char, forceTCP C.int) (*C.char, *C.char, *C.char) {
+func GetConfigSecureInternet(name *C.char, orgID *C.char, forceTCP C.int) (*C.char, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, nil, C.CString(ErrorToString(stateErr))
+		return nil, C.CString(ErrorToString(stateErr))
 	}
 	forceTCPBool := forceTCP == 1
 	config, configType, configErr := state.GetConfigSecureInternet(C.GoString(orgID), forceTCPBool)
-	return C.CString(config), C.CString(configType), C.CString(ErrorToString(configErr))
+	return getConfigJSON(config, configType), C.CString(ErrorToString(configErr))
 }
 
 //export GetConfigInstituteAccess
-func GetConfigInstituteAccess(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char, *C.char) {
+func GetConfigInstituteAccess(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, nil, C.CString(ErrorToString(stateErr))
+		return nil, C.CString(ErrorToString(stateErr))
 	}
 	forceTCPBool := forceTCP == 1
 	config, configType, configErr := state.GetConfigInstituteAccess(C.GoString(url), forceTCPBool)
-	return C.CString(config), C.CString(configType), C.CString(ErrorToString(configErr))
+	return getConfigJSON(config, configType), C.CString(ErrorToString(configErr))
 }
 
 //export GetConfigCustomServer
-func GetConfigCustomServer(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char, *C.char) {
+func GetConfigCustomServer(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, nil, C.CString(ErrorToString(stateErr))
+		return nil, C.CString(ErrorToString(stateErr))
 	}
 	forceTCPBool := forceTCP == 1
 	config, configType, configErr := state.GetConfigCustomServer(C.GoString(url), forceTCPBool)
-	return C.CString(config), C.CString(configType), C.CString(ErrorToString(configErr))
+	return getConfigJSON(config, configType), C.CString(ErrorToString(configErr))
 }
 
 //export GetDiscoOrganizations

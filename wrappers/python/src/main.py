@@ -1,5 +1,4 @@
 from . import lib, VPNStateChange, encode_args, decode_res
-from enum import Enum
 from typing import Optional, Tuple
 import threading
 from .event import StateType, EventHandler
@@ -103,13 +102,16 @@ class EduVPN(object):
         # The event is set in self.set_profile
         self.profile_event = threading.Event()
 
-        config, config_type, config_err = self.go_function(func, url, force_tcp)
+        config_json, config_err = self.go_function(func, url, force_tcp)
 
         self.profile_event = None
         self.location_event = None
 
         if config_err:
             raise Exception(config_err)
+
+        config = config_json["config"]
+        config_type = config_json["config_type"]
 
         return config, config_type
 

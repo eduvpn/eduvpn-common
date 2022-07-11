@@ -1,8 +1,10 @@
 from ctypes import *
 from collections import defaultdict
+from enum import Enum
 import pathlib
 import platform
-from typing import Tuple
+from typing import Tuple, Optional
+import json
 
 _lib_prefixes = defaultdict(
     lambda: "lib",
@@ -33,13 +35,12 @@ try:
 except:
     lib = cdll.LoadLibrary(str(pathlib.Path(__file__).parent / "lib" / _libfile))
 
+class ErrorLevel(Enum):
+    ERR_OTHER = 0
+    ERR_INFO = 1
 
 class DataError(Structure):
     _fields_ = [("data", c_void_p), ("error", c_void_p)]
-
-
-class MultipleDataError(Structure):
-    _fields_ = [("data", c_void_p), ("other_data", c_void_p), ("error", c_void_p)]
 
 
 VPNStateChange = CFUNCTYPE(None, c_char_p, c_char_p, c_char_p, c_char_p)
@@ -51,17 +52,17 @@ lib.GetConfigSecureInternet.argtypes, lib.GetConfigSecureInternet.restype = [
     c_char_p,
     c_char_p,
     c_int,
-], MultipleDataError
+], DataError
 lib.GetConfigInstituteAccess.argtypes, lib.GetConfigInstituteAccess.restype = [
     c_char_p,
     c_char_p,
     c_int,
-], MultipleDataError
+], DataError
 lib.GetConfigCustomServer.argtypes, lib.GetConfigCustomServer.restype = [
     c_char_p,
     c_char_p,
     c_int,
-], MultipleDataError
+], DataError
 lib.Deregister.argtypes, lib.Deregister.restype = [c_char_p], c_void_p
 lib.Register.argtypes, lib.Register.restype = [
     c_char_p,
@@ -87,6 +88,13 @@ lib.SetSearchServer.argtypes, lib.SetSearchServer.restype = [c_char_p], c_void_p
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
 
 
+class WrappedError:
+    def __init__(self, traceback: str, cause: str, level: ErrorLevel):
+        self.traceback = traceback
+        self.cause = cause
+        self.level = level
+
+
 def encode_args(args, types):
     for arg, t in zip(args, types):
         # c_char_p needs the str to be encoded to bytes
@@ -107,24 +115,33 @@ def get_ptr_string(ptr: c_void_p) -> str:
             return string.decode()
     return ""
 
+def get_ptr_error(ptr: c_void_p) -> Optional[WrappedError]:
+    error_string = get_ptr_string(ptr)
+
+    if not error_string:
+        return None
+
+    error_json = json.loads(error_string)
+
+    if not error_json:
+        return None
+
+    level = error_json["level"]
+    traceback = error_json["traceback"]
+    cause = error_json["cause"]
+    return WrappedError(traceback, cause, ErrorLevel(level))
 
 def get_data_error(data_error: DataError) -> Tuple[str, str]:
     data = get_ptr_string(data_error.data)
-    error = get_ptr_string(data_error.error)
+    error = get_ptr_error(data_error.error)
+    if not error:
+        error = ""
+    else:
+        error = error.traceback
     return data, error
 
 
-def get_multiple_data_error(
-    multiple_data_error: MultipleDataError,
-) -> Tuple[str, str, str]:
-    data = get_ptr_string(multiple_data_error.data)
-    other_data = get_ptr_string(multiple_data_error.other_data)
-    error = get_ptr_string(multiple_data_error.error)
-    return data, other_data, error
-
-
 decode_map = {
-    c_void_p: get_ptr_string,
+    c_void_p: get_ptr_error,
     DataError: get_data_error,
-    MultipleDataError: get_multiple_data_error,
 }

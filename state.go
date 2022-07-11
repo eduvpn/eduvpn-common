@@ -336,10 +336,18 @@ func (state *VPNState) SetDisconnected() error {
 	return nil
 }
 
+func GetErrorCause(err error) error {
+	return types.GetErrorCause(err)
+}
+
+func GetErrorLevel(err error) types.ErrorLevel {
+	return types.GetErrorLevel(err)
+}
+
 func GetErrorTraceback(err error) string {
 	return types.GetErrorTraceback(err)
 }
 
-func GetErrorCause(err error) error {
-	return types.GetErrorCause(err)
+func GetErrorJSONString(err error) string {
+	return types.GetErrorJSONString(err)
 }
