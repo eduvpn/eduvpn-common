@@ -194,6 +194,7 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 
 func (state *VPNState) GetConfigSecureInternet(orgID string, forceTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for Secure Internet organization %s", orgID)
+	state.FSM.GoTransition(fsm.LOADING_SERVER)
 	server, serverErr := state.addSecureInternetHomeServer(orgID)
 
 	if serverErr != nil {
@@ -242,6 +243,7 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 
 func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for Institute Access %s", url)
+	state.FSM.GoTransition(fsm.LOADING_SERVER)
 	server, serverErr := state.addInstituteServer(url)
 
 	if serverErr != nil {
@@ -253,6 +255,7 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 
 func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for custom server %s", url)
+	state.FSM.GoTransition(fsm.LOADING_SERVER)
 	server, serverErr := state.addCustomServer(url)
 
 	if serverErr != nil {

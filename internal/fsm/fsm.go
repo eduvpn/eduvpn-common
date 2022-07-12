@@ -42,6 +42,9 @@ const (
 	// The user is currently selecting a server in the UI
 	SEARCH_SERVER
 
+	// We are loading the server details
+	LOADING_SERVER
+
 	// Chosen Server means the user has chosen a server to connect to
 	CHOSEN_SERVER
 
@@ -74,6 +77,8 @@ func (s FSMStateID) String() string {
 		return "Ask_Location"
 	case SEARCH_SERVER:
 		return "Search_Server"
+	case LOADING_SERVER:
+		return "Loading_Server"
 	case CHOSEN_SERVER:
 		return "Chosen_Server"
 	case OAUTH_STARTED:
@@ -125,7 +130,8 @@ func (fsm *FSM) Init(name string, callback func(string, string, string), logger 
 		DEREGISTERED:   FSMState{Transitions: []FSMTransition{{NO_SERVER, "Client registers"}}, MainState: true},
 		NO_SERVER:      FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "User chooses a server"}, {SEARCH_SERVER, "The user is trying to choose a Server in the UI"}, {ASK_LOCATION, "User chooses a Secure Internet server but no location is configured"}}, MainState: true},
 		ASK_LOCATION:   FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Location chosen"}, {NO_SERVER, "Cancel or Error"}}},
-		SEARCH_SERVER:  FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "User clicks a server in the UI"}, {NO_SERVER, "Cancel or Error"}}, MainState: true},
+		SEARCH_SERVER:  FSMState{Transitions: []FSMTransition{{LOADING_SERVER, "User clicks a server in the UI"}, {NO_SERVER, "Cancel or Error"}}, MainState: true},
+		LOADING_SERVER: FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Server info loaded"}}},
 		CHOSEN_SERVER:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}}},
 		OAUTH_STARTED:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "User authorizes with browser"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
 		AUTHORIZED:     FSMState{Transitions: []FSMTransition{{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}}},
