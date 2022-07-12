@@ -2,6 +2,7 @@ from . import lib, VPNStateChange, encode_args, decode_res
 from typing import Optional, Tuple
 import threading
 from .event import StateType, EventHandler
+import json
 
 eduvpn_objects = {}
 
@@ -110,8 +111,10 @@ class EduVPN(object):
         if config_err:
             raise Exception(config_err)
 
-        config = config_json["config"]
-        config_type = config_json["config_type"]
+
+        config_json_dict = json.loads(config_json)
+        config = config_json_dict["config"]
+        config_type = config_json_dict["config_type"]
 
         return config, config_type
 

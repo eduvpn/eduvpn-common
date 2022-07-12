@@ -109,18 +109,19 @@ func CancelOAuth(name *C.char) *C.char {
 }
 
 type configJSON struct {
-	config string `json:"config"`
-	configType string `json:"config_type"`
+	Config string `json:"config"`
+	ConfigType string `json:"config_type"`
 }
 
 func getConfigJSON(config string, configType string) *C.char {
-	json, jsonErr := json.Marshal(&configJSON{config, configType})
+	object := &configJSON{Config: config, ConfigType: configType}
+	jsonBytes, jsonErr := json.Marshal(object)
 
 	if jsonErr != nil {
 		panic(jsonErr)
 	}
 
-	return C.CString(string(json))
+	return C.CString(string(jsonBytes))
 }
 
 //export GetConfigSecureInternet
