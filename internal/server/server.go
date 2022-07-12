@@ -299,6 +299,10 @@ func (servers *Servers) AddInstituteAccess(instituteServer *types.DiscoveryServe
 	return institute, nil
 }
 
+func (servers *Servers) GetSecureLocation() string {
+	return servers.SecureInternetHomeServer.CurrentLocation
+}
+
 func (servers *Servers) SetSecureLocation(chosenLocationServer *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) error {
 	errorMessage := "failed to set secure location"
 	// Make sure to add the current location

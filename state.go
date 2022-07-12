@@ -181,12 +181,18 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	if !state.Servers.HasSecureLocation() {
-		locationErr := state.AskSecureLocation()
+	var locationErr error
 
-		if locationErr != nil {
-			return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: locationErr}
-		}
+	if !state.Servers.HasSecureLocation() {
+		locationErr = state.AskSecureLocation()
+
+	} else {
+		// reinitialize
+		locationErr = state.SetSecureLocation(state.Servers.GetSecureLocation())
+	}
+
+	if locationErr != nil {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: locationErr}
 	}
 
 	return server, nil
