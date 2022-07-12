@@ -99,13 +99,18 @@ type FSMTransition struct {
 }
 
 type (
-	FSMTransitions []FSMTransition
-	FSMStates      map[FSMStateID]FSMTransitions
+	FSMStates      map[FSMStateID]FSMState
 )
+
+type FSMState struct {
+	Transitions []FSMTransition
+	MainState bool
+}
 
 type FSM struct {
 	States  FSMStates
 	Current FSMStateID
+	PreviousMain  FSMStateID
 
 	// Info to be passed from the parent state
 	Name          string
@@ -117,17 +122,17 @@ type FSM struct {
 
 func (fsm *FSM) Init(name string, callback func(string, string, string), logger *log.FileLogger, directory string, debug bool) {
 	fsm.States = FSMStates{
-		DEREGISTERED:   {{NO_SERVER, "Client registers"}},
-		NO_SERVER:      {{CHOSEN_SERVER, "User chooses a server"}, {SEARCH_SERVER, "The user is trying to choose a Server in the UI"}, {ASK_LOCATION, "User chooses a Secure Internet server but no location is configured"}},
-		ASK_LOCATION:   {{CHOSEN_SERVER, "Location chosen"}, {NO_SERVER, "Cancel or Error"}},
-		SEARCH_SERVER:  {{CHOSEN_SERVER, "User clicks a server in the UI"}, {NO_SERVER, "Cancel or Error"}},
-		CHOSEN_SERVER:  {{AUTHORIZED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}},
-		OAUTH_STARTED:  {{AUTHORIZED, "User authorizes with browser"}, {NO_SERVER, "Cancel or Error"}},
-		AUTHORIZED:     {{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}},
-		REQUEST_CONFIG: {{ASK_PROFILE, "Multiple profiles found and no profile chosen"}, {HAS_CONFIG, "Only one profile or profile already chosen"}, {NO_SERVER, "Cancel or Error"}, {OAUTH_STARTED, "Re-authorize"}},
-		ASK_PROFILE:    {{HAS_CONFIG, "User chooses profile"}, {NO_SERVER, "Done but no profile selected"}},
-		HAS_CONFIG:     {{CONNECTED, "OS reports connected"}, {REQUEST_CONFIG, "User chooses a new profile"}, {NO_SERVER, "User wants to choose a new server"}},
-		CONNECTED:      {{HAS_CONFIG, "OS reports disconnected"}},
+		DEREGISTERED:   FSMState{Transitions: []FSMTransition{{NO_SERVER, "Client registers"}}, MainState: true},
+		NO_SERVER:      FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "User chooses a server"}, {SEARCH_SERVER, "The user is trying to choose a Server in the UI"}, {ASK_LOCATION, "User chooses a Secure Internet server but no location is configured"}}, MainState: true},
+		ASK_LOCATION:   FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Location chosen"}, {NO_SERVER, "Cancel or Error"}}},
+		SEARCH_SERVER:  FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "User clicks a server in the UI"}, {NO_SERVER, "Cancel or Error"}}, MainState: true},
+		CHOSEN_SERVER:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}}},
+		OAUTH_STARTED:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "User authorizes with browser"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
+		AUTHORIZED:     FSMState{Transitions: []FSMTransition{{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}}},
+		REQUEST_CONFIG: FSMState{Transitions: []FSMTransition{{ASK_PROFILE, "Multiple profiles found and no profile chosen"}, {HAS_CONFIG, "Only one profile or profile already chosen"}, {NO_SERVER, "Cancel or Error"}, {OAUTH_STARTED, "Re-authorize"}}},
+		ASK_PROFILE:    FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "User chooses profile"}, {NO_SERVER, "Done but no profile selected"}}},
+		HAS_CONFIG:     FSMState{Transitions: []FSMTransition{{CONNECTED, "OS reports connected"}, {REQUEST_CONFIG, "User chooses a new profile"}, {NO_SERVER, "User wants to choose a new server"}}, MainState: true},
+		CONNECTED:      FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "OS reports disconnected"}}, MainState: true},
 	}
 	fsm.Current = DEREGISTERED
 	fsm.Name = name
@@ -142,7 +147,7 @@ func (fsm *FSM) InState(check FSMStateID) bool {
 }
 
 func (fsm *FSM) HasTransition(check FSMStateID) bool {
-	for _, transition_state := range fsm.States[fsm.Current] {
+	for _, transition_state := range fsm.States[fsm.Current].Transitions {
 		if transition_state.To == check {
 			return true
 		}
@@ -173,11 +178,21 @@ func (fsm *FSM) writeGraph() {
 	cmd.Start()
 }
 
+func (fsm *FSM) GoBack() {
+	fsm.GoTransition(fsm.PreviousMain)
+}
+
 func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data string, background bool) bool {
 	ok := fsm.HasTransition(newState)
 
 	if ok {
 		oldState := fsm.Current
+
+		// Is the Old (now current) state a main state?
+		// If so set the previous main state such that we could go easily back to it
+		if fsm.States[oldState].MainState {
+			fsm.PreviousMain = oldState
+		}
 		fsm.Current = newState
 		if fsm.Debug {
 			fsm.writeGraph()
@@ -207,7 +222,7 @@ func (fsm *FSM) generateMermaidGraph() string {
 	}
 	sort.Sort(sorted_fsm)
 	for _, state := range sorted_fsm {
-		transitions := fsm.States[state]
+		transitions := fsm.States[state].Transitions
 		for _, transition := range transitions {
 			if state == fsm.Current {
 				graph += "\nstyle " + state.String() + " fill:cyan\n"

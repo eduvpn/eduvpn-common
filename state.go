@@ -97,6 +97,16 @@ func (state *VPNState) Deregister() error {
 	return nil
 }
 
+func (state *VPNState) GoBack() error {
+	errorMessage := "failed to go back"
+	if state.FSM.InState(fsm.DEREGISTERED) {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.DeregisteredError{}.CustomError()}
+	}
+
+	state.FSM.GoBack()
+	return nil
+}
+
 func (state *VPNState) getConfig(chosenServer server.Server, forceTCP bool) (string, string, error) {
 	errorMessage := "failed to get a configuration for OpenVPN/Wireguard"
 	if state.FSM.InState(fsm.DEREGISTERED) {
@@ -110,8 +120,8 @@ func (state *VPNState) getConfig(chosenServer server.Server, forceTCP bool) (str
 
 		if loginErr != nil {
 			// We are possibly in oauth started
-			// So go to no server
-			state.FSM.GoTransition(fsm.NO_SERVER)
+			// Go back
+			state.GoBack()
 			return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: loginErr}
 		}
 	} else { // OAuth was valid, ensure we are in the authorized state
@@ -123,8 +133,8 @@ func (state *VPNState) getConfig(chosenServer server.Server, forceTCP bool) (str
 	config, configType, configErr := server.GetConfig(chosenServer, forceTCP)
 
 	if configErr != nil {
-		// Go back to no server if possible
-		state.FSM.GoTransition(fsm.NO_SERVER)
+		// Go back
+		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
 	} else {
 		state.FSM.GoTransition(fsm.HAS_CONFIG)
