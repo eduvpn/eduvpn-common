@@ -134,6 +134,10 @@ class EduVPN(object):
         self.location_event = threading.Event()
         return self.get_config(url, lib.GetConfigSecureInternet, force_tcp)
 
+    def go_back(self) -> None:
+        # Ignore the error
+        self.go_function(lib.GoBack)
+
     def set_connected(self) -> None:
         connect_err = self.go_function(lib.SetConnected)
 

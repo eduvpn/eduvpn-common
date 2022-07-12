@@ -215,6 +215,17 @@ func GetIdentifier(name *C.char) (*C.char, *C.char) {
 	return C.CString(identifier), C.CString("")
 }
 
+//export GoBack
+func GoBack(name *C.char) (*C.char) {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	goBackErr := state.GoBack()
+	return C.CString(ErrorToString(goBackErr))
+}
+
 //export SetIdentifier
 func SetIdentifier(name *C.char, identifier *C.char) *C.char {
 	nameStr := C.GoString(name)

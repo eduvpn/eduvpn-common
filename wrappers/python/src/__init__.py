@@ -74,6 +74,7 @@ lib.GetDiscoOrganizations.argtypes, lib.GetDiscoOrganizations.restype = [
     c_char_p
 ], DataError
 lib.GetDiscoServers.argtypes, lib.GetDiscoServers.restype = [c_char_p], DataError
+lib.GoBack.argtypes, lib.GoBack.restype = [c_char_p], None
 lib.CancelOAuth.argtypes, lib.CancelOAuth.restype = [c_char_p], c_void_p
 lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p, c_char_p], c_void_p
 lib.SetSecureLocation.argtypes, lib.SetSecureLocation.restype = [
