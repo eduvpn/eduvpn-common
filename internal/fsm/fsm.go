@@ -128,10 +128,10 @@ type FSM struct {
 func (fsm *FSM) Init(name string, callback func(string, string, string), logger *log.FileLogger, directory string, debug bool) {
 	fsm.States = FSMStates{
 		DEREGISTERED:   FSMState{Transitions: []FSMTransition{{NO_SERVER, "Client registers"}}, MainState: true},
-		NO_SERVER:      FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "User chooses a server"}, {SEARCH_SERVER, "The user is trying to choose a Server in the UI"}, {ASK_LOCATION, "User chooses a Secure Internet server but no location is configured"}}, MainState: true},
-		ASK_LOCATION:   FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Location chosen"}, {NO_SERVER, "Cancel or Error"}}},
+		NO_SERVER:      FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "User chooses a server"}, {SEARCH_SERVER, "The user is trying to choose a Server in the UI"}}, MainState: true},
 		SEARCH_SERVER:  FSMState{Transitions: []FSMTransition{{LOADING_SERVER, "User clicks a server in the UI"}, {NO_SERVER, "Cancel or Error"}}, MainState: true},
-		LOADING_SERVER: FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Server info loaded"}}},
+		ASK_LOCATION:   FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Location chosen"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
+		LOADING_SERVER: FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Server info loaded"}, {ASK_LOCATION, "User chooses a Secure Internet server but no location is configured"}}},
 		CHOSEN_SERVER:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}}},
 		OAUTH_STARTED:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "User authorizes with browser"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
 		AUTHORIZED:     FSMState{Transitions: []FSMTransition{{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}}},
