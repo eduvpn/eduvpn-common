@@ -132,17 +132,19 @@ def get_ptr_error(ptr: c_void_p) -> Optional[WrappedError]:
     cause = error_json["cause"]
     return WrappedError(traceback, cause, ErrorLevel(level))
 
+def get_error(ptr: c_void_p) -> str:
+    error = get_ptr_error(ptr)
+    if not error:
+        return ""
+    return error.traceback
+
 def get_data_error(data_error: DataError) -> Tuple[str, str]:
     data = get_ptr_string(data_error.data)
-    error = get_ptr_error(data_error.error)
-    if not error:
-        error = ""
-    else:
-        error = error.traceback
+    error = get_error(data_error.error)
     return data, error
 
 
 decode_map = {
-    c_void_p: get_ptr_error,
+    c_void_p: get_error,
     DataError: get_data_error,
 }
