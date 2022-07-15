@@ -27,7 +27,8 @@ func GenerateTimeSeconds() int64 {
 }
 
 func EnsureDirectory(directory string) error {
-	mkdirErr := os.MkdirAll(directory, os.ModePerm)
+	// Create with 700 permissions, read, write, execute only for the owner
+	mkdirErr := os.MkdirAll(directory, 0o700)
 	if mkdirErr != nil {
 		return &types.WrappedErrorMessage{Message: fmt.Sprintf("failed to create directory %s", directory), Err: mkdirErr}
 	}
