@@ -338,6 +338,10 @@ func (state *VPNState) SetSearchServer() error {
 }
 
 func (state *VPNState) SetConnected() error {
+	if state.FSM.InState(fsm.CONNECTED) {
+		// already connected, show no error
+		return nil
+	}
 	if !state.FSM.HasTransition(fsm.CONNECTED) {
 		return &types.WrappedErrorMessage{Message: "failed to set connected", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.CONNECTED}.CustomError()}
 	}
@@ -346,7 +350,24 @@ func (state *VPNState) SetConnected() error {
 	return nil
 }
 
+func (state *VPNState) SetConnecting() error {
+	if state.FSM.InState(fsm.CONNECTING) {
+		// already loading connection, show no error
+		return nil
+	}
+	if !state.FSM.HasTransition(fsm.CONNECTING) {
+		return &types.WrappedErrorMessage{Message: "failed to set connecting", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.CONNECTING}.CustomError()}
+	}
+
+	state.FSM.GoTransition(fsm.CONNECTING)
+	return nil
+}
+
 func (state *VPNState) SetDisconnected() error {
+	if state.FSM.InState(fsm.HAS_CONFIG) {
+		// already disconnected, show no error
+		return nil
+	}
 	if !state.FSM.HasTransition(fsm.HAS_CONFIG) {
 		return &types.WrappedErrorMessage{Message: "failed to set disconnected", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.HAS_CONFIG}.CustomError()}
 	}

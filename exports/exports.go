@@ -260,6 +260,17 @@ func SetDisconnected(name *C.char) *C.char {
 	return C.CString(ErrorToString(setDisconnectedErr))
 }
 
+//export SetConnecting
+func SetConnecting(name *C.char) *C.char {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	setConnectingErr := state.SetConnecting()
+	return C.CString(ErrorToString(setConnectingErr))
+}
+
 //export SetConnected
 func SetConnected(name *C.char) *C.char {
 	nameStr := C.GoString(name)
