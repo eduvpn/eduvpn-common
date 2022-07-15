@@ -156,20 +156,6 @@ class EduVPN(object):
         if disconnect_err:
             raise Exception(disconnect_err)
 
-    def get_identifier(self) -> str:
-        identifier, identifier_err = self.go_function(lib.GetIdentifier)
-
-        if identifier_err:
-            raise Exception(identifier_err)
-
-        return identifier
-
-    def set_identifier(self, identifier: str) -> None:
-        identifier_err = self.go_function(lib.SetIdentifier, identifier)
-
-        if identifier_err:
-            raise Exception(identifier_err)
-
     def set_search_server(self) -> None:
         search_err = self.go_function(lib.SetSearchServer)
 

@@ -29,9 +29,6 @@ type VPNState struct {
 
 	// Whether to enable debugging
 	Debug bool `json:"-"`
-
-	// Serialized connection identifier
-	Identifier string `json:"identifier"`
 }
 
 func (state *VPNState) GetSavedServers() string {
@@ -318,14 +315,6 @@ func (state *VPNState) SetProfileID(profileID string) error {
 	}
 	base.Profiles.Current = profileID
 	return nil
-}
-
-func (state *VPNState) GetIdentifier() string {
-	return state.Identifier
-}
-
-func (state *VPNState) SetIdentifier(identifier string) {
-	state.Identifier = identifier
 }
 
 func (state *VPNState) SetSearchServer() error {

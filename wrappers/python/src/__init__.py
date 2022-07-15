@@ -84,8 +84,6 @@ lib.SetSecureLocation.argtypes, lib.SetSecureLocation.restype = [
 lib.SetConnected.argtypes, lib.SetConnected.restype = [c_char_p], c_void_p
 lib.SetConnecting.argtypes, lib.SetConnecting.restype = [c_char_p], c_void_p
 lib.SetDisconnected.argtypes, lib.SetDisconnected.restype = [c_char_p], c_void_p
-lib.GetIdentifier.argtypes, lib.GetIdentifier.restype = [c_char_p], DataError
-lib.SetIdentifier.argtypes, lib.SetIdentifier.restype = [c_char_p, c_char_p], c_void_p
 lib.SetSearchServer.argtypes, lib.SetSearchServer.restype = [c_char_p], c_void_p
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
 
