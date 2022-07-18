@@ -22,6 +22,7 @@ type ServerBase struct {
 	ProfilesRaw    string            `json:"profiles_raw"`
 	StartTime      int64             `json:"start_time"`
 	EndTime        int64             `json:"expire_time"`
+	Type           string            `json:"server_type"`
 	Logger         *log.FileLogger   `json:"-"`
 	FSM            *fsm.FSM          `json:"-"`
 }
@@ -142,13 +143,14 @@ func (server *SecureInternetHomeServer) GetBase() (*ServerBase, error) {
 	return base, nil
 }
 
-func (institute *InstituteAccessServer) init(url string, displayName map[string]string, supportContact []string, fsm *fsm.FSM, logger *log.FileLogger) error {
+func (institute *InstituteAccessServer) init(url string, displayName map[string]string, serverType string, supportContact []string, fsm *fsm.FSM, logger *log.FileLogger) error {
 	errorMessage := fmt.Sprintf("failed initializing institute server %s", url)
 	institute.Base.URL = url
 	institute.Base.DisplayName = displayName
 	institute.Base.SupportContact = supportContact
 	institute.Base.FSM = fsm
 	institute.Base.Logger = logger
+	institute.Base.Type = serverType
 	endpoints, endpointsErr := APIGetEndpoints(url)
 	if endpointsErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: endpointsErr}
@@ -178,6 +180,7 @@ func (secure *SecureInternetHomeServer) addLocation(locationServer *types.Discov
 		base.URL = locationServer.BaseURL
 		base.DisplayName = secure.DisplayName
 		base.SupportContact = locationServer.SupportContact
+		base.Type = "secure_internet"
 		endpoints, endpointsErr := APIGetEndpoints(locationServer.BaseURL)
 		if endpointsErr != nil {
 			return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: endpointsErr}
@@ -301,7 +304,7 @@ func (servers *Servers) AddInstituteAccess(instituteServer *types.DiscoveryServe
 
 	// Set the current server
 	instituteServers.CurrentURL = url
-	instituteInitErr := institute.init(url, instituteServer.DisplayName, instituteServer.SupportContact, fsm, logger)
+	instituteInitErr := institute.init(url, instituteServer.DisplayName, instituteServer.Type, instituteServer.SupportContact, fsm, logger)
 	if instituteInitErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: instituteInitErr}
 	}
@@ -523,11 +526,13 @@ func askForProfileID(server Server) error {
 }
 
 type ServerInfoScreen struct {
+	Identifier     string            `json:"identifier"`
 	DisplayName    map[string]string `json:"display_name"`
 	CountryCode    string            `json:"country_code,omitempty"`
 	SupportContact []string          `json:"support_contact"`
 	ProfilesRaw    string            `json:"profiles"`
 	ExpireTime     int64             `json:"expire_time"`
+	Type           string            `json:"server_type"`
 }
 
 func (servers *Servers) GetCurrentServerInfoJSON() (string, error) {
@@ -546,12 +551,15 @@ func (servers *Servers) GetCurrentServerInfoJSON() (string, error) {
 		return "{}", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 
+	serverInfoScreen.Identifier = base.URL
 	serverInfoScreen.DisplayName = base.DisplayName
 	serverInfoScreen.SupportContact = base.SupportContact
 	serverInfoScreen.ProfilesRaw = base.ProfilesRaw
 	serverInfoScreen.ExpireTime = base.EndTime
+	serverInfoScreen.Type = base.Type
 
 	if servers.IsSecureInternet {
+		serverInfoScreen.Identifier = servers.SecureInternetHomeServer.HomeOrganizationID
 		serverInfoScreen.CountryCode = servers.SecureInternetHomeServer.CurrentLocation
 	}
 
