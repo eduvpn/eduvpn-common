@@ -133,9 +133,13 @@ func (state *VPNState) getConfig(chosenServer server.Server, forceTCP bool) (str
 		// Go back
 		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
-	} else {
-		state.FSM.GoTransitionWithData(fsm.HAS_CONFIG, state.getServerInfoData(), false)
 	}
+
+	// Signal the server display info
+	state.FSM.GoTransitionWithData(fsm.HAS_CONFIG, state.getServerInfoData(), false)
+
+	// Save the config
+	state.Config.Save(&state)
 
 	return config, configType, nil
 }
