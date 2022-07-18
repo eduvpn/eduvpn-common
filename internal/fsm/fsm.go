@@ -218,7 +218,7 @@ func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data string, backgroun
 }
 
 func (fsm *FSM) GoTransition(newState FSMStateID) bool {
-	return fsm.GoTransitionWithData(newState, "", false)
+	return fsm.GoTransitionWithData(newState, "{}", false)
 }
 
 func (fsm *FSM) generateMermaidGraph() string {
