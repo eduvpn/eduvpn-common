@@ -1,5 +1,9 @@
 package types
 
+import (
+	"encoding/json"
+)
+
 // Shared server types
 
 // Structs that define the json format for
@@ -12,9 +16,7 @@ type DiscoveryOrganizations struct {
 }
 
 type DiscoveryOrganization struct {
-	DisplayName struct {
-		En string `json:"en"`
-	} `json:"display_name"`
+	DisplayName map[string]string `json:"display_name"`
 	OrgId              string `json:"org_id"`
 	SecureInternetHome string `json:"secure_internet_home"`
 	KeywordList        struct {
@@ -31,10 +33,37 @@ type DiscoveryServers struct {
 	RawString string            `json:"-"`
 }
 
+type DNMapOrString map[string]string
+
+// The display name can either be a map or a string in the server list
+// Unmarshal it by first trying a string and then the map
+func (DN *DNMapOrString) UnmarshalJSON(data []byte) error {
+	var displayNameString string
+
+	err := json.Unmarshal(data, &displayNameString)
+
+	if err == nil {
+		*DN = map[string]string{"en": displayNameString}
+		return nil
+	}
+
+	var resultingMap map[string]string
+
+	err = json.Unmarshal(data, &resultingMap)
+
+	if err == nil {
+		*DN = resultingMap
+		return nil
+	}
+	return err
+}
+
+
 type DiscoveryServer struct {
 	AuthenticationURLTemplate string   `json:"authentication_url_template"`
 	BaseURL                   string   `json:"base_url"`
 	CountryCode               string   `json:"country_code"`
+	DisplayName               DNMapOrString   `json:"display_name,omitempty"`
 	PublicKeyList             []string `json:"public_key_list"`
 	Type                      string   `json:"server_type"`
 	SupportContact            []string `json:"support_contact"`

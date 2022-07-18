@@ -134,7 +134,7 @@ func (state *VPNState) getConfig(chosenServer server.Server, forceTCP bool) (str
 		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
 	} else {
-		state.FSM.GoTransition(fsm.HAS_CONFIG)
+		state.FSM.GoTransitionWithData(fsm.HAS_CONFIG, state.getServerInfoData(), false)
 	}
 
 	return config, configType, nil
@@ -230,7 +230,7 @@ func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
 func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 	errorMessage := fmt.Sprintf("failed adding Custom server with url %s", url)
 
-	instituteServer := &types.DiscoveryServer{BaseURL: url, CountryCode: "NL", Type: "custom", SupportContact: []string{"custom"}}
+	instituteServer := &types.DiscoveryServer{BaseURL: url, DisplayName: map[string]string{"en": url}, Type: "custom_server"}
 
 	// A custom server is just an institute access server under the hood
 	server, serverErr := state.Servers.AddInstituteAccess(instituteServer, &state.FSM, &state.Logger)
@@ -326,6 +326,11 @@ func (state *VPNState) SetSearchServer() error {
 	return nil
 }
 
+func (state *VPNState) getServerInfoData() string {
+	jsonString, _ := state.Servers.GetCurrentServerInfoJSON()
+	return jsonString
+}
+
 func (state *VPNState) SetConnected() error {
 	if state.FSM.InState(fsm.CONNECTED) {
 		// already connected, show no error
@@ -335,7 +340,7 @@ func (state *VPNState) SetConnected() error {
 		return &types.WrappedErrorMessage{Message: "failed to set connected", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.CONNECTED}.CustomError()}
 	}
 
-	state.FSM.GoTransition(fsm.CONNECTED)
+	state.FSM.GoTransitionWithData(fsm.CONNECTED, state.getServerInfoData(), false)
 	return nil
 }
 
@@ -361,7 +366,7 @@ func (state *VPNState) SetDisconnected() error {
 		return &types.WrappedErrorMessage{Message: "failed to set disconnected", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.HAS_CONFIG}.CustomError()}
 	}
 
-	state.FSM.GoTransition(fsm.HAS_CONFIG)
+	state.FSM.GoTransitionWithData(fsm.HAS_CONFIG, state.getServerInfoData(), false)
 	return nil
 }
 
