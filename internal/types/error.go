@@ -1,8 +1,8 @@
 package types
 
 import (
-	"errors"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -83,11 +83,10 @@ func GetErrorLevel(err error) ErrorLevel {
 }
 
 type WrappedErrorMessageJSON struct {
-	Level   ErrorLevel `json:"level"`
-	Cause string `json:"cause"`
-	Traceback     string `json:"traceback"`
+	Level     ErrorLevel `json:"level"`
+	Cause     string     `json:"cause"`
+	Traceback string     `json:"traceback"`
 }
-
 
 func GetErrorJSONString(err error) string {
 	var wrappedErr *WrappedErrorMessage
@@ -105,7 +104,6 @@ func GetErrorJSONString(err error) string {
 		cause = err
 		traceback = err.Error()
 	}
-
 
 	json, jsonErr := json.Marshal(&WrappedErrorMessageJSON{Level: level, Cause: cause.Error(), Traceback: traceback})
 

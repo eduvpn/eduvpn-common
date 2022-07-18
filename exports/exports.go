@@ -14,8 +14,8 @@ void call_callback(PythonCB callback, const char *name, const char* oldstate, co
 import "C"
 
 import (
-	"errors"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"unsafe"
 
@@ -109,7 +109,7 @@ func CancelOAuth(name *C.char) *C.char {
 }
 
 type configJSON struct {
-	Config string `json:"config"`
+	Config     string `json:"config"`
 	ConfigType string `json:"config_type"`
 }
 
@@ -205,7 +205,7 @@ func SetSecureLocation(name *C.char, data *C.char) *C.char {
 }
 
 //export GoBack
-func GoBack(name *C.char) (*C.char) {
+func GoBack(name *C.char) *C.char {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {

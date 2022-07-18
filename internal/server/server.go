@@ -14,16 +14,16 @@ import (
 
 // The base type for servers
 type ServerBase struct {
-	URL         string            `json:"base_url"`
-	DisplayName map[string]string `json:"display_name"`
-	SupportContact []string `json:"support_contact"`
-	Endpoints   ServerEndpoints   `json:"endpoints"`
-	Profiles    ServerProfileInfo `json:"profiles"`
-	ProfilesRaw string            `json:"profiles_raw"`
-	StartTime   int64             `json:"start_time"`
-	EndTime     int64             `json:"expire_time"`
-	Logger      *log.FileLogger   `json:"-"`
-	FSM         *fsm.FSM          `json:"-"`
+	URL            string            `json:"base_url"`
+	DisplayName    map[string]string `json:"display_name"`
+	SupportContact []string          `json:"support_contact"`
+	Endpoints      ServerEndpoints   `json:"endpoints"`
+	Profiles       ServerProfileInfo `json:"profiles"`
+	ProfilesRaw    string            `json:"profiles_raw"`
+	StartTime      int64             `json:"start_time"`
+	EndTime        int64             `json:"expire_time"`
+	Logger         *log.FileLogger   `json:"-"`
+	FSM            *fsm.FSM          `json:"-"`
 }
 
 // An instute access server
@@ -38,8 +38,8 @@ type InstituteAccessServer struct {
 // A secure internet server which has its own OAuth tokens
 // It specifies the current location url it is connected to
 type SecureInternetHomeServer struct {
-	DisplayName map[string]string      `json:"display_name"`
-	OAuth       oauth.OAuth `json:"oauth"`
+	DisplayName map[string]string `json:"display_name"`
+	OAuth       oauth.OAuth       `json:"oauth"`
 
 	// The home server has a list of info for each configured server location
 	BaseMap map[string]*ServerBase `json:"base_map"`
@@ -523,16 +523,15 @@ func askForProfileID(server Server) error {
 }
 
 type ServerInfoScreen struct {
-	DisplayName map[string]string `json:"display_name"`
-	CountryCode string `json:"country_code,omitempty"`
-	SupportContact []string `json:"support_contact"`
-	ProfilesRaw string `json:"profiles"`
-	ExpireTime int64 `json:"expire_time"`
+	DisplayName    map[string]string `json:"display_name"`
+	CountryCode    string            `json:"country_code,omitempty"`
+	SupportContact []string          `json:"support_contact"`
+	ProfilesRaw    string            `json:"profiles"`
+	ExpireTime     int64             `json:"expire_time"`
 }
 
 func (servers *Servers) GetCurrentServerInfoJSON() (string, error) {
 	errorMessage := "failed getting JSON for server"
-
 
 	currentServer, currentServerErr := servers.GetCurrentServer()
 	if currentServerErr != nil {

@@ -182,7 +182,6 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 
 	if !state.Servers.HasSecureLocation() {
 		locationErr = state.AskSecureLocation()
-
 	} else {
 		// reinitialize
 		locationErr = state.SetSecureLocation(state.Servers.GetSecureLocation())

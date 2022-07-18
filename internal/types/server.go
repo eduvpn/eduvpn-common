@@ -16,9 +16,9 @@ type DiscoveryOrganizations struct {
 }
 
 type DiscoveryOrganization struct {
-	DisplayName map[string]string `json:"display_name"`
-	OrgId              string `json:"org_id"`
-	SecureInternetHome string `json:"secure_internet_home"`
+	DisplayName        map[string]string `json:"display_name"`
+	OrgId              string            `json:"org_id"`
+	SecureInternetHome string            `json:"secure_internet_home"`
 	KeywordList        struct {
 		En string `json:"en"`
 	} `json:"keyword_list"`
@@ -58,13 +58,12 @@ func (DN *DNMapOrString) UnmarshalJSON(data []byte) error {
 	return err
 }
 
-
 type DiscoveryServer struct {
-	AuthenticationURLTemplate string   `json:"authentication_url_template"`
-	BaseURL                   string   `json:"base_url"`
-	CountryCode               string   `json:"country_code"`
-	DisplayName               DNMapOrString   `json:"display_name,omitempty"`
-	PublicKeyList             []string `json:"public_key_list"`
-	Type                      string   `json:"server_type"`
-	SupportContact            []string `json:"support_contact"`
+	AuthenticationURLTemplate string        `json:"authentication_url_template"`
+	BaseURL                   string        `json:"base_url"`
+	CountryCode               string        `json:"country_code"`
+	DisplayName               DNMapOrString `json:"display_name,omitempty"`
+	PublicKeyList             []string      `json:"public_key_list"`
+	Type                      string        `json:"server_type"`
+	SupportContact            []string      `json:"support_contact"`
 }
