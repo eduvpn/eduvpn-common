@@ -139,7 +139,7 @@ func (fsm *FSM) Init(name string, callback func(string, string, string), logger 
 		ASK_LOCATION:   FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Location chosen"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
 		LOADING_SERVER: FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Server info loaded"}, {ASK_LOCATION, "User chooses a Secure Internet server but no location is configured"}}},
 		CHOSEN_SERVER:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}}},
-		OAUTH_STARTED:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "User authorizes with browser"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
+		OAUTH_STARTED:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "User authorizes with browser"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}, BackState: NO_SERVER},
 		AUTHORIZED:     FSMState{Transitions: []FSMTransition{{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}}},
 		REQUEST_CONFIG: FSMState{Transitions: []FSMTransition{{ASK_PROFILE, "Multiple profiles found and no profile chosen"}, {HAS_CONFIG, "Only one profile or profile already chosen"}, {NO_SERVER, "Cancel or Error"}, {OAUTH_STARTED, "Re-authorize"}}},
 		ASK_PROFILE:    FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "User chooses profile"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
