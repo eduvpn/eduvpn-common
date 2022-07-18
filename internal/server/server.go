@@ -203,7 +203,7 @@ func (secure *SecureInternetHomeServer) init(homeOrg *types.DiscoveryOrganizatio
 
 	if secure.HomeOrganizationID != homeOrg.OrgId {
 		// New home organisation, clear everything
-		*secure = *&SecureInternetHomeServer{}
+		*secure = SecureInternetHomeServer{}
 	}
 
 	// Make sure to set the organization ID
