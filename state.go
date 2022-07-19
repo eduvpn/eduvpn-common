@@ -32,10 +32,10 @@ type VPNState struct {
 }
 
 func (state *VPNState) GetSavedServers() string {
-	serversJSON, serversJSONErr := state.Servers.GetJSON()
+	serversJSON, serversJSONErr := state.Servers.GetServersConfiguredJSON()
 
 	if serversJSONErr != nil {
-		return ""
+		return "{}"
 	}
 
 	return serversJSON
@@ -100,7 +100,9 @@ func (state *VPNState) GoBack() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.DeregisteredError{}.CustomError()}
 	}
 
-	state.FSM.GoBack()
+	// FIXME: Abitrary back transitions don't work because we need the approriate data
+	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+	//state.FSM.GoBack()
 	return nil
 }
 

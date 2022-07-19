@@ -113,14 +113,10 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 	return server, nil
 }
 
-func (servers *Servers) GetJSON() (string, error) {
-	bytes, bytesErr := json.Marshal(servers)
-
-	if bytesErr != nil {
-		return "", bytesErr
-	}
-
-	return string(bytes), nil
+type ServersConfiguredScreen struct {
+	CustomServers []ServerInfoScreen `json:"custom_servers"`
+	InstituteAccessServers []ServerInfoScreen `json:"institute_access_servers"`
+	SecureInternetServer *ServerInfoScreen `json:"secure_internet_server"`
 }
 
 type ServerInfoScreen struct {
@@ -128,9 +124,58 @@ type ServerInfoScreen struct {
 	DisplayName    map[string]string `json:"display_name"`
 	CountryCode    string            `json:"country_code,omitempty"`
 	SupportContact []string          `json:"support_contact"`
-	ProfilesRaw    string            `json:"profiles"`
+	Profiles    ServerProfileInfo            `json:"profiles"`
 	ExpireTime     int64             `json:"expire_time"`
 	Type           string            `json:"server_type"`
+}
+
+func getServerInfoScreen(base ServerBase) (ServerInfoScreen) {
+	serverInfoScreen := ServerInfoScreen{}
+	serverInfoScreen.Identifier = base.URL
+	serverInfoScreen.DisplayName = base.DisplayName
+	serverInfoScreen.SupportContact = base.SupportContact
+	serverInfoScreen.Profiles = base.Profiles
+	serverInfoScreen.ExpireTime = base.EndTime
+	serverInfoScreen.Type = base.Type
+
+	return serverInfoScreen
+}
+
+func (servers *Servers) GetServersConfiguredJSON() (string, error) {
+	errorMessage := "failed getting configured servers JSON"
+
+	customServersInfo := []ServerInfoScreen{}
+	instituteServersInfo := []ServerInfoScreen{}
+	var secureInternetServerInfo *ServerInfoScreen = nil
+
+	for _, server := range servers.CustomServers.Map {
+		serverInfoScreen := getServerInfoScreen(server.Base)
+		customServersInfo = append(customServersInfo, serverInfoScreen)
+	}
+
+	for _, server := range servers.InstituteServers.Map {
+		serverInfoScreen := getServerInfoScreen(server.Base)
+		instituteServersInfo = append(instituteServersInfo, serverInfoScreen)
+	}
+
+	secureInternetBase, secureInternetBaseErr := servers.SecureInternetHomeServer.GetBase()
+
+	if secureInternetBaseErr == nil && secureInternetBase != nil {
+		// FIXME: log error?
+		secureInternetServerInfoReturned := getServerInfoScreen(*secureInternetBase)
+		secureInternetServerInfo = &secureInternetServerInfoReturned
+		secureInternetServerInfo.Identifier = servers.SecureInternetHomeServer.HomeOrganizationID
+		secureInternetServerInfo.CountryCode = servers.SecureInternetHomeServer.CurrentLocation
+	}
+
+	serversConfiguredScreen := &ServersConfiguredScreen{CustomServers: customServersInfo, InstituteAccessServers: instituteServersInfo, SecureInternetServer: secureInternetServerInfo}
+
+	bytes, bytesErr := json.Marshal(serversConfiguredScreen)
+
+	if bytesErr != nil {
+		return "{}", &types.WrappedErrorMessage{Message: errorMessage, Err: bytesErr}
+	}
+	return string(bytes), nil
 }
 
 func (servers *Servers) GetCurrentServerInfoJSON() (string, error) {
@@ -141,20 +186,13 @@ func (servers *Servers) GetCurrentServerInfoJSON() (string, error) {
 		return "{}", &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
 
-	serverInfoScreen := &ServerInfoScreen{}
-
 	base, baseErr := currentServer.GetBase()
 
 	if baseErr != nil {
 		return "{}", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 
-	serverInfoScreen.Identifier = base.URL
-	serverInfoScreen.DisplayName = base.DisplayName
-	serverInfoScreen.SupportContact = base.SupportContact
-	serverInfoScreen.ProfilesRaw = base.ProfilesRaw
-	serverInfoScreen.ExpireTime = base.EndTime
-	serverInfoScreen.Type = base.Type
+	serverInfoScreen := getServerInfoScreen(*base)
 
 	if servers.IsType == SecureInternetServerType {
 		serverInfoScreen.Identifier = servers.SecureInternetHomeServer.HomeOrganizationID
