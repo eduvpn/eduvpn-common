@@ -219,7 +219,7 @@ func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: discoErr}
 	}
 	// Add the secure internet server
-	server, serverErr := state.Servers.AddInstituteAccess(instituteServer, &state.FSM, &state.Logger)
+	server, serverErr := state.Servers.AddInstituteAccessServer(instituteServer, &state.FSM, &state.Logger)
 
 	if serverErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
@@ -233,10 +233,10 @@ func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
 func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 	errorMessage := fmt.Sprintf("failed adding Custom server with url %s", url)
 
-	instituteServer := &types.DiscoveryServer{BaseURL: url, DisplayName: map[string]string{"en": url}, Type: "custom_server"}
+	customServer := &types.DiscoveryServer{BaseURL: url, DisplayName: map[string]string{"en": url}, Type: "custom_server"}
 
 	// A custom server is just an institute access server under the hood
-	server, serverErr := state.Servers.AddInstituteAccess(instituteServer, &state.FSM, &state.Logger)
+	server, serverErr := state.Servers.AddCustomServer(customServer, &state.FSM, &state.Logger)
 
 	if serverErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
