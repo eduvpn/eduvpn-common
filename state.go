@@ -304,10 +304,6 @@ func (state *VPNState) GetDiscoServers() (string, error) {
 
 func (state *VPNState) SetProfileID(profileID string) error {
 	errorMessage := "failed to set the profile ID for the current server"
-	if !state.FSM.InState(fsm.ASK_PROFILE) {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateError{Got: state.FSM.Current, Want: fsm.ASK_PROFILE}.CustomError()}
-	}
-
 	server, serverErr := state.Servers.GetCurrentServer()
 	if serverErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
