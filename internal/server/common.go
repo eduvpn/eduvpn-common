@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
-	"github.com/jwijenbergh/eduvpn-common/internal/log"
 	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
@@ -23,7 +22,6 @@ type ServerBase struct {
 	StartTime      int64             `json:"start_time"`
 	EndTime        int64             `json:"expire_time"`
 	Type           string            `json:"server_type"`
-	Logger         *log.FileLogger   `json:"-"`
 	FSM            *fsm.FSM          `json:"-"`
 }
 
@@ -208,7 +206,7 @@ func (servers *Servers) GetCurrentServerInfoJSON() (string, error) {
 	return string(bytes), nil
 }
 
-func (servers *Servers) addInstituteAndCustom(discoServer *types.DiscoveryServer, isCustom bool, fsm *fsm.FSM, logger *log.FileLogger) (Server, error) {
+func (servers *Servers) addInstituteAndCustom(discoServer *types.DiscoveryServer, isCustom bool, fsm *fsm.FSM) (Server, error) {
 	url := discoServer.BaseURL
 	errorMessage := fmt.Sprintf("failed adding institute access server: %s", url)
 	toAddServers := &servers.InstituteServers
@@ -232,7 +230,7 @@ func (servers *Servers) addInstituteAndCustom(discoServer *types.DiscoveryServer
 
 	// Set the current server
 	toAddServers.CurrentURL = url
-	instituteInitErr := server.init(url, discoServer.DisplayName, discoServer.Type, discoServer.SupportContact, fsm, logger)
+	instituteInitErr := server.init(url, discoServer.DisplayName, discoServer.Type, discoServer.SupportContact, fsm)
 	if instituteInitErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: instituteInitErr}
 	}
@@ -241,22 +239,22 @@ func (servers *Servers) addInstituteAndCustom(discoServer *types.DiscoveryServer
 	return server, nil
 }
 
-func (servers *Servers) AddInstituteAccessServer(instituteServer *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) (Server, error) {
-	return servers.addInstituteAndCustom(instituteServer, false, fsm, logger)
+func (servers *Servers) AddInstituteAccessServer(instituteServer *types.DiscoveryServer, fsm *fsm.FSM) (Server, error) {
+	return servers.addInstituteAndCustom(instituteServer, false, fsm)
 }
 
-func (servers *Servers) AddCustomServer(customServer *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) (Server, error) {
-	return servers.addInstituteAndCustom(customServer, true, fsm, logger)
+func (servers *Servers) AddCustomServer(customServer *types.DiscoveryServer, fsm *fsm.FSM) (Server, error) {
+	return servers.addInstituteAndCustom(customServer, true, fsm)
 }
 
 func (servers *Servers) GetSecureLocation() string {
 	return servers.SecureInternetHomeServer.CurrentLocation
 }
 
-func (servers *Servers) SetSecureLocation(chosenLocationServer *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) error {
+func (servers *Servers) SetSecureLocation(chosenLocationServer *types.DiscoveryServer, fsm *fsm.FSM) error {
 	errorMessage := "failed to set secure location"
 	// Make sure to add the current location
-	_, addLocationErr := servers.SecureInternetHomeServer.addLocation(chosenLocationServer, fsm, logger)
+	_, addLocationErr := servers.SecureInternetHomeServer.addLocation(chosenLocationServer, fsm)
 
 	if addLocationErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: addLocationErr}
@@ -266,11 +264,11 @@ func (servers *Servers) SetSecureLocation(chosenLocationServer *types.DiscoveryS
 	return nil
 }
 
-func (servers *Servers) AddSecureInternet(secureOrg *types.DiscoveryOrganization, secureServer *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) (Server, error) {
+func (servers *Servers) AddSecureInternet(secureOrg *types.DiscoveryOrganization, secureServer *types.DiscoveryServer, fsm *fsm.FSM) (Server, error) {
 	errorMessage := "failed adding secure internet server"
 	// If we have specified an organization ID
 	// We also need to get an authorization template
-	initErr := servers.SecureInternetHomeServer.init(secureOrg, secureServer, fsm, logger)
+	initErr := servers.SecureInternetHomeServer.init(secureOrg, secureServer, fsm)
 
 	if initErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: initErr}
@@ -318,13 +316,7 @@ func Login(server Server) error {
 
 func EnsureTokens(server Server) error {
 	errorMessage := "failed ensuring server tokens"
-	base, baseErr := server.GetBase()
-
-	if baseErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
-	}
 	if server.GetOAuth().NeedsRelogin() {
-		base.Logger.Log(log.LOG_INFO, "OAuth: Tokens are invalid, relogging in")
 		loginErr := Login(server)
 
 		if loginErr != nil {
@@ -513,7 +505,6 @@ func GetConfig(server Server, forceTCP bool) (string, string, error) {
 	if base.Profiles.Current != "" {
 		_, existsProfileErr := getCurrentProfile(server)
 		if existsProfileErr != nil {
-			base.Logger.Log(log.LOG_INFO, fmt.Sprintf("Profile %s no longer exists, resetting the profile", base.Profiles.Current))
 			base.Profiles.Current = ""
 		}
 	}

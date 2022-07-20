@@ -4,19 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 	"github.com/jwijenbergh/eduvpn-common/internal/http"
-	"github.com/jwijenbergh/eduvpn-common/internal/log"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
+	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/verify"
 )
 
 type Discovery struct {
 	Organizations types.DiscoveryOrganizations
 	Servers       types.DiscoveryServers
-	FSM           *fsm.FSM
-	Logger        *log.FileLogger
 }
 
 // Helper function that gets a disco json
@@ -57,11 +53,6 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	}
 
 	return string(fileBody), nil
-}
-
-func (discovery *Discovery) Init(fsm *fsm.FSM, logger *log.FileLogger) {
-	discovery.FSM = fsm
-	discovery.Logger = logger
 }
 
 // FIXME: Implement based on
@@ -150,7 +141,6 @@ func (discovery *Discovery) DetermineServersUpdate() bool {
 	if now >= should_update_time {
 		return true
 	}
-	discovery.Logger.Log(log.LOG_INFO, "No update needed for servers, 1h is not passed yet")
 	return false
 }
 

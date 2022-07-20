@@ -8,7 +8,6 @@ import (
 	"net/url"
 
 	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
-	"github.com/jwijenbergh/eduvpn-common/internal/log"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
@@ -70,17 +69,12 @@ func apiAuthorized(server Server, method string, endpoint string, opts *httpw.HT
 func apiAuthorizedRetry(server Server, method string, endpoint string, opts *httpw.HTTPOptionalParams) (http.Header, []byte, error) {
 	errorMessage := "failed authorized API retry"
 	header, body, bodyErr := apiAuthorized(server, method, endpoint, opts)
-	base, baseErr := server.GetBase()
 
-	if baseErr != nil {
-		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
-	}
 	if bodyErr != nil {
 		var error *httpw.HTTPStatusError
 
 		// Only retry authorized if we get a HTTP 401
 		if errors.As(bodyErr, &error) && error.Status == 401 {
-			base.Logger.Log(log.LOG_INFO, fmt.Sprintf("API: Got HTTP error %v, retrying authorized", error))
 			// Tell the method that the token is expired
 			server.GetOAuth().Token.ExpiredTimestamp = util.GenerateTimeSeconds()
 			retryHeader, retryBody, retryErr := apiAuthorized(server, method, endpoint, opts)

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
-	"github.com/jwijenbergh/eduvpn-common/internal/log"
 	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
@@ -53,7 +52,7 @@ func (servers *Servers) HasSecureLocation() bool {
 	return servers.SecureInternetHomeServer.CurrentLocation != ""
 }
 
-func (secure *SecureInternetHomeServer) addLocation(locationServer *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) (*ServerBase, error) {
+func (secure *SecureInternetHomeServer) addLocation(locationServer *types.DiscoveryServer, fsm *fsm.FSM) (*ServerBase, error) {
 	errorMessage := "failed adding a location"
 	// Initialize the base map if it is non-nil
 	if secure.BaseMap == nil {
@@ -77,9 +76,8 @@ func (secure *SecureInternetHomeServer) addLocation(locationServer *types.Discov
 		base.Endpoints = *endpoints
 	}
 
-	// Pass the fsm and logger
+	// Pass the fsm
 	base.FSM = fsm
-	base.Logger = logger
 
 	// Ensure it is in the map
 	secure.BaseMap[locationServer.CountryCode] = base
@@ -87,7 +85,7 @@ func (secure *SecureInternetHomeServer) addLocation(locationServer *types.Discov
 }
 
 // Initializes the home server and adds its own location
-func (secure *SecureInternetHomeServer) init(homeOrg *types.DiscoveryOrganization, homeLocation *types.DiscoveryServer, fsm *fsm.FSM, logger *log.FileLogger) error {
+func (secure *SecureInternetHomeServer) init(homeOrg *types.DiscoveryOrganization, homeLocation *types.DiscoveryServer, fsm *fsm.FSM) error {
 	errorMessage := "failed initializing secure internet home server"
 
 	if secure.HomeOrganizationID != homeOrg.OrgId {
@@ -102,14 +100,14 @@ func (secure *SecureInternetHomeServer) init(homeOrg *types.DiscoveryOrganizatio
 	// Make sure to set the authorization URL template
 	secure.AuthorizationTemplate = homeLocation.AuthenticationURLTemplate
 
-	base, baseErr := secure.addLocation(homeLocation, fsm, logger)
+	base, baseErr := secure.addLocation(homeLocation, fsm)
 
 	if baseErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 
 	// Make sure oauth contains our endpoints
-	secure.OAuth.Init(base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token, fsm, logger)
+	secure.OAuth.Init(base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token, fsm)
 	return nil
 }
 

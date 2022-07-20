@@ -11,7 +11,6 @@ import (
 
 	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
-	"github.com/jwijenbergh/eduvpn-common/internal/log"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
@@ -62,7 +61,6 @@ type OAuth struct {
 	Token                OAuthToken           `json:"token"`
 	BaseAuthorizationURL string               `json:"base_authorization_url"`
 	TokenURL             string               `json:"token_url"`
-	Logger               *log.FileLogger      `json:"-"`
 	FSM                  *fsm.FSM             `json:"-"`
 }
 
@@ -223,11 +221,10 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string, fsm *fsm.FSM, logger *log.FileLogger) {
+func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string, fsm *fsm.FSM) {
 	oauth.BaseAuthorizationURL = baseAuthorizationURL
 	oauth.TokenURL = tokenURL
 	oauth.FSM = fsm
-	oauth.Logger = logger
 }
 
 // Starts the OAuth exchange for eduvpn.
@@ -312,7 +309,6 @@ func (oauth *OAuth) Login(name string, postprocessAuth func(string) string) erro
 func (oauth *OAuth) NeedsRelogin() bool {
 	// Access Token or Refresh Tokens empty, definitely needs a relogin
 	if oauth.Token.Access == "" || oauth.Token.Refresh == "" {
-		oauth.Logger.Log(log.LOG_INFO, "OAuth: Tokens are empty")
 		return true
 	}
 
@@ -321,14 +317,12 @@ func (oauth *OAuth) NeedsRelogin() bool {
 	// The tokens are not expired yet
 	// No relogin is needed
 	if !oauth.isTokensExpired() {
-		oauth.Logger.Log(log.LOG_INFO, "OAuth: Tokens are not expired, re-login not needed")
 		return false
 	}
 
 	refreshErr := oauth.getTokensWithRefresh()
 	// We have obtained new tokens with refresh
 	if refreshErr == nil {
-		oauth.Logger.Log(log.LOG_INFO, "OAuth: Tokens could be re-acquired using the refresh token, re-login not needed")
 		return false
 	}
 

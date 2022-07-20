@@ -59,14 +59,11 @@ func (state *VPNState) Register(name string, directory string, stateCallback fun
 	}
 
 	// Initialize the FSM
-	state.FSM.Init(name, stateCallback, &state.Logger, directory, debug)
+	state.FSM.Init(name, stateCallback, directory, debug)
 	state.Debug = debug
 
 	// Initialize the Config
 	state.Config.Init(name, directory)
-
-	// Initialize Discovery
-	state.Discovery.Init(&state.FSM, &state.Logger)
 
 	// Try to load the previous configuration
 	if state.Config.Load(&state) != nil {
@@ -153,7 +150,7 @@ func (state *VPNState) SetSecureLocation(countryCode string) error {
 		return &types.WrappedErrorMessage{Message: "failed asking secure location", Err: serverErr}
 	}
 
-	state.Servers.SetSecureLocation(server, &state.FSM, &state.Logger)
+	state.Servers.SetSecureLocation(server, &state.FSM)
 	return nil
 }
 
@@ -178,7 +175,7 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 	}
 
 	// Add the secure internet server
-	server, serverErr := state.Servers.AddSecureInternet(secureOrg, secureServer, &state.FSM, &state.Logger)
+	server, serverErr := state.Servers.AddSecureInternet(secureOrg, secureServer, &state.FSM)
 
 	if serverErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
@@ -221,7 +218,7 @@ func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: discoErr}
 	}
 	// Add the secure internet server
-	server, serverErr := state.Servers.AddInstituteAccessServer(instituteServer, &state.FSM, &state.Logger)
+	server, serverErr := state.Servers.AddInstituteAccessServer(instituteServer, &state.FSM)
 
 	if serverErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
@@ -238,7 +235,7 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 	customServer := &types.DiscoveryServer{BaseURL: url, DisplayName: map[string]string{"en": url}, Type: "custom_server"}
 
 	// A custom server is just an institute access server under the hood
-	server, serverErr := state.Servers.AddCustomServer(customServer, &state.FSM, &state.Logger)
+	server, serverErr := state.Servers.AddCustomServer(customServer, &state.FSM)
 
 	if serverErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
@@ -368,6 +365,7 @@ func (state *VPNState) SetDisconnected() error {
 	}
 
 	state.FSM.GoTransitionWithData(fsm.HAS_CONFIG, state.getServerInfoData(), false)
+
 	return nil
 }
 
