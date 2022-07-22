@@ -154,7 +154,7 @@ func (state *VPNState) SetSecureLocation(countryCode string) error {
 	return nil
 }
 
-func (state *VPNState) AskSecureLocation() error {
+func (state *VPNState) askSecureLocation() error {
 	errorMessage := "failed asking Secure Internet location"
 	locations, locationsErr := state.Discovery.GetSecureLocationList()
 	if locationsErr != nil {
@@ -184,7 +184,7 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 	var locationErr error
 
 	if !state.Servers.HasSecureLocation() {
-		locationErr = state.AskSecureLocation()
+		locationErr = state.askSecureLocation()
 	} else {
 		// reinitialize
 		locationErr = state.SetSecureLocation(state.Servers.GetSecureLocation())
@@ -282,6 +282,25 @@ func (state *VPNState) CancelOAuth() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 	server.CancelOAuth(currentServer)
+	return nil
+}
+
+func (state *VPNState) ChangeSecureLocation() error {
+	errorMessage := "failed to change location from the main screen"
+
+	if !state.FSM.InState(fsm.NO_SERVER) {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateError{Got: state.FSM.Current, Want: fsm.NO_SERVER}.CustomError()}
+	}
+
+	askLocationErr := state.askSecureLocation()
+
+	if askLocationErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: askLocationErr}
+	}
+
+	// Go back to the main screen
+	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+
 	return nil
 }
 

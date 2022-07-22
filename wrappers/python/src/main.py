@@ -187,6 +187,14 @@ class EduVPN(object):
         if profile_err:
             raise Exception(profile_err)
 
+    def change_secure_location(self) -> None:
+        # Set the location by country code
+        self.location_event = threading.Event()
+        location_err = self.go_function(lib.ChangeSecureLocation)
+
+        if location_err:
+            raise Exception(location_err)
+
     def set_secure_location(self, country_code: str) -> None:
         # Set the location by country code
         location_err = self.go_function(lib.SetSecureLocation, country_code)
