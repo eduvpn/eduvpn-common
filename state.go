@@ -388,6 +388,21 @@ func (state *VPNState) SetDisconnected() error {
 	return nil
 }
 
+func (state *VPNState) ShouldRenewButton() bool {
+	if !state.FSM.InState(fsm.CONNECTED) {
+		return false
+	}
+
+	currentServer, currentServerErr := state.Servers.GetCurrentServer()
+
+	if currentServerErr != nil {
+		state.Logger.Log(log.LOG_INFO, fmt.Sprintf("No server found to renew with err: %s", GetErrorTraceback(currentServerErr)))
+		return false
+	}
+
+	return server.ShouldRenewButton(currentServer)
+}
+
 func GetErrorCause(err error) error {
 	return types.GetErrorCause(err)
 }

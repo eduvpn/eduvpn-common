@@ -206,3 +206,6 @@ class EduVPN(object):
 
         if location_err:
             raise Exception(location_err)
+
+    def should_renew_button(self) -> bool:
+        return self.go_function(lib.ShouldRenewButton)

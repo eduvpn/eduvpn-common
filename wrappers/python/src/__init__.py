@@ -86,6 +86,7 @@ lib.SetConnected.argtypes, lib.SetConnected.restype = [c_char_p], c_void_p
 lib.SetConnecting.argtypes, lib.SetConnecting.restype = [c_char_p], c_void_p
 lib.SetDisconnected.argtypes, lib.SetDisconnected.restype = [c_char_p], c_void_p
 lib.SetSearchServer.argtypes, lib.SetSearchServer.restype = [c_char_p], c_void_p
+lib.ShouldRenewButton.argtypes, lib.ShouldRenewButton.restype = [], int
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
 
 
@@ -143,8 +144,11 @@ def get_data_error(data_error: DataError) -> Tuple[str, str]:
     error = get_error(data_error.error)
     return data, error
 
+def get_bool(boolInt: c_int) -> bool:
+    return boolInt == 1
 
 decode_map = {
+    c_int: get_bool,
     c_void_p: get_error,
     DataError: get_data_error,
 }

@@ -270,6 +270,20 @@ func SetConnected(name *C.char) *C.char {
 	return C.CString(ErrorToString(setConnectedErr))
 }
 
+//export ShouldRenewButton
+func ShouldRenewButton(name *C.char) C.int {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.int(0)
+	}
+	shouldRenewBool := state.ShouldRenewButton()
+	if shouldRenewBool {
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
 //export FreeString
 func FreeString(addr *C.char) {
 	C.free(unsafe.Pointer(addr))
