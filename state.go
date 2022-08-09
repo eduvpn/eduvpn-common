@@ -99,7 +99,7 @@ func (state *VPNState) GoBack() error {
 
 	// FIXME: Abitrary back transitions don't work because we need the approriate data
 	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
-	//state.FSM.GoBack()
+	// state.FSM.GoBack()
 	return nil
 }
 

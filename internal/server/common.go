@@ -20,8 +20,8 @@ type ServerBase struct {
 	Endpoints      ServerEndpoints   `json:"endpoints"`
 	Profiles       ServerProfileInfo `json:"profiles"`
 	ProfilesRaw    string            `json:"profiles_raw"`
-	StartTime      time.Time             `json:"start_time"`
-	EndTime        time.Time             `json:"expire_time"`
+	StartTime      time.Time         `json:"start_time"`
+	EndTime        time.Time         `json:"expire_time"`
 	Type           string            `json:"server_type"`
 	FSM            *fsm.FSM          `json:"-"`
 }
@@ -113,9 +113,9 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 }
 
 type ServersConfiguredScreen struct {
-	CustomServers []ServerInfoScreen `json:"custom_servers"`
+	CustomServers          []ServerInfoScreen `json:"custom_servers"`
 	InstituteAccessServers []ServerInfoScreen `json:"institute_access_servers"`
-	SecureInternetServer *ServerInfoScreen `json:"secure_internet_server"`
+	SecureInternetServer   *ServerInfoScreen  `json:"secure_internet_server"`
 }
 
 type ServerInfoScreen struct {
@@ -123,12 +123,12 @@ type ServerInfoScreen struct {
 	DisplayName    map[string]string `json:"display_name"`
 	CountryCode    string            `json:"country_code,omitempty"`
 	SupportContact []string          `json:"support_contact"`
-	Profiles    ServerProfileInfo            `json:"profiles"`
+	Profiles       ServerProfileInfo `json:"profiles"`
 	ExpireTime     int64             `json:"expire_time"`
 	Type           string            `json:"server_type"`
 }
 
-func getServerInfoScreen(base ServerBase) (ServerInfoScreen) {
+func getServerInfoScreen(base ServerBase) ServerInfoScreen {
 	serverInfoScreen := ServerInfoScreen{}
 	serverInfoScreen.Identifier = base.URL
 	serverInfoScreen.DisplayName = base.DisplayName
@@ -302,8 +302,8 @@ func ShouldRenewButton(server Server) bool {
 
 	// Session duration is less than 24 hours but not 75% has passed
 	duration := base.EndTime.Sub(base.StartTime)
-	percentTime := base.StartTime.Add((duration/4)*3)
-	if duration < time.Duration(24 * time.Hour) && !current.After(percentTime) {
+	percentTime := base.StartTime.Add((duration / 4) * 3)
+	if duration < time.Duration(24*time.Hour) && !current.After(percentTime) {
 		return false
 	}
 

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/jwijenbergh/eduvpn-common/internal/http"
-	"github.com/jwijenbergh/eduvpn-common/internal/util"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
+	"github.com/jwijenbergh/eduvpn-common/internal/util"
 	"github.com/jwijenbergh/eduvpn-common/internal/verify"
 )
 

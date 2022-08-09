@@ -82,11 +82,11 @@ type OAuthExchangeSession struct {
 
 // Struct that defines the json format for /.well-known/vpn-user-portal"
 type OAuthToken struct {
-	Access           string `json:"access_token"`
-	Refresh          string `json:"refresh_token"`
-	Type             string `json:"token_type"`
-	Expires          int64  `json:"expires_in"`
-	ExpiredTimestamp time.Time  `json:"expires_in_timestamp"`
+	Access           string    `json:"access_token"`
+	Refresh          string    `json:"refresh_token"`
+	Type             string    `json:"token_type"`
+	Expires          int64     `json:"expires_in"`
+	ExpiredTimestamp time.Time `json:"expires_in_timestamp"`
 }
 
 // Gets an authorized HTTP client by obtaining refresh and access tokens
