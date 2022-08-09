@@ -44,6 +44,9 @@ RUN cp resources/ssl.fedora.conf /etc/httpd/conf.d/ssl.conf
 RUN cp resources/localhost.fedora.conf /etc/httpd/conf.d/localhost.conf
 RUN cp resources/vpn.example.fedora.conf "/etc/httpd/conf.d/${WEB_FQDN}.conf"
 
+# Otherwise we get: AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 172.20.0.6. Set the 'ServerName' directive globally to suppress this message
+RUN echo "ServerName 127.0.0.1" >> /etc/httpd/conf/httpd.conf
+
 RUN sed -i "s/vpn.example/${WEB_FQDN}/" "/etc/httpd/conf.d/${WEB_FQDN}.conf"
 RUN sed -i "s/vpn.example/${WEB_FQDN}/" "/etc/vpn-user-portal/config.php"
 
@@ -64,15 +67,10 @@ COPY ./ci/docker/selfsigned/${WEB_FQDN}.crt /etc/pki/tls/certs/${WEB_FQDN}.crt
 WORKDIR /eduvpn/server
 ADD ci/docker/starteduvpn.sh /eduvpn/server
 ADD ci/docker/replaceexpiry.sh /eduvpn/server
+ADD ci/docker/healthcheck.sh /eduvpn/server
 
 RUN chmod +x ./starteduvpn.sh
 RUN chmod +x ./replaceexpiry.sh
-
-# While we could mimic the systemd units ourselves, let's use a systemctl replacement script
-# This makes it easier to update
-RUN wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl3.py -O /bin/systemctl
-
-# make it executable
-RUN chmod +x /bin/systemctl
+RUN chmod +x ./healthcheck.sh
 
 CMD ["./starteduvpn.sh"]

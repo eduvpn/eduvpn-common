@@ -33,7 +33,7 @@ services:
       - NET_ADMIN
     environment: *common-env
     healthcheck:
-        test: ["CMD", "systemctl", "status", "wg-quick@wg0"] # Wait for wireguard to come online
+        test: ["CMD", "/eduvpn/server/healthcheck.sh"] # Wait for wireguard to come online
         interval: 5s
         timeout: 10s
         retries: 10
