@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"time"
 )
 
 // Shared server types
@@ -11,7 +12,7 @@ import (
 type DiscoveryOrganizations struct {
 	Version   uint64                  `json:"v"`
 	List      []DiscoveryOrganization `json:"organization_list"`
-	Timestamp int64                   `json:"-"`
+	Timestamp time.Time                   `json:"-"`
 	RawString string                  `json:"-"`
 }
 
@@ -29,7 +30,7 @@ type DiscoveryOrganization struct {
 type DiscoveryServers struct {
 	Version   uint64            `json:"v"`
 	List      []DiscoveryServer `json:"server_list"`
-	Timestamp int64             `json:"-"`
+	Timestamp time.Time             `json:"-"`
 	RawString string            `json:"-"`
 }
 

@@ -3,6 +3,7 @@ package discovery
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/jwijenbergh/eduvpn-common/internal/http"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
@@ -61,7 +62,7 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 // - [TODO] when the user tries to add new server AND the user did NOT yet choose an organization before;
 // - [TODO] when the authorization for the server associated with an already chosen organization is triggered, e.g. after expiry or revocation.
 func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
-	return discovery.Organizations.Timestamp == 0
+	return discovery.Organizations.Timestamp.IsZero()
 }
 
 func (discovery *Discovery) GetSecureLocationList() (string, error) {
@@ -132,13 +133,13 @@ func (discovery *Discovery) GetSecureHomeArgs(orgID string) (*types.DiscoveryOrg
 // - The application MAY refresh the server_list.json periodically, e.g. once every hour.
 func (discovery *Discovery) DetermineServersUpdate() bool {
 	// No servers, we should update
-	if discovery.Servers.Timestamp == 0 {
+	if discovery.Servers.Timestamp.IsZero() {
 		return true
 	}
 	// 1 hour from the last update
-	should_update_time := discovery.Servers.Timestamp + 3600
-	now := util.GenerateTimeSeconds()
-	if now >= should_update_time {
+	should_update_time := discovery.Servers.Timestamp.Add(1 * time.Hour)
+	now := util.GetCurrentTime()
+	if !now.Before(should_update_time) {
 		return true
 	}
 	return false
@@ -156,7 +157,7 @@ func (discovery *Discovery) GetOrganizationsList() (string, error) {
 		return discovery.Organizations.RawString, &types.WrappedErrorMessage{Message: "failed getting organizations in Discovery", Err: bodyErr}
 	}
 	discovery.Organizations.RawString = body
-	discovery.Organizations.Timestamp = util.GenerateTimeSeconds()
+	discovery.Organizations.Timestamp = util.GetCurrentTime()
 	return discovery.Organizations.RawString, nil
 }
 
@@ -173,7 +174,7 @@ func (discovery *Discovery) GetServersList() (string, error) {
 	}
 	// Update servers timestamp
 	discovery.Servers.RawString = body
-	discovery.Servers.Timestamp = util.GenerateTimeSeconds()
+	discovery.Servers.Timestamp = util.GetCurrentTime()
 	return discovery.Servers.RawString, nil
 }
 

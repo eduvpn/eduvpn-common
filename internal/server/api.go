@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
 	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
@@ -76,7 +77,7 @@ func apiAuthorizedRetry(server Server, method string, endpoint string, opts *htt
 		// Only retry authorized if we get a HTTP 401
 		if errors.As(bodyErr, &error) && error.Status == 401 {
 			// Tell the method that the token is expired
-			server.GetOAuth().Token.ExpiredTimestamp = util.GenerateTimeSeconds()
+			server.GetOAuth().Token.ExpiredTimestamp = util.GetCurrentTime()
 			retryHeader, retryBody, retryErr := apiAuthorized(server, method, endpoint, opts)
 			if retryErr != nil {
 				return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: retryErr}
@@ -115,7 +116,7 @@ func APIInfo(server Server) error {
 	return nil
 }
 
-func APIConnectWireguard(server Server, profile_id string, pubkey string, supportsOpenVPN bool) (string, string, int64, error) {
+func APIConnectWireguard(server Server, profile_id string, pubkey string, supportsOpenVPN bool) (string, string, time.Time, error) {
 	errorMessage := "failed obtaining a WireGuard configuration"
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
@@ -132,14 +133,14 @@ func APIConnectWireguard(server Server, profile_id string, pubkey string, suppor
 	}
 	header, connectBody, connectErr := apiAuthorizedRetry(server, http.MethodPost, "/connect", &httpw.HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {
-		return "", "", 0, &types.WrappedErrorMessage{Message: errorMessage, Err: connectErr}
+		return "", "", time.Time{}, &types.WrappedErrorMessage{Message: errorMessage, Err: connectErr}
 	}
 
 	expires := header.Get("expires")
 
 	pTime, pTimeErr := http.ParseTime(expires)
 	if pTimeErr != nil {
-		return "", "", 0, &types.WrappedErrorMessage{Message: errorMessage, Err: pTimeErr}
+		return "", "", time.Time{}, &types.WrappedErrorMessage{Message: errorMessage, Err: pTimeErr}
 	}
 
 	contentType := header.Get("content-type")
@@ -148,10 +149,10 @@ func APIConnectWireguard(server Server, profile_id string, pubkey string, suppor
 	if contentType == "application/x-wireguard-profile" {
 		content = "wireguard"
 	}
-	return string(connectBody), content, pTime.Unix(), nil
+	return string(connectBody), content, pTime, nil
 }
 
-func APIConnectOpenVPN(server Server, profile_id string) (string, int64, error) {
+func APIConnectOpenVPN(server Server, profile_id string) (string, time.Time, error) {
 	errorMessage := "failed obtaining an OpenVPN configuration"
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
@@ -164,15 +165,15 @@ func APIConnectOpenVPN(server Server, profile_id string) (string, int64, error) 
 
 	header, connectBody, connectErr := apiAuthorizedRetry(server, http.MethodPost, "/connect", &httpw.HTTPOptionalParams{Headers: headers, Body: urlForm})
 	if connectErr != nil {
-		return "", 0, &types.WrappedErrorMessage{Message: errorMessage, Err: connectErr}
+		return "", time.Time{}, &types.WrappedErrorMessage{Message: errorMessage, Err: connectErr}
 	}
 
 	expires := header.Get("expires")
 	pTime, pTimeErr := http.ParseTime(expires)
 	if pTimeErr != nil {
-		return "", 0, &types.WrappedErrorMessage{Message: errorMessage, Err: pTimeErr}
+		return "", time.Time{}, &types.WrappedErrorMessage{Message: errorMessage, Err: pTimeErr}
 	}
-	return string(connectBody), pTime.Unix(), nil
+	return string(connectBody), pTime, nil
 }
 
 // This needs no further return value as it's best effort

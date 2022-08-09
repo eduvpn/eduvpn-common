@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
@@ -19,8 +20,8 @@ type ServerBase struct {
 	Endpoints      ServerEndpoints   `json:"endpoints"`
 	Profiles       ServerProfileInfo `json:"profiles"`
 	ProfilesRaw    string            `json:"profiles_raw"`
-	StartTime      int64             `json:"start_time"`
-	EndTime        int64             `json:"expire_time"`
+	StartTime      time.Time             `json:"start_time"`
+	EndTime        time.Time             `json:"expire_time"`
 	Type           string            `json:"server_type"`
 	FSM            *fsm.FSM          `json:"-"`
 }
@@ -133,7 +134,7 @@ func getServerInfoScreen(base ServerBase) (ServerInfoScreen) {
 	serverInfoScreen.DisplayName = base.DisplayName
 	serverInfoScreen.SupportContact = base.SupportContact
 	serverInfoScreen.Profiles = base.Profiles
-	serverInfoScreen.ExpireTime = base.EndTime
+	serverInfoScreen.ExpireTime = base.EndTime.Unix()
 	serverInfoScreen.Type = base.Type
 
 	return serverInfoScreen
@@ -287,23 +288,22 @@ func ShouldRenewButton(server Server) bool {
 	}
 
 	// Get current time
-	current := util.GenerateTimeSeconds()
+	current := util.GetCurrentTime()
 
 	// 30 minutes have not passed
-	if current <= (base.StartTime + 30*60) {
+	if !current.After(base.StartTime.Add(30 * time.Minute)) {
 		return false
 	}
 
 	// Session will not expire today
-	if current <= (base.EndTime - 24*60*60) {
+	if !current.Add(24 * time.Hour).After(base.EndTime) {
 		return false
 	}
 
 	// Session duration is less than 24 hours but not 75% has passed
-	duration := base.EndTime - base.StartTime
-
-	// TODO: Is converting to float64 okay here?
-	if duration < 24*60*60 && float64(current) <= (float64(base.StartTime)+0.75*float64(duration)) {
+	duration := base.EndTime.Sub(base.StartTime)
+	percentTime := base.StartTime.Add((duration/4)*3)
+	if duration < time.Duration(24 * time.Hour) && !current.After(percentTime) {
 		return false
 	}
 
@@ -391,7 +391,7 @@ func wireguardGetConfig(server Server, supportsOpenVPN bool) (string, string, er
 	}
 
 	// Store start and end time
-	base.StartTime = util.GenerateTimeSeconds()
+	base.StartTime = util.GetCurrentTime()
 	base.EndTime = expires
 
 	if content == "wireguard" {
@@ -416,7 +416,7 @@ func openVPNGetConfig(server Server) (string, string, error) {
 	configOpenVPN, expires, configErr := APIConnectOpenVPN(server, profile_id)
 
 	// Store start and end time
-	base.StartTime = util.GenerateTimeSeconds()
+	base.StartTime = util.GetCurrentTime()
 	base.EndTime = expires
 
 	if configErr != nil {

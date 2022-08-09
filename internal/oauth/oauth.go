@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
@@ -85,7 +86,7 @@ type OAuthToken struct {
 	Refresh          string `json:"refresh_token"`
 	Type             string `json:"token_type"`
 	Expires          int64  `json:"expires_in"`
-	ExpiredTimestamp int64  `json:"expires_in_timestamp"`
+	ExpiredTimestamp time.Time  `json:"expires_in_timestamp"`
 }
 
 // Gets an authorized HTTP client by obtaining refresh and access tokens
@@ -123,7 +124,7 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
 	opts := &httpw.HTTPOptionalParams{Headers: headers, Body: data}
-	current_time := util.GenerateTimeSeconds()
+	current_time := util.GetCurrentTime()
 	_, body, bodyErr := httpw.HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: bodyErr}
@@ -137,15 +138,15 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: &httpw.HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}}
 	}
 
-	tokenStructure.ExpiredTimestamp = current_time + tokenStructure.Expires
+	tokenStructure.ExpiredTimestamp = current_time.Add(time.Second * time.Duration(tokenStructure.Expires))
 	oauth.Token = tokenStructure
 	return nil
 }
 
 func (oauth *OAuth) isTokensExpired() bool {
 	expired_time := oauth.Token.ExpiredTimestamp
-	current_time := util.GenerateTimeSeconds()
-	return current_time >= expired_time
+	current_time := util.GetCurrentTime()
+	return !current_time.Before(expired_time)
 }
 
 // Get the access and refresh tokens with a previously received refresh token
@@ -162,7 +163,7 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
 	opts := &httpw.HTTPOptionalParams{Headers: headers, Body: data}
-	current_time := util.GenerateTimeSeconds()
+	current_time := util.GetCurrentTime()
 	_, body, bodyErr := httpw.HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: bodyErr}
@@ -175,7 +176,7 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: &httpw.HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}}
 	}
 
-	tokenStructure.ExpiredTimestamp = current_time + tokenStructure.Expires
+	tokenStructure.ExpiredTimestamp = current_time.Add(time.Second * time.Duration(tokenStructure.Expires))
 	oauth.Token = tokenStructure
 	return nil
 }

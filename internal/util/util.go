@@ -21,9 +21,8 @@ func MakeRandomByteSlice(size int) ([]byte, error) {
 	return byteSlice, nil
 }
 
-func GenerateTimeSeconds() int64 {
-	current := time.Now()
-	return current.Unix()
+func GetCurrentTime() time.Time {
+	return time.Now()
 }
 
 func EnsureDirectory(directory string) error {
