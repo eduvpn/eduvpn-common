@@ -234,6 +234,12 @@ func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
 func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 	errorMessage := fmt.Sprintf("failed adding Custom server with url %s", url)
 
+	url, urlErr := util.EnsureValidURL(url)
+
+	if urlErr != nil {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
+	}
+
 	customServer := &types.DiscoveryServer{BaseURL: url, DisplayName: map[string]string{"en": url}, Type: "custom_server"}
 
 	// A custom server is just an institute access server under the hood

@@ -11,6 +11,18 @@ import (
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
 )
 
+func EnsureValidURL(s string) (string, error) {
+	parsedURL, parseErr := url.Parse(s)
+	if parseErr != nil {
+		return "", &types.WrappedErrorMessage{Message: fmt.Sprintf("failed parsing url: %s", s), Err: parseErr}
+	}
+
+	if parsedURL.Scheme == "" {
+		parsedURL.Scheme = "https"
+	}
+	return parsedURL.String(), nil
+}
+
 // Creates a random byteslice of `size`
 func MakeRandomByteSlice(size int) ([]byte, error) {
 	byteSlice := make([]byte, size)
