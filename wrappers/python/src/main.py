@@ -207,5 +207,11 @@ class EduVPN(object):
         if location_err:
             raise Exception(location_err)
 
+    def renew_session(self) -> None:
+        renew_err = self.go_function(lib.RenewSession)
+
+        if renew_err:
+            raise Exception(renew_err)
+
     def should_renew_button(self) -> bool:
         return self.go_function(lib.ShouldRenewButton)

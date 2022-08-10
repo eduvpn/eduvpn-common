@@ -7,8 +7,10 @@ import (
 	"github.com/jwijenbergh/eduvpn-common/internal/discovery"
 	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 	"github.com/jwijenbergh/eduvpn-common/internal/log"
+	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
 	"github.com/jwijenbergh/eduvpn-common/internal/server"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
+	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
 
 type VPNState struct {
@@ -387,6 +389,33 @@ func (state *VPNState) SetDisconnected() error {
 
 	return nil
 }
+
+func (state *VPNState) RenewSession() error {
+	errorMessage := "failed to renew session"
+
+	currentServer, currentServerErr := state.Servers.GetCurrentServer()
+
+	if currentServerErr != nil {
+		return &types.WrappedErrorMessage{Message: "failed to renew session", Err: currentServerErr}
+	}
+
+	oauthStructure := currentServer.GetOAuth()
+	oauthStructure.Token = oauth.OAuthToken{Access: "",Refresh: "",Type: "",Expires: 0,ExpiredTimestamp: util.GetCurrentTime()}
+	// Make sure the FSM is initialized
+	oauthStructure.FSM = &state.FSM
+
+	loginErr := server.Login(currentServer)
+
+	if loginErr != nil {
+		// We are possibly in oauth started
+		// Go back
+		state.GoBack()
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: loginErr}
+	}
+
+	return nil
+}
+
 
 func (state *VPNState) ShouldRenewButton() bool {
 	if !state.FSM.InState(fsm.CONNECTED) {

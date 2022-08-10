@@ -270,6 +270,17 @@ func SetConnected(name *C.char) *C.char {
 	return C.CString(ErrorToString(setConnectedErr))
 }
 
+//export RenewSession
+func RenewSession(name *C.char) *C.char {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	renewSessionErr := state.RenewSession()
+	return C.CString(ErrorToString(renewSessionErr))
+}
+
 //export ShouldRenewButton
 func ShouldRenewButton(name *C.char) C.int {
 	nameStr := C.GoString(name)

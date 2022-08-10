@@ -87,6 +87,7 @@ lib.SetConnecting.argtypes, lib.SetConnecting.restype = [c_char_p], c_void_p
 lib.SetDisconnected.argtypes, lib.SetDisconnected.restype = [c_char_p], c_void_p
 lib.SetSearchServer.argtypes, lib.SetSearchServer.restype = [c_char_p], c_void_p
 lib.ShouldRenewButton.argtypes, lib.ShouldRenewButton.restype = [], int
+lib.RenewSession.argtypes, lib.RenewSession.restype = [c_char_p], c_void_p
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
 
 
