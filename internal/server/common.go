@@ -290,6 +290,11 @@ func ShouldRenewButton(server Server) bool {
 	// Get current time
 	current := util.GetCurrentTime()
 
+	// Session is expired
+	if current.After(base.EndTime) {
+		return true
+	}
+
 	// 30 minutes have not passed
 	if !current.After(base.StartTime.Add(30 * time.Minute)) {
 		return false
