@@ -134,7 +134,14 @@ func getServerInfoScreen(base ServerBase) ServerInfoScreen {
 	serverInfoScreen.DisplayName = base.DisplayName
 	serverInfoScreen.SupportContact = base.SupportContact
 	serverInfoScreen.Profiles = base.Profiles
-	serverInfoScreen.ExpireTime = base.EndTime.Unix()
+
+	// If we still have the default end time, return 0
+	// Such that clients will still be able to parse it correctly
+	if base.EndTime.IsZero() {
+		serverInfoScreen.ExpireTime = 0
+	} else {
+		serverInfoScreen.ExpireTime = base.EndTime.Unix()
+	}
 	serverInfoScreen.Type = base.Type
 
 	return serverInfoScreen
