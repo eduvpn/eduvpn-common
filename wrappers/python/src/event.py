@@ -1,19 +1,14 @@
 from . import VPNStateChange
 from enum import Enum
 from typing import Callable
-
-
-class StateType(Enum):
-    Enter = 1
-    Leave = 2
-    Wait = 3
+from .state import StateType
 
 
 EDUVPN_CALLBACK_PROPERTY = "_eduvpn_property_callback"
 
 # A state transition decorator for classes
 # To use this, make sure to register the class with `register_class_callbacks`
-def class_state_transition(state: str, state_type: StateType) -> Callable:
+def class_state_transition(state: int, state_type: StateType) -> Callable:
     def wrapper(func):
         setattr(func, EDUVPN_CALLBACK_PROPERTY, (state, state_type))
         return func
@@ -45,7 +40,7 @@ class EventHandler(object):
                 else:
                     self.remove_event(state, state_type, method)
 
-    def remove_event(self, state: str, state_type: StateType, func: Callable):
+    def remove_event(self, state: int, state_type: StateType, func: Callable):
         for key, values in self.handlers.copy().items():
             if key == (state, state_type):
                 values.remove(func)
@@ -54,13 +49,13 @@ class EventHandler(object):
                 else:
                     self.handlers[key] = values
 
-    def add_event(self, state: str, state_type: StateType, func: Callable):
+    def add_event(self, state: int, state_type: StateType, func: Callable):
         if (state, state_type) not in self.handlers:
             self.handlers[(state, state_type)] = []
         self.handlers[(state, state_type)].append(func)
 
     # A decorator for standalone functions
-    def on(self, state: str, state_type: StateType) -> Callable:
+    def on(self, state: int, state_type: StateType) -> Callable:
         def wrapped_f(func):
             self.add_event(state, state_type, func)
             return func
@@ -68,14 +63,14 @@ class EventHandler(object):
         return wrapped_f
 
     def run_state(
-        self, state: str, other_state: str, state_type: StateType, data: str
+        self, state: int, other_state: int, state_type: StateType, data: str
     ) -> None:
         if (state, state_type) not in self.handlers:
             return
         for func in self.handlers[(state, state_type)]:
             func(other_state, data)
 
-    def run(self, old_state: str, new_state: str, data: str) -> None:
+    def run(self, old_state: int, new_state: int, data: str) -> None:
         if old_state == new_state:
             return
 

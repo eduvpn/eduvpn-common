@@ -43,7 +43,7 @@ class DataError(Structure):
     _fields_ = [("data", c_void_p), ("error", c_void_p)]
 
 
-VPNStateChange = CFUNCTYPE(None, c_char_p, c_char_p, c_char_p, c_char_p)
+VPNStateChange = CFUNCTYPE(None, c_char_p, c_int, c_int, c_char_p)
 
 # Exposed functions
 # We have to use c_void_p instead of c_char_p to free it properly

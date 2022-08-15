@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/jwijenbergh/eduvpn-common"
+	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 )
 
 type ServerTypes int8
@@ -86,12 +87,13 @@ func sendProfile(state *eduvpn.VPNState, data string) {
 // If OAuth is started we open the browser with the Auth URL
 // If we ask for a profile, we send the profile using command line input
 // Note that this has an additional argument, the vpn state which was wrapped into this callback function below
-func stateCallback(state *eduvpn.VPNState, oldState string, newState string, data string) {
-	if newState == "OAuth_Started" {
+func stateCallback(state *eduvpn.VPNState, oldState eduvpn.VPNStateID, newState eduvpn.VPNStateID, data string) {
+	// TODO: Remove internal usage of fsm
+	if newState == fsm.OAUTH_STARTED {
 		openBrowser(data)
 	}
 
-	if newState == "Ask_Profile" {
+	if newState == fsm.ASK_PROFILE {
 		sendProfile(state, data)
 	}
 }
@@ -162,7 +164,7 @@ func storeSecureInternetConfig(state *eduvpn.VPNState, url string, directory str
 func getSecureInternetAll(homeURL string) {
 	state := &eduvpn.VPNState{}
 
-	state.Register("org.eduvpn.app.linux", "configs", func(old string, new string, data string) {
+	state.Register("org.eduvpn.app.linux", "configs", func(old eduvpn.VPNStateID, new eduvpn.VPNStateID, data string) {
 		stateCallback(state, old, new, data)
 	}, true)
 
@@ -203,7 +205,7 @@ func getSecureInternetAll(homeURL string) {
 func printConfig(url string, serverType ServerTypes) {
 	state := &eduvpn.VPNState{}
 
-	state.Register("org.eduvpn.app.linux", "configs", func(old string, new string, data string) {
+	state.Register("org.eduvpn.app.linux", "configs", func(old eduvpn.VPNStateID, new eduvpn.VPNStateID, data string) {
 		stateCallback(state, old, new, data)
 	}, true)
 

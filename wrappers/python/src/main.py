@@ -1,7 +1,8 @@
 from . import lib, VPNStateChange, encode_args, decode_res
 from typing import Optional, Tuple
 import threading
-from .event import StateType, EventHandler
+from .event import EventHandler
+from .state import State, StateType
 import json
 
 eduvpn_objects = {}
@@ -25,7 +26,7 @@ def state_callback(name, old_state, new_state, data):
     name = name.decode()
     if name not in eduvpn_objects:
         return
-    eduvpn_objects[name].callback(old_state.decode(), new_state.decode(), data.decode())
+    eduvpn_objects[name].callback(State(old_state), State(new_state), data.decode())
 
 
 class EduVPN(object):
@@ -41,13 +42,13 @@ class EduVPN(object):
         self.profile_event: Optional[threading.Event] = None
         self.location_event: Optional[threading.Event] = None
 
-        @self.event.on("Ask_Profile", StateType.Wait)
-        def wait_profile_event(old_state: str, profiles: str):
+        @self.event.on(State.ASK_PROFILE, StateType.Wait)
+        def wait_profile_event(old_state: int, profiles: str):
             if self.profile_event:
                 self.profile_event.wait()
 
-        @self.event.on("Ask_Location", StateType.Wait)
-        def wait_location_event(old_state: str, locations: str):
+        @self.event.on(State.ASK_LOCATION, StateType.Wait)
+        def wait_location_event(old_state: int, locations: str):
             if self.location_event:
                 self.location_event.wait()
 
@@ -172,7 +173,7 @@ class EduVPN(object):
     def event(self) -> EventHandler:
         return self.event_handler
 
-    def callback(self, old_state: str, new_state: str, data: str) -> None:
+    def callback(self, old_state: State, new_state: State, data: str) -> None:
         self.event.run(old_state, new_state, data)
 
     def set_profile(self, profile_id: str) -> None:

@@ -2,6 +2,7 @@
 
 import unittest
 import eduvpn_common.main as eduvpn
+from eduvpn_common.state import State, StateType
 import webbrowser
 import sys
 import os
@@ -20,7 +21,7 @@ class ConfigTests(unittest.TestCase):
         # This can throw an exception
         _eduvpn.register()
 
-        @_eduvpn.event.on("OAuth_Started", eduvpn.StateType.Enter)
+        @_eduvpn.event.on(State.OAUTH_STARTED, StateType.Enter)
         def oauth_initialized(old_state, url):
             login_eduvpn(url)
 

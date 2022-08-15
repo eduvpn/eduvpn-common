@@ -1,4 +1,5 @@
 import eduvpn_common.main as eduvpn
+from eduvpn_common.state import State, StateType
 import webbrowser
 import json
 import sys
@@ -27,22 +28,20 @@ def ask_profile_input(total: int) -> int:
 def setup_callbacks(_eduvpn: eduvpn.EduVPN) -> None:
     # The callback that starst OAuth
     # It needs to open the URL in the web browser
-    @_eduvpn.event.on("OAuth_Started", eduvpn.StateType.Enter)
+    @_eduvpn.event.on(State.OAUTH_STARTED, StateType.Enter)
     def oauth_initialized(old_state: str, url: str) -> None:
         print(f"Got OAuth URL {url}, old state: {old_state}")
         webbrowser.open(url)
 
-    @_eduvpn.event.on("Ask_Location", eduvpn.StateType.Enter)
+    @_eduvpn.event.on(State.ASK_LOCATION, StateType.Enter)
     def ask_location(old_state: str, locations: str):
         print("Locations: ", locations)
         _eduvpn.set_secure_location("NL")
 
     # The callback which asks the user for a profile
-    @_eduvpn.event.on("Ask_Profile", eduvpn.StateType.Enter)
+    @_eduvpn.event.on(State.ASK_PROFILE, StateType.Enter)
     def ask_profile(old_state: str, profiles: str):
-        print(
-            "Multiple profiles found, you need to select a profile, old state: {old_state}"
-        )
+        print("Multiple profiles found, you need to select a profile:")
 
         # Parse the profiles as JSON
         data = json.loads(profiles)
@@ -94,6 +93,7 @@ if __name__ == "__main__":
 
     # Set the internal FSM state to connected
     try:
+        _eduvpn.set_connecting()
         _eduvpn.set_connected()
     except Exception as e:
         print("Failed to set connected:", e)

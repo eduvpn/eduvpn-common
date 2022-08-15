@@ -124,12 +124,12 @@ type FSM struct {
 
 	// Info to be passed from the parent state
 	Name          string
-	StateCallback func(string, string, string)
+	StateCallback func(FSMStateID, FSMStateID, string)
 	Directory     string
 	Debug         bool
 }
 
-func (fsm *FSM) Init(name string, callback func(string, string, string), directory string, debug bool) {
+func (fsm *FSM) Init(name string, callback func(FSMStateID, FSMStateID, string), directory string, debug bool) {
 	fsm.States = FSMStates{
 		DEREGISTERED:   FSMState{Transitions: []FSMTransition{{NO_SERVER, "Client registers"}}},
 		NO_SERVER:      FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "User chooses a server"}, {SEARCH_SERVER, "The user is trying to choose a Server in the UI"}, {CONNECTED, "The user is already connected"}, {ASK_LOCATION, "Change the location in the main screen"}}},
@@ -141,7 +141,7 @@ func (fsm *FSM) Init(name string, callback func(string, string, string), directo
 		AUTHORIZED:     FSMState{Transitions: []FSMTransition{{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}}},
 		REQUEST_CONFIG: FSMState{Transitions: []FSMTransition{{ASK_PROFILE, "Multiple profiles found and no profile chosen"}, {HAS_CONFIG, "Only one profile or profile already chosen"}, {NO_SERVER, "Cancel or Error"}, {OAUTH_STARTED, "Re-authorize"}}},
 		ASK_PROFILE:    FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "User chooses profile"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
-		HAS_CONFIG:     FSMState{Transitions: []FSMTransition{{CONNECTING, "OS reports it is trying to connect"}, {REQUEST_CONFIG, "User chooses a new profile"}, {NO_SERVER, "User wants to choose a new server"}, {OAUTH_STARTED, "Re-authorize with OAuth"}}, BackState: NO_SERVER},
+		HAS_CONFIG:     FSMState{Transitions: []FSMTransition{{CONNECTING, "OS reports it is trying to connect"}, {REQUEST_CONFIG, "User reconnects"}, {NO_SERVER, "User wants to choose a new server"}, {OAUTH_STARTED, "Re-authorize with OAuth"}}, BackState: NO_SERVER},
 		CONNECTING:     FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "Cancel or Error"}, {CONNECTED, "Done connecting"}}},
 		CONNECTED:      FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "OS reports disconnected"}}},
 	}
@@ -202,9 +202,9 @@ func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data string, backgroun
 		}
 
 		if background {
-			go fsm.StateCallback(oldState.String(), newState.String(), data)
+			go fsm.StateCallback(oldState, newState, data)
 		} else {
-			fsm.StateCallback(oldState.String(), newState.String(), data)
+			fsm.StateCallback(oldState, newState, data)
 		}
 	}
 

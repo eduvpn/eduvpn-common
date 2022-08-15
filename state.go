@@ -13,6 +13,8 @@ import (
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
 
+type VPNStateID = fsm.FSMStateID
+
 type VPNState struct {
 	// The chosen server
 	Servers server.Servers `json:"servers"`
@@ -43,7 +45,7 @@ func (state *VPNState) GetSavedServers() string {
 	return serversJSON
 }
 
-func (state *VPNState) Register(name string, directory string, stateCallback func(string, string, string), debug bool) error {
+func (state *VPNState) Register(name string, directory string, stateCallback func(VPNStateID, VPNStateID, string), debug bool) error {
 	errorMessage := "failed to register with the GO library"
 	if !state.FSM.InState(fsm.DEREGISTERED) {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.DeregisteredError{}.CustomError()}
@@ -406,7 +408,7 @@ func (state *VPNState) RenewSession() error {
 	}
 
 	oauthStructure := currentServer.GetOAuth()
-	oauthStructure.Token = oauth.OAuthToken{Access: "",Refresh: "",Type: "",Expires: 0,ExpiredTimestamp: util.GetCurrentTime()}
+	oauthStructure.Token = oauth.OAuthToken{Access: "", Refresh: "", Type: "", Expires: 0, ExpiredTimestamp: util.GetCurrentTime()}
 	// Make sure the FSM is initialized
 	oauthStructure.FSM = &state.FSM
 
@@ -421,7 +423,6 @@ func (state *VPNState) RenewSession() error {
 
 	return nil
 }
-
 
 func (state *VPNState) ShouldRenewButton() bool {
 	if !state.FSM.InState(fsm.CONNECTED) {
