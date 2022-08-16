@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -147,9 +146,7 @@ func getServerInfoScreen(base ServerBase) ServerInfoScreen {
 	return serverInfoScreen
 }
 
-func (servers *Servers) GetServersConfiguredJSON() (string, error) {
-	errorMessage := "failed getting configured servers JSON"
-
+func (servers *Servers) GetServersConfigured() (*ServersConfiguredScreen) {
 	customServersInfo := []ServerInfoScreen{}
 	instituteServersInfo := []ServerInfoScreen{}
 	var secureInternetServerInfo *ServerInfoScreen = nil
@@ -174,28 +171,21 @@ func (servers *Servers) GetServersConfiguredJSON() (string, error) {
 		secureInternetServerInfo.CountryCode = servers.SecureInternetHomeServer.CurrentLocation
 	}
 
-	serversConfiguredScreen := &ServersConfiguredScreen{CustomServers: customServersInfo, InstituteAccessServers: instituteServersInfo, SecureInternetServer: secureInternetServerInfo}
-
-	bytes, bytesErr := json.Marshal(serversConfiguredScreen)
-
-	if bytesErr != nil {
-		return "{}", &types.WrappedErrorMessage{Message: errorMessage, Err: bytesErr}
-	}
-	return string(bytes), nil
+	return &ServersConfiguredScreen{CustomServers: customServersInfo, InstituteAccessServers: instituteServersInfo, SecureInternetServer: secureInternetServerInfo}
 }
 
-func (servers *Servers) GetCurrentServerInfoJSON() (string, error) {
-	errorMessage := "failed getting JSON for server"
+func (servers *Servers) GetCurrentServerInfo() (*ServerInfoScreen, error) {
+	errorMessage := "failed getting current server info"
 
 	currentServer, currentServerErr := servers.GetCurrentServer()
 	if currentServerErr != nil {
-		return "{}", &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
 
 	base, baseErr := currentServer.GetBase()
 
 	if baseErr != nil {
-		return "{}", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 
 	serverInfoScreen := getServerInfoScreen(*base)
@@ -205,13 +195,7 @@ func (servers *Servers) GetCurrentServerInfoJSON() (string, error) {
 		serverInfoScreen.CountryCode = servers.SecureInternetHomeServer.CurrentLocation
 	}
 
-	bytes, bytesErr := json.Marshal(serverInfoScreen)
-
-	if bytesErr != nil {
-		return "{}", &types.WrappedErrorMessage{Message: errorMessage, Err: bytesErr}
-	}
-
-	return string(bytes), nil
+	return &serverInfoScreen, nil
 }
 
 func (servers *Servers) addInstituteAndCustom(discoServer *types.DiscoveryServer, isCustom bool, fsm *fsm.FSM) (Server, error) {
@@ -491,7 +475,7 @@ func askForProfileID(server Server) error {
 	if !base.FSM.HasTransition(fsm.ASK_PROFILE) {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateTransitionError{Got: base.FSM.Current, Want: fsm.ASK_PROFILE}.CustomError()}
 	}
-	base.FSM.GoTransitionWithData(fsm.ASK_PROFILE, base.ProfilesRaw, false)
+	base.FSM.GoTransitionWithData(fsm.ASK_PROFILE, &base.Profiles, false)
 	return nil
 }
 

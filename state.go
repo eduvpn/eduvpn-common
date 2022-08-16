@@ -35,17 +35,11 @@ type VPNState struct {
 	Debug bool `json:"-"`
 }
 
-func (state *VPNState) GetSavedServers() string {
-	serversJSON, serversJSONErr := state.Servers.GetServersConfiguredJSON()
-
-	if serversJSONErr != nil {
-		return "{}"
-	}
-
-	return serversJSON
+func (state *VPNState) GetSavedServers() *server.ServersConfiguredScreen {
+	return state.Servers.GetServersConfigured()
 }
 
-func (state *VPNState) Register(name string, directory string, stateCallback func(VPNStateID, VPNStateID, string), debug bool) error {
+func (state *VPNState) Register(name string, directory string, stateCallback func(VPNStateID, VPNStateID, interface{}), debug bool) error {
 	errorMessage := "failed to register with the GO library"
 	if !state.FSM.InState(fsm.DEREGISTERED) {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.DeregisteredError{}.CustomError()}
@@ -159,11 +153,7 @@ func (state *VPNState) SetSecureLocation(countryCode string) error {
 }
 
 func (state *VPNState) askSecureLocation() error {
-	errorMessage := "failed asking Secure Internet location"
-	locations, locationsErr := state.Discovery.GetSecureLocationList()
-	if locationsErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: locationsErr}
-	}
+	locations := state.Discovery.GetSecureLocationList()
 
 	// Ask for the location in the callback
 	state.FSM.GoTransitionWithData(fsm.ASK_LOCATION, locations, false)
@@ -353,9 +343,10 @@ func (state *VPNState) SetSearchServer() error {
 	return nil
 }
 
-func (state *VPNState) getServerInfoData() string {
-	jsonString, _ := state.Servers.GetCurrentServerInfoJSON()
-	return jsonString
+func (state *VPNState) getServerInfoData() *server.ServerInfoScreen {
+	info, _ := state.Servers.GetCurrentServerInfo()
+	// TODO: Log error
+	return info
 }
 
 func (state *VPNState) SetConnected() error {

@@ -6,6 +6,7 @@ from eduvpn_common.state import State, StateType
 import webbrowser
 import sys
 import os
+import json
 
 # Import project root directory where the selenium python utility is
 sys.path.append(
@@ -22,8 +23,8 @@ class ConfigTests(unittest.TestCase):
         _eduvpn.register()
 
         @_eduvpn.event.on(State.OAUTH_STARTED, StateType.Enter)
-        def oauth_initialized(old_state, url):
-            login_eduvpn(url)
+        def oauth_initialized(old_state, url_json):
+            login_eduvpn(json.loads(url_json))
 
         server_uri = os.getenv("SERVER_URI")
         if not server_uri:

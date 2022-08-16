@@ -124,12 +124,12 @@ type FSM struct {
 
 	// Info to be passed from the parent state
 	Name          string
-	StateCallback func(FSMStateID, FSMStateID, string)
+	StateCallback func(FSMStateID, FSMStateID, interface{})
 	Directory     string
 	Debug         bool
 }
 
-func (fsm *FSM) Init(name string, callback func(FSMStateID, FSMStateID, string), directory string, debug bool) {
+func (fsm *FSM) Init(name string, callback func(FSMStateID, FSMStateID, interface{}), directory string, debug bool) {
 	fsm.States = FSMStates{
 		DEREGISTERED:   FSMState{Transitions: []FSMTransition{{NO_SERVER, "Client registers"}}},
 		NO_SERVER:      FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "User chooses a server"}, {SEARCH_SERVER, "The user is trying to choose a Server in the UI"}, {CONNECTED, "The user is already connected"}, {ASK_LOCATION, "Change the location in the main screen"}}},
@@ -191,7 +191,7 @@ func (fsm *FSM) GoBack() {
 	fsm.GoTransition(fsm.States[fsm.Current].BackState)
 }
 
-func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data string, background bool) bool {
+func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data interface{}, background bool) bool {
 	ok := fsm.HasTransition(newState)
 
 	if ok {

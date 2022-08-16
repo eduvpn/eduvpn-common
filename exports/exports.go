@@ -26,7 +26,7 @@ var P_StateCallbacks map[string]C.PythonCB
 
 var VPNStates map[string]*eduvpn.VPNState
 
-func StateCallback(name string, old_state eduvpn.VPNStateID, new_state eduvpn.VPNStateID, data string) {
+func StateCallback(name string, old_state eduvpn.VPNStateID, new_state eduvpn.VPNStateID, data interface{}) {
 	P_StateCallback, exists := P_StateCallbacks[name]
 	if !exists || P_StateCallback == nil {
 		return
@@ -34,7 +34,8 @@ func StateCallback(name string, old_state eduvpn.VPNStateID, new_state eduvpn.VP
 	name_c := C.CString(name)
 	oldState_c := C.int(old_state)
 	newState_c := C.int(new_state)
-	data_c := C.CString(data)
+	data_json, _ := json.Marshal(data)
+	data_c := C.CString(string(data_json))
 	C.call_callback(P_StateCallback, name_c, oldState_c, newState_c, data_c)
 	C.free(unsafe.Pointer(name_c))
 	C.free(unsafe.Pointer(data_c))
@@ -65,7 +66,7 @@ func Register(name *C.char, config_directory *C.char, stateCallback C.PythonCB, 
 	}
 	VPNStates[nameStr] = state
 	P_StateCallbacks[nameStr] = stateCallback
-	registerErr := state.Register(nameStr, C.GoString(config_directory), func(old eduvpn.VPNStateID, new eduvpn.VPNStateID, data string) {
+	registerErr := state.Register(nameStr, C.GoString(config_directory), func(old eduvpn.VPNStateID, new eduvpn.VPNStateID, data interface{}) {
 		StateCallback(nameStr, old, new, data)
 	}, debug != 0)
 
