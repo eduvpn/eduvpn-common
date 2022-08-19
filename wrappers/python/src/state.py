@@ -19,5 +19,6 @@ class State(IntEnum):
     REQUEST_CONFIG = 8
     ASK_PROFILE = 9
     HAS_CONFIG = 10
-    CONNECTING = 11
-    CONNECTED = 12
+    DISCONNECTING = 11
+    CONNECTING = 12
+    CONNECTED = 13

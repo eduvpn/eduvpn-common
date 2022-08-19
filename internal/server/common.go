@@ -523,6 +523,10 @@ func GetConfig(server Server, forceTCP bool) (string, string, error) {
 	return getConfigWithProfile(server, forceTCP)
 }
 
+func Disconnect(server Server) {
+	APIDisconnect(server)
+}
+
 type ServerGetCurrentProfileNotFoundError struct {
 	ProfileID string
 }

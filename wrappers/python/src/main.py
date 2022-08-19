@@ -145,6 +145,12 @@ class EduVPN(object):
         if connect_err:
             raise Exception(connect_err)
 
+    def set_disconnecting(self) -> None:
+        disconnecting_err = self.go_function(lib.SetDisconnecting)
+
+        if disconnecting_err:
+            raise Exception(disconnecting_err)
+
     def set_connecting(self) -> None:
         connecting_err = self.go_function(lib.SetConnecting)
 
@@ -216,3 +222,6 @@ class EduVPN(object):
 
     def should_renew_button(self) -> bool:
         return self.go_function(lib.ShouldRenewButton)
+
+    def in_fsm_state(self, state_id: State) -> bool:
+        return self.go_function(lib.InFSMState, state_id)

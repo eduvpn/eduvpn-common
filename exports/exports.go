@@ -26,7 +26,7 @@ var P_StateCallbacks map[string]C.PythonCB
 
 var VPNStates map[string]*eduvpn.VPNState
 
-func StateCallback(name string, old_state eduvpn.VPNStateID, new_state eduvpn.VPNStateID, data interface{}) {
+func StateCallback(name string, old_state eduvpn.StateID, new_state eduvpn.StateID, data interface{}) {
 	P_StateCallback, exists := P_StateCallbacks[name]
 	if !exists || P_StateCallback == nil {
 		return
@@ -73,7 +73,7 @@ func Register(name *C.char, config_directory *C.char, stateCallback C.PythonCB, 
 	}
 	VPNStates[nameStr] = state
 	P_StateCallbacks[nameStr] = stateCallback
-	registerErr := state.Register(nameStr, C.GoString(config_directory), func(old eduvpn.VPNStateID, new eduvpn.VPNStateID, data interface{}) {
+	registerErr := state.Register(nameStr, C.GoString(config_directory), func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
 		StateCallback(nameStr, old, new, data)
 	}, debug != 0)
 
@@ -254,6 +254,17 @@ func SetDisconnected(name *C.char) *C.char {
 	return C.CString(ErrorToString(setDisconnectedErr))
 }
 
+//export SetDisconnecting
+func SetDisconnecting(name *C.char) *C.char {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	setDisconnectingErr := state.SetDisconnecting()
+	return C.CString(ErrorToString(setDisconnectingErr))
+}
+
 //export SetConnecting
 func SetConnecting(name *C.char) *C.char {
 	nameStr := C.GoString(name)
@@ -296,6 +307,20 @@ func ShouldRenewButton(name *C.char) C.int {
 	}
 	shouldRenewBool := state.ShouldRenewButton()
 	if shouldRenewBool {
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
+//export InFSMState
+func InFSMState(name *C.char, checkState C.int) C.int {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.int(0)
+	}
+	inStateBool := state.InFSMState(eduvpn.StateID(checkState))
+	if inStateBool {
 		return C.int(1)
 	}
 	return C.int(0)

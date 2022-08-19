@@ -62,6 +62,9 @@ const (
 	// Has config means the user has gotten a config
 	HAS_CONFIG
 
+	// Disconnecting means the OS is disconnecting and the Go code is doing the /disconnect
+	DISCONNECTING
+
 	// Connecting means the OS is establishing a connection to the server
 	CONNECTING
 
@@ -93,6 +96,8 @@ func (s FSMStateID) String() string {
 		return "Ask_Profile"
 	case AUTHORIZED:
 		return "Authorized"
+	case DISCONNECTING:
+		return "Disconnecting"
 	case CONNECTING:
 		return "Connecting"
 	case CONNECTED:
@@ -142,8 +147,9 @@ func (fsm *FSM) Init(name string, callback func(FSMStateID, FSMStateID, interfac
 		REQUEST_CONFIG: FSMState{Transitions: []FSMTransition{{ASK_PROFILE, "Multiple profiles found and no profile chosen"}, {HAS_CONFIG, "Only one profile or profile already chosen"}, {NO_SERVER, "Cancel or Error"}, {OAUTH_STARTED, "Re-authorize"}}},
 		ASK_PROFILE:    FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "User chooses profile"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
 		HAS_CONFIG:     FSMState{Transitions: []FSMTransition{{CONNECTING, "OS reports it is trying to connect"}, {REQUEST_CONFIG, "User reconnects"}, {NO_SERVER, "User wants to choose a new server"}, {OAUTH_STARTED, "Re-authorize with OAuth"}}, BackState: NO_SERVER},
+		DISCONNECTING:     FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "Cancel or Error"}, {HAS_CONFIG, "Done disconnecting"}}},
 		CONNECTING:     FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "Cancel or Error"}, {CONNECTED, "Done connecting"}}},
-		CONNECTED:      FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "OS reports disconnected"}}},
+		CONNECTED:      FSMState{Transitions: []FSMTransition{{DISCONNECTING, "App wants to disconnect"}}},
 	}
 	fsm.Current = DEREGISTERED
 	fsm.Name = name
