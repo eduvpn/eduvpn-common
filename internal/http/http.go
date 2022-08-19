@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
 )
@@ -91,7 +92,7 @@ func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (ht
 	}
 
 	// Create a client
-	client := &http.Client{}
+	client := &http.Client{Timeout: 5 * time.Second}
 
 	errorMessage := fmt.Sprintf("failed HTTP request with method %s and url %s", method, url)
 
