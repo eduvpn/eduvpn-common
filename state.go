@@ -13,6 +13,7 @@ import (
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
 
+type ServerInfo = server.ServerInfoScreen
 type VPNStateID = fsm.FSMStateID
 
 type VPNState struct {
