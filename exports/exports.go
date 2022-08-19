@@ -34,8 +34,15 @@ func StateCallback(name string, old_state eduvpn.VPNStateID, new_state eduvpn.VP
 	name_c := C.CString(name)
 	oldState_c := C.int(old_state)
 	newState_c := C.int(new_state)
-	data_json, _ := json.Marshal(data)
-	data_c := C.CString(string(data_json))
+	data_json, jsonErr := json.Marshal(data)
+    var dataJsonString string
+	if jsonErr != nil {
+		// TODO: How to handle error further? Log?
+		dataJsonString = "{}"
+	} else {
+        dataJsonString = string(data_json)
+    }
+	data_c := C.CString(dataJsonString)
 	C.call_callback(P_StateCallback, name_c, oldState_c, newState_c, data_c)
 	C.free(unsafe.Pointer(name_c))
 	C.free(unsafe.Pointer(data_c))
