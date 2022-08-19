@@ -178,5 +178,5 @@ func APIConnectOpenVPN(server Server, profile_id string) (string, time.Time, err
 
 // This needs no further return value as it's best effort
 func APIDisconnect(server Server) {
-	apiAuthorizedRetry(server, http.MethodPost, "/disconnect", nil)
+	apiAuthorized(server, http.MethodPost, "/disconnect", nil)
 }
