@@ -57,7 +57,7 @@ func loginOAuthSelenium(t *testing.T, url string, state *VPNState) {
 	}
 }
 
-func stateCallback(t *testing.T, oldState VPNStateID, newState VPNStateID, data interface{}, state *VPNState) {
+func stateCallback(t *testing.T, oldState StateID, newState StateID, data interface{}, state *VPNState) {
 	if newState == fsm.OAUTH_STARTED {
 		url, ok := data.(string)
 
@@ -73,7 +73,7 @@ func Test_server(t *testing.T) {
 	state := &VPNState{}
 	ensureLocalWellKnown()
 
-	state.Register("org.eduvpn.app.linux", "configstest", func(old VPNStateID, new VPNStateID, data interface{}) {
+	state.Register("org.eduvpn.app.linux", "configstest", func(old StateID, new StateID, data interface{}) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
@@ -89,7 +89,7 @@ func test_connect_oauth_parameter(t *testing.T, parameters httpw.URLParameters, 
 	state := &VPNState{}
 	configDirectory := "test_oauth_parameters"
 
-	state.Register("org.eduvpn.app.linux", configDirectory, func(oldState VPNStateID, newState VPNStateID, data interface{}) {
+	state.Register("org.eduvpn.app.linux", configDirectory, func(oldState StateID, newState StateID, data interface{}) {
 		if newState == fsm.OAUTH_STARTED {
 			baseURL := "http://127.0.0.1:8000/callback"
 			url, err := httpw.HTTPConstructURL(baseURL, parameters)
@@ -158,7 +158,7 @@ func Test_token_expired(t *testing.T) {
 	// Get a vpn state
 	state := &VPNState{}
 
-	state.Register("org.eduvpn.app.linux", "configsexpired", func(old VPNStateID, new VPNStateID, data interface{}) {
+	state.Register("org.eduvpn.app.linux", "configsexpired", func(old StateID, new StateID, data interface{}) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
@@ -206,7 +206,7 @@ func Test_token_invalid(t *testing.T) {
 
 	ensureLocalWellKnown()
 
-	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old VPNStateID, new VPNStateID, data interface{}) {
+	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old StateID, new StateID, data interface{}) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 
@@ -256,7 +256,7 @@ func Test_invalid_profile_corrected(t *testing.T) {
 
 	ensureLocalWellKnown()
 
-	state.Register("org.eduvpn.app.linux", "configscancelprofile", func(old VPNStateID, new VPNStateID, data interface{}) {
+	state.Register("org.eduvpn.app.linux", "configscancelprofile", func(old StateID, new StateID, data interface{}) {
 		stateCallback(t, old, new, data, state)
 	}, false)
 

@@ -91,7 +91,7 @@ func sendProfile(state *eduvpn.VPNState, data interface{}) {
 // If OAuth is started we open the browser with the Auth URL
 // If we ask for a profile, we send the profile using command line input
 // Note that this has an additional argument, the vpn state which was wrapped into this callback function below
-func stateCallback(state *eduvpn.VPNState, oldState eduvpn.VPNStateID, newState eduvpn.VPNStateID, data interface{}) {
+func stateCallback(state *eduvpn.VPNState, oldState eduvpn.StateID, newState eduvpn.StateID, data interface{}) {
 	// TODO: Remove internal usage of fsm
 	if newState == fsm.OAUTH_STARTED {
 		openBrowser(data)
@@ -168,7 +168,7 @@ func storeSecureInternetConfig(state *eduvpn.VPNState, url string, directory str
 func getSecureInternetAll(homeURL string) {
 	state := &eduvpn.VPNState{}
 
-	state.Register("org.eduvpn.app.linux", "configs", func(old eduvpn.VPNStateID, new eduvpn.VPNStateID, data interface{}) {
+	state.Register("org.eduvpn.app.linux", "configs", func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
 		stateCallback(state, old, new, data)
 	}, true)
 
@@ -209,7 +209,7 @@ func getSecureInternetAll(homeURL string) {
 func printConfig(url string, serverType ServerTypes) {
 	state := &eduvpn.VPNState{}
 
-	state.Register("org.eduvpn.app.linux", "configs", func(old eduvpn.VPNStateID, new eduvpn.VPNStateID, data interface{}) {
+	state.Register("org.eduvpn.app.linux", "configs", func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
 		stateCallback(state, old, new, data)
 	}, true)
 
