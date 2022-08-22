@@ -405,6 +405,16 @@ func (state *VPNState) SetDisconnected() error {
 	if currentServerErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
+
+	oauthStructure := currentServer.GetOAuth()
+
+	// Make sure the FSM is initialized
+	oauthStructure.FSM = &state.FSM
+	base, baseErr := currentServer.GetBase()
+	if baseErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+	}
+	base.FSM = &state.FSM
 	server.Disconnect(currentServer)
 
 	state.FSM.GoTransitionWithData(fsm.HAS_CONFIG, state.getServerInfoData(), false)
@@ -418,13 +428,20 @@ func (state *VPNState) RenewSession() error {
 	currentServer, currentServerErr := state.Servers.GetCurrentServer()
 
 	if currentServerErr != nil {
-		return &types.WrappedErrorMessage{Message: "failed to renew session", Err: currentServerErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
 
 	oauthStructure := currentServer.GetOAuth()
 	oauthStructure.Token = oauth.OAuthToken{Access: "", Refresh: "", Type: "", Expires: 0, ExpiredTimestamp: util.GetCurrentTime()}
+
 	// Make sure the FSM is initialized
 	oauthStructure.FSM = &state.FSM
+	base, baseErr := currentServer.GetBase()
+	if baseErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+	}
+	base.FSM = &state.FSM
+
 
 	loginErr := server.Login(currentServer)
 
