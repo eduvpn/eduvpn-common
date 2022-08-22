@@ -157,8 +157,8 @@ class EduVPN(object):
         if connecting_err:
             raise Exception(connecting_err)
 
-    def set_disconnected(self) -> None:
-        disconnect_err = self.go_function(lib.SetDisconnected)
+    def set_disconnected(self, cleanup=True) -> None:
+        disconnect_err = self.go_function(lib.SetDisconnected, cleanup)
 
         if disconnect_err:
             raise Exception(disconnect_err)

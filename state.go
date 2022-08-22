@@ -390,7 +390,7 @@ func (state *VPNState) SetDisconnecting() error {
 	return nil
 }
 
-func (state *VPNState) SetDisconnected() error {
+func (state *VPNState) SetDisconnected(cleanup bool) error {
 	errorMessage := "failed to set disconnected"
 	if state.InFSMState(fsm.HAS_CONFIG) {
 		// already disconnected, show no error
@@ -400,22 +400,24 @@ func (state *VPNState) SetDisconnected() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.HAS_CONFIG}.CustomError()}
 	}
 
-	// Do the /disconnect API call and go to disconnected after...
-	currentServer, currentServerErr := state.Servers.GetCurrentServer()
-	if currentServerErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
-	}
+	if cleanup {
+		// Do the /disconnect API call and go to disconnected after...
+		currentServer, currentServerErr := state.Servers.GetCurrentServer()
+		if currentServerErr != nil {
+			return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+		}
 
-	oauthStructure := currentServer.GetOAuth()
+		oauthStructure := currentServer.GetOAuth()
 
-	// Make sure the FSM is initialized
-	oauthStructure.FSM = &state.FSM
-	base, baseErr := currentServer.GetBase()
-	if baseErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		// Make sure the FSM is initialized
+		oauthStructure.FSM = &state.FSM
+		base, baseErr := currentServer.GetBase()
+		if baseErr != nil {
+			return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		}
+		base.FSM = &state.FSM
+		server.Disconnect(currentServer)
 	}
-	base.FSM = &state.FSM
-	server.Disconnect(currentServer)
 
 	state.FSM.GoTransitionWithData(fsm.HAS_CONFIG, state.getServerInfoData(), false)
 

@@ -244,13 +244,13 @@ func SetSearchServer(name *C.char) *C.char {
 }
 
 //export SetDisconnected
-func SetDisconnected(name *C.char) *C.char {
+func SetDisconnected(name *C.char, cleanup C.int) *C.char {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
 		return C.CString(ErrorToString(stateErr))
 	}
-	setDisconnectedErr := state.SetDisconnected()
+	setDisconnectedErr := state.SetDisconnected(int(cleanup) == 1)
 	return C.CString(ErrorToString(setDisconnectedErr))
 }
 
