@@ -46,7 +46,11 @@ func (logger *FileLogger) Init(level LogLevel, name string, directory string) er
 	if configDirErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: configDirErr}
 	}
-	logFile, logOpenErr := os.OpenFile(logger.getFilename(directory, name), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o666)
+	logFile, logOpenErr := os.OpenFile(
+		logger.getFilename(directory, name),
+		os.O_RDWR|os.O_CREATE|os.O_APPEND,
+		0o666,
+	)
 	if logOpenErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: logOpenErr}
 	}

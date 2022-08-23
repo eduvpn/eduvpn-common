@@ -72,7 +72,8 @@ func sendProfile(state *eduvpn.VPNState, data interface{}) {
 	var chosenProfile int
 	_, scanErr := fmt.Scanf("%d", &chosenProfile)
 
-	if scanErr != nil || chosenProfile <= 0 || chosenProfile > len(serverProfiles.Info.ProfileList) {
+	if scanErr != nil || chosenProfile <= 0 ||
+		chosenProfile > len(serverProfiles.Info.ProfileList) {
 		fmt.Println("invalid profile chosen, please retry")
 		sendProfile(state, data)
 		return
@@ -91,7 +92,12 @@ func sendProfile(state *eduvpn.VPNState, data interface{}) {
 // If OAuth is started we open the browser with the Auth URL
 // If we ask for a profile, we send the profile using command line input
 // Note that this has an additional argument, the vpn state which was wrapped into this callback function below
-func stateCallback(state *eduvpn.VPNState, oldState eduvpn.StateID, newState eduvpn.StateID, data interface{}) {
+func stateCallback(
+	state *eduvpn.VPNState,
+	oldState eduvpn.StateID,
+	newState eduvpn.StateID,
+	data interface{},
+) {
 	// TODO: Remove internal usage of fsm
 	if newState == fsm.OAUTH_STARTED {
 		openBrowser(data)
@@ -168,9 +174,14 @@ func storeSecureInternetConfig(state *eduvpn.VPNState, url string, directory str
 func getSecureInternetAll(homeURL string) {
 	state := &eduvpn.VPNState{}
 
-	state.Register("org.eduvpn.app.linux", "configs", func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
-		stateCallback(state, old, new, data)
-	}, true)
+	state.Register(
+		"org.eduvpn.app.linux",
+		"configs",
+		func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
+			stateCallback(state, old, new, data)
+		},
+		true,
+	)
 
 	defer state.Deregister()
 
@@ -209,9 +220,14 @@ func getSecureInternetAll(homeURL string) {
 func printConfig(url string, serverType ServerTypes) {
 	state := &eduvpn.VPNState{}
 
-	state.Register("org.eduvpn.app.linux", "configs", func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
-		stateCallback(state, old, new, data)
-	}, true)
+	state.Register(
+		"org.eduvpn.app.linux",
+		"configs",
+		func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
+			stateCallback(state, old, new, data)
+		},
+		true,
+	)
 
 	defer state.Deregister()
 
@@ -233,7 +249,11 @@ func main() {
 	customUrlArg := flag.String("get-custom", "", "The url of a custom server to connect to")
 	urlArg := flag.String("get-institute", "", "The url of an institute to connect to")
 	secureInternet := flag.String("get-secure", "", "Gets secure internet servers.")
-	secureInternetAll := flag.String("get-secure-all", "", "Gets certificates for all secure internet servers. It stores them in ./certs. Provide an URL for the home server e.g. nl.eduvpn.org.")
+	secureInternetAll := flag.String(
+		"get-secure-all",
+		"",
+		"Gets certificates for all secure internet servers. It stores them in ./certs. Provide an URL for the home server e.g. nl.eduvpn.org.",
+	)
 	flag.Parse()
 
 	// Connect to a VPN by getting an Institute Access config

@@ -37,7 +37,13 @@ func (institute *InstituteAccessServer) GetBase() (*ServerBase, error) {
 	return &institute.Base, nil
 }
 
-func (institute *InstituteAccessServer) init(url string, displayName map[string]string, serverType string, supportContact []string, fsm *fsm.FSM) error {
+func (institute *InstituteAccessServer) init(
+	url string,
+	displayName map[string]string,
+	serverType string,
+	supportContact []string,
+	fsm *fsm.FSM,
+) error {
 	errorMessage := fmt.Sprintf("failed initializing institute server %s", url)
 	institute.Base.URL = url
 	institute.Base.DisplayName = displayName

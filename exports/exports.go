@@ -26,7 +26,12 @@ var P_StateCallbacks map[string]C.PythonCB
 
 var VPNStates map[string]*eduvpn.VPNState
 
-func StateCallback(name string, old_state eduvpn.StateID, new_state eduvpn.StateID, data interface{}) {
+func StateCallback(
+	name string,
+	old_state eduvpn.StateID,
+	new_state eduvpn.StateID,
+	data interface{},
+) {
 	P_StateCallback, exists := P_StateCallbacks[name]
 	if !exists || P_StateCallback == nil {
 		return
@@ -35,13 +40,13 @@ func StateCallback(name string, old_state eduvpn.StateID, new_state eduvpn.State
 	oldState_c := C.int(old_state)
 	newState_c := C.int(new_state)
 	data_json, jsonErr := json.Marshal(data)
-    var dataJsonString string
+	var dataJsonString string
 	if jsonErr != nil {
 		// TODO: How to handle error further? Log?
 		dataJsonString = "{}"
 	} else {
-        dataJsonString = string(data_json)
-    }
+		dataJsonString = string(data_json)
+	}
 	data_c := C.CString(dataJsonString)
 	C.call_callback(P_StateCallback, name_c, oldState_c, newState_c, data_c)
 	C.free(unsafe.Pointer(name_c))
@@ -59,7 +64,12 @@ func GetVPNState(name string) (*eduvpn.VPNState, error) {
 }
 
 //export Register
-func Register(name *C.char, config_directory *C.char, stateCallback C.PythonCB, debug C.int) *C.char {
+func Register(
+	name *C.char,
+	config_directory *C.char,
+	stateCallback C.PythonCB,
+	debug C.int,
+) *C.char {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
@@ -73,9 +83,14 @@ func Register(name *C.char, config_directory *C.char, stateCallback C.PythonCB, 
 	}
 	VPNStates[nameStr] = state
 	P_StateCallbacks[nameStr] = stateCallback
-	registerErr := state.Register(nameStr, C.GoString(config_directory), func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
-		StateCallback(nameStr, old, new, data)
-	}, debug != 0)
+	registerErr := state.Register(
+		nameStr,
+		C.GoString(config_directory),
+		func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
+			StateCallback(nameStr, old, new, data)
+		},
+		debug != 0,
+	)
 
 	if registerErr != nil {
 		delete(VPNStates, nameStr)

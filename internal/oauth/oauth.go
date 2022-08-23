@@ -51,7 +51,10 @@ func genChallengeS256(verifier string) string {
 func genVerifier() (string, error) {
 	randomBytes, err := util.MakeRandomByteSlice(32)
 	if err != nil {
-		return "", &types.WrappedErrorMessage{Message: "failed generating an OAuth verifier", Err: err}
+		return "", &types.WrappedErrorMessage{
+			Message: "failed generating an OAuth verifier",
+			Err:     err,
+		}
 	}
 
 	return base64.RawURLEncoding.EncodeToString(randomBytes), nil
@@ -135,10 +138,15 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 	jsonErr := json.Unmarshal(body, &tokenStructure)
 
 	if jsonErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: &httpw.HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &httpw.HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr},
+		}
 	}
 
-	tokenStructure.ExpiredTimestamp = current_time.Add(time.Second * time.Duration(tokenStructure.Expires))
+	tokenStructure.ExpiredTimestamp = current_time.Add(
+		time.Second * time.Duration(tokenStructure.Expires),
+	)
 	oauth.Token = tokenStructure
 	return nil
 }
@@ -173,10 +181,15 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 	jsonErr := json.Unmarshal(body, &tokenStructure)
 
 	if jsonErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: &httpw.HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr}}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &httpw.HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr},
+		}
 	}
 
-	tokenStructure.ExpiredTimestamp = current_time.Add(time.Second * time.Duration(tokenStructure.Expires))
+	tokenStructure.ExpiredTimestamp = current_time.Add(
+		time.Second * time.Duration(tokenStructure.Expires),
+	)
 	oauth.Token = tokenStructure
 	return nil
 }
@@ -192,7 +205,10 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 		go oauth.Session.Server.Shutdown(oauth.Session.Context)
 	}()
 	if !success {
-		oauth.Session.CallbackError = &types.WrappedErrorMessage{Message: errorMessage, Err: &OAuthCallbackParameterError{Parameter: "code", URL: req.URL.String()}}
+		oauth.Session.CallbackError = &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &OAuthCallbackParameterError{Parameter: "code", URL: req.URL.String()},
+		}
 		return
 	}
 	// The code is the first entry
@@ -203,13 +219,22 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	state, success := req.URL.Query()["state"]
 
 	if !success {
-		oauth.Session.CallbackError = &types.WrappedErrorMessage{Message: errorMessage, Err: &OAuthCallbackParameterError{Parameter: "state", URL: req.URL.String()}}
+		oauth.Session.CallbackError = &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &OAuthCallbackParameterError{Parameter: "state", URL: req.URL.String()},
+		}
 		return
 	}
 	// The state is the first entry
 	extractedState := state[0]
 	if extractedState != oauth.Session.State {
-		oauth.Session.CallbackError = &types.WrappedErrorMessage{Message: errorMessage, Err: &OAuthCallbackStateMatchError{State: extractedState, ExpectedState: oauth.Session.State}}
+		oauth.Session.CallbackError = &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: &OAuthCallbackStateMatchError{
+				State:         extractedState,
+				ExpectedState: oauth.Session.State,
+			},
+		}
 		return
 	}
 
@@ -217,7 +242,10 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	// Obtaining the access and refresh tokens
 	getTokensErr := oauth.getTokensWithAuthCode(extractedCode)
 	if getTokensErr != nil {
-		oauth.Session.CallbackError = &types.WrappedErrorMessage{Message: errorMessage, Err: getTokensErr}
+		oauth.Session.CallbackError = &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     getTokensErr,
+		}
 		return
 	}
 }
@@ -232,7 +260,13 @@ func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string, fsm *fsm.
 func (oauth *OAuth) start(name string, postprocessAuth func(string) string) error {
 	errorMessage := "failed starting OAuth exchange"
 	if !oauth.FSM.HasTransition(fsm.OAUTH_STARTED) {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateTransitionError{Got: oauth.FSM.Current, Want: fsm.OAUTH_STARTED}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: fsm.WrongStateTransitionError{
+				Got:  oauth.FSM.Current,
+				Want: fsm.OAUTH_STARTED,
+			}.CustomError(),
+		}
 	}
 	// Generate the state
 	state, stateErr := genState()
@@ -275,7 +309,13 @@ func (oauth *OAuth) start(name string, postprocessAuth func(string) string) erro
 func (oauth *OAuth) Finish() error {
 	errorMessage := "failed finishing OAuth"
 	if !oauth.FSM.HasTransition(fsm.AUTHORIZED) {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateTransitionError{Got: oauth.FSM.Current, Want: fsm.AUTHORIZED}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: fsm.WrongStateTransitionError{
+				Got:  oauth.FSM.Current,
+				Want: fsm.AUTHORIZED,
+			}.CustomError(),
+		}
 	}
 	tokenErr := oauth.getTokensWithCallback()
 
@@ -287,7 +327,10 @@ func (oauth *OAuth) Finish() error {
 }
 
 func (oauth *OAuth) Cancel() {
-	oauth.Session.CallbackError = &types.WrappedErrorMessage{Message: "cancelled OAuth", Err: &OAuthCancelledCallbackError{}}
+	oauth.Session.CallbackError = &types.WrappedErrorMessage{
+		Message: "cancelled OAuth",
+		Err:     &OAuthCancelledCallbackError{},
+	}
 	oauth.Session.Server.Shutdown(oauth.Session.Context)
 }
 

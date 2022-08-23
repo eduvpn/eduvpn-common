@@ -18,13 +18,26 @@ import (
 // The return value will either be (true, nil) for a valid signature or (false, VerifyError) otherwise.
 //
 // Verify is a wrapper around verifyWithKeys where allowedPublicKeys is set to the list from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys.
-func Verify(signatureFileContent string, signedJson []byte, expectedFileName string, minSignTime uint64, forcePrehash bool) (bool, error) {
+func Verify(
+	signatureFileContent string,
+	signedJson []byte,
+	expectedFileName string,
+	minSignTime uint64,
+	forcePrehash bool,
+) (bool, error) {
 	// keys taken from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys
 	keyStrs := []string{
 		"RWRtBSX1alxyGX+Xn3LuZnWUT0w//B6EmTJvgaAxBMYzlQeI+jdrO6KF", // fkooman@tuxed.net, kolla@uninett.no
 		"RWQKqtqvd0R7rUDp0rWzbtYPA3towPWcLDCl7eY9pBMMI/ohCmrS0WiM", // RoSp
 	}
-	valid, err := verifyWithKeys(signatureFileContent, signedJson, expectedFileName, minSignTime, keyStrs, forcePrehash)
+	valid, err := verifyWithKeys(
+		signatureFileContent,
+		signedJson,
+		expectedFileName,
+		minSignTime,
+		keyStrs,
+		forcePrehash,
+	)
 	if err != nil {
 		return valid, &types.WrappedErrorMessage{Message: "failed signature verify", Err: err}
 	}
@@ -41,12 +54,22 @@ func Verify(signatureFileContent string, signedJson []byte, expectedFileName str
 //
 // The return value will either be (true, nil) on success or (false, detailedVerifyError) on failure.
 // Note that every error path is wrapped in a custom type here because minisign does not return custom error types, they use errors.New
-func verifyWithKeys(signatureFileContent string, signedJson []byte, filename string, minSignTime uint64, allowedPublicKeys []string, forcePrehash bool) (bool, error) {
+func verifyWithKeys(
+	signatureFileContent string,
+	signedJson []byte,
+	filename string,
+	minSignTime uint64,
+	allowedPublicKeys []string,
+	forcePrehash bool,
+) (bool, error) {
 	switch filename {
 	case "server_list.json", "organization_list.json":
 		break
 	default:
-		return false, &VerifyUnknownExpectedFilenameError{Filename: filename, Expected: "server_list.json or organization_list.json"}
+		return false, &VerifyUnknownExpectedFilenameError{
+			Filename: filename,
+			Expected: "server_list.json or organization_list.json",
+		}
 	}
 
 	sig, err := minisign.DecodeSignature(signatureFileContent)
@@ -56,7 +79,10 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, filename str
 
 	// Check if signature is prehashed, see https://jedisct1.github.io/minisign/#signature-format
 	if forcePrehash && sig.SignatureAlgorithm != [2]byte{'E', 'D'} {
-		return false, &VerifyInvalidSignatureAlgorithmError{Algorithm: string(sig.SignatureAlgorithm[:]), WantedAlgorithm: "ED (BLAKE2b-prehashed EdDSA)"}
+		return false, &VerifyInvalidSignatureAlgorithmError{
+			Algorithm:       string(sig.SignatureAlgorithm[:]),
+			WantedAlgorithm: "ED (BLAKE2b-prehashed EdDSA)",
+		}
 	}
 
 	// Find allowed key used for signature
@@ -80,9 +106,17 @@ func verifyWithKeys(signatureFileContent string, signedJson []byte, filename str
 		var signTime uint64
 		var sigFileName string
 		// sigFileName cannot have spaces
-		_, err = fmt.Sscanf(sig.TrustedComment, "trusted comment: timestamp:%d\tfile:%s", &signTime, &sigFileName)
+		_, err = fmt.Sscanf(
+			sig.TrustedComment,
+			"trusted comment: timestamp:%d\tfile:%s",
+			&signTime,
+			&sigFileName,
+		)
 		if err != nil {
-			return false, &VerifyInvalidTrustedCommentError{TrustedComment: sig.TrustedComment, Err: err}
+			return false, &VerifyInvalidTrustedCommentError{
+				TrustedComment: sig.TrustedComment,
+				Err:            err,
+			}
 		}
 
 		if sigFileName != filename {
@@ -127,7 +161,11 @@ type VerifyInvalidSignatureAlgorithmError struct {
 }
 
 func (e *VerifyInvalidSignatureAlgorithmError) Error() string {
-	return fmt.Sprintf("invalid signature algorithm: %s, wanted: %s", e.Algorithm, e.WantedAlgorithm)
+	return fmt.Sprintf(
+		"invalid signature algorithm: %s, wanted: %s",
+		e.Algorithm,
+		e.WantedAlgorithm,
+	)
 }
 
 type VerifyCreatePublicKeyError struct {
@@ -174,7 +212,11 @@ type VerifyWrongSigFilenameError struct {
 }
 
 func (e *VerifyWrongSigFilenameError) Error() string {
-	return fmt.Sprintf("wrong filename: %s, expected filename: %s for signature", e.Filename, e.SigFilename)
+	return fmt.Sprintf(
+		"wrong filename: %s, expected filename: %s for signature",
+		e.Filename,
+		e.SigFilename,
+	)
 }
 
 type VerifySigTimeEarlierError struct {

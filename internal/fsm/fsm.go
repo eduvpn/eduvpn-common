@@ -134,22 +134,104 @@ type FSM struct {
 	Debug         bool
 }
 
-func (fsm *FSM) Init(name string, callback func(FSMStateID, FSMStateID, interface{}), directory string, debug bool) {
+func (fsm *FSM) Init(
+	name string,
+	callback func(FSMStateID, FSMStateID, interface{}),
+	directory string,
+	debug bool,
+) {
 	fsm.States = FSMStates{
-		DEREGISTERED:   FSMState{Transitions: []FSMTransition{{NO_SERVER, "Client registers"}}},
-		NO_SERVER:      FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "User chooses a server"}, {SEARCH_SERVER, "The user is trying to choose a Server in the UI"}, {CONNECTED, "The user is already connected"}, {ASK_LOCATION, "Change the location in the main screen"}}},
-		SEARCH_SERVER:  FSMState{Transitions: []FSMTransition{{LOADING_SERVER, "User clicks a server in the UI"}, {NO_SERVER, "Cancel or Error"}}, BackState: NO_SERVER},
-		ASK_LOCATION:   FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Location chosen"}, {NO_SERVER, "Go back or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
-		LOADING_SERVER: FSMState{Transitions: []FSMTransition{{CHOSEN_SERVER, "Server info loaded"}, {ASK_LOCATION, "User chooses a Secure Internet server but no location is configured"}}},
-		CHOSEN_SERVER:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "Found tokens in config"}, {OAUTH_STARTED, "No tokens found in config"}}},
-		OAUTH_STARTED:  FSMState{Transitions: []FSMTransition{{AUTHORIZED, "User authorizes with browser"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}, BackState: NO_SERVER},
-		AUTHORIZED:     FSMState{Transitions: []FSMTransition{{OAUTH_STARTED, "Re-authorize with OAuth"}, {REQUEST_CONFIG, "Client requests a config"}}},
-		REQUEST_CONFIG: FSMState{Transitions: []FSMTransition{{ASK_PROFILE, "Multiple profiles found and no profile chosen"}, {HAS_CONFIG, "Only one profile or profile already chosen"}, {NO_SERVER, "Cancel or Error"}, {OAUTH_STARTED, "Re-authorize"}}},
-		ASK_PROFILE:    FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "User chooses profile"}, {NO_SERVER, "Cancel or Error"}, {SEARCH_SERVER, "Cancel or Error"}}},
-		HAS_CONFIG:     FSMState{Transitions: []FSMTransition{{CONNECTING, "OS reports it is trying to connect"}, {REQUEST_CONFIG, "User reconnects"}, {NO_SERVER, "User wants to choose a new server"}, {OAUTH_STARTED, "Re-authorize with OAuth"}}, BackState: NO_SERVER},
-		DISCONNECTING:     FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "Cancel or Error"}, {HAS_CONFIG, "Done disconnecting"}}},
-		CONNECTING:     FSMState{Transitions: []FSMTransition{{HAS_CONFIG, "Cancel or Error"}, {CONNECTED, "Done connecting"}}},
-		CONNECTED:      FSMState{Transitions: []FSMTransition{{DISCONNECTING, "App wants to disconnect"}}},
+		DEREGISTERED: FSMState{Transitions: []FSMTransition{{NO_SERVER, "Client registers"}}},
+		NO_SERVER: FSMState{
+			Transitions: []FSMTransition{
+				{CHOSEN_SERVER, "User chooses a server"},
+				{SEARCH_SERVER, "The user is trying to choose a Server in the UI"},
+				{CONNECTED, "The user is already connected"},
+				{ASK_LOCATION, "Change the location in the main screen"},
+			},
+		},
+		SEARCH_SERVER: FSMState{
+			Transitions: []FSMTransition{
+				{LOADING_SERVER, "User clicks a server in the UI"},
+				{NO_SERVER, "Cancel or Error"},
+			},
+			BackState: NO_SERVER,
+		},
+		ASK_LOCATION: FSMState{
+			Transitions: []FSMTransition{
+				{CHOSEN_SERVER, "Location chosen"},
+				{NO_SERVER, "Go back or Error"},
+				{SEARCH_SERVER, "Cancel or Error"},
+			},
+		},
+		LOADING_SERVER: FSMState{
+			Transitions: []FSMTransition{
+				{CHOSEN_SERVER, "Server info loaded"},
+				{
+					ASK_LOCATION,
+					"User chooses a Secure Internet server but no location is configured",
+				},
+			},
+		},
+		CHOSEN_SERVER: FSMState{
+			Transitions: []FSMTransition{
+				{AUTHORIZED, "Found tokens in config"},
+				{OAUTH_STARTED, "No tokens found in config"},
+			},
+		},
+		OAUTH_STARTED: FSMState{
+			Transitions: []FSMTransition{
+				{AUTHORIZED, "User authorizes with browser"},
+				{NO_SERVER, "Cancel or Error"},
+				{SEARCH_SERVER, "Cancel or Error"},
+			},
+			BackState: NO_SERVER,
+		},
+		AUTHORIZED: FSMState{
+			Transitions: []FSMTransition{
+				{OAUTH_STARTED, "Re-authorize with OAuth"},
+				{REQUEST_CONFIG, "Client requests a config"},
+			},
+		},
+		REQUEST_CONFIG: FSMState{
+			Transitions: []FSMTransition{
+				{ASK_PROFILE, "Multiple profiles found and no profile chosen"},
+				{HAS_CONFIG, "Only one profile or profile already chosen"},
+				{NO_SERVER, "Cancel or Error"},
+				{OAUTH_STARTED, "Re-authorize"},
+			},
+		},
+		ASK_PROFILE: FSMState{
+			Transitions: []FSMTransition{
+				{HAS_CONFIG, "User chooses profile"},
+				{NO_SERVER, "Cancel or Error"},
+				{SEARCH_SERVER, "Cancel or Error"},
+			},
+		},
+		HAS_CONFIG: FSMState{
+			Transitions: []FSMTransition{
+				{CONNECTING, "OS reports it is trying to connect"},
+				{REQUEST_CONFIG, "User reconnects"},
+				{NO_SERVER, "User wants to choose a new server"},
+				{OAUTH_STARTED, "Re-authorize with OAuth"},
+			},
+			BackState: NO_SERVER,
+		},
+		DISCONNECTING: FSMState{
+			Transitions: []FSMTransition{
+				{HAS_CONFIG, "Cancel or Error"},
+				{HAS_CONFIG, "Done disconnecting"},
+			},
+		},
+		CONNECTING: FSMState{
+			Transitions: []FSMTransition{
+				{HAS_CONFIG, "Cancel or Error"},
+				{CONNECTED, "Done connecting"},
+			},
+		},
+		CONNECTED: FSMState{
+			Transitions: []FSMTransition{{DISCONNECTING, "App wants to disconnect"}},
+		},
 	}
 	fsm.Current = DEREGISTERED
 	fsm.Name = name
@@ -249,7 +331,12 @@ func (fsm *FSM) GenerateGraph() string {
 type DeregisteredError struct{}
 
 func (e DeregisteredError) CustomError() *types.WrappedErrorMessage {
-	return &types.WrappedErrorMessage{Message: "Client not registered with the GO library", Err: errors.New("the current FSM state is deregistered, but the function needs a state that is not deregistered")}
+	return &types.WrappedErrorMessage{
+		Message: "Client not registered with the GO library",
+		Err: errors.New(
+			"the current FSM state is deregistered, but the function needs a state that is not deregistered",
+		),
+	}
 }
 
 type WrongStateTransitionError struct {
@@ -258,7 +345,16 @@ type WrongStateTransitionError struct {
 }
 
 func (e WrongStateTransitionError) CustomError() *types.WrappedErrorMessage {
-	return &types.WrappedErrorMessage{Message: "Wrong FSM transition", Err: errors.New(fmt.Sprintf("wrong FSM state, got: %s, want: a state with a transition to: %s", e.Got.String(), e.Want.String()))}
+	return &types.WrappedErrorMessage{
+		Message: "Wrong FSM transition",
+		Err: errors.New(
+			fmt.Sprintf(
+				"wrong FSM state, got: %s, want: a state with a transition to: %s",
+				e.Got.String(),
+				e.Want.String(),
+			),
+		),
+	}
 }
 
 type WrongStateError struct {
@@ -267,5 +363,10 @@ type WrongStateError struct {
 }
 
 func (e WrongStateError) CustomError() *types.WrappedErrorMessage {
-	return &types.WrappedErrorMessage{Message: "Wrong FSM State", Err: errors.New(fmt.Sprintf("wrong FSM state, got: %s, want: %s", e.Got.String(), e.Want.String()))}
+	return &types.WrappedErrorMessage{
+		Message: "Wrong FSM State",
+		Err: errors.New(
+			fmt.Sprintf("wrong FSM state, got: %s, want: %s", e.Got.String(), e.Want.String()),
+		),
+	}
 }

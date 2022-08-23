@@ -52,12 +52,22 @@ func loginOAuthSelenium(t *testing.T, url string, state *VPNState) {
 	var errBuffer strings.Builder
 	err := runCommand(t, &errBuffer, "python3", "selenium_eduvpn.py", url)
 	if err != nil {
-		t.Fatalf("Login OAuth with selenium script failed with error %v and stderr %s", err, errBuffer.String())
+		t.Fatalf(
+			"Login OAuth with selenium script failed with error %v and stderr %s",
+			err,
+			errBuffer.String(),
+		)
 		state.CancelOAuth()
 	}
 }
 
-func stateCallback(t *testing.T, oldState StateID, newState StateID, data interface{}, state *VPNState) {
+func stateCallback(
+	t *testing.T,
+	oldState StateID,
+	newState StateID,
+	data interface{},
+	state *VPNState,
+) {
 	if newState == fsm.OAUTH_STARTED {
 		url, ok := data.(string)
 
@@ -73,9 +83,14 @@ func Test_server(t *testing.T) {
 	state := &VPNState{}
 	ensureLocalWellKnown()
 
-	state.Register("org.eduvpn.app.linux", "configstest", func(old StateID, new StateID, data interface{}) {
-		stateCallback(t, old, new, data, state)
-	}, false)
+	state.Register(
+		"org.eduvpn.app.linux",
+		"configstest",
+		func(old StateID, new StateID, data interface{}) {
+			stateCallback(t, old, new, data, state)
+		},
+		false,
+	)
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
@@ -84,22 +99,35 @@ func Test_server(t *testing.T) {
 	}
 }
 
-func test_connect_oauth_parameter(t *testing.T, parameters httpw.URLParameters, expectedErr interface{}) {
+func test_connect_oauth_parameter(
+	t *testing.T,
+	parameters httpw.URLParameters,
+	expectedErr interface{},
+) {
 	serverURI := getServerURI(t)
 	state := &VPNState{}
 	configDirectory := "test_oauth_parameters"
 
-	state.Register("org.eduvpn.app.linux", configDirectory, func(oldState StateID, newState StateID, data interface{}) {
-		if newState == fsm.OAUTH_STARTED {
-			baseURL := "http://127.0.0.1:8000/callback"
-			url, err := httpw.HTTPConstructURL(baseURL, parameters)
-			if err != nil {
-				t.Fatalf("Error: Constructing url %s with parameters %s", baseURL, fmt.Sprint(parameters))
-			}
-			go http.Get(url)
+	state.Register(
+		"org.eduvpn.app.linux",
+		configDirectory,
+		func(oldState StateID, newState StateID, data interface{}) {
+			if newState == fsm.OAUTH_STARTED {
+				baseURL := "http://127.0.0.1:8000/callback"
+				url, err := httpw.HTTPConstructURL(baseURL, parameters)
+				if err != nil {
+					t.Fatalf(
+						"Error: Constructing url %s with parameters %s",
+						baseURL,
+						fmt.Sprint(parameters),
+					)
+				}
+				go http.Get(url)
 
-		}
-	}, false)
+			}
+		},
+		false,
+	)
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
 	var wrappedErr *types.WrappedErrorMessage
@@ -143,7 +171,9 @@ func Test_token_expired(t *testing.T) {
 	serverURI := getServerURI(t)
 	expiredTTL := os.Getenv("OAUTH_EXPIRED_TTL")
 	if expiredTTL == "" {
-		t.Log("No expired TTL present, skipping this test. Set OAUTH_EXPIRED_TTL env variable to run this test")
+		t.Log(
+			"No expired TTL present, skipping this test. Set OAUTH_EXPIRED_TTL env variable to run this test",
+		)
 		return
 	}
 
@@ -158,9 +188,14 @@ func Test_token_expired(t *testing.T) {
 	// Get a vpn state
 	state := &VPNState{}
 
-	state.Register("org.eduvpn.app.linux", "configsexpired", func(old StateID, new StateID, data interface{}) {
-		stateCallback(t, old, new, data, state)
-	}, false)
+	state.Register(
+		"org.eduvpn.app.linux",
+		"configsexpired",
+		func(old StateID, new StateID, data interface{}) {
+			stateCallback(t, old, new, data, state)
+		},
+		false,
+	)
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
@@ -206,9 +241,14 @@ func Test_token_invalid(t *testing.T) {
 
 	ensureLocalWellKnown()
 
-	state.Register("org.eduvpn.app.linux", "configsinvalid", func(old StateID, new StateID, data interface{}) {
-		stateCallback(t, old, new, data, state)
-	}, false)
+	state.Register(
+		"org.eduvpn.app.linux",
+		"configsinvalid",
+		func(old StateID, new StateID, data interface{}) {
+			stateCallback(t, old, new, data, state)
+		},
+		false,
+	)
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
@@ -256,9 +296,14 @@ func Test_invalid_profile_corrected(t *testing.T) {
 
 	ensureLocalWellKnown()
 
-	state.Register("org.eduvpn.app.linux", "configscancelprofile", func(old StateID, new StateID, data interface{}) {
-		stateCallback(t, old, new, data, state)
-	}, false)
+	state.Register(
+		"org.eduvpn.app.linux",
+		"configscancelprofile",
+		func(old StateID, new StateID, data interface{}) {
+			stateCallback(t, old, new, data, state)
+		},
+		false,
+	)
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
@@ -286,6 +331,10 @@ func Test_invalid_profile_corrected(t *testing.T) {
 	}
 
 	if base.Profiles.Current != previousProfile {
-		t.Fatalf("Profiles do no match: current %s and previous %s", base.Profiles.Current, previousProfile)
+		t.Fatalf(
+			"Profiles do no match: current %s and previous %s",
+			base.Profiles.Current,
+			previousProfile,
+		)
 	}
 }

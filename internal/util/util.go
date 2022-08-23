@@ -14,7 +14,10 @@ import (
 func EnsureValidURL(s string) (string, error) {
 	parsedURL, parseErr := url.Parse(s)
 	if parseErr != nil {
-		return "", &types.WrappedErrorMessage{Message: fmt.Sprintf("failed parsing url: %s", s), Err: parseErr}
+		return "", &types.WrappedErrorMessage{
+			Message: fmt.Sprintf("failed parsing url: %s", s),
+			Err:     parseErr,
+		}
 	}
 
 	if parsedURL.Scheme == "" {
@@ -41,7 +44,10 @@ func EnsureDirectory(directory string) error {
 	// Create with 700 permissions, read, write, execute only for the owner
 	mkdirErr := os.MkdirAll(directory, 0o700)
 	if mkdirErr != nil {
-		return &types.WrappedErrorMessage{Message: fmt.Sprintf("failed to create directory %s", directory), Err: mkdirErr}
+		return &types.WrappedErrorMessage{
+			Message: fmt.Sprintf("failed to create directory %s", directory),
+			Err:     mkdirErr,
+		}
 	}
 	return nil
 }

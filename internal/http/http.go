@@ -24,7 +24,14 @@ type HTTPOptionalParams struct {
 func HTTPConstructURL(baseURL string, parameters URLParameters) (string, error) {
 	url, parseErr := url.Parse(baseURL)
 	if parseErr != nil {
-		return "", &types.WrappedErrorMessage{Message: fmt.Sprintf("failed to construct url: %s including parameters: %v", url, parameters), Err: parseErr}
+		return "", &types.WrappedErrorMessage{
+			Message: fmt.Sprintf(
+				"failed to construct url: %s including parameters: %v",
+				url,
+				parameters,
+			),
+			Err: parseErr,
+		}
 	}
 
 	q := url.Query()
@@ -58,7 +65,10 @@ func httpOptionalURL(url string, opts *HTTPOptionalParams) (string, error) {
 		url, urlErr := HTTPConstructURL(url, opts.URLParameters)
 
 		if urlErr != nil {
-			return url, &types.WrappedErrorMessage{Message: fmt.Sprintf("failed to create HTTP request with url: %s", url), Err: urlErr}
+			return url, &types.WrappedErrorMessage{
+				Message: fmt.Sprintf("failed to create HTTP request with url: %s", url),
+				Err:     urlErr,
+			}
 		}
 		return url, nil
 	}
@@ -81,7 +91,11 @@ func httpOptionalBodyReader(opts *HTTPOptionalParams) io.Reader {
 	return nil
 }
 
-func HTTPMethodWithOpts(method string, url string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
+func HTTPMethodWithOpts(
+	method string,
+	url string,
+	opts *HTTPOptionalParams,
+) (http.Header, []byte, error) {
 	// Make sure the url contains all the parameters
 	// This can return an error,
 	// it already has the right error so so we don't wrap it further
@@ -139,7 +153,11 @@ type HTTPStatusError struct {
 }
 
 func (e *HTTPStatusError) Error() string {
-	return fmt.Sprintf("failed obtaining HTTP resource: %s as it gave an unsuccesful status code: %d", e.URL, e.Status)
+	return fmt.Sprintf(
+		"failed obtaining HTTP resource: %s as it gave an unsuccesful status code: %d",
+		e.URL,
+		e.Status,
+	)
 }
 
 type HTTPParseJsonError struct {
@@ -149,5 +167,10 @@ type HTTPParseJsonError struct {
 }
 
 func (e *HTTPParseJsonError) Error() string {
-	return fmt.Sprintf("failed parsing json %s for HTTP resource: %s with error: %v", e.Body, e.URL, e.Err)
+	return fmt.Sprintf(
+		"failed parsing json %s for HTTP resource: %s with error: %v",
+		e.Body,
+		e.URL,
+		e.Err,
+	)
 }

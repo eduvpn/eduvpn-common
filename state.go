@@ -40,10 +40,18 @@ func (state *VPNState) GetSavedServers() *server.ServersConfiguredScreen {
 	return state.Servers.GetServersConfigured()
 }
 
-func (state *VPNState) Register(name string, directory string, stateCallback func(StateID, StateID, interface{}), debug bool) error {
+func (state *VPNState) Register(
+	name string,
+	directory string,
+	stateCallback func(StateID, StateID, interface{}),
+	debug bool,
+) error {
 	errorMessage := "failed to register with the GO library"
 	if !state.InFSMState(fsm.DEREGISTERED) {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.DeregisteredError{}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     fsm.DeregisteredError{}.CustomError(),
+		}
 	}
 	// Initialize the logger
 	logLevel := log.LOG_WARNING
@@ -93,7 +101,10 @@ func (state *VPNState) Deregister() error {
 func (state *VPNState) GoBack() error {
 	errorMessage := "failed to go back"
 	if state.InFSMState(fsm.DEREGISTERED) {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.DeregisteredError{}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     fsm.DeregisteredError{}.CustomError(),
+		}
 	}
 
 	// FIXME: Abitrary back transitions don't work because we need the approriate data
@@ -102,10 +113,16 @@ func (state *VPNState) GoBack() error {
 	return nil
 }
 
-func (state *VPNState) getConfig(chosenServer server.Server, forceTCP bool) (string, string, error) {
+func (state *VPNState) getConfig(
+	chosenServer server.Server,
+	forceTCP bool,
+) (string, string, error) {
 	errorMessage := "failed to get a configuration for OpenVPN/Wireguard"
 	if state.InFSMState(fsm.DEREGISTERED) {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.DeregisteredError{}.CustomError()}
+		return "", "", &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     fsm.DeregisteredError{}.CustomError(),
+		}
 	}
 
 	// Relogin with oauth
@@ -162,7 +179,10 @@ func (state *VPNState) askSecureLocation() error {
 }
 
 func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server, error) {
-	errorMessage := fmt.Sprintf("failed adding Secure Internet home server with organization ID %s", orgID)
+	errorMessage := fmt.Sprintf(
+		"failed adding Secure Internet home server with organization ID %s",
+		orgID,
+	)
 	// Get the secure internet URL from discovery
 	secureOrg, secureServer, discoErr := state.Discovery.GetSecureHomeArgs(orgID)
 	if discoErr != nil {
@@ -192,8 +212,14 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 	return server, nil
 }
 
-func (state *VPNState) GetConfigSecureInternet(orgID string, forceTCP bool) (string, string, error) {
-	errorMessage := fmt.Sprintf("failed getting a configuration for Secure Internet organization %s", orgID)
+func (state *VPNState) GetConfigSecureInternet(
+	orgID string,
+	forceTCP bool,
+) (string, string, error) {
+	errorMessage := fmt.Sprintf(
+		"failed getting a configuration for Secure Internet organization %s",
+		orgID,
+	)
 	state.FSM.GoTransition(fsm.LOADING_SERVER)
 	server, serverErr := state.addSecureInternetHomeServer(orgID)
 
@@ -233,7 +259,11 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
 	}
 
-	customServer := &types.DiscoveryServer{BaseURL: url, DisplayName: map[string]string{"en": url}, Type: "custom_server"}
+	customServer := &types.DiscoveryServer{
+		BaseURL:     url,
+		DisplayName: map[string]string{"en": url},
+		Type:        "custom_server",
+	}
 
 	// A custom server is just an institute access server under the hood
 	server, serverErr := state.Servers.AddCustomServer(customServer, &state.FSM)
@@ -274,7 +304,13 @@ func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string,
 func (state *VPNState) CancelOAuth() error {
 	errorMessage := "failed to cancel OAuth"
 	if !state.InFSMState(fsm.OAUTH_STARTED) {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateError{Got: state.FSM.Current, Want: fsm.OAUTH_STARTED}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: fsm.WrongStateError{
+				Got:  state.FSM.Current,
+				Want: fsm.OAUTH_STARTED,
+			}.CustomError(),
+		}
 	}
 
 	currentServer, serverErr := state.Servers.GetCurrentServer()
@@ -290,7 +326,10 @@ func (state *VPNState) ChangeSecureLocation() error {
 	errorMessage := "failed to change location from the main screen"
 
 	if !state.InFSMState(fsm.NO_SERVER) {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateError{Got: state.FSM.Current, Want: fsm.NO_SERVER}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     fsm.WrongStateError{Got: state.FSM.Current, Want: fsm.NO_SERVER}.CustomError(),
+		}
 	}
 
 	askLocationErr := state.askSecureLocation()
@@ -307,14 +346,20 @@ func (state *VPNState) ChangeSecureLocation() error {
 
 func (state *VPNState) GetDiscoOrganizations() (string, error) {
 	if state.InFSMState(fsm.DEREGISTERED) {
-		return "", &types.WrappedErrorMessage{Message: "failed to get the organizations with Discovery", Err: fsm.DeregisteredError{}.CustomError()}
+		return "", &types.WrappedErrorMessage{
+			Message: "failed to get the organizations with Discovery",
+			Err:     fsm.DeregisteredError{}.CustomError(),
+		}
 	}
 	return state.Discovery.GetOrganizationsList()
 }
 
 func (state *VPNState) GetDiscoServers() (string, error) {
 	if state.InFSMState(fsm.DEREGISTERED) {
-		return "", &types.WrappedErrorMessage{Message: "failed to get the servers with Discovery", Err: fsm.DeregisteredError{}.CustomError()}
+		return "", &types.WrappedErrorMessage{
+			Message: "failed to get the servers with Discovery",
+			Err:     fsm.DeregisteredError{}.CustomError(),
+		}
 	}
 	return state.Discovery.GetServersList()
 }
@@ -337,7 +382,13 @@ func (state *VPNState) SetProfileID(profileID string) error {
 
 func (state *VPNState) SetSearchServer() error {
 	if !state.FSM.HasTransition(fsm.SEARCH_SERVER) {
-		return &types.WrappedErrorMessage{Message: "failed to set search server", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.CONNECTED}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: "failed to set search server",
+			Err: fsm.WrongStateTransitionError{
+				Got:  state.FSM.Current,
+				Want: fsm.CONNECTED,
+			}.CustomError(),
+		}
 	}
 
 	state.FSM.GoTransition(fsm.SEARCH_SERVER)
@@ -356,7 +407,13 @@ func (state *VPNState) SetConnected() error {
 		return nil
 	}
 	if !state.FSM.HasTransition(fsm.CONNECTED) {
-		return &types.WrappedErrorMessage{Message: "failed to set connected", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.CONNECTED}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: "failed to set connected",
+			Err: fsm.WrongStateTransitionError{
+				Got:  state.FSM.Current,
+				Want: fsm.CONNECTED,
+			}.CustomError(),
+		}
 	}
 
 	state.FSM.GoTransitionWithData(fsm.CONNECTED, state.getServerInfoData(), false)
@@ -369,7 +426,13 @@ func (state *VPNState) SetConnecting() error {
 		return nil
 	}
 	if !state.FSM.HasTransition(fsm.CONNECTING) {
-		return &types.WrappedErrorMessage{Message: "failed to set connecting", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.CONNECTING}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: "failed to set connecting",
+			Err: fsm.WrongStateTransitionError{
+				Got:  state.FSM.Current,
+				Want: fsm.CONNECTING,
+			}.CustomError(),
+		}
 	}
 
 	state.FSM.GoTransition(fsm.CONNECTING)
@@ -382,9 +445,14 @@ func (state *VPNState) SetDisconnecting() error {
 		return nil
 	}
 	if !state.FSM.HasTransition(fsm.DISCONNECTING) {
-		return &types.WrappedErrorMessage{Message: "failed to set disconnecting", Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.DISCONNECTING}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: "failed to set disconnecting",
+			Err: fsm.WrongStateTransitionError{
+				Got:  state.FSM.Current,
+				Want: fsm.DISCONNECTING,
+			}.CustomError(),
+		}
 	}
-
 
 	state.FSM.GoTransitionWithData(fsm.DISCONNECTING, state.getServerInfoData(), false)
 	return nil
@@ -397,7 +465,13 @@ func (state *VPNState) SetDisconnected(cleanup bool) error {
 		return nil
 	}
 	if !state.FSM.HasTransition(fsm.HAS_CONFIG) {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateTransitionError{Got: state.FSM.Current, Want: fsm.HAS_CONFIG}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: fsm.WrongStateTransitionError{
+				Got:  state.FSM.Current,
+				Want: fsm.HAS_CONFIG,
+			}.CustomError(),
+		}
 	}
 
 	if cleanup {
@@ -434,7 +508,13 @@ func (state *VPNState) RenewSession() error {
 	}
 
 	oauthStructure := currentServer.GetOAuth()
-	oauthStructure.Token = oauth.OAuthToken{Access: "", Refresh: "", Type: "", Expires: 0, ExpiredTimestamp: util.GetCurrentTime()}
+	oauthStructure.Token = oauth.OAuthToken{
+		Access:           "",
+		Refresh:          "",
+		Type:             "",
+		Expires:          0,
+		ExpiredTimestamp: util.GetCurrentTime(),
+	}
 
 	// Make sure the FSM is initialized
 	oauthStructure.FSM = &state.FSM
@@ -443,7 +523,6 @@ func (state *VPNState) RenewSession() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 	base.FSM = &state.FSM
-
 
 	loginErr := server.Login(currentServer)
 
@@ -465,7 +544,13 @@ func (state *VPNState) ShouldRenewButton() bool {
 	currentServer, currentServerErr := state.Servers.GetCurrentServer()
 
 	if currentServerErr != nil {
-		state.Logger.Log(log.LOG_INFO, fmt.Sprintf("No server found to renew with err: %s", GetErrorTraceback(currentServerErr)))
+		state.Logger.Log(
+			log.LOG_INFO,
+			fmt.Sprintf(
+				"No server found to renew with err: %s",
+				GetErrorTraceback(currentServerErr),
+			),
+		)
 		return false
 	}
 

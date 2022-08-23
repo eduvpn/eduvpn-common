@@ -37,13 +37,19 @@ func (secure *SecureInternetHomeServer) GetTemplateAuth() func(string) string {
 func (server *SecureInternetHomeServer) GetBase() (*ServerBase, error) {
 	errorMessage := "failed getting current secure internet home base"
 	if server.BaseMap == nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerSecureInternetMapNotFoundError{}}
+		return nil, &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &ServerSecureInternetMapNotFoundError{},
+		}
 	}
 
 	base, exists := server.BaseMap[server.CurrentLocation]
 
 	if !exists {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerSecureInternetBaseNotFoundError{Current: server.CurrentLocation}}
+		return nil, &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &ServerSecureInternetBaseNotFoundError{Current: server.CurrentLocation},
+		}
 	}
 	return base, nil
 }
@@ -52,7 +58,10 @@ func (servers *Servers) HasSecureLocation() bool {
 	return servers.SecureInternetHomeServer.CurrentLocation != ""
 }
 
-func (secure *SecureInternetHomeServer) addLocation(locationServer *types.DiscoveryServer, fsm *fsm.FSM) (*ServerBase, error) {
+func (secure *SecureInternetHomeServer) addLocation(
+	locationServer *types.DiscoveryServer,
+	fsm *fsm.FSM,
+) (*ServerBase, error) {
 	errorMessage := "failed adding a location"
 	// Initialize the base map if it is non-nil
 	if secure.BaseMap == nil {
@@ -85,7 +94,11 @@ func (secure *SecureInternetHomeServer) addLocation(locationServer *types.Discov
 }
 
 // Initializes the home server and adds its own location
-func (secure *SecureInternetHomeServer) init(homeOrg *types.DiscoveryOrganization, homeLocation *types.DiscoveryServer, fsm *fsm.FSM) error {
+func (secure *SecureInternetHomeServer) init(
+	homeOrg *types.DiscoveryOrganization,
+	homeLocation *types.DiscoveryServer,
+	fsm *fsm.FSM,
+) error {
 	errorMessage := "failed initializing secure internet home server"
 
 	if secure.HomeOrganizationID != homeOrg.OrgId {

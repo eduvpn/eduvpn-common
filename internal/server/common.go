@@ -88,7 +88,10 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 	errorMessage := "failed getting current server"
 	if servers.IsType == SecureInternetServerType {
 		if !servers.HasSecureLocation() {
-			return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerGetCurrentNotFoundError{}}
+			return nil, &types.WrappedErrorMessage{
+				Message: errorMessage,
+				Err:     &ServerGetCurrentNotFoundError{},
+			}
 		}
 		return &servers.SecureInternetHomeServer, nil
 	}
@@ -101,12 +104,18 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 	currentServerURL := serversStruct.CurrentURL
 	bases := serversStruct.Map
 	if bases == nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerGetCurrentNoMapError{}}
+		return nil, &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &ServerGetCurrentNoMapError{},
+		}
 	}
 	server, exists := bases[currentServerURL]
 
 	if !exists || server == nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerGetCurrentNotFoundError{}}
+		return nil, &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &ServerGetCurrentNotFoundError{},
+		}
 	}
 	return server, nil
 }
@@ -146,7 +155,7 @@ func getServerInfoScreen(base ServerBase) ServerInfoScreen {
 	return serverInfoScreen
 }
 
-func (servers *Servers) GetServersConfigured() (*ServersConfiguredScreen) {
+func (servers *Servers) GetServersConfigured() *ServersConfiguredScreen {
 	customServersInfo := []ServerInfoScreen{}
 	instituteServersInfo := []ServerInfoScreen{}
 	var secureInternetServerInfo *ServerInfoScreen = nil
@@ -171,7 +180,11 @@ func (servers *Servers) GetServersConfigured() (*ServersConfiguredScreen) {
 		secureInternetServerInfo.CountryCode = servers.SecureInternetHomeServer.CurrentLocation
 	}
 
-	return &ServersConfiguredScreen{CustomServers: customServersInfo, InstituteAccessServers: instituteServersInfo, SecureInternetServer: secureInternetServerInfo}
+	return &ServersConfiguredScreen{
+		CustomServers:          customServersInfo,
+		InstituteAccessServers: instituteServersInfo,
+		SecureInternetServer:   secureInternetServerInfo,
+	}
 }
 
 func (servers *Servers) GetCurrentServerInfo() (*ServerInfoScreen, error) {
@@ -198,7 +211,11 @@ func (servers *Servers) GetCurrentServerInfo() (*ServerInfoScreen, error) {
 	return &serverInfoScreen, nil
 }
 
-func (servers *Servers) addInstituteAndCustom(discoServer *types.DiscoveryServer, isCustom bool, fsm *fsm.FSM) (Server, error) {
+func (servers *Servers) addInstituteAndCustom(
+	discoServer *types.DiscoveryServer,
+	isCustom bool,
+	fsm *fsm.FSM,
+) (Server, error) {
 	url := discoServer.BaseURL
 	errorMessage := fmt.Sprintf("failed adding institute access server: %s", url)
 	toAddServers := &servers.InstituteServers
@@ -222,7 +239,13 @@ func (servers *Servers) addInstituteAndCustom(discoServer *types.DiscoveryServer
 
 	// Set the current server
 	toAddServers.CurrentURL = url
-	instituteInitErr := server.init(url, discoServer.DisplayName, discoServer.Type, discoServer.SupportContact, fsm)
+	instituteInitErr := server.init(
+		url,
+		discoServer.DisplayName,
+		discoServer.Type,
+		discoServer.SupportContact,
+		fsm,
+	)
 	if instituteInitErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: instituteInitErr}
 	}
@@ -231,11 +254,17 @@ func (servers *Servers) addInstituteAndCustom(discoServer *types.DiscoveryServer
 	return server, nil
 }
 
-func (servers *Servers) AddInstituteAccessServer(instituteServer *types.DiscoveryServer, fsm *fsm.FSM) (Server, error) {
+func (servers *Servers) AddInstituteAccessServer(
+	instituteServer *types.DiscoveryServer,
+	fsm *fsm.FSM,
+) (Server, error) {
 	return servers.addInstituteAndCustom(instituteServer, false, fsm)
 }
 
-func (servers *Servers) AddCustomServer(customServer *types.DiscoveryServer, fsm *fsm.FSM) (Server, error) {
+func (servers *Servers) AddCustomServer(
+	customServer *types.DiscoveryServer,
+	fsm *fsm.FSM,
+) (Server, error) {
 	return servers.addInstituteAndCustom(customServer, true, fsm)
 }
 
@@ -243,7 +272,10 @@ func (servers *Servers) GetSecureLocation() string {
 	return servers.SecureInternetHomeServer.CurrentLocation
 }
 
-func (servers *Servers) SetSecureLocation(chosenLocationServer *types.DiscoveryServer, fsm *fsm.FSM) error {
+func (servers *Servers) SetSecureLocation(
+	chosenLocationServer *types.DiscoveryServer,
+	fsm *fsm.FSM,
+) error {
 	errorMessage := "failed to set secure location"
 	// Make sure to add the current location
 	_, addLocationErr := servers.SecureInternetHomeServer.addLocation(chosenLocationServer, fsm)
@@ -256,7 +288,11 @@ func (servers *Servers) SetSecureLocation(chosenLocationServer *types.DiscoveryS
 	return nil
 }
 
-func (servers *Servers) AddSecureInternet(secureOrg *types.DiscoveryOrganization, secureServer *types.DiscoveryServer, fsm *fsm.FSM) (Server, error) {
+func (servers *Servers) AddSecureInternet(
+	secureOrg *types.DiscoveryOrganization,
+	secureServer *types.DiscoveryServer,
+	fsm *fsm.FSM,
+) (Server, error) {
 	errorMessage := "failed adding secure internet server"
 	// If we have specified an organization ID
 	// We also need to get an authorization template
@@ -361,7 +397,10 @@ func getCurrentProfile(server Server) (*ServerProfile, error) {
 		}
 	}
 
-	return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerGetCurrentProfileNotFoundError{ProfileID: profileID}}
+	return nil, &types.WrappedErrorMessage{
+		Message: errorMessage,
+		Err:     &ServerGetCurrentProfileNotFoundError{ProfileID: profileID},
+	}
 }
 
 func wireguardGetConfig(server Server, supportsOpenVPN bool) (string, string, error) {
@@ -380,7 +419,12 @@ func wireguardGetConfig(server Server, supportsOpenVPN bool) (string, string, er
 	}
 
 	wireguardPublicKey := wireguardKey.PublicKey().String()
-	config, content, expires, configErr := APIConnectWireguard(server, profile_id, wireguardPublicKey, supportsOpenVPN)
+	config, content, expires, configErr := APIConnectWireguard(
+		server,
+		profile_id,
+		wireguardPublicKey,
+		supportsOpenVPN,
+	)
 
 	if configErr != nil {
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
@@ -430,7 +474,13 @@ func getConfigWithProfile(server Server, forceTCP bool) (string, string, error) 
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 	if !base.FSM.HasTransition(fsm.HAS_CONFIG) {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateTransitionError{Got: base.FSM.Current, Want: fsm.HAS_CONFIG}.CustomError()}
+		return "", "", &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: fsm.WrongStateTransitionError{
+				Got:  base.FSM.Current,
+				Want: fsm.HAS_CONFIG,
+			}.CustomError(),
+		}
 	}
 	profile, profileErr := getCurrentProfile(server)
 
@@ -443,7 +493,10 @@ func getConfigWithProfile(server Server, forceTCP bool) (string, string, error) 
 
 	// If forceTCP we must be able to get a config with OpenVPN
 	if forceTCP && supportsOpenVPN {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: &ServerGetConfigForceTCPError{}}
+		return "", "", &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &ServerGetConfigForceTCPError{},
+		}
 	}
 
 	var config string
@@ -473,7 +526,13 @@ func askForProfileID(server Server) error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 	if !base.FSM.HasTransition(fsm.ASK_PROFILE) {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateTransitionError{Got: base.FSM.Current, Want: fsm.ASK_PROFILE}.CustomError()}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: fsm.WrongStateTransitionError{
+				Got:  base.FSM.Current,
+				Want: fsm.ASK_PROFILE,
+			}.CustomError(),
+		}
 	}
 	base.FSM.GoTransitionWithData(fsm.ASK_PROFILE, &base.Profiles, false)
 	return nil
@@ -487,7 +546,13 @@ func GetConfig(server Server, forceTCP bool) (string, string, error) {
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 	if !base.FSM.InState(fsm.REQUEST_CONFIG) {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: fsm.WrongStateError{Got: base.FSM.Current, Want: fsm.REQUEST_CONFIG}.CustomError()}
+		return "", "", &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: fsm.WrongStateError{
+				Got:  base.FSM.Current,
+				Want: fsm.REQUEST_CONFIG,
+			}.CustomError(),
+		}
 	}
 
 	// Get new profiles using the info call
@@ -538,7 +603,9 @@ func (e *ServerGetCurrentProfileNotFoundError) Error() string {
 type ServerGetConfigForceTCPError struct{}
 
 func (e *ServerGetConfigForceTCPError) Error() string {
-	return fmt.Sprintf("failed to get config, force TCP is on but the server does not support OpenVPN")
+	return fmt.Sprintf(
+		"failed to get config, force TCP is on but the server does not support OpenVPN",
+	)
 }
 
 type ServerEnsureServerEmptyURLError struct{}

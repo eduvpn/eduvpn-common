@@ -105,7 +105,9 @@ func GetErrorJSONString(err error) string {
 		traceback = err.Error()
 	}
 
-	json, jsonErr := json.Marshal(&WrappedErrorMessageJSON{Level: level, Cause: cause.Error(), Traceback: traceback})
+	json, jsonErr := json.Marshal(
+		&WrappedErrorMessageJSON{Level: level, Cause: cause.Error(), Traceback: traceback},
+	)
 
 	if jsonErr != nil {
 		panic(jsonErr)
