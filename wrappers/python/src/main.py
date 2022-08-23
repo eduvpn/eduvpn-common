@@ -112,7 +112,6 @@ class EduVPN(object):
         if config_err:
             raise Exception(config_err)
 
-
         config_json_dict = json.loads(config_json)
         config = config_json_dict["config"]
         config_type = config_json_dict["config_type"]

@@ -35,9 +35,11 @@ try:
 except:
     lib = cdll.LoadLibrary(str(pathlib.Path(__file__).parent / "lib" / _libfile))
 
+
 class ErrorLevel(Enum):
     ERR_OTHER = 0
     ERR_INFO = 1
+
 
 class DataError(Structure):
     _fields_ = [("data", c_void_p), ("error", c_void_p)]
@@ -77,7 +79,9 @@ lib.GetDiscoServers.argtypes, lib.GetDiscoServers.restype = [c_char_p], DataErro
 lib.GoBack.argtypes, lib.GoBack.restype = [c_char_p], None
 lib.CancelOAuth.argtypes, lib.CancelOAuth.restype = [c_char_p], c_void_p
 lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p, c_char_p], c_void_p
-lib.ChangeSecureLocation.argtypes, lib.ChangeSecureLocation.restype = [c_char_p], c_void_p
+lib.ChangeSecureLocation.argtypes, lib.ChangeSecureLocation.restype = [
+    c_char_p
+], c_void_p
 lib.SetSecureLocation.argtypes, lib.SetSecureLocation.restype = [
     c_char_p,
     c_char_p,
@@ -120,6 +124,7 @@ def get_ptr_string(ptr: c_void_p) -> str:
             return string.decode()
     return ""
 
+
 def get_ptr_error(ptr: c_void_p) -> Optional[WrappedError]:
     error_string = get_ptr_string(ptr)
 
@@ -136,19 +141,23 @@ def get_ptr_error(ptr: c_void_p) -> Optional[WrappedError]:
     cause = error_json["cause"]
     return WrappedError(traceback, cause, ErrorLevel(level))
 
+
 def get_error(ptr: c_void_p) -> str:
     error = get_ptr_error(ptr)
     if not error:
         return ""
     return error.traceback
 
+
 def get_data_error(data_error: DataError) -> Tuple[str, str]:
     data = get_ptr_string(data_error.data)
     error = get_error(data_error.error)
     return data, error
 
+
 def get_bool(boolInt: c_int) -> bool:
     return boolInt == 1
+
 
 decode_map = {
     c_int: get_bool,
