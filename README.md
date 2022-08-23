@@ -1,7 +1,5 @@
 # eduVPN shared library
 
-Note: Actively developed at https://github.com/eduvpn/eduvpn-common
-
 This repository contains a Go library with functions that all eduVPN clients can use. The goal is to let eduVPN clients
 link against this library and gradually merge more common logic between eduVPN clients into this repository.
 
