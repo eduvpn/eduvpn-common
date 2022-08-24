@@ -24,6 +24,16 @@ type SecureInternetHomeServer struct {
 	CurrentLocation       string `json:"current_location"`
 }
 
+func (servers *Servers) RemoveSecureInternet() {
+	// Empty out the struct
+	servers.SecureInternetHomeServer = SecureInternetHomeServer{}
+
+	// If the current server is secure internet, default to custom server
+	if servers.IsType == SecureInternetServerType {
+		servers.IsType = CustomServerType
+	}
+}
+
 func (secure *SecureInternetHomeServer) GetOAuth() *oauth.OAuth {
 	return &secure.OAuth
 }

@@ -145,6 +145,39 @@ func getConfigJSON(config string, configType string) *C.char {
 	return C.CString(string(jsonBytes))
 }
 
+//export RemoveSecureInternet
+func RemoveSecureInternet(name *C.char) (*C.char) {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	removeErr := state.RemoveSecureInternet()
+	return C.CString(ErrorToString(removeErr))
+}
+
+//export RemoveInstituteAccess
+func RemoveInstituteAccess(name *C.char, url *C.char) (*C.char) {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	removeErr := state.RemoveInstituteAccess(C.GoString(url))
+	return C.CString(ErrorToString(removeErr))
+}
+
+//export RemoveCustomServer
+func RemoveCustomServer(name *C.char, url *C.char) (*C.char) {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.CString(ErrorToString(stateErr))
+	}
+	removeErr := state.RemoveCustomServer(C.GoString(url))
+	return C.CString(ErrorToString(removeErr))
+}
+
 //export GetConfigSecureInternet
 func GetConfigSecureInternet(name *C.char, orgID *C.char, forceTCP C.int) (*C.char, *C.char) {
 	nameStr := C.GoString(name)

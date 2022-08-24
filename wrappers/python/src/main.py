@@ -98,6 +98,24 @@ class EduVPN(object):
 
         return organizations
 
+    def remove_secure_internet(self):
+        remove_err = self.go_function(lib.RemoveSecureInternet)
+
+        if remove_err:
+            raise Exception(remove_err)
+
+    def remove_institute_access(self, url: str):
+        remove_err = self.go_function(lib.RemoveInstituteAccess, url)
+
+        if remove_err:
+            raise Exception(remove_err)
+
+    def remove_custom_server(self, url: str):
+        remove_err = self.go_function(lib.RemoveCustomServer, url)
+
+        if remove_err:
+            raise Exception(remove_err)
+
     def get_config(self, url: str, func: callable, force_tcp: bool = False):
         # Because it could be the case that a profile callback is started, store a threading event
         # In the constructor, we have defined a wait event for Ask_Profile, this waits for this event to be set

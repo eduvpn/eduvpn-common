@@ -22,6 +22,20 @@ type InstituteAccessServers struct {
 	CurrentURL string                            `json:"current_url"`
 }
 
+func (servers *Servers) RemoveInstituteAccess(url string) {
+	servers.InstituteServers.Remove(url)
+}
+
+func (servers *InstituteAccessServers) Remove(url string) {
+	// Reset the current url
+	if servers.CurrentURL == url {
+		servers.CurrentURL = ""
+	}
+
+	// Delete the url from the map
+	delete(servers.Map, url)
+}
+
 // For an institute, we can simply get the OAuth
 func (institute *InstituteAccessServer) GetOAuth() *oauth.OAuth {
 	return &institute.OAuth

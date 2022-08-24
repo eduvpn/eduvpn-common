@@ -144,6 +144,7 @@ func (fsm *FSM) Init(
 		DEREGISTERED: FSMState{Transitions: []FSMTransition{{NO_SERVER, "Client registers"}}},
 		NO_SERVER: FSMState{
 			Transitions: []FSMTransition{
+				{NO_SERVER, "Reload list"},
 				{CHOSEN_SERVER, "User chooses a server"},
 				{SEARCH_SERVER, "The user is trying to choose a Server in the UI"},
 				{CONNECTED, "The user is already connected"},

@@ -212,6 +212,51 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 	return server, nil
 }
 
+func (state *VPNState) RemoveSecureInternet() error {
+	if state.InFSMState(fsm.DEREGISTERED) {
+		return &types.WrappedErrorMessage{
+			Message: "failed to remove Secure Internet",
+			Err:     fsm.DeregisteredError{}.CustomError(),
+		}
+	}
+	// No error because we can only have one secure internet server and if there are no secure internet servers, this is a NO-OP
+	state.Servers.RemoveSecureInternet()
+	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+	// Save the config
+	state.Config.Save(&state)
+	return nil
+}
+
+func (state *VPNState) RemoveInstituteAccess(url string) error {
+	if state.InFSMState(fsm.DEREGISTERED) {
+		return &types.WrappedErrorMessage{
+			Message: "failed to remove Institute Access",
+			Err:     fsm.DeregisteredError{}.CustomError(),
+		}
+	}
+	// No error because this is a NO-OP if the server doesn't exist
+	state.Servers.RemoveInstituteAccess(url)
+	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+	// Save the config
+	state.Config.Save(&state)
+	return nil
+}
+
+func (state *VPNState) RemoveCustomServer(url string) error {
+	if state.InFSMState(fsm.DEREGISTERED) {
+		return &types.WrappedErrorMessage{
+			Message: "failed to remove Custom Server",
+			Err:     fsm.DeregisteredError{}.CustomError(),
+		}
+	}
+	// No error because this is a NO-OP if the server doesn't exist
+	state.Servers.RemoveCustomServer(url)
+	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+	// Save the config
+	state.Config.Save(&state)
+	return nil
+}
+
 func (state *VPNState) GetConfigSecureInternet(
 	orgID string,
 	forceTCP bool,
