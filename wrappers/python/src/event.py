@@ -71,9 +71,6 @@ class EventHandler(object):
             func(other_state, data)
 
     def run(self, old_state: int, new_state: int, data: str) -> None:
-        if old_state == new_state:
-            return
-
         # First run leave transitions, then enter
         # The state is done when the wait event finishes
         self.run_state(old_state, new_state, StateType.Leave, data)
