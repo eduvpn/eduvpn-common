@@ -149,7 +149,7 @@ def get_error(ptr: c_void_p) -> str:
     error = get_ptr_error(ptr)
     if not error:
         return ""
-    return error.traceback
+    return error.cause
 
 
 def get_data_error(data_error: DataError) -> Tuple[str, str]:
