@@ -172,7 +172,9 @@ func (fsm *FSM) Init(
 					ASK_LOCATION,
 					"User chooses a Secure Internet server but no location is configured",
 				},
+				{NO_SERVER, "Go back or Error"},
 			},
+			BackState: NO_SERVER,
 		},
 		CHOSEN_SERVER: FSMState{
 			Transitions: []FSMTransition{
