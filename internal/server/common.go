@@ -318,7 +318,7 @@ func ShouldRenewButton(server Server) bool {
 	current := util.GetCurrentTime()
 
 	// Session is expired
-	if current.After(base.EndTime) {
+	if !current.Before(base.EndTime) {
 		return true
 	}
 
