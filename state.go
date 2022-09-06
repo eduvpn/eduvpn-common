@@ -79,11 +79,23 @@ func (state *VPNState) Register(
 		state.Logger.Log(log.LOG_INFO, "Previous configuration not found")
 	}
 
-	// Go to the No Server state with the saved servers
-	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+	discoServers, discoServersErr := state.GetDiscoServers()
 
-	state.GetDiscoServers()
-	state.GetDiscoOrganizations()
+	_, currentServerErr := state.Servers.GetCurrentServer()
+	// TODO: Log the error always
+	// Only actually return the error if we have no disco servers and no current server
+	if discoServersErr != nil && discoServers == "" && currentServerErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: discoServersErr}
+	}
+	discoOrgs, discoOrgsErr := state.GetDiscoOrganizations()
+
+	// TODO: Log the error always
+	// Only actually return the error if we have no disco servers and no current server
+	if discoOrgsErr != nil && discoOrgs == "" && currentServerErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: discoOrgsErr}
+	}
+	// Go to the No Server state with the saved servers
+	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), true)
 	return nil
 }
 
@@ -407,22 +419,10 @@ func (state *VPNState) ChangeSecureLocation() error {
 }
 
 func (state *VPNState) GetDiscoOrganizations() (string, error) {
-	if state.InFSMState(fsm.DEREGISTERED) {
-		return "", &types.WrappedErrorMessage{
-			Message: "failed to get the organizations with Discovery",
-			Err:     fsm.DeregisteredError{}.CustomError(),
-		}
-	}
 	return state.Discovery.GetOrganizationsList()
 }
 
 func (state *VPNState) GetDiscoServers() (string, error) {
-	if state.InFSMState(fsm.DEREGISTERED) {
-		return "", &types.WrappedErrorMessage{
-			Message: "failed to get the servers with Discovery",
-			Err:     fsm.DeregisteredError{}.CustomError(),
-		}
-	}
 	return state.Discovery.GetServersList()
 }
 
