@@ -598,7 +598,7 @@ func (state *VPNState) RenewSession() error {
 }
 
 func (state *VPNState) ShouldRenewButton() bool {
-	if !state.InFSMState(fsm.CONNECTED) {
+	if !state.InFSMState(fsm.CONNECTED) && !state.InFSMState(fsm.CONNECTING) && !state.InFSMState(fsm.HAS_CONFIG) && !state.InFSMState(fsm.DISCONNECTING) {
 		return false
 	}
 
