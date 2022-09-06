@@ -21,7 +21,7 @@ type VPNState struct {
 	Servers server.Servers `json:"servers"`
 
 	// The list of servers and organizations from disco
-	Discovery discovery.Discovery `json:"-"`
+	Discovery discovery.Discovery `json:"discovery"`
 
 	// The fsm
 	FSM fsm.FSM `json:"-"`
