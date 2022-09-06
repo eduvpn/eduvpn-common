@@ -197,7 +197,7 @@ func (state *VPNState) askSecureLocation() error {
 	// The state has changed, meaning setting the secure location was not successful
 	if state.FSM.Current != fsm.ASK_LOCATION {
 		// TODO: maybe a custom type for this errors.new?
-		return &types.WrappedErrorMessage{Message: "failed setting secure location", Err: errors.New("failed setting secure location due to state change. See the log file for more information")}
+		return &types.WrappedErrorMessage{Message: "failed setting secure location", Err: errors.New("failed setting secure location due to state change")}
 	}
 	return nil
 }
