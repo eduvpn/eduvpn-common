@@ -1,6 +1,7 @@
 package eduvpn
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/jwijenbergh/eduvpn-common/internal/config"
@@ -160,13 +161,18 @@ func (state *VPNState) getConfig(
 }
 
 func (state *VPNState) SetSecureLocation(countryCode string) error {
-	server, serverErr := state.Discovery.GetServerByCountryCode(countryCode, "secure_internet")
+	errorMessage := "failed asking secure location"
 
+	server, serverErr := state.Discovery.GetServerByCountryCode(countryCode, "secure_internet")
 	if serverErr != nil {
-		return &types.WrappedErrorMessage{Message: "failed asking secure location", Err: serverErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	state.Servers.SetSecureLocation(server, &state.FSM)
+	setLocationErr := state.Servers.SetSecureLocation(server, &state.FSM)
+	if setLocationErr != nil {
+		state.GoBack()
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: setLocationErr}
+	}
 	return nil
 }
 
@@ -175,6 +181,12 @@ func (state *VPNState) askSecureLocation() error {
 
 	// Ask for the location in the callback
 	state.FSM.GoTransitionWithData(fsm.ASK_LOCATION, locations, false)
+
+	// The state has changed, meaning setting the secure location was not successful
+	if state.FSM.Current != fsm.ASK_LOCATION {
+		// TODO: maybe a custom type for this errors.new?
+		return &types.WrappedErrorMessage{Message: "failed setting secure location", Err: errors.New("failed setting secure location due to state change. See the log file for more information")}
+	}
 	return nil
 }
 
