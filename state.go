@@ -281,6 +281,7 @@ func (state *VPNState) GetConfigSecureInternet(
 	server, serverErr := state.addSecureInternetHomeServer(orgID)
 
 	if serverErr != nil {
+		state.RemoveSecureInternet()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -326,6 +327,7 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 	server, serverErr := state.Servers.AddCustomServer(customServer, &state.FSM)
 
 	if serverErr != nil {
+		state.RemoveCustomServer(url)
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -340,6 +342,7 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 	server, serverErr := state.addInstituteServer(url)
 
 	if serverErr != nil {
+		state.RemoveInstituteAccess(url)
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -352,6 +355,8 @@ func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string,
 	server, serverErr := state.addCustomServer(url)
 
 	if serverErr != nil {
+		state.RemoveCustomServer(url)
+		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -584,7 +589,6 @@ func (state *VPNState) RenewSession() error {
 	loginErr := server.Login(currentServer)
 
 	if loginErr != nil {
-		// We are possibly in oauth started
 		// Go back
 		state.GoBack()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: loginErr}
