@@ -473,12 +473,12 @@ func getConfigWithProfile(server Server, forceTCP bool) (string, string, error) 
 	if baseErr != nil {
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
-	if !base.FSM.HasTransition(fsm.HAS_CONFIG) {
+	if !base.FSM.HasTransition(fsm.DISCONNECTED) {
 		return "", "", &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err: fsm.WrongStateTransitionError{
 				Got:  base.FSM.Current,
-				Want: fsm.HAS_CONFIG,
+				Want: fsm.DISCONNECTED,
 			}.CustomError(),
 		}
 	}

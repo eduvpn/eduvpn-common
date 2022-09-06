@@ -152,7 +152,7 @@ func (state *VPNState) getConfig(
 	}
 
 	// Signal the server display info
-	state.FSM.GoTransitionWithData(fsm.HAS_CONFIG, state.getServerInfoData(), false)
+	state.FSM.GoTransitionWithData(fsm.DISCONNECTED, state.getServerInfoData(), false)
 
 	// Save the config
 	state.Config.Save(&state)
@@ -522,16 +522,16 @@ func (state *VPNState) SetDisconnecting() error {
 
 func (state *VPNState) SetDisconnected(cleanup bool) error {
 	errorMessage := "failed to set disconnected"
-	if state.InFSMState(fsm.HAS_CONFIG) {
+	if state.InFSMState(fsm.DISCONNECTED) {
 		// already disconnected, show no error
 		return nil
 	}
-	if !state.FSM.HasTransition(fsm.HAS_CONFIG) {
+	if !state.FSM.HasTransition(fsm.DISCONNECTED) {
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err: fsm.WrongStateTransitionError{
 				Got:  state.FSM.Current,
-				Want: fsm.HAS_CONFIG,
+				Want: fsm.DISCONNECTED,
 			}.CustomError(),
 		}
 	}
@@ -555,7 +555,7 @@ func (state *VPNState) SetDisconnected(cleanup bool) error {
 		server.Disconnect(currentServer)
 	}
 
-	state.FSM.GoTransitionWithData(fsm.HAS_CONFIG, state.getServerInfoData(), false)
+	state.FSM.GoTransitionWithData(fsm.DISCONNECTED, state.getServerInfoData(), false)
 
 	return nil
 }
@@ -598,7 +598,7 @@ func (state *VPNState) RenewSession() error {
 }
 
 func (state *VPNState) ShouldRenewButton() bool {
-	if !state.InFSMState(fsm.CONNECTED) && !state.InFSMState(fsm.CONNECTING) && !state.InFSMState(fsm.HAS_CONFIG) && !state.InFSMState(fsm.DISCONNECTING) {
+	if !state.InFSMState(fsm.CONNECTED) && !state.InFSMState(fsm.CONNECTING) && !state.InFSMState(fsm.DISCONNECTED) && !state.InFSMState(fsm.DISCONNECTING) {
 		return false
 	}
 
