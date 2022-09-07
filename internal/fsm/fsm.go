@@ -1,14 +1,11 @@
 package fsm
 
 import (
-	"errors"
-	"fmt"
 	"os"
 	"os/exec"
+	"fmt"
 	"path"
 	"sort"
-
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
 )
 
 type (
@@ -26,85 +23,6 @@ func (v FSMStateIDSlice) Less(i, j int) bool {
 
 func (v FSMStateIDSlice) Swap(i, j int) {
 	v[i], v[j] = v[j], v[i]
-}
-
-const (
-	// Deregistered means the app is not registered with the wrapper
-	DEREGISTERED FSMStateID = iota
-
-	// No Server means the user has not chosen a server yet
-	NO_SERVER
-
-	// The user selected a Secure Internet server but needs to choose a location
-	ASK_LOCATION
-
-	// The user is currently selecting a server in the UI
-	SEARCH_SERVER
-
-	// We are loading the server details
-	LOADING_SERVER
-
-	// Chosen Server means the user has chosen a server to connect to
-	CHOSEN_SERVER
-
-	// OAuth Started means the OAuth process has started
-	OAUTH_STARTED
-
-	// Authorized means the OAuth process has finished and the user is now authorized with the server
-	AUTHORIZED
-
-	// Requested config means the user has requested a config for connecting
-	REQUEST_CONFIG
-
-	// Ask profile means the go code is asking for a profile selection from the UI
-	ASK_PROFILE
-
-	// Disconnected means the user has gotten a config for a server but is not connected yet
-	DISCONNECTED
-
-	// Disconnecting means the OS is disconnecting and the Go code is doing the /disconnect
-	DISCONNECTING
-
-	// Connecting means the OS is establishing a connection to the server
-	CONNECTING
-
-	// Connected means the user has been connected to the server
-	CONNECTED
-)
-
-func (s FSMStateID) String() string {
-	switch s {
-	case DEREGISTERED:
-		return "Deregistered"
-	case NO_SERVER:
-		return "No_Server"
-	case ASK_LOCATION:
-		return "Ask_Location"
-	case SEARCH_SERVER:
-		return "Search_Server"
-	case LOADING_SERVER:
-		return "Loading_Server"
-	case CHOSEN_SERVER:
-		return "Chosen_Server"
-	case OAUTH_STARTED:
-		return "OAuth_Started"
-	case DISCONNECTED:
-		return "Disconnected"
-	case REQUEST_CONFIG:
-		return "Request_Config"
-	case ASK_PROFILE:
-		return "Ask_Profile"
-	case AUTHORIZED:
-		return "Authorized"
-	case DISCONNECTING:
-		return "Disconnecting"
-	case CONNECTING:
-		return "Connecting"
-	case CONNECTED:
-		return "Connected"
-	default:
-		panic("unknown conversion of state to string")
-	}
 }
 
 type FSMTransition struct {
@@ -132,114 +50,24 @@ type FSM struct {
 	StateCallback func(FSMStateID, FSMStateID, interface{})
 	Directory     string
 	Debug         bool
+	GetName       func(FSMStateID) string
 }
 
 func (fsm *FSM) Init(
 	name string,
+	current FSMStateID,
+	states map[FSMStateID]FSMState,
 	callback func(FSMStateID, FSMStateID, interface{}),
 	directory string,
+	nameGen func(FSMStateID) string,
 	debug bool,
 ) {
-	fsm.States = FSMStates{
-		DEREGISTERED: FSMState{Transitions: []FSMTransition{{NO_SERVER, "Client registers"}}},
-		NO_SERVER: FSMState{
-			Transitions: []FSMTransition{
-				{NO_SERVER, "Reload list"},
-				{CHOSEN_SERVER, "User chooses a server"},
-				{SEARCH_SERVER, "The user is trying to choose a Server in the UI"},
-				{CONNECTED, "The user is already connected"},
-				{ASK_LOCATION, "Change the location in the main screen"},
-			},
-		},
-		SEARCH_SERVER: FSMState{
-			Transitions: []FSMTransition{
-				{LOADING_SERVER, "User clicks a server in the UI"},
-				{NO_SERVER, "Cancel or Error"},
-			},
-			BackState: NO_SERVER,
-		},
-		ASK_LOCATION: FSMState{
-			Transitions: []FSMTransition{
-				{CHOSEN_SERVER, "Location chosen"},
-				{NO_SERVER, "Go back or Error"},
-				{SEARCH_SERVER, "Cancel or Error"},
-			},
-		},
-		LOADING_SERVER: FSMState{
-			Transitions: []FSMTransition{
-				{CHOSEN_SERVER, "Server info loaded"},
-				{
-					ASK_LOCATION,
-					"User chooses a Secure Internet server but no location is configured",
-				},
-				{NO_SERVER, "Go back or Error"},
-			},
-			BackState: NO_SERVER,
-		},
-		CHOSEN_SERVER: FSMState{
-			Transitions: []FSMTransition{
-				{AUTHORIZED, "Found tokens in config"},
-				{OAUTH_STARTED, "No tokens found in config"},
-			},
-		},
-		OAUTH_STARTED: FSMState{
-			Transitions: []FSMTransition{
-				{AUTHORIZED, "User authorizes with browser"},
-				{NO_SERVER, "Cancel or Error"},
-				{SEARCH_SERVER, "Cancel or Error"},
-			},
-			BackState: NO_SERVER,
-		},
-		AUTHORIZED: FSMState{
-			Transitions: []FSMTransition{
-				{OAUTH_STARTED, "Re-authorize with OAuth"},
-				{REQUEST_CONFIG, "Client requests a config"},
-			},
-		},
-		REQUEST_CONFIG: FSMState{
-			Transitions: []FSMTransition{
-				{ASK_PROFILE, "Multiple profiles found and no profile chosen"},
-				{DISCONNECTED, "Only one profile or profile already chosen"},
-				{NO_SERVER, "Cancel or Error"},
-				{OAUTH_STARTED, "Re-authorize"},
-			},
-		},
-		ASK_PROFILE: FSMState{
-			Transitions: []FSMTransition{
-				{DISCONNECTED, "User chooses profile"},
-				{NO_SERVER, "Cancel or Error"},
-				{SEARCH_SERVER, "Cancel or Error"},
-			},
-		},
-		DISCONNECTED: FSMState{
-			Transitions: []FSMTransition{
-				{CONNECTING, "OS reports it is trying to connect"},
-				{REQUEST_CONFIG, "User reconnects"},
-				{NO_SERVER, "User wants to choose a new server"},
-				{OAUTH_STARTED, "Re-authorize with OAuth"},
-			},
-			BackState: NO_SERVER,
-		},
-		DISCONNECTING: FSMState{
-			Transitions: []FSMTransition{
-				{DISCONNECTED, "Cancel or Error"},
-				{DISCONNECTED, "Done disconnecting"},
-			},
-		},
-		CONNECTING: FSMState{
-			Transitions: []FSMTransition{
-				{DISCONNECTED, "Cancel or Error"},
-				{CONNECTED, "Done connecting"},
-			},
-		},
-		CONNECTED: FSMState{
-			Transitions: []FSMTransition{{DISCONNECTING, "App wants to disconnect"}},
-		},
-	}
-	fsm.Current = DEREGISTERED
+	fsm.States = states
+	fsm.Current = current
 	fsm.Name = name
 	fsm.StateCallback = callback
 	fsm.Directory = directory
+	fsm.GetName = nameGen
 	fsm.Debug = debug
 }
 
@@ -317,59 +145,21 @@ func (fsm *FSM) generateMermaidGraph() string {
 		transitions := fsm.States[state].Transitions
 		for _, transition := range transitions {
 			if state == fsm.Current {
-				graph += "\nstyle " + state.String() + " fill:cyan\n"
+				graph += "\nstyle " + fsm.GetName(state) + " fill:cyan\n"
 			} else {
-				graph += "\nstyle " + state.String() + " fill:white\n"
+				graph += "\nstyle " + fsm.GetName(state) + " fill:white\n"
 			}
-			graph += state.String() + "(" + state.String() + ") " + "-->|" + transition.Description + "| " + transition.To.String() + "\n"
+			graph += fsm.GetName(state) + "(" + fsm.GetName(state) + ") " + "-->|" + transition.Description + "| " + fsm.GetName(transition.To) + "\n"
 		}
 	}
 	return graph
 }
 
 func (fsm *FSM) GenerateGraph() string {
-	return fsm.generateMermaidGraph()
-}
-
-type DeregisteredError struct{}
-
-func (e DeregisteredError) CustomError() *types.WrappedErrorMessage {
-	return &types.WrappedErrorMessage{
-		Message: "Client not registered with the GO library",
-		Err: errors.New(
-			"the current FSM state is deregistered, but the function needs a state that is not deregistered",
-		),
+	if fsm.GetName != nil {
+		return fsm.generateMermaidGraph()
 	}
+
+	return ""
 }
 
-type WrongStateTransitionError struct {
-	Got  FSMStateID
-	Want FSMStateID
-}
-
-func (e WrongStateTransitionError) CustomError() *types.WrappedErrorMessage {
-	return &types.WrappedErrorMessage{
-		Message: "Wrong FSM transition",
-		Err: errors.New(
-			fmt.Sprintf(
-				"wrong FSM state, got: %s, want: a state with a transition to: %s",
-				e.Got.String(),
-				e.Want.String(),
-			),
-		),
-	}
-}
-
-type WrongStateError struct {
-	Got  FSMStateID
-	Want FSMStateID
-}
-
-func (e WrongStateError) CustomError() *types.WrappedErrorMessage {
-	return &types.WrappedErrorMessage{
-		Message: "Wrong FSM State",
-		Err: errors.New(
-			fmt.Sprintf("wrong FSM state, got: %s, want: %s", e.Got.String(), e.Want.String()),
-		),
-	}
-}

@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/jwijenbergh/eduvpn-common"
-	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 	"github.com/jwijenbergh/eduvpn-common/internal/server"
 )
 
@@ -94,16 +93,15 @@ func sendProfile(state *eduvpn.VPNState, data interface{}) {
 // Note that this has an additional argument, the vpn state which was wrapped into this callback function below
 func stateCallback(
 	state *eduvpn.VPNState,
-	oldState eduvpn.StateID,
-	newState eduvpn.StateID,
+	oldState eduvpn.FSMStateID,
+	newState eduvpn.FSMStateID,
 	data interface{},
 ) {
-	// TODO: Remove internal usage of fsm
-	if newState == fsm.OAUTH_STARTED {
+	if newState == eduvpn.STATE_OAUTH_STARTED {
 		openBrowser(data)
 	}
 
-	if newState == fsm.ASK_PROFILE {
+	if newState == eduvpn.STATE_ASK_PROFILE {
 		sendProfile(state, data)
 	}
 }
@@ -177,7 +175,7 @@ func getSecureInternetAll(homeURL string) {
 	state.Register(
 		"org.eduvpn.app.linux",
 		"configs",
-		func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
+		func(old eduvpn.FSMStateID, new eduvpn.FSMStateID, data interface{}) {
 			stateCallback(state, old, new, data)
 		},
 		true,
@@ -223,7 +221,7 @@ func printConfig(url string, serverType ServerTypes) {
 	state.Register(
 		"org.eduvpn.app.linux",
 		"configs",
-		func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
+		func(old eduvpn.FSMStateID, new eduvpn.FSMStateID, data interface{}) {
 			stateCallback(state, old, new, data)
 		},
 		true,

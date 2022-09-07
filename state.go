@@ -15,7 +15,6 @@ import (
 )
 
 type ServerInfo = server.ServerInfoScreen
-type StateID = fsm.FSMStateID
 
 type VPNState struct {
 	// The chosen server
@@ -44,14 +43,14 @@ func (state *VPNState) GetSavedServers() *server.ServersConfiguredScreen {
 func (state *VPNState) Register(
 	name string,
 	directory string,
-	stateCallback func(StateID, StateID, interface{}),
+	stateCallback func(FSMStateID, FSMStateID, interface{}),
 	debug bool,
 ) error {
 	errorMessage := "failed to register with the GO library"
-	if !state.InFSMState(fsm.DEREGISTERED) {
+	if !state.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
-			Err:     fsm.DeregisteredError{}.CustomError(),
+			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
 	// Initialize the logger
@@ -67,7 +66,7 @@ func (state *VPNState) Register(
 	}
 
 	// Initialize the FSM
-	state.FSM.Init(name, stateCallback, directory, debug)
+	state.FSM = newFSM(name, stateCallback, directory, debug)
 	state.Debug = debug
 
 	// Initialize the Config
@@ -95,7 +94,7 @@ func (state *VPNState) Register(
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: discoOrgsErr}
 	}
 	// Go to the No Server state with the saved servers
-	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), true)
+	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.GetSavedServers(), true)
 	return nil
 }
 
@@ -113,21 +112,21 @@ func (state *VPNState) Deregister() error {
 
 func (state *VPNState) GoBack() error {
 	errorMessage := "failed to go back"
-	if state.InFSMState(fsm.DEREGISTERED) {
+	if state.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
-			Err:     fsm.DeregisteredError{}.CustomError(),
+			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
 
 	// FIXME: Abitrary back transitions don't work because we need the approriate data
-	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.GetSavedServers(), false)
 	// state.FSM.GoBack()
 	return nil
 }
 
 func (state *VPNState) doAuth(authURL string) error {
-	state.FSM.GoTransitionWithData(fsm.OAUTH_STARTED, authURL, true)
+	state.FSM.GoTransitionWithData(STATE_OAUTH_STARTED, authURL, true)
 	return nil
 }
 
@@ -145,7 +144,7 @@ func (state *VPNState) ensureLogin(chosenServer server.Server) error {
 		}
 	}
 	// OAuth was valid, ensure we are in the authorized state
-	state.FSM.GoTransition(fsm.AUTHORIZED)
+	state.FSM.GoTransition(STATE_AUTHORIZED)
 	return nil
 }
 
@@ -154,7 +153,7 @@ func (state *VPNState) getConfigAuth(chosenServer server.Server, forceTCP bool) 
 	if loginErr != nil {
 		return "", "", loginErr
 	}
-	state.FSM.GoTransition(fsm.REQUEST_CONFIG)
+	state.FSM.GoTransition(STATE_REQUEST_CONFIG)
 
 	validProfile, profileErr := server.HasValidProfile(chosenServer)
 	if profileErr != nil {
@@ -198,10 +197,10 @@ func (state *VPNState) getConfig(
 	forceTCP bool,
 ) (string, string, error) {
 	errorMessage := "failed to get a configuration for OpenVPN/Wireguard"
-	if state.InFSMState(fsm.DEREGISTERED) {
+	if state.InFSMState(STATE_DEREGISTERED) {
 		return "", "", &types.WrappedErrorMessage{
 			Message: errorMessage,
-			Err:     fsm.DeregisteredError{}.CustomError(),
+			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
 
@@ -214,7 +213,7 @@ func (state *VPNState) getConfig(
 	}
 
 	// Signal the server display info
-	state.FSM.GoTransitionWithData(fsm.DISCONNECTED, state.getServerInfoData(), false)
+	state.FSM.GoTransitionWithData(STATE_DISCONNECTED, state.getServerInfoData(), false)
 
 	// Save the config
 	state.Config.Save(&state)
@@ -243,7 +242,7 @@ func (state *VPNState) askProfile(chosenServer server.Server) error {
 	if baseErr != nil {
 		return &types.WrappedErrorMessage{Message: "failed asking for profiles", Err: baseErr}
 	}
-	state.FSM.GoTransitionWithData(fsm.ASK_PROFILE, &base.Profiles, false)
+	state.FSM.GoTransitionWithData(STATE_ASK_PROFILE, &base.Profiles, false)
 	return nil
 }
 
@@ -251,10 +250,10 @@ func (state *VPNState) askSecureLocation() error {
 	locations := state.Discovery.GetSecureLocationList()
 
 	// Ask for the location in the callback
-	state.FSM.GoTransitionWithData(fsm.ASK_LOCATION, locations, false)
+	state.FSM.GoTransitionWithData(STATE_ASK_LOCATION, locations, false)
 
 	// The state has changed, meaning setting the secure location was not successful
-	if state.FSM.Current != fsm.ASK_LOCATION {
+	if state.FSM.Current != STATE_ASK_LOCATION {
 		// TODO: maybe a custom type for this errors.new?
 		return &types.WrappedErrorMessage{Message: "failed setting secure location", Err: errors.New("failed setting secure location due to state change")}
 	}
@@ -296,45 +295,45 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 }
 
 func (state *VPNState) RemoveSecureInternet() error {
-	if state.InFSMState(fsm.DEREGISTERED) {
+	if state.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
 			Message: "failed to remove Secure Internet",
-			Err:     fsm.DeregisteredError{}.CustomError(),
+			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
 	// No error because we can only have one secure internet server and if there are no secure internet servers, this is a NO-OP
 	state.Servers.RemoveSecureInternet()
-	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.GetSavedServers(), false)
 	// Save the config
 	state.Config.Save(&state)
 	return nil
 }
 
 func (state *VPNState) RemoveInstituteAccess(url string) error {
-	if state.InFSMState(fsm.DEREGISTERED) {
+	if state.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
 			Message: "failed to remove Institute Access",
-			Err:     fsm.DeregisteredError{}.CustomError(),
+			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
 	// No error because this is a NO-OP if the server doesn't exist
 	state.Servers.RemoveInstituteAccess(url)
-	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.GetSavedServers(), false)
 	// Save the config
 	state.Config.Save(&state)
 	return nil
 }
 
 func (state *VPNState) RemoveCustomServer(url string) error {
-	if state.InFSMState(fsm.DEREGISTERED) {
+	if state.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
 			Message: "failed to remove Custom Server",
-			Err:     fsm.DeregisteredError{}.CustomError(),
+			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
 	// No error because this is a NO-OP if the server doesn't exist
 	state.Servers.RemoveCustomServer(url)
-	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.GetSavedServers(), false)
 	// Save the config
 	state.Config.Save(&state)
 	return nil
@@ -348,7 +347,7 @@ func (state *VPNState) GetConfigSecureInternet(
 		"failed getting a configuration for Secure Internet organization %s",
 		orgID,
 	)
-	state.FSM.GoTransition(fsm.LOADING_SERVER)
+	state.FSM.GoTransition(STATE_LOADING_SERVER)
 	server, serverErr := state.addSecureInternetHomeServer(orgID)
 
 	if serverErr != nil {
@@ -356,7 +355,7 @@ func (state *VPNState) GetConfigSecureInternet(
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	state.FSM.GoTransition(fsm.CHOSEN_SERVER)
+	state.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
 	return state.getConfig(server, forceTCP)
 }
@@ -374,7 +373,7 @@ func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	state.FSM.GoTransition(fsm.CHOSEN_SERVER)
+	state.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
 	return server, nil
 }
@@ -402,14 +401,14 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	state.FSM.GoTransition(fsm.CHOSEN_SERVER)
+	state.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
 	return server, nil
 }
 
 func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for Institute Access %s", url)
-	state.FSM.GoTransition(fsm.LOADING_SERVER)
+	state.FSM.GoTransition(STATE_LOADING_SERVER)
 	server, serverErr := state.addInstituteServer(url)
 
 	if serverErr != nil {
@@ -422,7 +421,7 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 
 func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for custom server %s", url)
-	state.FSM.GoTransition(fsm.LOADING_SERVER)
+	state.FSM.GoTransition(STATE_LOADING_SERVER)
 	server, serverErr := state.addCustomServer(url)
 
 	if serverErr != nil {
@@ -436,12 +435,12 @@ func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string,
 
 func (state *VPNState) CancelOAuth() error {
 	errorMessage := "failed to cancel OAuth"
-	if !state.InFSMState(fsm.OAUTH_STARTED) {
+	if !state.InFSMState(STATE_OAUTH_STARTED) {
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
-			Err: fsm.WrongStateError{
+			Err: FSMWrongStateError{
 				Got:  state.FSM.Current,
-				Want: fsm.OAUTH_STARTED,
+				Want: STATE_OAUTH_STARTED,
 			}.CustomError(),
 		}
 	}
@@ -458,10 +457,10 @@ func (state *VPNState) CancelOAuth() error {
 func (state *VPNState) ChangeSecureLocation() error {
 	errorMessage := "failed to change location from the main screen"
 
-	if !state.InFSMState(fsm.NO_SERVER) {
+	if !state.InFSMState(STATE_NO_SERVER) {
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
-			Err:     fsm.WrongStateError{Got: state.FSM.Current, Want: fsm.NO_SERVER}.CustomError(),
+			Err:     FSMWrongStateError{Got: state.FSM.Current, Want: STATE_NO_SERVER}.CustomError(),
 		}
 	}
 
@@ -472,7 +471,7 @@ func (state *VPNState) ChangeSecureLocation() error {
 	}
 
 	// Go back to the main screen
-	state.FSM.GoTransitionWithData(fsm.NO_SERVER, state.GetSavedServers(), false)
+	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.GetSavedServers(), false)
 
 	return nil
 }
@@ -502,17 +501,17 @@ func (state *VPNState) SetProfileID(profileID string) error {
 }
 
 func (state *VPNState) SetSearchServer() error {
-	if !state.FSM.HasTransition(fsm.SEARCH_SERVER) {
+	if !state.FSM.HasTransition(STATE_SEARCH_SERVER) {
 		return &types.WrappedErrorMessage{
 			Message: "failed to set search server",
-			Err: fsm.WrongStateTransitionError{
+			Err: FSMWrongStateTransitionError{
 				Got:  state.FSM.Current,
-				Want: fsm.CONNECTED,
+				Want: STATE_CONNECTED,
 			}.CustomError(),
 		}
 	}
 
-	state.FSM.GoTransition(fsm.SEARCH_SERVER)
+	state.FSM.GoTransition(STATE_SEARCH_SERVER)
 	return nil
 }
 
@@ -523,74 +522,74 @@ func (state *VPNState) getServerInfoData() *server.ServerInfoScreen {
 }
 
 func (state *VPNState) SetConnected() error {
-	if state.InFSMState(fsm.CONNECTED) {
+	if state.InFSMState(STATE_CONNECTED) {
 		// already connected, show no error
 		return nil
 	}
-	if !state.FSM.HasTransition(fsm.CONNECTED) {
+	if !state.FSM.HasTransition(STATE_CONNECTED) {
 		return &types.WrappedErrorMessage{
 			Message: "failed to set connected",
-			Err: fsm.WrongStateTransitionError{
+			Err: FSMWrongStateTransitionError{
 				Got:  state.FSM.Current,
-				Want: fsm.CONNECTED,
+				Want: STATE_CONNECTED,
 			}.CustomError(),
 		}
 	}
 
-	state.FSM.GoTransitionWithData(fsm.CONNECTED, state.getServerInfoData(), false)
+	state.FSM.GoTransitionWithData(STATE_CONNECTED, state.getServerInfoData(), false)
 	return nil
 }
 
 func (state *VPNState) SetConnecting() error {
-	if state.InFSMState(fsm.CONNECTING) {
+	if state.InFSMState(STATE_CONNECTING) {
 		// already loading connection, show no error
 		return nil
 	}
-	if !state.FSM.HasTransition(fsm.CONNECTING) {
+	if !state.FSM.HasTransition(STATE_CONNECTING) {
 		return &types.WrappedErrorMessage{
 			Message: "failed to set connecting",
-			Err: fsm.WrongStateTransitionError{
+			Err: FSMWrongStateTransitionError{
 				Got:  state.FSM.Current,
-				Want: fsm.CONNECTING,
+				Want: STATE_CONNECTING,
 			}.CustomError(),
 		}
 	}
 
-	state.FSM.GoTransition(fsm.CONNECTING)
+	state.FSM.GoTransition(STATE_CONNECTING)
 	return nil
 }
 
 func (state *VPNState) SetDisconnecting() error {
-	if state.InFSMState(fsm.DISCONNECTING) {
+	if state.InFSMState(STATE_DISCONNECTING) {
 		// already disconnecting, show no error
 		return nil
 	}
-	if !state.FSM.HasTransition(fsm.DISCONNECTING) {
+	if !state.FSM.HasTransition(STATE_DISCONNECTING) {
 		return &types.WrappedErrorMessage{
 			Message: "failed to set disconnecting",
-			Err: fsm.WrongStateTransitionError{
+			Err: FSMWrongStateTransitionError{
 				Got:  state.FSM.Current,
-				Want: fsm.DISCONNECTING,
+				Want: STATE_DISCONNECTING,
 			}.CustomError(),
 		}
 	}
 
-	state.FSM.GoTransitionWithData(fsm.DISCONNECTING, state.getServerInfoData(), false)
+	state.FSM.GoTransitionWithData(STATE_DISCONNECTING, state.getServerInfoData(), false)
 	return nil
 }
 
 func (state *VPNState) SetDisconnected(cleanup bool) error {
 	errorMessage := "failed to set disconnected"
-	if state.InFSMState(fsm.DISCONNECTED) {
+	if state.InFSMState(STATE_DISCONNECTED) {
 		// already disconnected, show no error
 		return nil
 	}
-	if !state.FSM.HasTransition(fsm.DISCONNECTED) {
+	if !state.FSM.HasTransition(STATE_DISCONNECTED) {
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
-			Err: fsm.WrongStateTransitionError{
+			Err: FSMWrongStateTransitionError{
 				Got:  state.FSM.Current,
-				Want: fsm.DISCONNECTED,
+				Want: STATE_DISCONNECTED,
 			}.CustomError(),
 		}
 	}
@@ -605,7 +604,7 @@ func (state *VPNState) SetDisconnected(cleanup bool) error {
 		server.Disconnect(currentServer)
 	}
 
-	state.FSM.GoTransitionWithData(fsm.DISCONNECTED, state.getServerInfoData(), false)
+	state.FSM.GoTransitionWithData(STATE_DISCONNECTED, state.getServerInfoData(), false)
 
 	return nil
 }
@@ -630,7 +629,7 @@ func (state *VPNState) RenewSession() error {
 }
 
 func (state *VPNState) ShouldRenewButton() bool {
-	if !state.InFSMState(fsm.CONNECTED) && !state.InFSMState(fsm.CONNECTING) && !state.InFSMState(fsm.DISCONNECTED) && !state.InFSMState(fsm.DISCONNECTING) {
+	if !state.InFSMState(STATE_CONNECTED) && !state.InFSMState(STATE_CONNECTING) && !state.InFSMState(STATE_DISCONNECTED) && !state.InFSMState(STATE_DISCONNECTING) {
 		return false
 	}
 
@@ -650,7 +649,7 @@ func (state *VPNState) ShouldRenewButton() bool {
 	return server.ShouldRenewButton(currentServer)
 }
 
-func (state *VPNState) InFSMState(checkState StateID) bool {
+func (state *VPNState) InFSMState(checkState FSMStateID) bool {
 	return state.FSM.InState(checkState)
 }
 

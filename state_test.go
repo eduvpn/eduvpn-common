@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
 	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
 	"github.com/jwijenbergh/eduvpn-common/internal/server"
@@ -63,12 +62,12 @@ func loginOAuthSelenium(t *testing.T, url string, state *VPNState) {
 
 func stateCallback(
 	t *testing.T,
-	oldState StateID,
-	newState StateID,
+	oldState FSMStateID,
+	newState FSMStateID,
 	data interface{},
 	state *VPNState,
 ) {
-	if newState == fsm.OAUTH_STARTED {
+	if newState == STATE_OAUTH_STARTED {
 		url, ok := data.(string)
 
 		if !ok {
@@ -86,7 +85,7 @@ func Test_server(t *testing.T) {
 	state.Register(
 		"org.eduvpn.app.linux",
 		"configstest",
-		func(old StateID, new StateID, data interface{}) {
+		func(old FSMStateID, new FSMStateID, data interface{}) {
 			stateCallback(t, old, new, data, state)
 		},
 		false,
@@ -111,8 +110,8 @@ func test_connect_oauth_parameter(
 	state.Register(
 		"org.eduvpn.app.linux",
 		configDirectory,
-		func(oldState StateID, newState StateID, data interface{}) {
-			if newState == fsm.OAUTH_STARTED {
+		func(oldState FSMStateID, newState FSMStateID, data interface{}) {
+			if newState == STATE_OAUTH_STARTED {
 				baseURL := "http://127.0.0.1:8000/callback"
 				url, err := httpw.HTTPConstructURL(baseURL, parameters)
 				if err != nil {
@@ -190,7 +189,7 @@ func Test_token_expired(t *testing.T) {
 	state.Register(
 		"org.eduvpn.app.linux",
 		"configsexpired",
-		func(old StateID, new StateID, data interface{}) {
+		func(old FSMStateID, new FSMStateID, data interface{}) {
 			stateCallback(t, old, new, data, state)
 		},
 		false,
@@ -243,7 +242,7 @@ func Test_token_invalid(t *testing.T) {
 	state.Register(
 		"org.eduvpn.app.linux",
 		"configsinvalid",
-		func(old StateID, new StateID, data interface{}) {
+		func(old FSMStateID, new FSMStateID, data interface{}) {
 			stateCallback(t, old, new, data, state)
 		},
 		false,
@@ -293,7 +292,7 @@ func Test_invalid_profile_corrected(t *testing.T) {
 	state.Register(
 		"org.eduvpn.app.linux",
 		"configscancelprofile",
-		func(old StateID, new StateID, data interface{}) {
+		func(old FSMStateID, new FSMStateID, data interface{}) {
 			stateCallback(t, old, new, data, state)
 		},
 		false,

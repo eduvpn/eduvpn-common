@@ -28,8 +28,8 @@ var VPNStates map[string]*eduvpn.VPNState
 
 func StateCallback(
 	name string,
-	old_state eduvpn.StateID,
-	new_state eduvpn.StateID,
+	old_state eduvpn.FSMStateID,
+	new_state eduvpn.FSMStateID,
 	data interface{},
 ) {
 	P_StateCallback, exists := P_StateCallbacks[name]
@@ -86,7 +86,7 @@ func Register(
 	registerErr := state.Register(
 		nameStr,
 		C.GoString(config_directory),
-		func(old eduvpn.StateID, new eduvpn.StateID, data interface{}) {
+		func(old eduvpn.FSMStateID, new eduvpn.FSMStateID, data interface{}) {
 			StateCallback(nameStr, old, new, data)
 		},
 		debug != 0,
@@ -367,7 +367,7 @@ func InFSMState(name *C.char, checkState C.int) C.int {
 	if stateErr != nil {
 		return C.int(0)
 	}
-	inStateBool := state.InFSMState(eduvpn.StateID(checkState))
+	inStateBool := state.InFSMState(eduvpn.FSMStateID(checkState))
 	if inStateBool {
 		return C.int(1)
 	}
