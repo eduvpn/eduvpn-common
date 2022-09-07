@@ -36,24 +36,24 @@ def login_oauth(driver, authURL):
         sys.exit(1)
 
     # Fill in username
-    elem = driver.find_element_by_name("userName")
+    elem = driver.find_element("name", "userName")
     elem.clear()
     elem.send_keys(portal_user)
 
     # Fill in password
-    elem = driver.find_element_by_name("userPass")
+    elem = driver.find_element("name", "userPass")
     elem.clear()
     elem.send_keys(portal_pass)
 
     # Click login button
-    driver.find_element_by_css_selector(
+    driver.find_element("css selector",
         ".frm > fieldset:nth-child(2) > button:nth-child(2)"
     ).click()
 
     # Check that we have reached the approve application page
     assert "VPN Portal - Approve Application" in driver.title
     # Click approve
-    driver.find_element_by_css_selector(
+    driver.find_element("css selector",
         ".frm > fieldset:nth-child(1) > button:nth-child(1)"
     ).click()
 
