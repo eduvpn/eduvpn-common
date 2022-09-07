@@ -10,7 +10,6 @@ import (
 
 	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
-	"github.com/jwijenbergh/eduvpn-common/internal/util"
 )
 
 func APIGetEndpoints(baseURL string) (*ServerEndpoints, error) {
@@ -51,19 +50,14 @@ func apiAuthorized(
 
 	url := base.Endpoints.API.V3.API + endpoint
 
-	// Ensure we have valid tokens
-	stateBefore := base.FSM.Current
+	// Make sure the tokens are valid, this will return an error if re-login is needed
 	oauthErr := EnsureTokens(server)
-
-	// we reset the state so that we go from the authorized state to the state we want
-	base.FSM.Current = stateBefore
-
 	if oauthErr != nil {
 		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: oauthErr}
 	}
 
 	headerKey := "Authorization"
-	headerValue := fmt.Sprintf("Bearer %s", server.GetOAuth().Token.Access)
+	headerValue := fmt.Sprintf("Bearer %s", GetHeaderToken(server))
 	if opts.Headers != nil {
 		opts.Headers.Add(headerKey, headerValue)
 	} else {
@@ -86,8 +80,8 @@ func apiAuthorizedRetry(
 
 		// Only retry authorized if we get a HTTP 401
 		if errors.As(bodyErr, &error) && error.Status == 401 {
-			// Tell the method that the token is expired
-			server.GetOAuth().Token.ExpiredTimestamp = util.GetCurrentTime()
+			// Mark the token as expired and retry so we trigger the refresh flow
+			MarkTokenExpired(server)
 			retryHeader, retryBody, retryErr := apiAuthorized(server, method, endpoint, opts)
 			if retryErr != nil {
 				return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: retryErr}
@@ -205,6 +199,7 @@ func APIConnectOpenVPN(server Server, profile_id string) (string, time.Time, err
 }
 
 // This needs no further return value as it's best effort
+// FIXME: doAuth should not be needed here
 func APIDisconnect(server Server) {
 	apiAuthorized(server, http.MethodPost, "/disconnect", nil)
 }

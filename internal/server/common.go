@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
@@ -22,7 +21,6 @@ type ServerBase struct {
 	StartTime      time.Time         `json:"start_time"`
 	EndTime        time.Time         `json:"expire_time"`
 	Type           string            `json:"server_type"`
-	FSM            *fsm.FSM          `json:"-"`
 }
 
 type ServerType int8
@@ -214,7 +212,6 @@ func (servers *Servers) GetCurrentServerInfo() (*ServerInfoScreen, error) {
 func (servers *Servers) addInstituteAndCustom(
 	discoServer *types.DiscoveryServer,
 	isCustom bool,
-	fsm *fsm.FSM,
 ) (Server, error) {
 	url := discoServer.BaseURL
 	errorMessage := fmt.Sprintf("failed adding institute access server: %s", url)
@@ -244,7 +241,6 @@ func (servers *Servers) addInstituteAndCustom(
 		discoServer.DisplayName,
 		discoServer.Type,
 		discoServer.SupportContact,
-		fsm,
 	)
 	if instituteInitErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: instituteInitErr}
@@ -256,16 +252,14 @@ func (servers *Servers) addInstituteAndCustom(
 
 func (servers *Servers) AddInstituteAccessServer(
 	instituteServer *types.DiscoveryServer,
-	fsm *fsm.FSM,
 ) (Server, error) {
-	return servers.addInstituteAndCustom(instituteServer, false, fsm)
+	return servers.addInstituteAndCustom(instituteServer, false)
 }
 
 func (servers *Servers) AddCustomServer(
 	customServer *types.DiscoveryServer,
-	fsm *fsm.FSM,
 ) (Server, error) {
-	return servers.addInstituteAndCustom(customServer, true, fsm)
+	return servers.addInstituteAndCustom(customServer, true)
 }
 
 func (servers *Servers) GetSecureLocation() string {
@@ -274,11 +268,10 @@ func (servers *Servers) GetSecureLocation() string {
 
 func (servers *Servers) SetSecureLocation(
 	chosenLocationServer *types.DiscoveryServer,
-	fsm *fsm.FSM,
 ) error {
 	errorMessage := "failed to set secure location"
 	// Make sure to add the current location
-	_, addLocationErr := servers.SecureInternetHomeServer.addLocation(chosenLocationServer, fsm)
+	_, addLocationErr := servers.SecureInternetHomeServer.addLocation(chosenLocationServer)
 
 	if addLocationErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: addLocationErr}
@@ -291,12 +284,11 @@ func (servers *Servers) SetSecureLocation(
 func (servers *Servers) AddSecureInternet(
 	secureOrg *types.DiscoveryOrganization,
 	secureServer *types.DiscoveryServer,
-	fsm *fsm.FSM,
 ) (Server, error) {
 	errorMessage := "failed adding secure internet server"
 	// If we have specified an organization ID
 	// We also need to get an authorization template
-	initErr := servers.SecureInternetHomeServer.init(secureOrg, secureServer, fsm)
+	initErr := servers.SecureInternetHomeServer.init(secureOrg, secureServer)
 
 	if initErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: initErr}
@@ -342,24 +334,28 @@ func ShouldRenewButton(server Server) bool {
 	return true
 }
 
-func Login(server Server) error {
-	return server.GetOAuth().Login("org.eduvpn.app.linux", server.GetTemplateAuth())
+func Login(server Server, doAuth func(string) error) error {
+	return server.GetOAuth().Login("org.eduvpn.app.linux", server.GetTemplateAuth(), doAuth)
+}
+
+func GetHeaderToken(server Server) string {
+	return server.GetOAuth().Token.Access
+}
+
+func MarkTokenExpired(server Server) {
+	server.GetOAuth().Token.ExpiredTimestamp = util.GetCurrentTime()
 }
 
 func EnsureTokens(server Server) error {
-	errorMessage := "failed ensuring server tokens"
-	if server.GetOAuth().NeedsRelogin() {
-		loginErr := Login(server)
-
-		if loginErr != nil {
-			return &types.WrappedErrorMessage{Message: errorMessage, Err: loginErr}
-		}
+	ensureErr := server.GetOAuth().EnsureTokens()
+	if ensureErr != nil {
+		return &types.WrappedErrorMessage{Message: "failed ensuring server tokens", Err: ensureErr}
 	}
 	return nil
 }
 
 func NeedsRelogin(server Server) bool {
-	return server.GetOAuth().NeedsRelogin()
+	return EnsureTokens(server) != nil
 }
 
 func CancelOAuth(server Server) {
@@ -466,24 +462,45 @@ func openVPNGetConfig(server Server) (string, string, error) {
 	return configOpenVPN, "openvpn", nil
 }
 
-func getConfigWithProfile(server Server, forceTCP bool) (string, string, error) {
-	errorMessage := "failed getting an OpenVPN/WireGuard configuration with a profile"
-	base, baseErr := server.GetBase()
+func HasValidProfile(server Server) (bool, error) {
+	errorMessage := "failed has valid profile check"
 
-	if baseErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+	// Get new profiles using the info call
+	// This does not override the current profile
+	infoErr := APIInfo(server)
+	if infoErr != nil {
+		return false, &types.WrappedErrorMessage{Message: errorMessage, Err: infoErr}
 	}
-	if !base.FSM.HasTransition(fsm.DISCONNECTED) {
-		return "", "", &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err: fsm.WrongStateTransitionError{
-				Got:  base.FSM.Current,
-				Want: fsm.DISCONNECTED,
-			}.CustomError(),
+
+	base, baseErr := server.GetBase()
+	if baseErr != nil {
+		return false, &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+	}
+
+	// If there was a profile chosen and it doesn't exist anymore, reset it
+	if base.Profiles.Current != "" {
+		_, existsProfileErr := getCurrentProfile(server)
+		if existsProfileErr != nil {
+			base.Profiles.Current = ""
 		}
 	}
-	profile, profileErr := getCurrentProfile(server)
 
+	// Set the current profile if there is only one profile or profile is already selected
+	if len(base.Profiles.Info.ProfileList) == 1 || base.Profiles.Current != "" {
+		// Set the first profile if none is selected
+		if base.Profiles.Current == "" {
+			base.Profiles.Current = base.Profiles.Info.ProfileList[0].ID
+		}
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func GetConfig(server Server, forceTCP bool) (string, string, error) {
+	errorMessage := "failed getting an OpenVPN/WireGuard configuration"
+
+	profile, profileErr := getCurrentProfile(server)
 	if profileErr != nil {
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: profileErr}
 	}
@@ -516,76 +533,6 @@ func getConfigWithProfile(server Server, forceTCP bool) (string, string, error) 
 	}
 
 	return config, configType, nil
-}
-
-func askForProfileID(server Server) error {
-	errorMessage := "failed asking for a server profile ID"
-	base, baseErr := server.GetBase()
-
-	if baseErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
-	}
-	if !base.FSM.HasTransition(fsm.ASK_PROFILE) {
-		return &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err: fsm.WrongStateTransitionError{
-				Got:  base.FSM.Current,
-				Want: fsm.ASK_PROFILE,
-			}.CustomError(),
-		}
-	}
-	base.FSM.GoTransitionWithData(fsm.ASK_PROFILE, &base.Profiles, false)
-	return nil
-}
-
-func GetConfig(server Server, forceTCP bool) (string, string, error) {
-	errorMessage := "failed getting an OpenVPN/WireGuard configuration"
-	base, baseErr := server.GetBase()
-
-	if baseErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
-	}
-	if !base.FSM.InState(fsm.REQUEST_CONFIG) {
-		return "", "", &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err: fsm.WrongStateError{
-				Got:  base.FSM.Current,
-				Want: fsm.REQUEST_CONFIG,
-			}.CustomError(),
-		}
-	}
-
-	// Get new profiles using the info call
-	// This does not override the current profile
-	infoErr := APIInfo(server)
-	if infoErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: infoErr}
-	}
-
-	// If there was a profile chosen and it doesn't exist anymore, reset it
-	if base.Profiles.Current != "" {
-		_, existsProfileErr := getCurrentProfile(server)
-		if existsProfileErr != nil {
-			base.Profiles.Current = ""
-		}
-	}
-
-	// Set the current profile if there is only one profile or profile is already selected
-	if len(base.Profiles.Info.ProfileList) == 1 || base.Profiles.Current != "" {
-		// Set the first profile if none is selected
-		if base.Profiles.Current == "" {
-			base.Profiles.Current = base.Profiles.Info.ProfileList[0].ID
-		}
-		return getConfigWithProfile(server, forceTCP)
-	}
-
-	profileErr := askForProfileID(server)
-
-	if profileErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: profileErr}
-	}
-
-	return getConfigWithProfile(server, forceTCP)
 }
 
 func Disconnect(server Server) {

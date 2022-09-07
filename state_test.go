@@ -123,7 +123,6 @@ func test_connect_oauth_parameter(
 					)
 				}
 				go http.Get(url)
-
 			}
 		},
 		false,
@@ -216,10 +215,10 @@ func Test_token_expired(t *testing.T) {
 	// Wait for TTL so that the tokens expire
 	time.Sleep(time.Duration(expiredInt) * time.Second)
 
-	infoErr := server.APIInfo(currentServer)
+	_, _, configErr = state.GetConfigCustomServer(serverURI, false)
 
-	if infoErr != nil {
-		t.Fatalf("Info error after expired: %v", infoErr)
+	if configErr != nil {
+		t.Fatalf("Connect error after expiry: %v", configErr)
 	}
 
 	// Check if tokens have changed
@@ -255,11 +254,6 @@ func Test_token_invalid(t *testing.T) {
 	if configErr != nil {
 		t.Fatalf("Connect error before invalid: %v", configErr)
 	}
-
-	// Go to request_config so we can re-authorize
-	// This is needed as the only actual authenticated requests we do in request_config (for profiles) and /connect
-	// /disconnect is best effort so this does not need re-auth
-	state.FSM.GoTransition(fsm.REQUEST_CONFIG)
 
 	dummy_value := "37"
 

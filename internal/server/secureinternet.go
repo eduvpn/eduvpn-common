@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
 	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
 	"github.com/jwijenbergh/eduvpn-common/internal/types"
 	"github.com/jwijenbergh/eduvpn-common/internal/util"
@@ -70,7 +69,6 @@ func (servers *Servers) HasSecureLocation() bool {
 
 func (secure *SecureInternetHomeServer) addLocation(
 	locationServer *types.DiscoveryServer,
-	fsm *fsm.FSM,
 ) (*ServerBase, error) {
 	errorMessage := "failed adding a location"
 	// Initialize the base map if it is non-nil
@@ -95,9 +93,6 @@ func (secure *SecureInternetHomeServer) addLocation(
 		base.Endpoints = *endpoints
 	}
 
-	// Pass the fsm
-	base.FSM = fsm
-
 	// Ensure it is in the map
 	secure.BaseMap[locationServer.CountryCode] = base
 	return base, nil
@@ -107,7 +102,6 @@ func (secure *SecureInternetHomeServer) addLocation(
 func (secure *SecureInternetHomeServer) init(
 	homeOrg *types.DiscoveryOrganization,
 	homeLocation *types.DiscoveryServer,
-	fsm *fsm.FSM,
 ) error {
 	errorMessage := "failed initializing secure internet home server"
 
@@ -123,14 +117,14 @@ func (secure *SecureInternetHomeServer) init(
 	// Make sure to set the authorization URL template
 	secure.AuthorizationTemplate = homeLocation.AuthenticationURLTemplate
 
-	base, baseErr := secure.addLocation(homeLocation, fsm)
+	base, baseErr := secure.addLocation(homeLocation)
 
 	if baseErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 
 	// Make sure oauth contains our endpoints
-	secure.OAuth.Init(base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token, fsm)
+	secure.OAuth.Init(base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token)
 	return nil
 }
 
