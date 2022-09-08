@@ -334,8 +334,12 @@ func ShouldRenewButton(server Server) bool {
 	return true
 }
 
-func Login(server Server, doAuth func(string) error) error {
-	return server.GetOAuth().Login("org.eduvpn.app.linux", server.GetTemplateAuth(), doAuth)
+func GetOAuthURL(server Server, name string) (string, error) {
+	return server.GetOAuth().GetAuthURL(name, server.GetTemplateAuth())
+}
+
+func OAuthExchange(server Server) error {
+	return server.GetOAuth().Exchange()
 }
 
 func GetHeaderToken(server Server) string {

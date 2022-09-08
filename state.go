@@ -131,16 +131,24 @@ func (state *VPNState) doAuth(authURL string) error {
 }
 
 func (state *VPNState) ensureLogin(chosenServer server.Server) error {
+	errorMessage := "failed ensuring login"
 	// Relogin with oauth
 	// This moves the state to authorized
 	if server.NeedsRelogin(chosenServer) {
-		loginErr := server.Login(chosenServer, state.doAuth)
+		url, urlErr := server.GetOAuthURL(chosenServer, state.FSM.Name)
 
-		if loginErr != nil {
-			// We are possibly in oauth started
-			// Go back
+		state.FSM.GoTransitionWithData(STATE_OAUTH_STARTED, url, true)
+
+		if urlErr != nil {
 			state.GoBack()
-			return &types.WrappedErrorMessage{Message: "failed ensuring login", Err: loginErr}
+			return &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
+		}
+
+		exchangeErr := server.OAuthExchange(chosenServer)
+
+		if exchangeErr != nil {
+			state.GoBack()
+			return &types.WrappedErrorMessage{Message: errorMessage, Err: exchangeErr}
 		}
 	}
 	// OAuth was valid, ensure we are in the authorized state
@@ -208,7 +216,6 @@ func (state *VPNState) getConfig(
 
 	if configErr != nil {
 		// Go back
-		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
 	}
 
@@ -255,7 +262,7 @@ func (state *VPNState) askSecureLocation() error {
 	// The state has changed, meaning setting the secure location was not successful
 	if state.FSM.Current != STATE_ASK_LOCATION {
 		// TODO: maybe a custom type for this errors.new?
-		return &types.WrappedErrorMessage{Message: "failed setting secure location", Err: errors.New("failed setting secure location due to state change")}
+		return &types.WrappedErrorMessage{Message: "failed setting secure location", Err: errors.New("failed loading secure location")}
 	}
 	return nil
 }
@@ -352,6 +359,7 @@ func (state *VPNState) GetConfigSecureInternet(
 
 	if serverErr != nil {
 		state.RemoveSecureInternet()
+		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -397,7 +405,6 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 	server, serverErr := state.Servers.AddCustomServer(customServer)
 
 	if serverErr != nil {
-		state.RemoveCustomServer(url)
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -413,6 +420,7 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 
 	if serverErr != nil {
 		state.RemoveInstituteAccess(url)
+		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -488,12 +496,14 @@ func (state *VPNState) SetProfileID(profileID string) error {
 	errorMessage := "failed to set the profile ID for the current server"
 	server, serverErr := state.Servers.GetCurrentServer()
 	if serverErr != nil {
+		state.GoBack()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
+		state.GoBack()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 	base.Profiles.Current = profileID
@@ -618,10 +628,11 @@ func (state *VPNState) RenewSession() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
 
-	loginErr := server.Login(currentServer, state.doAuth)
+	// FIXME: Delete tokens?
+
+	loginErr := state.ensureLogin(currentServer)
 	if loginErr != nil {
 		// Go back
-		state.GoBack()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: loginErr}
 	}
 

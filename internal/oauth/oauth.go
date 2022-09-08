@@ -254,18 +254,18 @@ func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string) {
 }
 
 // Starts the OAuth exchange for eduvpn.
-func (oauth *OAuth) start(name string, postProcessAuth func(string) string, doAuth func(string) error) error {
+func (oauth *OAuth) GetAuthURL(name string, postProcessAuth func(string) string) (string, error) {
 	errorMessage := "failed starting OAuth exchange"
 	// Generate the state
 	state, stateErr := genState()
 	if stateErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: stateErr}
+		return "", &types.WrappedErrorMessage{Message: errorMessage, Err: stateErr}
 	}
 
 	// Generate the verifier and challenge
 	verifier, verifierErr := genVerifier()
 	if verifierErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: verifierErr}
+		return "", &types.WrappedErrorMessage{Message: errorMessage, Err: verifierErr}
 	}
 	challenge := genChallengeS256(verifier)
 
@@ -282,23 +282,19 @@ func (oauth *OAuth) start(name string, postProcessAuth func(string) string, doAu
 	authURL, urlErr := httpw.HTTPConstructURL(oauth.BaseAuthorizationURL, parameters)
 
 	if urlErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
+		return "", &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
 	}
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
 	oauthSession := OAuthExchangeSession{ClientID: name, State: state, Verifier: verifier}
 	oauth.Session = oauthSession
 
-	// Run the auth callback with the authurl processed
-	doAuthErr := doAuth(postProcessAuth(authURL))
-	if doAuthErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
-	}
-	return nil
+	// Return the url processed
+	return postProcessAuth(authURL), nil
 }
 
 // Error definitions
-func (oauth *OAuth) Finish() error {
+func (oauth *OAuth) Exchange() error {
 	tokenErr := oauth.getTokensWithCallback()
 
 	if tokenErr != nil {
@@ -313,22 +309,6 @@ func (oauth *OAuth) Cancel() {
 		Err:     &OAuthCancelledCallbackError{},
 	}
 	oauth.Session.Server.Shutdown(oauth.Session.Context)
-}
-
-func (oauth *OAuth) Login(name string, postprocessAuth func(string) string, doAuth func(string) error) error {
-	errorMessage := "failed OAuth login"
-	authInitializeErr := oauth.start(name, postprocessAuth, doAuth)
-
-	if authInitializeErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: authInitializeErr}
-	}
-
-	oauthErr := oauth.Finish()
-
-	if oauthErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: oauthErr}
-	}
-	return nil
 }
 
 func (oauth *OAuth) EnsureTokens() error {
