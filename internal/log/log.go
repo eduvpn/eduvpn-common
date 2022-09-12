@@ -60,17 +60,34 @@ func (logger *FileLogger) Init(level LogLevel, name string, directory string) er
 	return nil
 }
 
+func (logger *FileLogger) Info(msg string) {
+	logger.log(LOG_INFO, msg)
+}
+
+func (logger *FileLogger) Warning(msg string) {
+	logger.log(LOG_WARNING, msg)
+}
+
+func (logger *FileLogger) Error(msg string) {
+	logger.log(LOG_ERROR, msg)
+}
+
+func (logger *FileLogger) Close() {
+	logger.File.Close()
+}
+
 func (logger *FileLogger) getFilename(directory string, name string) string {
 	pathString := path.Join(directory, name)
 	return fmt.Sprintf("%s.log", pathString)
 }
 
-func (logger *FileLogger) Log(level LogLevel, str string) {
+func (logger *FileLogger) log(level LogLevel, str string) {
 	if level >= logger.Level && logger.Level != LOG_NOTSET {
-		log.Printf("[%s]: %s", level.String(), str)
-	}
-}
+		msg := fmt.Sprintf("[%s]: %s", level.String(), str)
+		// To log file
+		log.Println(msg)
 
-func (logger *FileLogger) Close() {
-	logger.File.Close()
+		// To output
+		fmt.Println(msg)
+	}
 }
