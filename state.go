@@ -714,6 +714,6 @@ func GetErrorTraceback(err error) string {
 	return types.GetErrorTraceback(err)
 }
 
-func GetErrorJSONString(err error) string {
+func GetErrorJSONString(err error) (string, error) {
 	return types.GetErrorJSONString(err)
 }

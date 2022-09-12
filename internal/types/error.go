@@ -88,7 +88,7 @@ type WrappedErrorMessageJSON struct {
 	Traceback string     `json:"traceback"`
 }
 
-func GetErrorJSONString(err error) string {
+func GetErrorJSONString(err error) (string, error) {
 	var wrappedErr *WrappedErrorMessage
 
 	var level ErrorLevel
@@ -110,7 +110,7 @@ func GetErrorJSONString(err error) string {
 	)
 
 	if jsonErr != nil {
-		panic(jsonErr)
+		return "", jsonErr
 	}
-	return string(json)
+	return string(json), nil
 }

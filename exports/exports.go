@@ -114,7 +114,11 @@ func ErrorToString(error error) string {
 		return ""
 	}
 
-	return eduvpn.GetErrorJSONString(error)
+	errorString, jsonErr := eduvpn.GetErrorJSONString(error)
+	if jsonErr != nil {
+		return ""
+	}
+	return errorString
 }
 
 //export CancelOAuth
