@@ -62,11 +62,23 @@ func WAYFEncode(input string) string {
 
 // See https://github.com/eduvpn/documentation/blob/dc4d53c47dd7a69e95d6650eec408e16eaa814a2/SERVER_DISCOVERY_SKIP_WAYF.md
 func ReplaceWAYF(authTemplate string, authURL string, orgID string) string {
+	// We just return the authURL in the cases where the template is not given or is invalid
 	if authTemplate == "" {
+		return authURL
+	}
+	if !strings.Contains(authTemplate, "@RETURN_TO@") {
+		return authURL
+	}
+	if !strings.Contains(authTemplate, "@ORG_ID@") {
 		return authURL
 	}
 	// Replace authURL
 	authTemplate = strings.Replace(authTemplate, "@RETURN_TO@", WAYFEncode(authURL), 1)
+
+	// If now there is no more ORG_ID, return as there weren't enough @ symbols
+	if !strings.Contains(authTemplate, "@ORG_ID@") {
+		return authURL
+	}
 	// Replace ORG ID
 	authTemplate = strings.Replace(authTemplate, "@ORG_ID@", WAYFEncode(orgID), 1)
 	return authTemplate
