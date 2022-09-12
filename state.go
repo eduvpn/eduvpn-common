@@ -190,10 +190,12 @@ func (state *VPNState) retryConfigAuth(chosenServer server.Server, forceTCP bool
 		if errors.As(configErr, &error) {
 			retryConfig, retryConfigType, retryConfigErr := state.getConfigAuth(chosenServer, forceTCP)
 			if retryConfigErr != nil {
+				state.GoBack()
 				return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: retryConfigErr}
 			}
 			return retryConfig, retryConfigType, nil
 		}
+		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
 	}
 	return config, configType, nil
@@ -215,7 +217,6 @@ func (state *VPNState) getConfig(
 	config, configType, configErr := state.retryConfigAuth(chosenServer, forceTCP)
 
 	if configErr != nil {
-		// Go back
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
 	}
 
@@ -233,6 +234,7 @@ func (state *VPNState) SetSecureLocation(countryCode string) error {
 
 	server, serverErr := state.Discovery.GetServerByCountryCode(countryCode, "secure_internet")
 	if serverErr != nil {
+		state.GoBack()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
