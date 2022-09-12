@@ -360,7 +360,6 @@ func (state *VPNState) GetConfigSecureInternet(
 	server, serverErr := state.addSecureInternetHomeServer(orgID)
 
 	if serverErr != nil {
-		state.RemoveSecureInternet()
 		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
@@ -421,7 +420,6 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 	server, serverErr := state.addInstituteServer(url)
 
 	if serverErr != nil {
-		state.RemoveInstituteAccess(url)
 		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
@@ -435,7 +433,6 @@ func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string,
 	server, serverErr := state.addCustomServer(url)
 
 	if serverErr != nil {
-		state.RemoveCustomServer(url)
 		state.GoBack()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
