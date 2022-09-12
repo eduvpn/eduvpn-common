@@ -35,7 +35,7 @@ func (e *WrappedErrorMessage) Cause() error {
 }
 
 func (e *WrappedErrorMessage) Traceback() string {
-	returnStr := fmt.Sprintf("Traceback for error: %s", e.Message)
+	returnStr := e.Message
 	causeErr := e.Err
 	for errors.Unwrap(causeErr) != nil {
 		causeErr = errors.Unwrap(causeErr)
