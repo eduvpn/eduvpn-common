@@ -1,8 +1,10 @@
 from . import lib, VPNStateChange, encode_args, decode_res
 from typing import Optional, Tuple
 import threading
+from .discovery import get_disco_organizations
 from .event import EventHandler
 from .state import State, StateType
+from .server import get_servers
 import json
 
 eduvpn_objects = {}
@@ -26,7 +28,7 @@ def state_callback(name, old_state, new_state, data):
     name = name.decode()
     if name not in eduvpn_objects:
         return
-    eduvpn_objects[name].callback(State(old_state), State(new_state), data.decode())
+    eduvpn_objects[name].callback(State(old_state), State(new_state), data)
 
 
 class EduVPN(object):
@@ -57,6 +59,12 @@ class EduVPN(object):
         args_gen = encode_args(list(args), func.argtypes[1:])
         res = func(self.name.encode("utf-8"), *(args_gen))
         return decode_res(func.restype)(res)
+
+    def go_function_custom_decode(self, func, decode_func, *args):
+        # The functions all have at least one arg type which is the name of the client
+        args_gen = encode_args(list(args), func.argtypes[1:])
+        res = func(self.name.encode("utf-8"), *(args_gen))
+        return decode_func(res)
 
     def cancel_oauth(self) -> None:
         cancel_oauth_err = self.go_function(lib.CancelOAuth)
@@ -91,10 +99,9 @@ class EduVPN(object):
         return servers
 
     def get_disco_organizations(self) -> str:
-        organizations, organizations_err = self.go_function(lib.GetDiscoOrganizations)
-
-        if organizations_err:
-            raise Exception(organizations_err)
+        organizations = self.go_function_custom_decode(lib.GetDiscoOrganizations, decode_func=get_disco_organizations)
+        #if organizations_err:
+        #    raise Exception(organizations_err)
 
         return organizations
 
@@ -196,7 +203,7 @@ class EduVPN(object):
     def event(self) -> EventHandler:
         return self.event_handler
 
-    def callback(self, old_state: State, new_state: State, data: str) -> None:
+    def callback(self, old_state: State, new_state: State, data) -> None:
         self.event.run(old_state, new_state, data)
 
     def set_profile(self, profile_id: str) -> None:
@@ -242,3 +249,9 @@ class EduVPN(object):
 
     def in_fsm_state(self, state_id: State) -> bool:
         return self.go_function(lib.InFSMState, state_id)
+
+    def get_saved_servers_old(self) -> str:
+        return self.go_function(lib.GetSavedServersOLD)
+
+    def get_saved_servers_new(self) -> str:
+        return self.go_function_custom_decode(lib.GetSavedServersNEW, decode_func=get_servers)

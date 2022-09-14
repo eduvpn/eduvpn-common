@@ -1,9 +1,9 @@
 package fsm
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
-	"fmt"
 	"path"
 	"sort"
 )
@@ -149,7 +149,13 @@ func (fsm *FSM) generateMermaidGraph() string {
 			} else {
 				graph += "\nstyle " + fsm.GetName(state) + " fill:white\n"
 			}
-			graph += fsm.GetName(state) + "(" + fsm.GetName(state) + ") " + "-->|" + transition.Description + "| " + fsm.GetName(transition.To) + "\n"
+			graph += fsm.GetName(
+				state,
+			) + "(" + fsm.GetName(
+				state,
+			) + ") " + "-->|" + transition.Description + "| " + fsm.GetName(
+				transition.To,
+			) + "\n"
 		}
 	}
 	return graph
@@ -162,4 +168,3 @@ func (fsm *FSM) GenerateGraph() string {
 
 	return ""
 }
-

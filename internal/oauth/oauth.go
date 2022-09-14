@@ -315,7 +315,10 @@ func (oauth *OAuth) EnsureTokens() error {
 	errorMessage := "failed ensuring OAuth tokens"
 	// Access Token or Refresh Tokens empty, we can not ensure the tokens
 	if oauth.Token.Access == "" && oauth.Token.Refresh == "" {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: &OAuthTokensInvalidError{Cause: "tokens are empty"}}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &OAuthTokensInvalidError{Cause: "tokens are empty"},
+		}
 	}
 
 	// We have tokens...
@@ -330,7 +333,12 @@ func (oauth *OAuth) EnsureTokens() error {
 	// We have obtained new tokens with refresh
 	if refreshErr != nil {
 		// We have failed to ensure the tokens due to refresh not working
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: &OAuthTokensInvalidError{Cause: fmt.Sprintf("tokens failed refresh with error: %v", refreshErr)}}
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: &OAuthTokensInvalidError{
+				Cause: fmt.Sprintf("tokens failed refresh with error: %v", refreshErr),
+			},
+		}
 	}
 
 	return nil

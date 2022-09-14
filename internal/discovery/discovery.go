@@ -163,22 +163,22 @@ func (discovery *Discovery) DetermineServersUpdate() bool {
 }
 
 // Get the organization list
-func (discovery *Discovery) GetOrganizationsList() (string, error) {
+func (discovery *Discovery) GetOrganizationsList() (*types.DiscoveryOrganizations, error) {
 	if !discovery.DetermineOrganizationsUpdate() {
-		return discovery.Organizations.RawString, nil
+		return &discovery.Organizations, nil
 	}
 	file := "organization_list.json"
 	body, bodyErr := getDiscoFile(file, discovery.Organizations.Version, &discovery.Organizations)
 	if bodyErr != nil {
 		// Return previous with an error
-		return discovery.Organizations.RawString, &types.WrappedErrorMessage{
+		return &discovery.Organizations, &types.WrappedErrorMessage{
 			Message: "failed getting organizations in Discovery",
 			Err:     bodyErr,
 		}
 	}
 	discovery.Organizations.RawString = body
 	discovery.Organizations.Timestamp = util.GetCurrentTime()
-	return discovery.Organizations.RawString, nil
+	return &discovery.Organizations, nil
 }
 
 // Get the server list
@@ -206,7 +206,10 @@ type GetOrgByIDNotFoundError struct {
 }
 
 func (e GetOrgByIDNotFoundError) Error() string {
-	return fmt.Sprintf("No Secure Internet Home found in organizations with ID %s. Please choose your server again", e.ID)
+	return fmt.Sprintf(
+		"No Secure Internet Home found in organizations with ID %s. Please choose your server again",
+		e.ID,
+	)
 }
 
 type GetServerByURLNotFoundError struct {
@@ -240,5 +243,8 @@ type GetSecureHomeArgsNotFoundError struct {
 }
 
 func (e GetSecureHomeArgsNotFoundError) Error() string {
-	return fmt.Sprintf("No Secure Internet Home found with URL: %s. Please choose your server again", e.URL)
+	return fmt.Sprintf(
+		"No Secure Internet Home found with URL: %s. Please choose your server again",
+		e.URL,
+	)
 }

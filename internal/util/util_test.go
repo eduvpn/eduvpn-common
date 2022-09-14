@@ -80,7 +80,11 @@ func Test_WAYFEncode(t *testing.T) {
 func Test_ReplaceWAYF(t *testing.T) {
 	// We expect url encoding but the spaces to be correctly replace with a + instead of a %20
 	// And we expect that the return to and org_id are correctly replaced
-	replaced := ReplaceWAYF("@RETURN_TO@@ORG_ID@", "127.0.0.1:8000/&%$3#kM_-            ", "idp-test.nl.org/")
+	replaced := ReplaceWAYF(
+		"@RETURN_TO@@ORG_ID@",
+		"127.0.0.1:8000/&%$3#kM_-            ",
+		"idp-test.nl.org/",
+	)
 	wantReplaced := "127.0.0.1%3A8000%2F%26%25%243%23kM_-++++++++++++idp-test.nl.org%2F"
 	if replaced != wantReplaced {
 		t.Fatalf("Got: %s, want: %s", replaced, wantReplaced)
@@ -112,5 +116,51 @@ func Test_ReplaceWAYF(t *testing.T) {
 	wantReplaced = "127.0.0.1:8000"
 	if replaced != wantReplaced {
 		t.Fatalf("Got: %s, want: %s", replaced, wantReplaced)
+	}
+}
+
+func Test_GetLanguageMatched(t *testing.T) {
+	// func GetLanguageMatched(languageMap map[string]string, languageTag string) string {
+
+	// exact match
+	returned := GetLanguageMatched(map[string]string{"en": "test", "de": "test2"}, "en")
+	if returned != "test" {
+		t.Fatalf("Got: %s, want: %s", returned, "test")
+	}
+
+	// starts with language tag
+	returned = GetLanguageMatched(map[string]string{"en-US-test": "test", "de": "test2"}, "en-US")
+	if returned != "test" {
+		t.Fatalf("Got: %s, want: %s", returned, "test")
+	}
+
+	// starts with en-
+	returned = GetLanguageMatched(map[string]string{"en-UK": "test", "en": "test2"}, "en-US")
+	if returned != "test" {
+		t.Fatalf("Got: %s, want: %s", returned, "test")
+	}
+
+	// exact match for en
+	returned = GetLanguageMatched(map[string]string{"de": "test", "en": "test2"}, "en-US")
+	if returned != "test2" {
+		t.Fatalf("Got: %s, want: %s", returned, "test2")
+	}
+
+	// We default to english
+	returned = GetLanguageMatched(map[string]string{"es": "test", "en": "test2"}, "nl-NL")
+	if returned != "test2" {
+		t.Fatalf("Got: %s, want: %s", returned, "test2")
+	}
+
+	// We default to english with a - as well
+	returned = GetLanguageMatched(map[string]string{"est": "test", "en-": "test2"}, "en-US")
+	if returned != "test2" {
+		t.Fatalf("Got: %s, want: %s", returned, "test2")
+	}
+
+	// None found just return one
+	returned = GetLanguageMatched(map[string]string{"es": "test"}, "en-US")
+	if returned != "test" {
+		t.Fatalf("Got: %s, want: %s", returned, "test")
 	}
 }

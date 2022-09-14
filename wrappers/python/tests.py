@@ -24,7 +24,7 @@ class ConfigTests(unittest.TestCase):
 
         @_eduvpn.event.on(State.OAUTH_STARTED, StateType.Enter)
         def oauth_initialized(old_state, url_json):
-            login_eduvpn(json.loads(url_json))
+            login_eduvpn(url_json)
 
         server_uri = os.getenv("SERVER_URI")
         if not server_uri:

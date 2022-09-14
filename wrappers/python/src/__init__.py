@@ -40,12 +40,66 @@ class ErrorLevel(Enum):
     ERR_OTHER = 0
     ERR_INFO = 1
 
+class cServerLocations(Structure):
+    _fields_ = [
+        ("locations", POINTER(c_char_p)),
+        ("total_locations", c_size_t)
+    ]
+
+class cDiscoveryOrganization(Structure):
+    _fields_ = [
+        ("display_name", c_char_p),
+        ("org_id", c_char_p),
+        ("secure_internet_home", c_char_p),
+        ("keyword_list", c_char_p),
+    ]
+
+class cDiscoveryOrganizations(Structure):
+    _fields_ = [
+        ("version", c_ulonglong),
+        ("organizations", POINTER(POINTER(cDiscoveryOrganization))),
+        ("total_organizations", c_size_t),
+    ]
+
+class cServerProfile(Structure):
+    _fields_ = [
+        ("identifier", c_char_p),
+        ("display_name", c_char_p),
+        ("default_gateway", c_int),
+    ]
+
+class cServerProfiles(Structure):
+    _fields_ = [
+        ("current", c_int),
+        ("profiles", POINTER(POINTER(cServerProfile))),
+        ("total_profiles", c_size_t),
+    ]
+
+class cServer(Structure):
+    _fields_ = [
+        ("identifier", c_char_p),
+        ("display_name", c_char_p),
+        ("country_code", c_char_p),
+        ("support_contact", POINTER(c_char_p)),
+        ("total_support_contact", c_size_t),
+        ("profiles", POINTER(cServerProfiles)),
+        ("expire_time", c_ulonglong),
+    ]
+
+class cServers(Structure):
+    _fields_ = [
+        ("custom_servers", POINTER(POINTER(cServer))),
+        ("total_custom", c_size_t),
+        ("institute_servers", POINTER(POINTER(cServer))),
+        ("total_institute", c_size_t),
+        ("secure_internet", POINTER(cServer)),
+    ]
 
 class DataError(Structure):
     _fields_ = [("data", c_void_p), ("error", c_void_p)]
 
 
-VPNStateChange = CFUNCTYPE(None, c_char_p, c_int, c_int, c_char_p)
+VPNStateChange = CFUNCTYPE(None, c_char_p, c_int, c_int, c_void_p)
 
 # Exposed functions
 # We have to use c_void_p instead of c_char_p to free it properly
@@ -77,7 +131,7 @@ lib.Register.argtypes, lib.Register.restype = [
 ], c_void_p
 lib.GetDiscoOrganizations.argtypes, lib.GetDiscoOrganizations.restype = [
     c_char_p
-], DataError
+], c_void_p
 lib.GetDiscoServers.argtypes, lib.GetDiscoServers.restype = [c_char_p], DataError
 lib.GoBack.argtypes, lib.GoBack.restype = [c_char_p], None
 lib.CancelOAuth.argtypes, lib.CancelOAuth.restype = [c_char_p], c_void_p
@@ -96,8 +150,12 @@ lib.SetDisconnected.argtypes, lib.SetDisconnected.restype = [c_char_p, c_int], c
 lib.SetSearchServer.argtypes, lib.SetSearchServer.restype = [c_char_p], c_void_p
 lib.ShouldRenewButton.argtypes, lib.ShouldRenewButton.restype = [], int
 lib.RenewSession.argtypes, lib.RenewSession.restype = [c_char_p], c_void_p
+lib.FreeSecureLocations.argtypes, lib.FreeSecureLocations.restype = [c_void_p], None
 lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
+lib.FreeDiscoOrganizations.argtypes, lib.FreeDiscoOrganizations.restype = [c_void_p], None
+lib.FreeServers.argtypes, lib.FreeServers.restype = [c_void_p], None
 lib.InFSMState.argtypes, lib.InFSMState.restype = [c_void_p, c_int], int
+lib.GetSavedServers.argtypes, lib.GetSavedServers.restype = [c_char_p], c_void_p
 
 
 class WrappedError:
@@ -139,6 +197,8 @@ def get_ptr_error(ptr: c_void_p) -> Optional[WrappedError]:
     if not error_json:
         return None
 
+    if "level" not in error_json:
+        return error_string
     level = error_json["level"]
     traceback = error_json["traceback"]
     cause = error_json["cause"]
@@ -149,6 +209,9 @@ def get_error(ptr: c_void_p) -> str:
     error = get_ptr_error(ptr)
     if not error:
         return ""
+
+    if not isinstance(error, WrappedError):
+        return error
     return error.cause
 
 
@@ -160,7 +223,6 @@ def get_data_error(data_error: DataError) -> Tuple[str, str]:
 
 def get_bool(boolInt: c_int) -> bool:
     return boolInt == 1
-
 
 decode_map = {
     c_int: get_bool,

@@ -1,15 +1,13 @@
 package main
 
 /*
+#cgo CFLAGS: -I${SRCDIR}/c
+#cgo LDFLAGS: -Wl,-rpath,${SRCDIR}/c
+#cgo LDFLAGS: -L${SRCDIR}/c
+#cgo LDFLAGS: -lcommon
+
 #include <stdlib.h>
-
-typedef void (*PythonCB)(const char* name, int oldstate, int newstate, const char* data);
-
-__attribute__((weak))
-void call_callback(PythonCB callback, const char *name, int oldstate, int newstate, const char* data)
-{
-    callback(name, oldstate, newstate, data);
-}
+#include "c/common.h"
 */
 import "C"
 
@@ -26,7 +24,28 @@ var P_StateCallbacks map[string]C.PythonCB
 
 var VPNStates map[string]*eduvpn.VPNState
 
+func GetStateData(
+	state *eduvpn.VPNState,
+	stateID eduvpn.FSMStateID,
+	data interface{},
+) unsafe.Pointer {
+	switch stateID {
+	case eduvpn.STATE_NO_SERVER:
+		return (unsafe.Pointer)(getTransitionDataServers(state, data))
+	case eduvpn.STATE_OAUTH_STARTED:
+		if converted, ok := data.(string); ok {
+			return (unsafe.Pointer)(C.CString(converted))
+		}
+	case eduvpn.STATE_ASK_LOCATION:
+		return (unsafe.Pointer)(getTransitionSecureLocations(data))
+	default:
+		return nil
+	}
+	return nil
+}
+
 func StateCallback(
+	state *eduvpn.VPNState,
 	name string,
 	old_state eduvpn.FSMStateID,
 	new_state eduvpn.FSMStateID,
@@ -39,18 +58,10 @@ func StateCallback(
 	name_c := C.CString(name)
 	oldState_c := C.int(old_state)
 	newState_c := C.int(new_state)
-	data_json, jsonErr := json.Marshal(data)
-	var dataJsonString string
-	if jsonErr != nil {
-		// TODO: How to handle error further? Log?
-		dataJsonString = "{}"
-	} else {
-		dataJsonString = string(data_json)
-	}
-	data_c := C.CString(dataJsonString)
+	data_c := GetStateData(state, new_state, data)
 	C.call_callback(P_StateCallback, name_c, oldState_c, newState_c, data_c)
 	C.free(unsafe.Pointer(name_c))
-	C.free(unsafe.Pointer(data_c))
+	// data_c gets freed by the wrapper
 }
 
 func GetVPNState(name string) (*eduvpn.VPNState, error) {
@@ -87,7 +98,7 @@ func Register(
 		nameStr,
 		C.GoString(config_directory),
 		func(old eduvpn.FSMStateID, new eduvpn.FSMStateID, data interface{}) {
-			StateCallback(nameStr, old, new, data)
+			StateCallback(state, nameStr, old, new, data)
 		},
 		debug != 0,
 	)
@@ -150,7 +161,7 @@ func getConfigJSON(config string, configType string) *C.char {
 }
 
 //export RemoveSecureInternet
-func RemoveSecureInternet(name *C.char) (*C.char) {
+func RemoveSecureInternet(name *C.char) *C.char {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
@@ -161,7 +172,7 @@ func RemoveSecureInternet(name *C.char) (*C.char) {
 }
 
 //export RemoveInstituteAccess
-func RemoveInstituteAccess(name *C.char, url *C.char) (*C.char) {
+func RemoveInstituteAccess(name *C.char, url *C.char) *C.char {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
@@ -172,7 +183,7 @@ func RemoveInstituteAccess(name *C.char, url *C.char) (*C.char) {
 }
 
 //export RemoveCustomServer
-func RemoveCustomServer(name *C.char, url *C.char) (*C.char) {
+func RemoveCustomServer(name *C.char, url *C.char) *C.char {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
@@ -216,17 +227,6 @@ func GetConfigCustomServer(name *C.char, url *C.char, forceTCP C.int) (*C.char, 
 	forceTCPBool := forceTCP == 1
 	config, configType, configErr := state.GetConfigCustomServer(C.GoString(url), forceTCPBool)
 	return getConfigJSON(config, configType), C.CString(ErrorToString(configErr))
-}
-
-//export GetDiscoOrganizations
-func GetDiscoOrganizations(name *C.char) (*C.char, *C.char) {
-	nameStr := C.GoString(name)
-	state, stateErr := GetVPNState(nameStr)
-	if stateErr != nil {
-		return nil, C.CString(ErrorToString(stateErr))
-	}
-	organizations, organizationsErr := state.GetDiscoOrganizations()
-	return C.CString(organizations), C.CString(ErrorToString(organizationsErr))
 }
 
 //export GetDiscoServers

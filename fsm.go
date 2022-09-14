@@ -3,14 +3,17 @@ package eduvpn
 import (
 	"errors"
 	"fmt"
-        "github.com/jwijenbergh/eduvpn-common/internal/fsm"
-        "github.com/jwijenbergh/eduvpn-common/internal/types"
+
+	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
+	"github.com/jwijenbergh/eduvpn-common/internal/types"
 )
 
-type FSMStateID = fsm.FSMStateID
-type FSMStates = fsm.FSMStates
-type FSMState = fsm.FSMState
-type FSMTransition = fsm.FSMTransition
+type (
+	FSMStateID    = fsm.FSMStateID
+	FSMStates     = fsm.FSMStates
+	FSMState      = fsm.FSMState
+	FSMTransition = fsm.FSMTransition
+)
 
 const (
 	// Deregistered means the app is not registered with the wrapper
@@ -91,9 +94,16 @@ func GetStateName(s FSMStateID) string {
 	}
 }
 
-func newFSM(name string, callback func(FSMStateID, FSMStateID, interface{}), directory string, debug bool) fsm.FSM {
+func newFSM(
+	name string,
+	callback func(FSMStateID, FSMStateID, interface{}),
+	directory string,
+	debug bool,
+) fsm.FSM {
 	states := FSMStates{
-		STATE_DEREGISTERED: FSMState{Transitions: []FSMTransition{{STATE_NO_SERVER, "Client registers"}}},
+		STATE_DEREGISTERED: FSMState{
+			Transitions: []FSMTransition{{STATE_NO_SERVER, "Client registers"}},
+		},
 		STATE_NO_SERVER: FSMState{
 			Transitions: []FSMTransition{
 				{STATE_NO_SERVER, "Reload list"},
@@ -231,7 +241,11 @@ func (e FSMWrongStateError) CustomError() *types.WrappedErrorMessage {
 	return &types.WrappedErrorMessage{
 		Message: "Wrong FSM State",
 		Err: errors.New(
-			fmt.Sprintf("wrong FSM state, got: %s, want: %s", GetStateName(e.Got), GetStateName(e.Want)),
+			fmt.Sprintf(
+				"wrong FSM state, got: %s, want: %s",
+				GetStateName(e.Got),
+				GetStateName(e.Want),
+			),
 		),
 	}
 }

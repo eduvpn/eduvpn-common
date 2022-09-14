@@ -83,3 +83,52 @@ func ReplaceWAYF(authTemplate string, authURL string, orgID string) string {
 	authTemplate = strings.Replace(authTemplate, "@ORG_ID@", WAYFEncode(orgID), 1)
 	return authTemplate
 }
+
+// https://github.com/eduvpn/documentation/blob/dc4d53c47dd7a69e95d6650eec408e16eaa814a2/SERVER_DISCOVERY.md#language-matching
+func GetLanguageMatched(languageMap map[string]string, languageTag string) string {
+	// If no or empty map is given, return the empty string
+	if languageMap == nil || len(languageMap) == 0 {
+		return ""
+	}
+	// Try to find the exact match
+	if val, ok := languageMap[languageTag]; ok {
+		return val
+	}
+	// Try to find a key that starts with the OS language setting
+	for k := range languageMap {
+		if strings.HasPrefix(k, languageTag) {
+			return languageMap[k]
+		}
+	}
+	// Try to find a key that starts with the first part of the OS language (e.g. de-)
+	splitted := strings.Split(languageTag, "-")
+	// We have a "-"
+	if len(splitted) > 1 {
+		for k := range languageMap {
+			if strings.HasPrefix(k, splitted[0]+"-") {
+				return languageMap[k]
+			}
+		}
+	}
+	// search for just the language (e.g. de)
+	for k := range languageMap {
+		if k == splitted[0] {
+			return languageMap[k]
+		}
+	}
+
+	// Pick one that is deemed best, e.g. en-US or en, but note that not all languages are always available!
+	// We force an entry that is english exactly or with an english prefix
+	for k := range languageMap {
+		if k == "en" || strings.HasPrefix(k, "en-") {
+			return languageMap[k]
+		}
+	}
+
+	// Otherwise just return one
+	for k := range languageMap {
+		return languageMap[k]
+	}
+
+	return ""
+}

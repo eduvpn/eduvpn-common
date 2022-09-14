@@ -1,7 +1,8 @@
-from . import VPNStateChange
+from . import VPNStateChange, get_ptr_string
 from enum import Enum
 from typing import Callable
-from .state import StateType
+from .state import State, StateType
+from .server import get_locations, get_servers
 
 
 EDUVPN_CALLBACK_PROPERTY = "_eduvpn_property_callback"
@@ -15,6 +16,15 @@ def class_state_transition(state: int, state_type: StateType) -> Callable:
 
     return wrapper
 
+def convert_data(state: State, data):
+    if not data:
+        return None
+    if state is State.NO_SERVER:
+        return get_servers(data)
+    if state is State.OAUTH_STARTED:
+        return get_ptr_string(data)
+    if state is State.ASK_LOCATION:
+        return get_locations(data)
 
 class EventHandler(object):
     def __init__(self):
@@ -73,6 +83,7 @@ class EventHandler(object):
     def run(self, old_state: int, new_state: int, data: str) -> None:
         # First run leave transitions, then enter
         # The state is done when the wait event finishes
-        self.run_state(old_state, new_state, StateType.Leave, data)
-        self.run_state(new_state, old_state, StateType.Enter, data)
-        self.run_state(new_state, old_state, StateType.Wait, data)
+        converted = convert_data(new_state, data)
+        self.run_state(old_state, new_state, StateType.Leave, converted)
+        self.run_state(new_state, old_state, StateType.Enter, converted)
+        self.run_state(new_state, old_state, StateType.Wait, converted)
