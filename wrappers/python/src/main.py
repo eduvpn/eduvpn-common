@@ -73,11 +73,8 @@ class EduVPN(object):
             raise Exception(cancel_oauth_err)
 
     def deregister(self) -> None:
-        deregister_err = self.go_function(lib.Deregister)
-
+        self.go_function(lib.Deregister)
         remove_as_global_object(self)
-        if deregister_err:
-            raise Exception(deregister_err)
 
     def register(self, debug: bool = False) -> None:
         if not add_as_global_object(self):

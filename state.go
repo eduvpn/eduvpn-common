@@ -46,7 +46,12 @@ func (state *VPNState) GetSavedServers() *server.ServersConfiguredScreen {
 	return state.Servers.GetServersConfigured()
 }
 
-// TODO: Refactor this to a `New` method?
+// Register initializes the state with the following parameters:
+//  - name: the name of the client
+//  - directory: the directory where the config files are stored. Absolute or relative
+//  - stateCallback: the callback function for the FSM that takes two states (old and new) and the data as an interface
+//  - debug: whether or not we want to enable debugging
+// It returns an error if initialization failed, for example when discovery cannot be obtained and when there are no servers
 func (state *VPNState) Register(
 	name string,
 	directory string,
@@ -116,7 +121,8 @@ func (state *VPNState) Register(
 	return nil
 }
 
-func (state *VPNState) Deregister() error {
+// Deregister 'deregisters' the state, meaning saving the log file and the config and emptying out the state
+func (state *VPNState) Deregister() {
 	// Close the log file
 	state.Logger.Close()
 
@@ -125,9 +131,9 @@ func (state *VPNState) Deregister() error {
 
 	// Empty out the state
 	*state = VPNState{}
-	return nil
 }
 
+// GoBack transitions the FSM back to the previous UI state, for now this is always the NO_SERVER state
 func (state *VPNState) GoBack() error {
 	errorMessage := "failed to go back"
 	if state.InFSMState(STATE_DEREGISTERED) {
@@ -264,6 +270,7 @@ func (state *VPNState) getConfig(
 	return config, configType, nil
 }
 
+// SetSecureLocation sets the location for the current secure location server. countryCode is the secure location to be chosen. This function returns an error e.g. if the server cannot be found or the location is wrong.
 func (state *VPNState) SetSecureLocation(countryCode string) error {
 	errorMessage := "failed asking secure location"
 
@@ -354,6 +361,7 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 	return server, nil
 }
 
+// RemoveSecureInternet removes the current secure internet server. It returns an error if the server cannot be removed due to the state being DEREGISTERED. Note that if the server does not exist, it returns nil as an error.
 func (state *VPNState) RemoveSecureInternet() error {
 	if state.InFSMState(STATE_DEREGISTERED) {
 		state.Logger.Error("Failed removing secure internet server due to deregistered")
@@ -370,6 +378,7 @@ func (state *VPNState) RemoveSecureInternet() error {
 	return nil
 }
 
+// RemoveInstituteAccess removes the institute access server with `url`. It returns an error if the server cannot be removed due to the state being DEREGISTERED. Note that if the server does not exist, it returns nil as an error.
 func (state *VPNState) RemoveInstituteAccess(url string) error {
 	if state.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
@@ -385,6 +394,7 @@ func (state *VPNState) RemoveInstituteAccess(url string) error {
 	return nil
 }
 
+// RemoveCustomServer removes the custom server with `url`. It returns an error if the server cannot be removed due to the state being DEREGISTERED. Note that if the server does not exist, it returns nil as an error.
 func (state *VPNState) RemoveCustomServer(url string) error {
 	if state.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
@@ -400,6 +410,7 @@ func (state *VPNState) RemoveCustomServer(url string) error {
 	return nil
 }
 
+// RemoveConfigSecureInternet
 func (state *VPNState) GetConfigSecureInternet(
 	orgID string,
 	forceTCP bool,

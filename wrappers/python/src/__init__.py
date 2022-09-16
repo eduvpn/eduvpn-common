@@ -122,7 +122,7 @@ lib.GetConfigCustomServer.argtypes, lib.GetConfigCustomServer.restype = [
     c_char_p,
     c_int,
 ], DataError
-lib.Deregister.argtypes, lib.Deregister.restype = [c_char_p], c_void_p
+lib.Deregister.argtypes, lib.Deregister.restype = [c_char_p], None
 lib.Register.argtypes, lib.Register.restype = [
     c_char_p,
     c_char_p,
