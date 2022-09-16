@@ -2,7 +2,12 @@ from . import VPNStateChange, get_ptr_string
 from enum import Enum
 from typing import Callable
 from .state import State, StateType
-from .server import get_locations, get_servers
+from .server import (
+    get_locations,
+    get_transition_profiles,
+    get_transition_server,
+    get_servers,
+)
 
 
 EDUVPN_CALLBACK_PROPERTY = "_eduvpn_property_callback"
@@ -16,6 +21,7 @@ def class_state_transition(state: int, state_type: StateType) -> Callable:
 
     return wrapper
 
+
 def convert_data(state: State, data):
     if not data:
         return None
@@ -25,6 +31,16 @@ def convert_data(state: State, data):
         return get_ptr_string(data)
     if state is State.ASK_LOCATION:
         return get_locations(data)
+    if state is State.ASK_PROFILE:
+        return get_transition_profiles(data)
+    if state in [
+        State.DISCONNECTED,
+        State.DISCONNECTING,
+        State.CONNECTING,
+        State.CONNECTED,
+    ]:
+        return get_transition_server(data)
+
 
 class EventHandler(object):
     def __init__(self):
@@ -80,10 +96,14 @@ class EventHandler(object):
         for func in self.handlers[(state, state_type)]:
             func(other_state, data)
 
-    def run(self, old_state: int, new_state: int, data: str) -> None:
+    def run(
+        self, old_state: int, new_state: int, data: str, convert: bool = True
+    ) -> None:
         # First run leave transitions, then enter
         # The state is done when the wait event finishes
-        converted = convert_data(new_state, data)
+        converted = data
+        if convert:
+            converted = convert_data(new_state, data)
         self.run_state(old_state, new_state, StateType.Leave, converted)
         self.run_state(new_state, old_state, StateType.Enter, converted)
         self.run_state(new_state, old_state, StateType.Wait, converted)

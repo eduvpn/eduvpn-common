@@ -1,7 +1,7 @@
 from . import lib, VPNStateChange, encode_args, decode_res
 from typing import Optional, Tuple
 import threading
-from .discovery import get_disco_organizations
+from .discovery import get_disco_organizations, get_disco_servers
 from .event import EventHandler
 from .state import State, StateType
 from .server import get_servers
@@ -88,16 +88,20 @@ class EduVPN(object):
             raise Exception(register_err)
 
     def get_disco_servers(self) -> str:
-        servers, servers_err = self.go_function(lib.GetDiscoServers)
+        servers = self.go_function_custom_decode(
+            lib.GetDiscoServers, decode_func=get_disco_servers
+        )
 
-        if servers_err:
-            raise Exception(servers_err)
+        # if servers_err:
+        #    raise Exception(servers_err)
 
         return servers
 
     def get_disco_organizations(self) -> str:
-        organizations = self.go_function_custom_decode(lib.GetDiscoOrganizations, decode_func=get_disco_organizations)
-        #if organizations_err:
+        organizations = self.go_function_custom_decode(
+            lib.GetDiscoOrganizations, decode_func=get_disco_organizations
+        )
+        # if organizations_err:
         #    raise Exception(organizations_err)
 
         return organizations
@@ -251,4 +255,6 @@ class EduVPN(object):
         return self.go_function(lib.GetSavedServersOLD)
 
     def get_saved_servers_new(self) -> str:
-        return self.go_function_custom_decode(lib.GetSavedServersNEW, decode_func=get_servers)
+        return self.go_function_custom_decode(
+            lib.GetSavedServersNEW, decode_func=get_servers
+        )

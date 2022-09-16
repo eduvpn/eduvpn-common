@@ -38,6 +38,16 @@ func GetStateData(
 		}
 	case eduvpn.STATE_ASK_LOCATION:
 		return (unsafe.Pointer)(getTransitionSecureLocations(data))
+	case eduvpn.STATE_ASK_PROFILE:
+		return (unsafe.Pointer)(getTransitionProfiles(data))
+	case eduvpn.STATE_DISCONNECTED:
+		return (unsafe.Pointer)(getTransitionServer(state, data))
+	case eduvpn.STATE_DISCONNECTING:
+		return (unsafe.Pointer)(getTransitionServer(state, data))
+	case eduvpn.STATE_CONNECTING:
+		return (unsafe.Pointer)(getTransitionServer(state, data))
+	case eduvpn.STATE_CONNECTED:
+		return (unsafe.Pointer)(getTransitionServer(state, data))
 	default:
 		return nil
 	}
@@ -227,17 +237,6 @@ func GetConfigCustomServer(name *C.char, url *C.char, forceTCP C.int) (*C.char, 
 	forceTCPBool := forceTCP == 1
 	config, configType, configErr := state.GetConfigCustomServer(C.GoString(url), forceTCPBool)
 	return getConfigJSON(config, configType), C.CString(ErrorToString(configErr))
-}
-
-//export GetDiscoServers
-func GetDiscoServers(name *C.char) (*C.char, *C.char) {
-	nameStr := C.GoString(name)
-	state, stateErr := GetVPNState(nameStr)
-	if stateErr != nil {
-		return nil, C.CString(ErrorToString(stateErr))
-	}
-	servers, serversErr := state.GetDiscoServers()
-	return C.CString(servers), C.CString(ErrorToString(serversErr))
 }
 
 //export SetProfileID

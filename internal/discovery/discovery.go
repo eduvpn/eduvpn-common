@@ -182,15 +182,15 @@ func (discovery *Discovery) GetOrganizationsList() (*types.DiscoveryOrganization
 }
 
 // Get the server list
-func (discovery *Discovery) GetServersList() (string, error) {
+func (discovery *Discovery) GetServersList() (*types.DiscoveryServers, error) {
 	if !discovery.DetermineServersUpdate() {
-		return discovery.Servers.RawString, nil
+		return &discovery.Servers, nil
 	}
 	file := "server_list.json"
 	body, bodyErr := getDiscoFile(file, discovery.Servers.Version, &discovery.Servers)
 	if bodyErr != nil {
 		// Return previous with an error
-		return discovery.Servers.RawString, &types.WrappedErrorMessage{
+		return &discovery.Servers, &types.WrappedErrorMessage{
 			Message: "failed getting servers in Discovery",
 			Err:     bodyErr,
 		}
@@ -198,7 +198,7 @@ func (discovery *Discovery) GetServersList() (string, error) {
 	// Update servers timestamp
 	discovery.Servers.RawString = body
 	discovery.Servers.Timestamp = util.GetCurrentTime()
-	return discovery.Servers.RawString, nil
+	return &discovery.Servers, nil
 }
 
 type GetOrgByIDNotFoundError struct {

@@ -15,7 +15,6 @@ import (
 )
 
 type (
-	ServerInfo    = server.ServerInfoScreen
 	VPNServerBase = server.ServerBase
 )
 
@@ -40,10 +39,6 @@ type VPNState struct {
 
 	// Whether to enable debugging
 	Debug bool `json:"-"`
-}
-
-func (state *VPNState) GetSavedServers() *server.ServersConfiguredScreen {
-	return state.Servers.GetServersConfigured()
 }
 
 // Register initializes the state with the following parameters:
@@ -95,7 +90,7 @@ func (state *VPNState) Register(
 
 	_, currentServerErr := state.Servers.GetCurrentServer()
 	// Only actually return the error if we have no disco servers and no current server
-	if discoServersErr != nil && discoServers == "" && currentServerErr != nil {
+	if discoServersErr != nil && discoServers.Version == 0 && currentServerErr != nil {
 		state.Logger.Error(
 			fmt.Sprintf(
 				"No configured servers, discovery servers is empty and no servers with error: %s",
@@ -263,7 +258,6 @@ func (state *VPNState) getConfig(
 
 	// Signal the server display info
 	state.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer, false)
-
 	// Save the config
 	state.Config.Save(&state)
 
@@ -621,13 +615,13 @@ func (state *VPNState) GetDiscoOrganizations() (*types.DiscoveryOrganizations, e
 	return orgs, nil
 }
 
-func (state *VPNState) GetDiscoServers() (string, error) {
+func (state *VPNState) GetDiscoServers() (*types.DiscoveryServers, error) {
 	servers, serversErr := state.Discovery.GetServersList()
 	if serversErr != nil {
 		state.Logger.Warning(
 			fmt.Sprintf("Failed getting discovery servers, Err: %s", GetErrorTraceback(serversErr)),
 		)
-		return "", &types.WrappedErrorMessage{
+		return nil, &types.WrappedErrorMessage{
 			Message: "failed getting discovery servers list",
 			Err:     serversErr,
 		}
@@ -682,19 +676,6 @@ func (state *VPNState) SetSearchServer() error {
 	return nil
 }
 
-func (state *VPNState) getServerInfoData() *server.ServerInfoScreen {
-	info, infoErr := state.Servers.GetCurrentServerInfo()
-	if infoErr != nil {
-		state.Logger.Error(
-			fmt.Sprintf(
-				"Failed getting server info data with error: %s",
-				GetErrorTraceback(infoErr),
-			),
-		)
-	}
-	return info
-}
-
 func (state *VPNState) SetConnected() error {
 	errorMessage := "failed to set connected"
 	if state.InFSMState(STATE_CONNECTED) {
@@ -734,6 +715,7 @@ func (state *VPNState) SetConnected() error {
 }
 
 func (state *VPNState) SetConnecting() error {
+	errorMessage := "failed to set connecting"
 	if state.InFSMState(STATE_CONNECTING) {
 		// already loading connection, show no error
 		state.Logger.Warning("Already connecting")
@@ -747,7 +729,7 @@ func (state *VPNState) SetConnecting() error {
 			),
 		)
 		return &types.WrappedErrorMessage{
-			Message: "failed to set connecting",
+			Message: errorMessage,
 			Err: FSMWrongStateTransitionError{
 				Got:  state.FSM.Current,
 				Want: STATE_CONNECTING,
@@ -755,7 +737,18 @@ func (state *VPNState) SetConnecting() error {
 		}
 	}
 
-	state.FSM.GoTransition(STATE_CONNECTING)
+	currentServer, currentServerErr := state.Servers.GetCurrentServer()
+	if currentServerErr != nil {
+		state.Logger.Warning(
+			fmt.Sprintf(
+				"Failed setting connecting, cannot get current server with error: %s",
+				GetErrorTraceback(currentServerErr),
+			),
+		)
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+	}
+
+	state.FSM.GoTransitionWithData(STATE_CONNECTING, currentServer, false)
 	return nil
 }
 

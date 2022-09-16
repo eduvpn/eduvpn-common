@@ -64,6 +64,18 @@ type ServerProfileInfo struct {
 	} `json:"info"`
 }
 
+func (info ServerProfileInfo) GetCurrentProfileIndex() int {
+	index := 0
+	for _, profile := range info.Info.ProfileList {
+		if profile.ID == info.Current {
+			return index
+		}
+		index += 1
+	}
+	// Default is 'first' profile
+	return 0
+}
+
 type ServerEndpointList struct {
 	API           string `json:"api_endpoint"`
 	Authorization string `json:"authorization_endpoint"`
@@ -116,97 +128,6 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 		}
 	}
 	return server, nil
-}
-
-type ServersConfiguredScreen struct {
-	CustomServers          []ServerInfoScreen `json:"custom_servers"`
-	InstituteAccessServers []ServerInfoScreen `json:"institute_access_servers"`
-	SecureInternetServer   *ServerInfoScreen  `json:"secure_internet_server"`
-}
-
-type ServerInfoScreen struct {
-	Identifier     string            `json:"identifier"`
-	DisplayName    map[string]string `json:"display_name"`
-	CountryCode    string            `json:"country_code,omitempty"`
-	SupportContact []string          `json:"support_contact"`
-	Profiles       ServerProfileInfo `json:"profiles"`
-	ExpireTime     int64             `json:"expire_time"`
-	Type           string            `json:"server_type"`
-}
-
-func getServerInfoScreen(base ServerBase) ServerInfoScreen {
-	serverInfoScreen := ServerInfoScreen{}
-	serverInfoScreen.Identifier = base.URL
-	serverInfoScreen.DisplayName = base.DisplayName
-	serverInfoScreen.SupportContact = base.SupportContact
-	serverInfoScreen.Profiles = base.Profiles
-
-	// If we still have the default end time, return 0
-	// Such that clients will still be able to parse it correctly
-	if base.EndTime.IsZero() {
-		serverInfoScreen.ExpireTime = 0
-	} else {
-		serverInfoScreen.ExpireTime = base.EndTime.Unix()
-	}
-	serverInfoScreen.Type = base.Type
-
-	return serverInfoScreen
-}
-
-func (servers *Servers) GetServersConfigured() *ServersConfiguredScreen {
-	customServersInfo := []ServerInfoScreen{}
-	instituteServersInfo := []ServerInfoScreen{}
-	var secureInternetServerInfo *ServerInfoScreen = nil
-
-	for _, server := range servers.CustomServers.Map {
-		serverInfoScreen := getServerInfoScreen(server.Base)
-		customServersInfo = append(customServersInfo, serverInfoScreen)
-	}
-
-	for _, server := range servers.InstituteServers.Map {
-		serverInfoScreen := getServerInfoScreen(server.Base)
-		instituteServersInfo = append(instituteServersInfo, serverInfoScreen)
-	}
-
-	secureInternetBase, secureInternetBaseErr := servers.SecureInternetHomeServer.GetBase()
-
-	if secureInternetBaseErr == nil && secureInternetBase != nil {
-		// FIXME: log error?
-		secureInternetServerInfoReturned := getServerInfoScreen(*secureInternetBase)
-		secureInternetServerInfo = &secureInternetServerInfoReturned
-		secureInternetServerInfo.Identifier = servers.SecureInternetHomeServer.HomeOrganizationID
-		secureInternetServerInfo.CountryCode = servers.SecureInternetHomeServer.CurrentLocation
-	}
-
-	return &ServersConfiguredScreen{
-		CustomServers:          customServersInfo,
-		InstituteAccessServers: instituteServersInfo,
-		SecureInternetServer:   secureInternetServerInfo,
-	}
-}
-
-func (servers *Servers) GetCurrentServerInfo() (*ServerInfoScreen, error) {
-	errorMessage := "failed getting current server info"
-
-	currentServer, currentServerErr := servers.GetCurrentServer()
-	if currentServerErr != nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
-	}
-
-	base, baseErr := currentServer.GetBase()
-
-	if baseErr != nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
-	}
-
-	serverInfoScreen := getServerInfoScreen(*base)
-
-	if servers.IsType == SecureInternetServerType {
-		serverInfoScreen.Identifier = servers.SecureInternetHomeServer.HomeOrganizationID
-		serverInfoScreen.CountryCode = servers.SecureInternetHomeServer.CurrentLocation
-	}
-
-	return &serverInfoScreen, nil
 }
 
 func (servers *Servers) addInstituteAndCustom(

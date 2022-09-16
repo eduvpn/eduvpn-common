@@ -33,9 +33,8 @@ func getCPtrDiscoOrganizations(
 	organizations *types.DiscoveryOrganizations,
 ) (C.size_t, **C.discoveryOrganization) {
 	totalOrganizations := C.size_t(len(organizations.List))
-	var organizationsPtr **C.discoveryOrganization
 	if totalOrganizations > 0 {
-		organizationsPtr = (**C.discoveryOrganization)(
+		organizationsPtr := (**C.discoveryOrganization)(
 			C.malloc(totalOrganizations * C.size_t(unsafe.Sizeof(uintptr(0)))),
 		)
 		cOrganizations := (*[1<<30 - 1]*C.discoveryOrganization)(unsafe.Pointer(organizationsPtr))[:totalOrganizations:totalOrganizations]
@@ -45,8 +44,52 @@ func getCPtrDiscoOrganizations(
 			cOrganizations[index] = cOrganization
 			index += 1
 		}
+		return totalOrganizations, organizationsPtr
 	}
-	return totalOrganizations, organizationsPtr
+	return 0, nil
+}
+
+func getCPtrDiscoServer(
+	state *eduvpn.VPNState,
+	server *types.DiscoveryServer,
+) *C.discoveryServer {
+	returnedStruct := (*C.discoveryServer)(
+		C.malloc(C.size_t(unsafe.Sizeof(C.discoveryServer{}))),
+	)
+	returnedStruct.authentication_url_template = C.CString(server.AuthenticationURLTemplate)
+	returnedStruct.base_url = C.CString(server.BaseURL)
+	returnedStruct.country_code = C.CString(server.CountryCode)
+	returnedStruct.display_name = C.CString(state.GetTranslated(server.DisplayName))
+	returnedStruct.keyword_list = C.CString(state.GetTranslated(server.KeywordList))
+	returnedStruct.total_public_keys, returnedStruct.public_key_list = getCPtrListStrings(
+		server.PublicKeyList,
+	)
+	returnedStruct.server_type = C.CString(server.Type)
+	returnedStruct.total_support_contact, returnedStruct.support_contact = getCPtrListStrings(
+		server.SupportContact,
+	)
+	return returnedStruct
+}
+
+func getCPtrDiscoServers(
+	state *eduvpn.VPNState,
+	servers *types.DiscoveryServers,
+) (C.size_t, **C.discoveryServer) {
+	totalServers := C.size_t(len(servers.List))
+	if totalServers > 0 {
+		serversPtr := (**C.discoveryServer)(
+			C.malloc(totalServers * C.size_t(unsafe.Sizeof(uintptr(0)))),
+		)
+		cServers := (*[1<<30 - 1]*C.discoveryServer)(unsafe.Pointer(serversPtr))
+		index := 0
+		for _, server := range servers.List {
+			cServer := getCPtrDiscoServer(state, &server)
+			cServers[index] = cServer
+			index += 1
+		}
+		return totalServers, serversPtr
+	}
+	return 0, nil
 }
 
 func freeDiscoOrganization(cOrganization *C.discoveryOrganization) {
@@ -55,6 +98,30 @@ func freeDiscoOrganization(cOrganization *C.discoveryOrganization) {
 	C.free(unsafe.Pointer(cOrganization.secure_internet_home))
 	C.free(unsafe.Pointer(cOrganization.keyword_list))
 	C.free(unsafe.Pointer(cOrganization))
+}
+
+func freeDiscoServer(cServer *C.discoveryServer) {
+	C.free(unsafe.Pointer(cServer.authentication_url_template))
+	C.free(unsafe.Pointer(cServer.base_url))
+	C.free(unsafe.Pointer(cServer.country_code))
+	C.free(unsafe.Pointer(cServer.display_name))
+	C.free(unsafe.Pointer(cServer.keyword_list))
+	freeCListStrings(cServer.public_key_list, cServer.total_public_keys)
+	C.free(unsafe.Pointer(cServer.server_type))
+	freeCListStrings(cServer.support_contact, cServer.total_support_contact)
+	C.free(unsafe.Pointer(cServer))
+}
+
+//export FreeDiscoServers
+func FreeDiscoServers(cServers *C.discoveryServers) {
+	if cServers.total_servers > 0 {
+		servers := (*[1<<30 - 1]*C.discoveryServer)(unsafe.Pointer(cServers.servers))[:cServers.total_servers:cServers.total_servers]
+		for i := C.size_t(0); i < cServers.total_servers; i++ {
+			freeDiscoServer(servers[i])
+		}
+		C.free(unsafe.Pointer(cServers.servers))
+	}
+	C.free(unsafe.Pointer(cServers))
 }
 
 //export FreeDiscoOrganizations
@@ -67,6 +134,31 @@ func FreeDiscoOrganizations(cOrganizations *C.discoveryOrganizations) {
 		C.free(unsafe.Pointer(cOrganizations.organizations))
 	}
 	C.free(unsafe.Pointer(cOrganizations))
+}
+
+//export GetDiscoServers
+func GetDiscoServers(name *C.char) *C.discoveryServers {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	// TODO
+	if stateErr != nil {
+		panic(stateErr)
+	}
+	servers, serversErr := state.GetDiscoServers()
+	// TODO
+	if serversErr != nil {
+		panic(serversErr)
+	}
+
+	returnedStruct := (*C.discoveryServers)(
+		C.malloc(C.size_t(unsafe.Sizeof(C.discoveryServers{}))),
+	)
+	returnedStruct.version = C.ulonglong(servers.Version)
+	returnedStruct.total_servers, returnedStruct.servers = getCPtrDiscoServers(
+		state,
+		servers,
+	)
+	return returnedStruct
 }
 
 //export GetDiscoOrganizations

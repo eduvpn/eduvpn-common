@@ -62,6 +62,7 @@ type DiscoveryServer struct {
 	BaseURL                   string           `json:"base_url"`
 	CountryCode               string           `json:"country_code"`
 	DisplayName               DiscoMapOrString `json:"display_name,omitempty"`
+	KeywordList               DiscoMapOrString `json:"keyword_list"`
 	PublicKeyList             []string         `json:"public_key_list"`
 	Type                      string           `json:"server_type"`
 	SupportContact            []string         `json:"support_contact"`

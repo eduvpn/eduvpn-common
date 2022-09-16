@@ -51,7 +51,7 @@ func getCPtrProfiles(serverProfiles *server.ServerProfileInfo) *C.serverProfiles
 			profiles[index] = getCPtrProfile(&profile)
 			index += 1
 		}
-		// TODO: DO CURRENT PROFILE
+		cProfiles.current = C.int(serverProfiles.GetCurrentProfileIndex())
 		cProfiles.profiles = (**C.serverProfile)(profilesPtr)
 	}
 	return cProfiles
@@ -59,7 +59,8 @@ func getCPtrProfiles(serverProfiles *server.ServerProfileInfo) *C.serverProfiles
 
 // Free the profiles by looping through them if there are any
 // Also free the pointer itself
-func freeCProfiles(profiles *C.serverProfiles) {
+//export FreeProfiles
+func FreeProfiles(profiles *C.serverProfiles) {
 	// We should only free the profiles if we have them (which we should)
 	if profiles.total_profiles > 0 {
 		// Convert it to a go slice
@@ -119,12 +120,21 @@ func freeCListStrings(allStrings **C.char, totalStrings C.size_t) {
 // Function for getting the server,
 // It gets the main state as a pointer as we need to convert some string maps to localized strings
 // It gets the base information for a server as well
-func getServer(state *eduvpn.VPNState, base *eduvpn.VPNServerBase) *C.server {
+func getCPtrServer(state *eduvpn.VPNState, base *eduvpn.VPNServerBase) *C.server {
 	// Allocation using malloc and the size of the struct
 	server := (*C.server)(C.malloc(C.size_t(unsafe.Sizeof(C.server{}))))
 	// String allocation and translate the display name
-	server.identifier = C.CString(base.URL)
+	identifier := base.URL
+	countryCode := ""
+	if base.Type == "secure_internet" {
+		identifier = state.Servers.SecureInternetHomeServer.HomeOrganizationID
+		countryCode = state.Servers.SecureInternetHomeServer.CurrentLocation
+	}
+
+	server.identifier = C.CString(identifier)
 	server.display_name = C.CString(state.GetTranslated(base.DisplayName))
+	server.country_code = C.CString(countryCode)
+	server.server_type = C.CString(base.Type)
 	// Call the helper to get the list of support contacts
 	server.total_support_contact, server.support_contact = getCPtrListStrings(
 		base.SupportContact,
@@ -133,22 +143,26 @@ func getServer(state *eduvpn.VPNState, base *eduvpn.VPNServerBase) *C.server {
 	// No endtime is given if we get servers when it has been partially initialised
 	if base.EndTime.IsZero() {
 		server.expire_time = C.ulonglong(0)
+	} else {
+		// The expire time should be stored as an unsigned long long in unix itme
+		server.expire_time = C.ulonglong(base.EndTime.Unix())
 	}
-	// The expire time should be stored as an unsigned long long in unix itme
-	server.expire_time = C.ulonglong(base.EndTime.Unix())
 	return server
 }
 
 // Function for freeing a single server
 // Gets the pointer to C struct
-func freeServer(info *C.server) {
+//export FreeServer
+func FreeServer(info *C.server) {
 	// Free strings
 	C.free(unsafe.Pointer(info.identifier))
 	C.free(unsafe.Pointer(info.display_name))
+	C.free(unsafe.Pointer(info.country_code))
+	C.free(unsafe.Pointer(info.server_type))
 
 	// Free arrays
 	freeCListStrings(info.support_contact, info.total_support_contact)
-	freeCProfiles(info.profiles)
+	FreeProfiles(info.profiles)
 
 	// Free the struct itself
 	C.free(unsafe.Pointer(info))
@@ -166,10 +180,11 @@ func getCPtrServers(
 		servers := (*[1<<30 - 1]*C.server)(unsafe.Pointer(serversPtr))[:totalServers:totalServers]
 		index := 0
 		for _, server := range serverMap {
-			cServer := getServer(state, &server.Base)
+			cServer := getCPtrServer(state, &server.Base)
 			servers[index] = cServer
 			index += 1
 		}
+		return totalServers, serversPtr
 	}
 	return C.size_t(0), nil
 }
@@ -182,7 +197,7 @@ func FreeServers(cServers *C.servers) {
 	if cServers.total_custom > 0 {
 		customServers := (*[1<<30 - 1]*C.server)(unsafe.Pointer(cServers.custom_servers))[:cServers.total_custom:cServers.total_custom]
 		for i := C.size_t(0); i < cServers.total_custom; i++ {
-			freeServer(customServers[i])
+			FreeServer(customServers[i])
 		}
 		C.free(unsafe.Pointer(cServers.custom_servers))
 	}
@@ -191,14 +206,13 @@ func FreeServers(cServers *C.servers) {
 		instituteServers := (*[1<<30 - 1]*C.server)(unsafe.Pointer(cServers.institute_servers))[:cServers.total_institute:cServers.total_institute]
 
 		for i := C.size_t(0); i < cServers.total_institute; i++ {
-			freeServer(instituteServers[i])
+			FreeServer(instituteServers[i])
 		}
 		C.free(unsafe.Pointer(cServers.institute_servers))
 	}
 	// Free the secure internet server if there is one
 	if cServers.secure_internet_server != nil {
-		C.free(unsafe.Pointer(cServers.secure_internet_server.country_code))
-		freeServer(cServers.secure_internet_server)
+		FreeServer(cServers.secure_internet_server)
 	}
 	// Free the structure itself
 	C.free(unsafe.Pointer(cServers))
@@ -219,7 +233,7 @@ func getSavedServersWithOptions(state *eduvpn.VPNState, servers *server.Servers)
 	secureInternetBase, secureInternetBaseErr := servers.SecureInternetHomeServer.GetBase()
 	if secureInternetBaseErr == nil && secureInternetBase != nil {
 		// FIXME: log error?
-		secureServerPtr = getServer(state, secureInternetBase)
+		secureServerPtr = getCPtrServer(state, secureInternetBase)
 		// Give a new identifier
 		C.free(unsafe.Pointer(secureServerPtr.identifier))
 		secureServerPtr.identifier = C.CString(servers.SecureInternetHomeServer.HomeOrganizationID)
@@ -259,15 +273,34 @@ func getTransitionDataServers(state *eduvpn.VPNState, data interface{}) *C.serve
 
 //export FreeSecureLocations
 func FreeSecureLocations(locations *C.serverLocations) {
-	freeCListStrings(locations.locations, locations.total_locations);
+	freeCListStrings(locations.locations, locations.total_locations)
 	C.free(unsafe.Pointer(locations))
 }
 
-func getTransitionSecureLocations(data interface{}) (*C.serverLocations) {
+func getTransitionSecureLocations(data interface{}) *C.serverLocations {
 	if locations, ok := data.([]string); ok {
 		returnedStruct := (*C.serverLocations)(C.malloc(C.size_t(unsafe.Sizeof(C.servers{}))))
 		returnedStruct.total_locations, returnedStruct.locations = getCPtrListStrings(locations)
 		return returnedStruct
+	}
+	return nil
+}
+
+func getTransitionProfiles(data interface{}) *C.serverProfiles {
+	if profiles, ok := data.(*server.ServerProfileInfo); ok {
+		return getCPtrProfiles(profiles)
+	}
+	return nil
+}
+
+func getTransitionServer(state *eduvpn.VPNState, data interface{}) *C.server {
+	if server, ok := data.(server.Server); ok {
+		base, baseErr := server.GetBase()
+		if baseErr != nil {
+			// TODO: LOG
+			return nil
+		}
+		return getCPtrServer(state, base)
 	}
 	return nil
 }

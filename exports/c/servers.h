@@ -26,6 +26,7 @@ typedef struct serverLocations {
 typedef struct server {
   const char* identifier;
   const char* display_name;
+  const char* server_type;
   const char* country_code;
   const char** support_contact;
   size_t total_support_contact;
