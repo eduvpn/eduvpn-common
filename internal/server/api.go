@@ -201,5 +201,5 @@ func APIConnectOpenVPN(server Server, profile_id string) (string, time.Time, err
 // This needs no further return value as it's best effort
 // FIXME: doAuth should not be needed here
 func APIDisconnect(server Server) {
-	apiAuthorized(server, http.MethodPost, "/disconnect", nil)
+	apiAuthorized(server, http.MethodPost, "/disconnect", &httpw.HTTPOptionalParams{Timeout: 1})
 }

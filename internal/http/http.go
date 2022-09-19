@@ -18,6 +18,7 @@ type HTTPOptionalParams struct {
 	Headers       http.Header
 	URLParameters URLParameters
 	Body          url.Values
+	Timeout       time.Duration
 }
 
 // Construct an URL including on parameters
@@ -77,7 +78,7 @@ func httpOptionalURL(url string, opts *HTTPOptionalParams) (string, error) {
 
 func httpOptionalHeaders(req *http.Request, opts *HTTPOptionalParams) {
 	// Add headers
-	if opts != nil && req != nil {
+	if opts != nil && req != nil && opts.Headers != nil {
 		for k, v := range opts.Headers {
 			req.Header.Add(k, v[0])
 		}
@@ -105,8 +106,15 @@ func HTTPMethodWithOpts(
 		return nil, nil, urlErr
 	}
 
+	// Default timeout is 5 seconds
+	// If a different timeout is given, set it
+	var timeout time.Duration = 5
+	if opts != nil && opts.Timeout > 0 {
+		timeout = opts.Timeout
+	}
+
 	// Create a client
-	client := &http.Client{Timeout: 5 * time.Second}
+	client := &http.Client{Timeout: timeout * time.Second}
 
 	errorMessage := fmt.Sprintf("failed HTTP request with method %s and url %s", method, url)
 
