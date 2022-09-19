@@ -251,10 +251,7 @@ class EduVPN(object):
     def in_fsm_state(self, state_id: State) -> bool:
         return self.go_function(lib.InFSMState, state_id)
 
-    def get_saved_servers_old(self) -> str:
-        return self.go_function(lib.GetSavedServersOLD)
-
-    def get_saved_servers_new(self) -> str:
+    def get_saved_servers(self) -> str:
         return self.go_function_custom_decode(
-            lib.GetSavedServersNEW, decode_func=get_servers
+            lib.GetSavedServers, decode_func=get_servers
         )
