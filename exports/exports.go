@@ -1,13 +1,14 @@
 package main
 
 /*
-#cgo CFLAGS: -I${SRCDIR}/c
-#cgo LDFLAGS: -Wl,-rpath,${SRCDIR}/c
-#cgo LDFLAGS: -L${SRCDIR}/c
-#cgo LDFLAGS: -lcommon
-
 #include <stdlib.h>
-#include "c/common.h"
+
+typedef void (*PythonCB)(const char* name, int oldstate, int newstate, void* data);
+
+static void call_callback(PythonCB callback, const char *name, int oldstate, int newstate, void* data)
+{
+    callback(name, oldstate, newstate, data);
+}
 */
 import "C"
 

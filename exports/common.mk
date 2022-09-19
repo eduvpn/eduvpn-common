@@ -7,8 +7,6 @@ ifndef GOARCH
 export GOARCH := $(shell go env GOHOSTARCH)
 endif
 
-CC = gcc
-
 ifeq (windows,$(GOOS))
 LIB_PREFIX ?=
 LIB_SUFFIX ?= .dll
