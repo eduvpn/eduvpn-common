@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/internal/fsm"
+	"github.com/eduvpn/eduvpn-common/internal/types"
 )
 
 type (

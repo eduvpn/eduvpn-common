@@ -1,5 +1,5 @@
 # Example with comments
-The following is an example [in the repository](https://github.com/jwijenbergh/eduvpn-common/blob/main/cmd/cli/main.go). It is a command line client with the following flags
+The following is an example [in the repository](https://github.com/eduvpn/eduvpn-common/blob/main/cmd/cli/main.go). It is a command line client with the following flags
 ```
 -get-institute string
   	The url of an institute to connect to

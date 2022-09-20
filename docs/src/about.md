@@ -18,7 +18,7 @@ The main goal is thus the following:
 This library tries to remove non-platform specific common functionality. This way eduVPN clients have less duplicate code. The building blocks that are removed by the library is not just the four depicted in this figure. You can think of other building blocks, such as logging and local configuration file saving. As can be seen in the figure, no User Interface (UI) code will be implemented. This is left to the eduVPN clients, on top of platform-specific code.
 
 ## License
-[MIT](https://github.com/jwijenbergh/eduvpn-common/blob/main/LICENSE)
+[MIT](https://github.com/eduvpn/eduvpn-common/blob/main/LICENSE)
 
 ## Authors
 This library is written by [Steven Wallis de Vries](https://github.com/stevenwdv) and [Jeroen Wijenbergh](https://github.com/jwijenbergh) at the [SURF](https://www.surf.nl/) and [GÉANT](https://geant.org/) organization.

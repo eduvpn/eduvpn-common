@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"time"
 
-	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
+	httpw "github.com/eduvpn/eduvpn-common/internal/http"
+	"github.com/eduvpn/eduvpn-common/internal/types"
 )
 
 func APIGetEndpoints(baseURL string) (*ServerEndpoints, error) {

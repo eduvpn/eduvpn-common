@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/config"
-	"github.com/jwijenbergh/eduvpn-common/internal/discovery"
-	"github.com/jwijenbergh/eduvpn-common/internal/fsm"
-	"github.com/jwijenbergh/eduvpn-common/internal/log"
-	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
-	"github.com/jwijenbergh/eduvpn-common/internal/server"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
-	"github.com/jwijenbergh/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/internal/config"
+	"github.com/eduvpn/eduvpn-common/internal/discovery"
+	"github.com/eduvpn/eduvpn-common/internal/fsm"
+	"github.com/eduvpn/eduvpn-common/internal/log"
+	"github.com/eduvpn/eduvpn-common/internal/oauth"
+	"github.com/eduvpn/eduvpn-common/internal/server"
+	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/internal/util"
 )
 
 type (

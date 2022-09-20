@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
-	eduvpn "github.com/jwijenbergh/eduvpn-common"
-	"github.com/jwijenbergh/eduvpn-common/internal/server"
+	eduvpn "github.com/eduvpn/eduvpn-common"
+	"github.com/eduvpn/eduvpn-common/internal/server"
 )
 
 type ServerTypes int8

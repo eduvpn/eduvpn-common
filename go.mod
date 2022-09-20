@@ -1,4 +1,4 @@
-module github.com/jwijenbergh/eduvpn-common
+module github.com/eduvpn/eduvpn-common
 
 go 1.15
 

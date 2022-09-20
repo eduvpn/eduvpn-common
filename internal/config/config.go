@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"path"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
-	"github.com/jwijenbergh/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/internal/util"
 )
 
 type Config struct {

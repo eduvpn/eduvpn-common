@@ -3,9 +3,9 @@ package server
 import (
 	"fmt"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
-	"github.com/jwijenbergh/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/internal/oauth"
+	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/internal/util"
 )
 
 // A secure internet server which has its own OAuth tokens

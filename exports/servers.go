@@ -51,8 +51,8 @@ import "C"
 import (
 	"unsafe"
 
-	eduvpn "github.com/jwijenbergh/eduvpn-common"
-	"github.com/jwijenbergh/eduvpn-common/internal/server"
+	eduvpn "github.com/eduvpn/eduvpn-common"
+	"github.com/eduvpn/eduvpn-common/internal/server"
 )
 
 // Get the pointer to the C struct for the profile

@@ -41,8 +41,8 @@ import "C"
 import (
 	"unsafe"
 
-	eduvpn "github.com/jwijenbergh/eduvpn-common"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
+	eduvpn "github.com/eduvpn/eduvpn-common"
+	"github.com/eduvpn/eduvpn-common/internal/types"
 )
 
 func getCPtrDiscoOrganization(

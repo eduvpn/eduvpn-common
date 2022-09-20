@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	eduvpn "github.com/jwijenbergh/eduvpn-common"
+	eduvpn "github.com/eduvpn/eduvpn-common"
 )
 
 var P_StateCallbacks map[string]C.PythonCB

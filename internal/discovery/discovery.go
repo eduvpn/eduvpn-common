@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/http"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
-	"github.com/jwijenbergh/eduvpn-common/internal/util"
-	"github.com/jwijenbergh/eduvpn-common/internal/verify"
+	"github.com/eduvpn/eduvpn-common/internal/http"
+	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/internal/verify"
 )
 
 type Discovery struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/internal/types"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 

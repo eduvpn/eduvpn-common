@@ -6,8 +6,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
-	"github.com/jwijenbergh/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/internal/util"
 )
 
 type FileLogger struct {

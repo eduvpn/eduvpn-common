@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jedisct1/go-minisign"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/internal/types"
 )
 
 // Verify verifies the signature (.minisig file format) on signedJson.

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
-	"github.com/jwijenbergh/eduvpn-common/internal/util"
-	"github.com/jwijenbergh/eduvpn-common/internal/wireguard"
+	"github.com/eduvpn/eduvpn-common/internal/oauth"
+	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/internal/wireguard"
 )
 
 // The base type for servers

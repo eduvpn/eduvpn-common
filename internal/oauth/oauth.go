@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"time"
 
-	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
-	"github.com/jwijenbergh/eduvpn-common/internal/util"
+	httpw "github.com/eduvpn/eduvpn-common/internal/http"
+	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/internal/util"
 )
 
 // Generates a random base64 string to be used for state

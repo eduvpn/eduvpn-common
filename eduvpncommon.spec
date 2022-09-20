@@ -8,7 +8,7 @@ Release:        1%{?dist}
 Summary:        %{sum}
 
 License:        MIT
-URL:            https://github.com/jwijenbergh/eduvpn-common
+URL:            https://github.com/eduvpn/eduvpn-common
 Source0:        %{name}.tar.gz
 BuildRequires:  make
 BuildRequires:  gcc

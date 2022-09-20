@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	httpw "github.com/jwijenbergh/eduvpn-common/internal/http"
-	"github.com/jwijenbergh/eduvpn-common/internal/oauth"
-	"github.com/jwijenbergh/eduvpn-common/internal/server"
-	"github.com/jwijenbergh/eduvpn-common/internal/types"
+	httpw "github.com/eduvpn/eduvpn-common/internal/http"
+	"github.com/eduvpn/eduvpn-common/internal/oauth"
+	"github.com/eduvpn/eduvpn-common/internal/server"
+	"github.com/eduvpn/eduvpn-common/internal/types"
 )
 
 func ensureLocalWellKnown() {

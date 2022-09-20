@@ -2,7 +2,7 @@
 The API that has no additional wrapper code is the Go API. To begin to use the Go library in a Go client you first need to import it:
 
 ```go
-import "github.com/jwijenbergh/eduvpn-common"
+import "github.com/eduvpn/eduvpn-common"
 ```
 
 This brings the library into scope using the eduvpn-common prefix.
