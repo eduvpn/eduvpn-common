@@ -3,6 +3,18 @@ name: "[Ubuntu] Test & check build"
 on: [ push, pull_request ]
 
 jobs:
+  lint-go:
+    name: Lint go
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ^1.15
+      - uses: actions/checkout@v3
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3.2.0
+
   test-go:
     name: Test Go
     runs-on: ubuntu-latest
