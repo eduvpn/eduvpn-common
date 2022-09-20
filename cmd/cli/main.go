@@ -1,13 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"os"
 	"os/exec"
-	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/jwijenbergh/eduvpn-common"
@@ -120,100 +116,6 @@ func getConfig(state *eduvpn.VPNState, url string, serverType ServerTypes) (stri
 	return state.GetConfigSecureInternet(url, false)
 }
 
-// A discovery entry for a server
-type ServerDiscoEntry struct {
-	ServerType string `json:"server_type"`
-	BaseURL    string `json:"base_url"`
-}
-
-// Gets all different Secure Internet server by parsing the JSON from the discovery
-func getAllSecureInternetServers(serverList string) ([]string, error) {
-	var secureInternet []string
-
-	discoEntries := []ServerDiscoEntry{}
-
-	jsonErr := json.Unmarshal([]byte(serverList), &discoEntries)
-
-	if jsonErr != nil {
-		return nil, jsonErr
-	}
-
-	for _, entry := range discoEntries {
-		if entry.ServerType == "secure_internet" {
-			secureInternet = append(secureInternet, entry.BaseURL)
-		}
-	}
-
-	return secureInternet, nil
-}
-
-// Store the Secure Internet config in a certificate folder
-func storeSecureInternetConfig(state *eduvpn.VPNState, url string, directory string) {
-	os.MkdirAll(directory, os.ModePerm)
-
-	fmt.Println("Creating and storing cert for", url)
-
-	config, _, configErr := getConfig(state, url, ServerTypeSecureInternet)
-
-	if configErr != nil {
-		fmt.Printf("Failed obtaining config for url %s with error %v\n", url, configErr)
-		return
-	}
-
-	cleanURL := filepath.Base(url)
-
-	writeErr := os.WriteFile(path.Join(directory, cleanURL), []byte(config), 0o644)
-	if writeErr != nil {
-		fmt.Printf("Failed writing config for url %s with error %v\n", url, writeErr)
-	}
-}
-
-// This is basically used to get a certificate for all Secure Internet servers
-func getSecureInternetAll(homeURL string) {
-	state := &eduvpn.VPNState{}
-
-	state.Register(
-		"org.eduvpn.app.linux",
-		"configs",
-		func(old eduvpn.FSMStateID, new eduvpn.FSMStateID, data interface{}) {
-			stateCallback(state, old, new, data)
-		},
-		true,
-	)
-
-	defer state.Deregister()
-
-	// Get the disco servers
-	servers, serversErr := state.GetDiscoServers()
-
-	if serversErr != nil {
-		fmt.Println("Cannot obtain servers", serversErr)
-		return
-	}
-
-	secureInternetURLs, secureInternetErr := getAllSecureInternetServers(servers)
-
-	if secureInternetErr != nil {
-		fmt.Println("Cannot parse secure internet servers", secureInternetErr)
-		return
-	}
-
-	// Ensure that the directory exists
-	directory := "certs"
-	os.MkdirAll(directory, os.ModePerm)
-
-	// Obtain config for home server
-	storeSecureInternetConfig(state, homeURL, directory)
-
-	for _, serverURL := range secureInternetURLs {
-		if !strings.Contains(serverURL, homeURL) {
-			storeSecureInternetConfig(state, serverURL, directory)
-		}
-	}
-
-	fmt.Println("Done storing all certs in directory:", directory)
-}
-
 // Get a config for a single server, Institute Access or Secure Internet
 func printConfig(url string, serverType ServerTypes) {
 	state := &eduvpn.VPNState{}
@@ -247,18 +149,12 @@ func main() {
 	customUrlArg := flag.String("get-custom", "", "The url of a custom server to connect to")
 	urlArg := flag.String("get-institute", "", "The url of an institute to connect to")
 	secureInternet := flag.String("get-secure", "", "Gets secure internet servers.")
-	secureInternetAll := flag.String(
-		"get-secure-all",
-		"",
-		"Gets certificates for all secure internet servers. It stores them in ./certs. Provide an URL for the home server e.g. nl.eduvpn.org.",
-	)
 	flag.Parse()
 
 	// Connect to a VPN by getting an Institute Access config
 	customUrlString := *customUrlArg
 	urlString := *urlArg
 	secureInternetString := *secureInternet
-	secureInternetAllString := *secureInternetAll
 	if customUrlString != "" {
 		printConfig(customUrlString, ServerTypeCustom)
 		return
@@ -268,10 +164,6 @@ func main() {
 	} else if secureInternetString != "" {
 		printConfig(secureInternetString, ServerTypeSecureInternet)
 		return
-	} else if secureInternetAllString != "" {
-		getSecureInternetAll(secureInternetAllString)
-		return
 	}
-
 	flag.PrintDefaults()
 }
