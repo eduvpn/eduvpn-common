@@ -310,7 +310,7 @@ func (state *VPNState) SetSecureLocation(countryCode string) error {
 		state.Logger.Error(
 			fmt.Sprintf(
 				"Failed setting secure internet server with error: %s",
-				GetErrorTraceback(serverErr),
+				GetErrorTraceback(setLocationErr),
 			),
 		)
 		state.goBackInternal()
