@@ -1,5 +1,0 @@
-module CEduVpnCommon {
-    header "Headers/eduvpn_common.h"
-    link "eduvpn_common"
-    export *
-}

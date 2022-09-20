@@ -1,9 +1,0 @@
-*.iml
-.gradle/
-.idea/
-/build/
-/captures/
-.cxx/
-.externalNativeBuild/
-CMakeFiles/
-local.properties
