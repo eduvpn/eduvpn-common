@@ -92,7 +92,7 @@ type ServerEndpoints struct {
 }
 
 // Make this a var which we can overwrite in the tests
-var WellKnownPath string = ".well-known/vpn-user-portal"
+var WellKnownPath string = "/.well-known/vpn-user-portal"
 
 func (servers *Servers) GetCurrentServer() (Server, error) {
 	errorMessage := "failed getting current server"

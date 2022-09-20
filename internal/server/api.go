@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
@@ -14,8 +15,13 @@ import (
 
 func APIGetEndpoints(baseURL string) (*ServerEndpoints, error) {
 	errorMessage := "failed getting server endpoints"
-	url := fmt.Sprintf("%s/%s", baseURL, WellKnownPath)
-	_, body, bodyErr := httpw.HTTPGet(url)
+	url, urlErr := url.Parse(baseURL)
+	if urlErr != nil {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
+	}
+
+	url.Path = path.Join(url.Path, WellKnownPath)
+	_, body, bodyErr := httpw.HTTPGet(url.String())
 
 	if bodyErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: bodyErr}
@@ -48,7 +54,12 @@ func apiAuthorized(
 		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 
-	url := base.Endpoints.API.V3.API + endpoint
+	// Join the paths
+	url, urlErr := url.Parse(base.Endpoints.API.V3.API)
+	if urlErr != nil {
+		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
+	}
+	url.Path = path.Join(url.Path, endpoint)
 
 	// Make sure the tokens are valid, this will return an error if re-login is needed
 	oauthErr := EnsureTokens(server)
@@ -63,7 +74,7 @@ func apiAuthorized(
 	} else {
 		opts.Headers = http.Header{headerKey: {headerValue}}
 	}
-	return httpw.HTTPMethodWithOpts(method, url, opts)
+	return httpw.HTTPMethodWithOpts(method, url.String(), opts)
 }
 
 func apiAuthorizedRetry(
