@@ -51,7 +51,7 @@ func sendProfile(state *eduvpn.VPNState, data interface{}) {
 	serverProfiles, ok := data.(*server.ServerProfileInfo)
 
 	if !ok {
-		fmt.Errorf("Invalid data type")
+		fmt.Println("Invalid data type")
 		return
 	}
 

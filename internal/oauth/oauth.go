@@ -78,7 +78,7 @@ type OAuthExchangeSession struct {
 
 	// filled in when constructing the callback
 	Context context.Context
-	Server  http.Server
+	Server  *http.Server
 }
 
 // Struct that defines the json format for /.well-known/vpn-user-portal"
@@ -95,7 +95,7 @@ func (oauth *OAuth) getTokensWithCallback() error {
 	oauth.Session.Context = context.Background()
 	mux := http.NewServeMux()
 	addr := "127.0.0.1:8000"
-	oauth.Session.Server = http.Server{
+	oauth.Session.Server = &http.Server{
 		Addr:    addr,
 		Handler: mux,
 	}
@@ -200,7 +200,9 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	code, success := req.URL.Query()["code"]
 	// Shutdown after we're done
 	defer func() {
-		go oauth.Session.Server.Shutdown(oauth.Session.Context)
+        if oauth.Session.Server != nil {
+            go oauth.Session.Server.Shutdown(oauth.Session.Context)
+        }
 	}()
 	if !success {
 		oauth.Session.CallbackError = &types.WrappedErrorMessage{
@@ -308,7 +310,9 @@ func (oauth *OAuth) Cancel() {
 		Message: "cancelled OAuth",
 		Err:     &OAuthCancelledCallbackError{},
 	}
-	oauth.Session.Server.Shutdown(oauth.Session.Context)
+    if oauth.Session.Server != nil {
+        oauth.Session.Server.Shutdown(oauth.Session.Context)
+    }
 }
 
 func (oauth *OAuth) EnsureTokens() error {
