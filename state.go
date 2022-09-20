@@ -90,7 +90,7 @@ func (state *VPNState) Register(
 
 	_, currentServerErr := state.Servers.GetCurrentServer()
 	// Only actually return the error if we have no disco servers and no current server
-	if discoServersErr != nil && discoServers.Version == 0 && currentServerErr != nil {
+	if discoServersErr != nil && (discoServers == nil || discoServers.Version == 0) && currentServerErr != nil {
 		state.Logger.Error(
 			fmt.Sprintf(
 				"No configured servers, discovery servers is empty and no servers with error: %s",
@@ -102,7 +102,7 @@ func (state *VPNState) Register(
 	discoOrgs, discoOrgsErr := state.GetDiscoOrganizations()
 
 	// Only actually return the error if we have no disco organizations and no current server
-	if discoOrgsErr != nil && discoOrgs.Version == 0 && currentServerErr != nil {
+	if discoOrgsErr != nil && (discoOrgs == nil || discoOrgs.Version == 0) && currentServerErr != nil {
 		state.Logger.Error(
 			fmt.Sprintf(
 				"No configured organizations, discovery organizations empty and no servers with error: %s",
