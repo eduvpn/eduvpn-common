@@ -10,8 +10,6 @@ import (
 )
 
 func Test_verifyWithKeys(t *testing.T) {
-	var err error
-
 	var pk []string
 	{
 		file, err := os.Open("test_data/public.key")
@@ -328,9 +326,9 @@ func Test_verifyWithKeys(t *testing.T) {
 	// Cache file contents in map, mapping file names to contents
 	files := map[string][]byte{}
 	loadFile := func(name string) {
-		content, loaded := files[name]
+		_, loaded := files[name]
 		if !loaded {
-			content, err = ioutil.ReadFile("test_data/" + name)
+			content, err := ioutil.ReadFile("test_data/" + name)
 			if err != nil {
 				panic(err)
 			}

@@ -14,11 +14,10 @@ import "C"
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"unsafe"
 
-	"github.com/jwijenbergh/eduvpn-common"
+	eduvpn "github.com/jwijenbergh/eduvpn-common"
 )
 
 var P_StateCallbacks map[string]C.PythonCB
@@ -79,7 +78,7 @@ func GetVPNState(name string) (*eduvpn.VPNState, error) {
 	state, exists := VPNStates[name]
 
 	if !exists || state == nil {
-		return nil, errors.New(fmt.Sprintf("State with name %s not found", name))
+		return nil, fmt.Errorf("State with name %s not found", name)
 	}
 
 	return state, nil

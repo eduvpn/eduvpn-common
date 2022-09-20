@@ -156,10 +156,7 @@ func (discovery *Discovery) DetermineServersUpdate() bool {
 	// 1 hour from the last update
 	should_update_time := discovery.Servers.Timestamp.Add(1 * time.Hour)
 	now := util.GetCurrentTime()
-	if !now.Before(should_update_time) {
-		return true
-	}
-	return false
+	return !now.Before(should_update_time)
 }
 
 // Get the organization list

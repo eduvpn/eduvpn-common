@@ -48,7 +48,7 @@ func Test_MakeRandomByteSlice(t *testing.T) {
 		t.Fatalf("2, Got: %v, want: nil", randomErr)
 	}
 
-	if bytes.Compare(random2, random) == 0 {
+	if bytes.Equal(random2, random) {
 		t.Fatalf("Two random byteslices are the same: %v, %v", random2, random)
 	}
 }
@@ -56,7 +56,7 @@ func Test_MakeRandomByteSlice(t *testing.T) {
 func Test_GetCurrentTime(t *testing.T) {
 	time_now := GetCurrentTime()
 
-	time.Sleep(1)
+	time.Sleep(1 * time.Second)
 
 	time_after_1_second := GetCurrentTime()
 

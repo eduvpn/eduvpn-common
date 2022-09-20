@@ -86,8 +86,8 @@ func ReplaceWAYF(authTemplate string, authURL string, orgID string) string {
 
 // https://github.com/eduvpn/documentation/blob/dc4d53c47dd7a69e95d6650eec408e16eaa814a2/SERVER_DISCOVERY.md#language-matching
 func GetLanguageMatched(languageMap map[string]string, languageTag string) string {
-	// If no or empty map is given, return the empty string
-	if languageMap == nil || len(languageMap) == 0 {
+	// If no map is given, return the empty string
+	if len(languageMap) == 0 {
 		return ""
 	}
 	// Try to find the exact match

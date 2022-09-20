@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/jwijenbergh/eduvpn-common"
+	eduvpn "github.com/jwijenbergh/eduvpn-common"
 	"github.com/jwijenbergh/eduvpn-common/internal/server"
 )
 
@@ -27,22 +27,10 @@ func openBrowser(url interface{}) {
 	}
 	fmt.Printf("OAuth: Initialized with AuthURL %s\n", urlString)
 	fmt.Println("OAuth: Opening browser with xdg-open...")
-	exec.Command("xdg-open", urlString).Start()
-}
-
-// Taken from internal/server.go as it's an internal API for now
-// These are used to parse the profile info
-type ServerProfile struct {
-	ID             string   `json:"profile_id"`
-	DisplayName    string   `json:"display_name"`
-	VPNProtoList   []string `json:"vpn_proto_list"`
-	DefaultGateway bool     `json:"default_gateway"`
-}
-type ServerProfileInfo struct {
-	Current string `json:"current_profile"`
-	Info    struct {
-		ProfileList []ServerProfile `json:"profile_list"`
-	} `json:"info"`
+	cmdErr := exec.Command("xdg-open", urlString).Start()
+	if cmdErr != nil {
+		fmt.Println("OAuth: Browser opened with xdg-open...")
+	}
 }
 
 // Ask for a profile in the command line
@@ -120,7 +108,7 @@ func getConfig(state *eduvpn.VPNState, url string, serverType ServerTypes) (stri
 func printConfig(url string, serverType ServerTypes) {
 	state := &eduvpn.VPNState{}
 
-	state.Register(
+	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configs",
 		func(old eduvpn.FSMStateID, new eduvpn.FSMStateID, data interface{}) {
@@ -128,6 +116,10 @@ func printConfig(url string, serverType ServerTypes) {
 		},
 		true,
 	)
+	if registerErr != nil {
+		fmt.Printf("Register error: %v", registerErr)
+		return
+	}
 
 	defer state.Deregister()
 

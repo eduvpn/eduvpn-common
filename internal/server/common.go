@@ -475,9 +475,7 @@ func (e *ServerGetCurrentProfileNotFoundError) Error() string {
 type ServerGetConfigForceTCPError struct{}
 
 func (e *ServerGetConfigForceTCPError) Error() string {
-	return fmt.Sprintf(
-		"failed to get config, force TCP is on but the server does not support OpenVPN",
-	)
+	return "failed to get config, force TCP is on but the server does not support OpenVPN"
 }
 
 type ServerEnsureServerEmptyURLError struct{}

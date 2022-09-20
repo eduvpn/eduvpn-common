@@ -222,12 +222,10 @@ type FSMWrongStateTransitionError struct {
 func (e FSMWrongStateTransitionError) CustomError() *types.WrappedErrorMessage {
 	return &types.WrappedErrorMessage{
 		Message: "Wrong FSM transition",
-		Err: errors.New(
-			fmt.Sprintf(
-				"wrong FSM state, got: %s, want: a state with a transition to: %s",
-				GetStateName(e.Got),
-				GetStateName(e.Want),
-			),
+		Err: fmt.Errorf(
+			"wrong FSM state, got: %s, want: a state with a transition to: %s",
+			GetStateName(e.Got),
+			GetStateName(e.Want),
 		),
 	}
 }
@@ -240,12 +238,10 @@ type FSMWrongStateError struct {
 func (e FSMWrongStateError) CustomError() *types.WrappedErrorMessage {
 	return &types.WrappedErrorMessage{
 		Message: "Wrong FSM State",
-		Err: errors.New(
-			fmt.Sprintf(
-				"wrong FSM state, got: %s, want: %s",
-				GetStateName(e.Got),
-				GetStateName(e.Want),
-			),
+		Err: fmt.Errorf(
+			"wrong FSM state, got: %s, want: %s",
+			GetStateName(e.Got),
+			GetStateName(e.Want),
 		),
 	}
 }

@@ -122,10 +122,31 @@ func (state *VPNState) Deregister() {
 	state.Logger.Close()
 
 	// Save the config
-	state.Config.Save(&state)
+	saveErr := state.Config.Save(&state)
+	if saveErr != nil {
+		state.Logger.Info(
+			fmt.Sprintf(
+				"Failed saving configuration, error: %s",
+				GetErrorTraceback(saveErr),
+			),
+		)
+	}
 
 	// Empty out the state
 	*state = VPNState{}
+}
+
+// goBackInternal uses the public go back but logs an error if it happened
+func (state *VPNState) goBackInternal() {
+	goBackErr := state.GoBack()
+	if goBackErr != nil {
+		state.Logger.Info(
+			fmt.Sprintf(
+				"Failed going back, error: %s",
+				GetErrorTraceback(goBackErr),
+			),
+		)
+	}
 }
 
 // GoBack transitions the FSM back to the previous UI state, for now this is always the NO_SERVER state
@@ -141,12 +162,6 @@ func (state *VPNState) GoBack() error {
 
 	// FIXME: Abitrary back transitions don't work because we need the approriate data
 	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.Servers, false)
-	// state.FSM.GoBack()
-	return nil
-}
-
-func (state *VPNState) doAuth(authURL string) error {
-	state.FSM.GoTransitionWithData(STATE_OAUTH_STARTED, authURL, true)
 	return nil
 }
 
@@ -160,14 +175,14 @@ func (state *VPNState) ensureLogin(chosenServer server.Server) error {
 		state.FSM.GoTransitionWithData(STATE_OAUTH_STARTED, url, true)
 
 		if urlErr != nil {
-			state.GoBack()
+			state.goBackInternal()
 			return &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
 		}
 
 		exchangeErr := server.OAuthExchange(chosenServer)
 
 		if exchangeErr != nil {
-			state.GoBack()
+			state.goBackInternal()
 			return &types.WrappedErrorMessage{Message: errorMessage, Err: exchangeErr}
 		}
 	}
@@ -219,7 +234,7 @@ func (state *VPNState) retryConfigAuth(
 				forceTCP,
 			)
 			if retryConfigErr != nil {
-				state.GoBack()
+				state.goBackInternal()
 				return "", "", &types.WrappedErrorMessage{
 					Message: errorMessage,
 					Err:     retryConfigErr,
@@ -227,7 +242,7 @@ func (state *VPNState) retryConfigAuth(
 			}
 			return retryConfig, retryConfigType, nil
 		}
-		state.GoBack()
+		state.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
 	}
 	return config, configType, nil
@@ -258,8 +273,17 @@ func (state *VPNState) getConfig(
 
 	// Signal the server display info
 	state.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer, false)
+
 	// Save the config
-	state.Config.Save(&state)
+	saveErr := state.Config.Save(&state)
+	if saveErr != nil {
+		state.Logger.Info(
+			fmt.Sprintf(
+				"Failed saving configuration after getting a server: %s",
+				GetErrorTraceback(saveErr),
+			),
+		)
+	}
 
 	return config, configType, nil
 }
@@ -277,7 +301,7 @@ func (state *VPNState) SetSecureLocation(countryCode string) error {
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.GoBack()
+		state.goBackInternal()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -289,7 +313,7 @@ func (state *VPNState) SetSecureLocation(countryCode string) error {
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.GoBack()
+		state.goBackInternal()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: setLocationErr}
 	}
 	return nil
@@ -368,7 +392,15 @@ func (state *VPNState) RemoveSecureInternet() error {
 	state.Servers.RemoveSecureInternet()
 	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.Servers, false)
 	// Save the config
-	state.Config.Save(&state)
+	saveErr := state.Config.Save(&state)
+	if saveErr != nil {
+		state.Logger.Info(
+			fmt.Sprintf(
+				"Failed saving configuration after removing a secure internet server: %s",
+				GetErrorTraceback(saveErr),
+			),
+		)
+	}
 	return nil
 }
 
@@ -384,7 +416,15 @@ func (state *VPNState) RemoveInstituteAccess(url string) error {
 	state.Servers.RemoveInstituteAccess(url)
 	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.Servers, false)
 	// Save the config
-	state.Config.Save(&state)
+	saveErr := state.Config.Save(&state)
+	if saveErr != nil {
+		state.Logger.Info(
+			fmt.Sprintf(
+				"Failed saving configuration after removing an institute access server: %s",
+				GetErrorTraceback(saveErr),
+			),
+		)
+	}
 	return nil
 }
 
@@ -400,7 +440,15 @@ func (state *VPNState) RemoveCustomServer(url string) error {
 	state.Servers.RemoveCustomServer(url)
 	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.Servers, false)
 	// Save the config
-	state.Config.Save(&state)
+	saveErr := state.Config.Save(&state)
+	if saveErr != nil {
+		state.Logger.Info(
+			fmt.Sprintf(
+				"Failed saving configuration after removing a custom server: %s",
+				GetErrorTraceback(saveErr),
+			),
+		)
+	}
 	return nil
 }
 
@@ -422,7 +470,7 @@ func (state *VPNState) GetConfigSecureInternet(
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.GoBack()
+		state.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -494,7 +542,7 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.GoBack()
+		state.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -523,7 +571,7 @@ func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string,
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.GoBack()
+		state.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -639,7 +687,7 @@ func (state *VPNState) SetProfileID(profileID string) error {
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.GoBack()
+		state.goBackInternal()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -648,7 +696,7 @@ func (state *VPNState) SetProfileID(profileID string) error {
 		state.Logger.Error(
 			fmt.Sprintf("Failed setting a profile ID, Err: %s", GetErrorTraceback(serverErr)),
 		)
-		state.GoBack()
+		state.goBackInternal()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 	base.Profiles.Current = profileID

@@ -99,11 +99,13 @@ func (fsm *FSM) writeGraph() {
 		return
 	}
 
-	f.WriteString(graph)
+	_, writeErr := f.WriteString(graph)
 	f.Close()
-	cmd := exec.Command("mmdc", "-i", graphFile, "-o", graphImgFile, "--scale", "4")
-
-	cmd.Start()
+	if writeErr != nil {
+		cmd := exec.Command("mmdc", "-i", graphFile, "-o", graphImgFile, "--scale", "4")
+		// Generating is best effort
+		_ = cmd.Start()
+	}
 }
 
 func (fsm *FSM) GoBack() {

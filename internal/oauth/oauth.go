@@ -200,9 +200,9 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	code, success := req.URL.Query()["code"]
 	// Shutdown after we're done
 	defer func() {
-        if oauth.Session.Server != nil {
-            go oauth.Session.Server.Shutdown(oauth.Session.Context)
-        }
+		if oauth.Session.Server != nil {
+			go oauth.Session.Server.Shutdown(oauth.Session.Context) //nolint:errcheck
+		}
 	}()
 	if !success {
 		oauth.Session.CallbackError = &types.WrappedErrorMessage{
@@ -310,9 +310,9 @@ func (oauth *OAuth) Cancel() {
 		Message: "cancelled OAuth",
 		Err:     &OAuthCancelledCallbackError{},
 	}
-    if oauth.Session.Server != nil {
-        oauth.Session.Server.Shutdown(oauth.Session.Context)
-    }
+	if oauth.Session.Server != nil {
+		oauth.Session.Server.Shutdown(oauth.Session.Context) //nolint:errcheck
+	}
 }
 
 func (oauth *OAuth) EnsureTokens() error {
@@ -351,7 +351,7 @@ func (oauth *OAuth) EnsureTokens() error {
 type OAuthCancelledCallbackError struct{}
 
 func (e *OAuthCancelledCallbackError) Error() string {
-	return fmt.Sprintf("client cancelled OAuth")
+	return "client cancelled OAuth"
 }
 
 type OAuthCallbackParameterError struct {

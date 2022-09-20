@@ -51,7 +51,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/jwijenbergh/eduvpn-common"
+	eduvpn "github.com/jwijenbergh/eduvpn-common"
 	"github.com/jwijenbergh/eduvpn-common/internal/server"
 )
 

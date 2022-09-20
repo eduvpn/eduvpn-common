@@ -56,7 +56,7 @@ func loginOAuthSelenium(t *testing.T, url string, state *VPNState) {
 			err,
 			errBuffer.String(),
 		)
-		state.CancelOAuth()
+		_ = state.CancelOAuth()
 	}
 }
 
@@ -82,7 +82,7 @@ func Test_server(t *testing.T) {
 	state := &VPNState{}
 	ensureLocalWellKnown()
 
-	state.Register(
+	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configstest",
 		func(old FSMStateID, new FSMStateID, data interface{}) {
@@ -90,9 +90,11 @@ func Test_server(t *testing.T) {
 		},
 		false,
 	)
+	if registerErr != nil {
+		t.Fatalf("Register error: %v", registerErr)
+	}
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
-
 	if configErr != nil {
 		t.Fatalf("Connect error: %v", configErr)
 	}
@@ -107,7 +109,7 @@ func test_connect_oauth_parameter(
 	state := &VPNState{}
 	configDirectory := "test_oauth_parameters"
 
-	state.Register(
+	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		configDirectory,
 		func(oldState FSMStateID, newState FSMStateID, data interface{}) {
@@ -121,11 +123,19 @@ func test_connect_oauth_parameter(
 						fmt.Sprint(parameters),
 					)
 				}
-				go http.Get(url)
+				go func() {
+					_, getErr := http.Get(url)
+					if getErr != nil {
+						t.Logf("HTTP GET error: %v", getErr)
+					}
+				}()
 			}
 		},
 		false,
 	)
+	if registerErr != nil {
+		t.Fatalf("Register error: %v", registerErr)
+	}
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
 	var wrappedErr *types.WrappedErrorMessage
@@ -186,7 +196,7 @@ func Test_token_expired(t *testing.T) {
 	// Get a vpn state
 	state := &VPNState{}
 
-	state.Register(
+	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configsexpired",
 		func(old FSMStateID, new FSMStateID, data interface{}) {
@@ -194,6 +204,9 @@ func Test_token_expired(t *testing.T) {
 		},
 		false,
 	)
+	if registerErr != nil {
+		t.Fatalf("Register error: %v", registerErr)
+	}
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
@@ -239,7 +252,7 @@ func Test_token_invalid(t *testing.T) {
 
 	ensureLocalWellKnown()
 
-	state.Register(
+	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configsinvalid",
 		func(old FSMStateID, new FSMStateID, data interface{}) {
@@ -247,6 +260,9 @@ func Test_token_invalid(t *testing.T) {
 		},
 		false,
 	)
+	if registerErr != nil {
+		t.Fatalf("Register error: %v", registerErr)
+	}
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
@@ -289,7 +305,7 @@ func Test_invalid_profile_corrected(t *testing.T) {
 
 	ensureLocalWellKnown()
 
-	state.Register(
+	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configscancelprofile",
 		func(old FSMStateID, new FSMStateID, data interface{}) {
@@ -297,6 +313,9 @@ func Test_invalid_profile_corrected(t *testing.T) {
 		},
 		false,
 	)
+	if registerErr != nil {
+		t.Fatalf("Register error: %v", registerErr)
+	}
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
