@@ -1,4 +1,4 @@
-from . import lib, VPNStateChange, encode_args, decode_res
+from . import lib, VPNStateChange, encode_args, decode_res, get_data_error
 from typing import Optional, Tuple
 import threading
 from .discovery import get_disco_organizations, get_disco_servers
@@ -88,21 +88,22 @@ class EduVPN(object):
             raise Exception(register_err)
 
     def get_disco_servers(self) -> str:
-        servers = self.go_function_custom_decode(
-            lib.GetDiscoServers, decode_func=get_disco_servers
+        servers, servers_err = self.go_function_custom_decode(
+            lib.GetDiscoServers, decode_func=lambda x: get_data_error(x, get_disco_servers)
         )
 
-        # if servers_err:
-        #    raise Exception(servers_err)
+        if servers_err:
+           raise Exception(servers_err)
 
         return servers
 
     def get_disco_organizations(self) -> str:
-        organizations = self.go_function_custom_decode(
-            lib.GetDiscoOrganizations, decode_func=get_disco_organizations
+        organizations, organizations_err = self.go_function_custom_decode(
+            lib.GetDiscoOrganizations, decode_func=lambda x: get_data_error(x, get_disco_organizations)
         )
-        # if organizations_err:
-        #    raise Exception(organizations_err)
+
+        if organizations_err:
+           raise Exception(organizations_err)
 
         return organizations
 
@@ -253,5 +254,5 @@ class EduVPN(object):
 
     def get_saved_servers(self) -> str:
         return self.go_function_custom_decode(
-            lib.GetSavedServers, decode_func=get_servers
+            lib.GetSavedServers, decode_func=lambda x: get_data_error(x, get_servers)
         )

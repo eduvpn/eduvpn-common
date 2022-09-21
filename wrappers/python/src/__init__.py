@@ -169,8 +169,8 @@ lib.Register.argtypes, lib.Register.restype = [
 ], c_void_p
 lib.GetDiscoOrganizations.argtypes, lib.GetDiscoOrganizations.restype = [
     c_char_p
-], c_void_p
-lib.GetDiscoServers.argtypes, lib.GetDiscoServers.restype = [c_char_p], c_void_p
+], DataError
+lib.GetDiscoServers.argtypes, lib.GetDiscoServers.restype = [c_char_p], DataError
 lib.GoBack.argtypes, lib.GoBack.restype = [c_char_p], None
 lib.CancelOAuth.argtypes, lib.CancelOAuth.restype = [c_char_p], c_void_p
 lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p, c_char_p], c_void_p
@@ -198,7 +198,7 @@ lib.FreeDiscoServers.argtypes, lib.FreeDiscoServers.restype = [c_void_p], None
 lib.FreeServer.argtypes, lib.FreeServer.restype = [c_void_p], None
 lib.FreeServers.argtypes, lib.FreeServers.restype = [c_void_p], None
 lib.InFSMState.argtypes, lib.InFSMState.restype = [c_void_p, c_int], int
-lib.GetSavedServers.argtypes, lib.GetSavedServers.restype = [c_char_p], c_void_p
+lib.GetSavedServers.argtypes, lib.GetSavedServers.restype = [c_char_p], DataError
 
 
 class WrappedError:
@@ -269,8 +269,8 @@ def get_error(ptr: c_void_p) -> str:
     return error.cause
 
 
-def get_data_error(data_error: DataError) -> Tuple[str, str]:
-    data = get_ptr_string(data_error.data)
+def get_data_error(data_error: DataError, data_conv=get_ptr_string) -> Tuple[str, str]:
+    data = data_conv(data_error.data)
     error = get_error(data_error.error)
     return data, error
 

@@ -168,17 +168,15 @@ func FreeDiscoOrganizations(cOrganizations *C.discoveryOrganizations) {
 }
 
 //export GetDiscoServers
-func GetDiscoServers(name *C.char) *C.discoveryServers {
+func GetDiscoServers(name *C.char) (*C.discoveryServers, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
-	// TODO
 	if stateErr != nil {
-		panic(stateErr)
+		return nil, C.CString(ErrorToString(stateErr))
 	}
 	servers, serversErr := state.GetDiscoServers()
-	// TODO
 	if serversErr != nil {
-		panic(serversErr)
+		return nil, C.CString(ErrorToString(serversErr))
 	}
 
 	returnedStruct := (*C.discoveryServers)(
@@ -189,21 +187,19 @@ func GetDiscoServers(name *C.char) *C.discoveryServers {
 		state,
 		servers,
 	)
-	return returnedStruct
+	return returnedStruct, nil
 }
 
 //export GetDiscoOrganizations
-func GetDiscoOrganizations(name *C.char) *C.discoveryOrganizations {
+func GetDiscoOrganizations(name *C.char) (*C.discoveryOrganizations, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
-	// TODO
 	if stateErr != nil {
-		panic(stateErr)
+		return nil, C.CString(ErrorToString(stateErr))
 	}
 	organizations, organizationsErr := state.GetDiscoOrganizations()
-	// TODO
 	if organizationsErr != nil {
-		panic(organizationsErr)
+		return nil, C.CString(ErrorToString(organizationsErr))
 	}
 
 	returnedStruct := (*C.discoveryOrganizations)(
@@ -216,5 +212,5 @@ func GetDiscoOrganizations(name *C.char) *C.discoveryOrganizations {
 		organizations,
 	)
 
-	return returnedStruct
+	return returnedStruct, nil
 }

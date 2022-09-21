@@ -293,14 +293,14 @@ func getSavedServersWithOptions(state *eduvpn.VPNState, servers *server.Servers)
 //export GetSavedServers
 // This function takes the name as input which is the name of the client
 // It gets the state by name and then returns the saved servers as a c struct belonging to it
-func GetSavedServers(name *C.char) *C.servers {
+func GetSavedServers(name *C.char) (*C.servers, *C.char) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		// TODO: Remove this panic
-		panic(stateErr)
+		return nil, C.CString(ErrorToString(stateErr))
 	}
-	return getSavedServersWithOptions(state, &state.Servers)
+	servers := getSavedServersWithOptions(state, &state.Servers)
+	return servers, nil
 }
 
 // This function takes the state as input which is the main state
