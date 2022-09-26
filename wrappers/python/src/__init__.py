@@ -127,11 +127,11 @@ class cServers(Structure):
 
 
 class DataError(Structure):
-    _fields_ = [("data", c_void_p), ("error", POINTER(cError))]
+    _fields_ = [("data", c_void_p), ("error", c_void_p)]
 
 
 class ConfigError(Structure):
-    _fields_ = [("config", c_char_p), ("config_type", c_char_p), ("error", POINTER(cError))]
+    _fields_ = [("config", c_void_p), ("config_type", c_void_p), ("error", c_void_p)]
 
 
 VPNStateChange = CFUNCTYPE(None, c_char_p, c_int, c_int, c_void_p)
@@ -224,7 +224,7 @@ def get_ptr_string(ptr: c_void_p) -> str:
         string = cast(ptr, c_char_p).value
         lib.FreeString(ptr)
         if string:
-            return string.decode()
+            return string.decode("utf-8")
     return ""
 
 
@@ -242,7 +242,7 @@ def get_error(ptr: c_void_p) -> Optional[WrappedError]:
     if not ptr:
         return None
     err = cast(ptr, POINTER(cError)).contents
-    wrapped = WrappedError(err.traceback.decode(), err.cause.decode(), ErrorLevel(err.level))
+    wrapped = WrappedError(err.traceback.decode("utf-8"), err.cause.decode("utf-8"), ErrorLevel(err.level))
     lib.FreeError(ptr)
     return wrapped
 
