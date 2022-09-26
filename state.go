@@ -10,7 +10,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
-	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/types"
 	"github.com/eduvpn/eduvpn-common/internal/util"
 )
 
@@ -225,25 +225,25 @@ func (state *VPNState) retryConfigAuth(
 	errorMessage := "failed authorized config retry"
 	config, configType, configErr := state.getConfigAuth(chosenServer, forceTCP)
 	if configErr != nil {
+		level := types.ERR_OTHER
 		var error *oauth.OAuthTokensInvalidError
+		var oauthCancelledError *oauth.OAuthCancelledCallbackError
 
 		// Only retry if the error is that the tokens are invalid
 		if errors.As(configErr, &error) {
-			retryConfig, retryConfigType, retryConfigErr := state.getConfigAuth(
+			config, configType, configErr = state.getConfigAuth(
 				chosenServer,
 				forceTCP,
 			)
-			if retryConfigErr != nil {
-				state.goBackInternal()
-				return "", "", &types.WrappedErrorMessage{
-					Message: errorMessage,
-					Err:     retryConfigErr,
-				}
+			if configErr == nil {
+				return config, configType, nil
 			}
-			return retryConfig, retryConfigType, nil
+		}
+		if errors.As(configErr, &oauthCancelledError) {
+			level = types.ERR_INFO
 		}
 		state.goBackInternal()
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
+		return "", "", &types.WrappedErrorMessage{Level: level, Message: errorMessage, Err: configErr}
 	}
 	return config, configType, nil
 }
@@ -263,7 +263,7 @@ func (state *VPNState) getConfig(
 	config, configType, configErr := state.retryConfigAuth(chosenServer, forceTCP)
 
 	if configErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
+		return "", "", &types.WrappedErrorMessage{Level: GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
 	}
 
 	currentServer, currentServerErr := state.Servers.GetCurrentServer()
@@ -484,7 +484,7 @@ func (state *VPNState) GetConfigSecureInternet(
 				GetErrorTraceback(configErr),
 			),
 		)
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
+		return "", "", &types.WrappedErrorMessage{Level: GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
 	}
 	return config, configType, nil
 }
@@ -554,7 +554,7 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 				GetErrorTraceback(configErr),
 			),
 		)
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
+		return "", "", &types.WrappedErrorMessage{Level: GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
 	}
 	return config, configType, nil
 }
@@ -583,7 +583,7 @@ func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string,
 				GetErrorTraceback(configErr),
 			),
 		)
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
+		return "", "", &types.WrappedErrorMessage{Level: GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
 	}
 	return config, configType, nil
 }
@@ -946,10 +946,6 @@ func GetErrorLevel(err error) types.ErrorLevel {
 
 func GetErrorTraceback(err error) string {
 	return types.GetErrorTraceback(err)
-}
-
-func GetErrorJSONString(err error) (string, error) {
-	return types.GetErrorJSONString(err)
 }
 
 func (state *VPNState) GetTranslated(languages map[string]string) string {

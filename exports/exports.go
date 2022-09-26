@@ -2,6 +2,7 @@ package main
 
 /*
 #include <stdlib.h>
+#include "error.h"
 
 typedef void (*PythonCB)(const char* name, int oldstate, int newstate, void* data);
 
@@ -13,7 +14,6 @@ static void call_callback(PythonCB callback, const char *name, int oldstate, int
 import "C"
 
 import (
-	"encoding/json"
 	"fmt"
 	"unsafe"
 
@@ -90,7 +90,7 @@ func Register(
 	config_directory *C.char,
 	stateCallback C.PythonCB,
 	debug C.int,
-) *C.char {
+) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
@@ -116,237 +116,228 @@ func Register(
 	if registerErr != nil {
 		delete(VPNStates, nameStr)
 	}
-	return C.CString(ErrorToString(registerErr))
+	return getError(registerErr)
 }
 
 //export Deregister
-func Deregister(name *C.char) *C.char {
+func Deregister(name *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	state.Deregister()
 	return nil
 }
 
-func ErrorToString(error error) string {
-	if error == nil {
-		return ""
+func getError(err error) *C.error {
+	if err == nil {
+		return nil
 	}
+	errorStruct := (*C.error)(
+		C.malloc(C.size_t(unsafe.Sizeof(C.error{}))),
+	)
+	errorStruct.level = C.errorLevel(eduvpn.GetErrorLevel(err))
+	errorStruct.traceback = C.CString(eduvpn.GetErrorTraceback(err))
+	errorStruct.cause = C.CString(eduvpn.GetErrorCause(err).Error())
+	return errorStruct
+}
 
-	errorString, jsonErr := eduvpn.GetErrorJSONString(error)
-	if jsonErr != nil {
-		return ""
-	}
-	return errorString
+//export FreeError
+func FreeError(err *C.error) {
+	C.free(unsafe.Pointer(err.traceback))
+	C.free(unsafe.Pointer(err.cause))
+	C.free(unsafe.Pointer(err))
 }
 
 //export CancelOAuth
-func CancelOAuth(name *C.char) *C.char {
+func CancelOAuth(name *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	cancelErr := state.CancelOAuth()
-	cancelErrString := ErrorToString(cancelErr)
-	return C.CString(cancelErrString)
-}
-
-type configJSON struct {
-	Config     string `json:"config"`
-	ConfigType string `json:"config_type"`
-}
-
-func getConfigJSON(config string, configType string) *C.char {
-	object := &configJSON{Config: config, ConfigType: configType}
-	jsonBytes, jsonErr := json.Marshal(object)
-
-	if jsonErr != nil {
-		panic(jsonErr)
-	}
-
-	return C.CString(string(jsonBytes))
+	return getError(cancelErr)
 }
 
 //export RemoveSecureInternet
-func RemoveSecureInternet(name *C.char) *C.char {
+func RemoveSecureInternet(name *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	removeErr := state.RemoveSecureInternet()
-	return C.CString(ErrorToString(removeErr))
+	return getError(removeErr)
 }
 
 //export RemoveInstituteAccess
-func RemoveInstituteAccess(name *C.char, url *C.char) *C.char {
+func RemoveInstituteAccess(name *C.char, url *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	removeErr := state.RemoveInstituteAccess(C.GoString(url))
-	return C.CString(ErrorToString(removeErr))
+	return getError(removeErr)
 }
 
 //export RemoveCustomServer
-func RemoveCustomServer(name *C.char, url *C.char) *C.char {
+func RemoveCustomServer(name *C.char, url *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	removeErr := state.RemoveCustomServer(C.GoString(url))
-	return C.CString(ErrorToString(removeErr))
+	return getError(removeErr)
 }
 
 //export GetConfigSecureInternet
-func GetConfigSecureInternet(name *C.char, orgID *C.char, forceTCP C.int) (*C.char, *C.char) {
+func GetConfigSecureInternet(name *C.char, orgID *C.char, forceTCP C.int) (*C.char, *C.char, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, C.CString(ErrorToString(stateErr))
+		return nil, nil, getError(stateErr)
 	}
 	forceTCPBool := forceTCP == 1
 	config, configType, configErr := state.GetConfigSecureInternet(C.GoString(orgID), forceTCPBool)
-	return getConfigJSON(config, configType), C.CString(ErrorToString(configErr))
+	return C.CString(config), C.CString(configType), getError(configErr)
 }
 
 //export GetConfigInstituteAccess
-func GetConfigInstituteAccess(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char) {
+func GetConfigInstituteAccess(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, C.CString(ErrorToString(stateErr))
+		return nil, nil, getError(stateErr)
 	}
 	forceTCPBool := forceTCP == 1
 	config, configType, configErr := state.GetConfigInstituteAccess(C.GoString(url), forceTCPBool)
-	return getConfigJSON(config, configType), C.CString(ErrorToString(configErr))
+	return C.CString(config), C.CString(configType), getError(configErr)
 }
 
 //export GetConfigCustomServer
-func GetConfigCustomServer(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char) {
+func GetConfigCustomServer(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, C.CString(ErrorToString(stateErr))
+		return nil, nil, getError(stateErr)
 	}
 	forceTCPBool := forceTCP == 1
 	config, configType, configErr := state.GetConfigCustomServer(C.GoString(url), forceTCPBool)
-	return getConfigJSON(config, configType), C.CString(ErrorToString(configErr))
+	return C.CString(config), C.CString(configType), getError(configErr)
 }
 
 //export SetProfileID
-func SetProfileID(name *C.char, data *C.char) *C.char {
+func SetProfileID(name *C.char, data *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	profileErr := state.SetProfileID(C.GoString(data))
-	return C.CString(ErrorToString(profileErr))
+	return getError(profileErr)
 }
 
 //export ChangeSecureLocation
-func ChangeSecureLocation(name *C.char) *C.char {
+func ChangeSecureLocation(name *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	locationErr := state.ChangeSecureLocation()
-	return C.CString(ErrorToString(locationErr))
+	return getError(locationErr)
 }
 
 //export SetSecureLocation
-func SetSecureLocation(name *C.char, data *C.char) *C.char {
+func SetSecureLocation(name *C.char, data *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	locationErr := state.SetSecureLocation(C.GoString(data))
-	return C.CString(ErrorToString(locationErr))
+	return getError(locationErr)
 }
 
 //export GoBack
-func GoBack(name *C.char) *C.char {
+func GoBack(name *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	goBackErr := state.GoBack()
-	return C.CString(ErrorToString(goBackErr))
+	return getError(goBackErr)
 }
 
 //export SetSearchServer
-func SetSearchServer(name *C.char) *C.char {
+func SetSearchServer(name *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	setSearchErr := state.SetSearchServer()
-	return C.CString(ErrorToString(setSearchErr))
+	return getError(setSearchErr)
 }
 
 //export SetDisconnected
-func SetDisconnected(name *C.char, cleanup C.int) *C.char {
+func SetDisconnected(name *C.char, cleanup C.int) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	setDisconnectedErr := state.SetDisconnected(int(cleanup) == 1)
-	return C.CString(ErrorToString(setDisconnectedErr))
+	return getError(setDisconnectedErr)
 }
 
 //export SetDisconnecting
-func SetDisconnecting(name *C.char) *C.char {
+func SetDisconnecting(name *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	setDisconnectingErr := state.SetDisconnecting()
-	return C.CString(ErrorToString(setDisconnectingErr))
+	return getError(setDisconnectingErr)
 }
 
 //export SetConnecting
-func SetConnecting(name *C.char) *C.char {
+func SetConnecting(name *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	setConnectingErr := state.SetConnecting()
-	return C.CString(ErrorToString(setConnectingErr))
+	return getError(setConnectingErr)
 }
 
 //export SetConnected
-func SetConnected(name *C.char) *C.char {
+func SetConnected(name *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	setConnectedErr := state.SetConnected()
-	return C.CString(ErrorToString(setConnectedErr))
+	return getError(setConnectedErr)
 }
 
 //export RenewSession
-func RenewSession(name *C.char) *C.char {
+func RenewSession(name *C.char) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return C.CString(ErrorToString(stateErr))
+		return getError(stateErr)
 	}
 	renewSessionErr := state.RenewSession()
-	return C.CString(ErrorToString(renewSessionErr))
+	return getError(renewSessionErr)
 }
 
 //export ShouldRenewButton

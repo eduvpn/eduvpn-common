@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 func EnsureValidURL(s string) (string, error) {

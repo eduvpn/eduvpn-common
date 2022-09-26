@@ -1,11 +1,10 @@
 from ctypes import *
 from collections import defaultdict
-from enum import Enum
 import pathlib
 import platform
 from typing import Tuple, Optional
-import json
 from typing import List
+from .error import WrappedError, ErrorLevel
 
 _lib_prefixes = defaultdict(
     lambda: "lib",
@@ -37,10 +36,12 @@ except:
     lib = cdll.LoadLibrary(str(pathlib.Path(__file__).parent / "lib" / _libfile))
 
 
-class ErrorLevel(Enum):
-    ERR_OTHER = 0
-    ERR_INFO = 1
-
+class cError(Structure):
+    _fields_ = [
+        ("level", c_int),
+        ("traceback", c_char_p),
+        ("cause", c_char_p),
+    ]
 
 class cServerLocations(Structure):
     _fields_ = [("locations", POINTER(c_char_p)), ("total_locations", c_size_t)]
@@ -126,7 +127,11 @@ class cServers(Structure):
 
 
 class DataError(Structure):
-    _fields_ = [("data", c_void_p), ("error", c_void_p)]
+    _fields_ = [("data", c_void_p), ("error", POINTER(cError))]
+
+
+class ConfigError(Structure):
+    _fields_ = [("config", c_char_p), ("config_type", c_char_p), ("error", POINTER(cError))]
 
 
 VPNStateChange = CFUNCTYPE(None, c_char_p, c_int, c_int, c_void_p)
@@ -149,17 +154,17 @@ lib.GetConfigSecureInternet.argtypes, lib.GetConfigSecureInternet.restype = [
     c_char_p,
     c_char_p,
     c_int,
-], DataError
+], ConfigError
 lib.GetConfigInstituteAccess.argtypes, lib.GetConfigInstituteAccess.restype = [
     c_char_p,
     c_char_p,
     c_int,
-], DataError
+], ConfigError
 lib.GetConfigCustomServer.argtypes, lib.GetConfigCustomServer.restype = [
     c_char_p,
     c_char_p,
     c_int,
-], DataError
+], ConfigError
 lib.Deregister.argtypes, lib.Deregister.restype = [c_char_p], None
 lib.Register.argtypes, lib.Register.restype = [
     c_char_p,
@@ -195,17 +200,11 @@ lib.FreeDiscoOrganizations.argtypes, lib.FreeDiscoOrganizations.restype = [
     c_void_p
 ], None
 lib.FreeDiscoServers.argtypes, lib.FreeDiscoServers.restype = [c_void_p], None
+lib.FreeError.argtypes, lib.FreeError.restype = [c_void_p], None
 lib.FreeServer.argtypes, lib.FreeServer.restype = [c_void_p], None
 lib.FreeServers.argtypes, lib.FreeServers.restype = [c_void_p], None
 lib.InFSMState.argtypes, lib.InFSMState.restype = [c_void_p, c_int], int
 lib.GetSavedServers.argtypes, lib.GetSavedServers.restype = [c_char_p], DataError
-
-
-class WrappedError:
-    def __init__(self, traceback: str, cause: str, level: ErrorLevel):
-        self.traceback = traceback
-        self.cause = cause
-        self.level = level
 
 
 def encode_args(args, types):
@@ -239,37 +238,21 @@ def get_ptr_list_strings(
         return strings_list
     return []
 
-
-def get_ptr_error(ptr: c_void_p) -> Optional[WrappedError]:
-    error_string = get_ptr_string(ptr)
-
-    if not error_string:
+def get_error(ptr: c_void_p) -> Optional[WrappedError]:
+    if not ptr:
         return None
+    err = cast(ptr, POINTER(cError)).contents
+    wrapped = WrappedError(err.traceback.decode(), err.cause.decode(), ErrorLevel(err.level))
+    lib.FreeError(ptr)
+    return wrapped
 
-    error_json = json.loads(error_string)
+def get_config_error(config_error: ConfigError) -> Tuple[str, str, Optional[WrappedError]]:
+    config = get_ptr_string(config_error.config)
+    config_type = get_ptr_string(config_error.config_type)
+    err = get_error(config_error.error)
+    return config, config_type, err
 
-    if not error_json:
-        return None
-
-    if "level" not in error_json:
-        return error_string
-    level = error_json["level"]
-    traceback = error_json["traceback"]
-    cause = error_json["cause"]
-    return WrappedError(traceback, cause, ErrorLevel(level))
-
-
-def get_error(ptr: c_void_p) -> str:
-    error = get_ptr_error(ptr)
-    if not error:
-        return ""
-
-    if not isinstance(error, WrappedError):
-        return error
-    return error.cause
-
-
-def get_data_error(data_error: DataError, data_conv=get_ptr_string) -> Tuple[str, str]:
+def get_data_error(data_error: DataError, data_conv=get_ptr_string) -> Tuple[str, Optional[WrappedError]]:
     data = data_conv(data_error.data)
     error = get_error(data_error.error)
     return data, error
@@ -283,4 +266,5 @@ decode_map = {
     c_int: get_bool,
     c_void_p: get_error,
     DataError: get_data_error,
+    ConfigError: get_config_error,
 }

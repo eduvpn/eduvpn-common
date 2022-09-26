@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
-	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 // An instute access server

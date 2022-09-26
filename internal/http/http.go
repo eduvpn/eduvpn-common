@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 type URLParameters map[string]string

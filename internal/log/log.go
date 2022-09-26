@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/types"
 	"github.com/eduvpn/eduvpn-common/internal/util"
 )
 

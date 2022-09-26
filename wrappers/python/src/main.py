@@ -5,7 +5,6 @@ from .discovery import get_disco_organizations, get_disco_servers
 from .event import EventHandler
 from .state import State, StateType
 from .server import get_servers
-import json
 
 eduvpn_objects = {}
 
@@ -70,7 +69,7 @@ class EduVPN(object):
         cancel_oauth_err = self.go_function(lib.CancelOAuth)
 
         if cancel_oauth_err:
-            raise Exception(cancel_oauth_err)
+            raise cancel_oauth_err
 
     def deregister(self) -> None:
         self.go_function(lib.Deregister)
@@ -85,7 +84,7 @@ class EduVPN(object):
         )
 
         if register_err:
-            raise Exception(register_err)
+            raise register_err
 
     def get_disco_servers(self) -> str:
         servers, servers_err = self.go_function_custom_decode(
@@ -93,7 +92,7 @@ class EduVPN(object):
         )
 
         if servers_err:
-           raise Exception(servers_err)
+           raise servers_err
 
         return servers
 
@@ -103,7 +102,7 @@ class EduVPN(object):
         )
 
         if organizations_err:
-           raise Exception(organizations_err)
+           raise organizations_err
 
         return organizations
 
@@ -111,19 +110,19 @@ class EduVPN(object):
         remove_err = self.go_function(lib.RemoveSecureInternet)
 
         if remove_err:
-            raise Exception(remove_err)
+            raise remove_err
 
     def remove_institute_access(self, url: str):
         remove_err = self.go_function(lib.RemoveInstituteAccess, url)
 
         if remove_err:
-            raise Exception(remove_err)
+            raise remove_err
 
     def remove_custom_server(self, url: str):
         remove_err = self.go_function(lib.RemoveCustomServer, url)
 
         if remove_err:
-            raise Exception(remove_err)
+            raise remove_err
 
     def get_config(self, url: str, func: callable, force_tcp: bool = False):
         # Because it could be the case that a profile callback is started, store a threading event
@@ -131,17 +130,13 @@ class EduVPN(object):
         # The event is set in self.set_profile
         self.profile_event = threading.Event()
 
-        config_json, config_err = self.go_function(func, url, force_tcp)
+        config, config_type, config_err = self.go_function(func, url, force_tcp)
 
         self.profile_event = None
         self.location_event = None
 
         if config_err:
-            raise Exception(config_err)
-
-        config_json_dict = json.loads(config_json)
-        config = config_json_dict["config"]
-        config_type = config_json_dict["config_type"]
+            raise config_err
 
         return config, config_type
 
@@ -169,31 +164,31 @@ class EduVPN(object):
         connect_err = self.go_function(lib.SetConnected)
 
         if connect_err:
-            raise Exception(connect_err)
+            raise connect_err
 
     def set_disconnecting(self) -> None:
         disconnecting_err = self.go_function(lib.SetDisconnecting)
 
         if disconnecting_err:
-            raise Exception(disconnecting_err)
+            raise disconnecting_err
 
     def set_connecting(self) -> None:
         connecting_err = self.go_function(lib.SetConnecting)
 
         if connecting_err:
-            raise Exception(connecting_err)
+            raise connecting_err
 
     def set_disconnected(self, cleanup=True) -> None:
         disconnect_err = self.go_function(lib.SetDisconnected, cleanup)
 
         if disconnect_err:
-            raise Exception(disconnect_err)
+            raise disconnect_err
 
     def set_search_server(self) -> None:
         search_err = self.go_function(lib.SetSearchServer)
 
         if search_err:
-            raise Exception(search_err)
+            raise search_err
 
     def remove_class_callbacks(self, cls) -> None:
         self.event_handler.change_class_callbacks(cls, add=False)
@@ -218,7 +213,7 @@ class EduVPN(object):
             self.profile_event.set()
 
         if profile_err:
-            raise Exception(profile_err)
+            raise profile_err
 
     def change_secure_location(self) -> None:
         # Set the location by country code
@@ -226,7 +221,7 @@ class EduVPN(object):
         location_err = self.go_function(lib.ChangeSecureLocation)
 
         if location_err:
-            raise Exception(location_err)
+            raise location_err
 
     def set_secure_location(self, country_code: str) -> None:
         # Set the location by country code
@@ -238,13 +233,13 @@ class EduVPN(object):
             self.location_event.set()
 
         if location_err:
-            raise Exception(location_err)
+            raise location_err
 
     def renew_session(self) -> None:
         renew_err = self.go_function(lib.RenewSession)
 
         if renew_err:
-            raise Exception(renew_err)
+            raise renew_err
 
     def should_renew_button(self) -> bool:
         return self.go_function(lib.ShouldRenewButton)

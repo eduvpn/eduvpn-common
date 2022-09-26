@@ -3,6 +3,7 @@ package main
 /*
 // for free and size_t
 #include <stdlib.h>
+#include "error.h"
 
 typedef struct discoveryServer {
   const char* authentication_url_template;
@@ -42,7 +43,7 @@ import (
 	"unsafe"
 
 	eduvpn "github.com/eduvpn/eduvpn-common"
-	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 func getCPtrDiscoOrganization(
@@ -168,15 +169,15 @@ func FreeDiscoOrganizations(cOrganizations *C.discoveryOrganizations) {
 }
 
 //export GetDiscoServers
-func GetDiscoServers(name *C.char) (*C.discoveryServers, *C.char) {
+func GetDiscoServers(name *C.char) (*C.discoveryServers, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, C.CString(ErrorToString(stateErr))
+		return nil, getError(stateErr)
 	}
 	servers, serversErr := state.GetDiscoServers()
 	if serversErr != nil {
-		return nil, C.CString(ErrorToString(serversErr))
+		return nil, getError(serversErr)
 	}
 
 	returnedStruct := (*C.discoveryServers)(
@@ -191,15 +192,15 @@ func GetDiscoServers(name *C.char) (*C.discoveryServers, *C.char) {
 }
 
 //export GetDiscoOrganizations
-func GetDiscoOrganizations(name *C.char) (*C.discoveryOrganizations, *C.char) {
+func GetDiscoOrganizations(name *C.char) (*C.discoveryOrganizations, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, C.CString(ErrorToString(stateErr))
+		return nil, getError(stateErr)
 	}
 	organizations, organizationsErr := state.GetDiscoOrganizations()
 	if organizationsErr != nil {
-		return nil, C.CString(ErrorToString(organizationsErr))
+		return nil, getError(organizationsErr)
 	}
 
 	returnedStruct := (*C.discoveryOrganizations)(

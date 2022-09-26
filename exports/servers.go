@@ -3,6 +3,7 @@ package main
 /*
 // for free and size_t
 #include <stdlib.h>
+#include "error.h"
 
 // The struct for a single server profile
 typedef struct serverProfile {
@@ -293,11 +294,11 @@ func getSavedServersWithOptions(state *eduvpn.VPNState, servers *server.Servers)
 //export GetSavedServers
 // This function takes the name as input which is the name of the client
 // It gets the state by name and then returns the saved servers as a c struct belonging to it
-func GetSavedServers(name *C.char) (*C.servers, *C.char) {
+func GetSavedServers(name *C.char) (*C.servers, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, C.CString(ErrorToString(stateErr))
+		return nil, getError(stateErr)
 	}
 	servers := getSavedServersWithOptions(state, &state.Servers)
 	return servers, nil

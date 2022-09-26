@@ -10,7 +10,7 @@ import (
 	"time"
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/eduvpn/eduvpn-common/internal/types"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 func APIGetEndpoints(baseURL string) (*ServerEndpoints, error) {
