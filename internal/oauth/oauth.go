@@ -21,6 +21,7 @@ import (
 // state between the request and callback.  The authorization server
 // includes this value when redirecting the user agent back to the
 // client.
+// We implement it similarly to the verifier
 func genState() (string, error) {
 	randomBytes, err := util.MakeRandomByteSlice(32)
 	if err != nil {
@@ -47,6 +48,13 @@ func genChallengeS256(verifier string) string {
 // characters [A-Z] / [a-z] / [0-9] / "-" / "." / "_" / "~", with a
 // minimum length of 43 characters and a maximum length of 128
 // characters.
+// We implement it according to the note:
+//   NOTE: The code verifier SHOULD have enough entropy to make it
+//   impractical to guess the value.  It is RECOMMENDED that the output of
+//   a suitable random number generator be used to create a 32-octet
+//   sequence.  The octet sequence is then base64url-encoded to produce a
+//   43-octet URL safe string to use as the code verifier.
+// See: https://datatracker.ietf.org/doc/html/rfc7636#section-4.1
 func genVerifier() (string, error) {
 	randomBytes, err := util.MakeRandomByteSlice(32)
 	if err != nil {
