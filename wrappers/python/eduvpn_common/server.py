@@ -1,5 +1,5 @@
-from eduvpn_common import lib, cServer, cServers, cServerLocations, cServerProfiles
-from ctypes import cast, POINTER, c_char_p
+from eduvpn_common.types import cServer, cServers, cServerLocations, cServerProfiles
+from ctypes import cast, POINTER
 from datetime import datetime
 
 
@@ -125,19 +125,19 @@ def get_server(ptr, _type=None):
     return Server(identifier, display_name, profiles, current_server.expire_time)
 
 
-def get_transition_server(ptr):
+def get_transition_server(lib, ptr):
     server = get_server(cast(ptr, POINTER(cServer)))
     lib.FreeServer(ptr)
     return server
 
 
-def get_transition_profiles(ptr):
+def get_transition_profiles(lib, ptr):
     profiles = get_profiles(cast(ptr, POINTER(cServerProfiles)))
     lib.FreeProfiles(ptr)
     return profiles
 
 
-def get_servers(ptr):
+def get_servers(lib, ptr):
     if ptr:
         returned = []
         servers = cast(ptr, POINTER(cServers)).contents
@@ -164,7 +164,7 @@ def get_servers(ptr):
     return None
 
 
-def get_locations(ptr):
+def get_locations(lib, ptr):
     if ptr:
         locations = cast(ptr, POINTER(cServerLocations)).contents
         location_list = []

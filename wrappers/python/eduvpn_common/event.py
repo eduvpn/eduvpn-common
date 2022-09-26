@@ -1,4 +1,3 @@
-from eduvpn_common import VPNStateChange, get_ptr_string
 from enum import Enum
 from typing import Callable
 from eduvpn_common.state import State, StateType
@@ -8,6 +7,7 @@ from eduvpn_common.server import (
     get_transition_server,
     get_servers,
 )
+from eduvpn_common.types import get_ptr_string
 
 
 EDUVPN_CALLBACK_PROPERTY = "_eduvpn_property_callback"
@@ -22,29 +22,30 @@ def class_state_transition(state: int, state_type: StateType) -> Callable:
     return wrapper
 
 
-def convert_data(state: State, data):
+def convert_data(lib, state: State, data):
     if not data:
         return None
     if state is State.NO_SERVER:
-        return get_servers(data)
+        return get_servers(lib, data)
     if state is State.OAUTH_STARTED:
-        return get_ptr_string(data)
+        return get_ptr_string(lib, data)
     if state is State.ASK_LOCATION:
-        return get_locations(data)
+        return get_locations(lib, data)
     if state is State.ASK_PROFILE:
-        return get_transition_profiles(data)
+        return get_transition_profiles(lib, data)
     if state in [
         State.DISCONNECTED,
         State.DISCONNECTING,
         State.CONNECTING,
         State.CONNECTED,
     ]:
-        return get_transition_server(data)
+        return get_transition_server(lib, data)
 
 
 class EventHandler(object):
-    def __init__(self):
+    def __init__(self, lib):
         self.handlers = {}
+        self.lib = lib
 
     def change_class_callbacks(self, cls, add=True) -> None:
         # Loop over method names
@@ -103,7 +104,7 @@ class EventHandler(object):
         # The state is done when the wait event finishes
         converted = data
         if convert:
-            converted = convert_data(new_state, data)
+            converted = convert_data(self.lib, new_state, data)
         self.run_state(old_state, new_state, StateType.Leave, converted)
         self.run_state(new_state, old_state, StateType.Enter, converted)
         self.run_state(new_state, old_state, StateType.Wait, converted)

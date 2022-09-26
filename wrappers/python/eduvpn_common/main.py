@@ -1,12 +1,15 @@
-from eduvpn_common import lib, VPNStateChange, encode_args, decode_res, get_data_error
 from typing import Optional, Tuple
 import threading
 from eduvpn_common.discovery import get_disco_organizations, get_disco_servers
 from eduvpn_common.event import EventHandler
-from eduvpn_common.state import State, StateType
+from eduvpn_common.loader import initialize_functions, load_lib
+from eduvpn_common.types import VPNStateChange, encode_args, decode_res, get_data_error
 from eduvpn_common.server import get_servers
+from eduvpn_common.state import State, StateType
 
 eduvpn_objects = {}
+
+VERSION = "0.1.0"
 
 
 def add_as_global_object(eduvpn) -> bool:
@@ -32,9 +35,14 @@ def state_callback(name, old_state, new_state, data):
 
 class EduVPN(object):
     def __init__(self, name: str, config_directory: str):
-        self.event_handler = EventHandler()
         self.name = name
         self.config_directory = config_directory
+
+        # Load the library
+        self.lib = load_lib(VERSION)
+        initialize_functions(self.lib)
+
+        self.event_handler = EventHandler(self.lib)
 
         # Callbacks that need to wait for specific events
 
@@ -57,22 +65,22 @@ class EduVPN(object):
         # The functions all have at least one arg type which is the name of the client
         args_gen = encode_args(list(args), func.argtypes[1:])
         res = func(self.name.encode("utf-8"), *(args_gen))
-        return decode_res(func.restype)(res)
+        return decode_res(func.restype)(self.lib, res)
 
     def go_function_custom_decode(self, func, decode_func, *args):
         # The functions all have at least one arg type which is the name of the client
         args_gen = encode_args(list(args), func.argtypes[1:])
         res = func(self.name.encode("utf-8"), *(args_gen))
-        return decode_func(res)
+        return decode_func(self.lib, res)
 
     def cancel_oauth(self) -> None:
-        cancel_oauth_err = self.go_function(lib.CancelOAuth)
+        cancel_oauth_err = self.go_function(self.lib.CancelOAuth)
 
         if cancel_oauth_err:
             raise cancel_oauth_err
 
     def deregister(self) -> None:
-        self.go_function(lib.Deregister)
+        self.go_function(self.lib.Deregister)
         remove_as_global_object(self)
 
     def register(self, debug: bool = False) -> None:
@@ -80,7 +88,7 @@ class EduVPN(object):
             raise Exception("Already registered")
 
         register_err = self.go_function(
-            lib.Register, self.config_directory, state_callback, debug
+            self.lib.Register, self.config_directory, state_callback, debug
         )
 
         if register_err:
@@ -88,38 +96,40 @@ class EduVPN(object):
 
     def get_disco_servers(self) -> str:
         servers, servers_err = self.go_function_custom_decode(
-            lib.GetDiscoServers, decode_func=lambda x: get_data_error(x, get_disco_servers)
+            self.lib.GetDiscoServers,
+            decode_func=lambda lib, x: get_data_error(lib, x, get_disco_servers),
         )
 
         if servers_err:
-           raise servers_err
+            raise servers_err
 
         return servers
 
     def get_disco_organizations(self) -> str:
         organizations, organizations_err = self.go_function_custom_decode(
-            lib.GetDiscoOrganizations, decode_func=lambda x: get_data_error(x, get_disco_organizations)
+            self.lib.GetDiscoOrganizations,
+            decode_func=lambda lib, x: get_data_error(lib, x, get_disco_organizations),
         )
 
         if organizations_err:
-           raise organizations_err
+            raise organizations_err
 
         return organizations
 
     def remove_secure_internet(self):
-        remove_err = self.go_function(lib.RemoveSecureInternet)
+        remove_err = self.go_function(self.lib.RemoveSecureInternet)
 
         if remove_err:
             raise remove_err
 
     def remove_institute_access(self, url: str):
-        remove_err = self.go_function(lib.RemoveInstituteAccess, url)
+        remove_err = self.go_function(self.lib.RemoveInstituteAccess, url)
 
         if remove_err:
             raise remove_err
 
     def remove_custom_server(self, url: str):
-        remove_err = self.go_function(lib.RemoveCustomServer, url)
+        remove_err = self.go_function(self.lib.RemoveCustomServer, url)
 
         if remove_err:
             raise remove_err
@@ -143,49 +153,49 @@ class EduVPN(object):
     def get_config_custom_server(
         self, url: str, force_tcp: bool = False
     ) -> Tuple[str, str]:
-        return self.get_config(url, lib.GetConfigCustomServer, force_tcp)
+        return self.get_config(url, self.lib.GetConfigCustomServer, force_tcp)
 
     def get_config_institute_access(
         self, url: str, force_tcp: bool = False
     ) -> Tuple[str, str]:
-        return self.get_config(url, lib.GetConfigInstituteAccess, force_tcp)
+        return self.get_config(url, self.lib.GetConfigInstituteAccess, force_tcp)
 
     def get_config_secure_internet(
         self, url: str, force_tcp: bool = False
     ) -> Tuple[str, str]:
         self.location_event = threading.Event()
-        return self.get_config(url, lib.GetConfigSecureInternet, force_tcp)
+        return self.get_config(url, self.lib.GetConfigSecureInternet, force_tcp)
 
     def go_back(self) -> None:
         # Ignore the error
-        self.go_function(lib.GoBack)
+        self.go_function(self.lib.GoBack)
 
     def set_connected(self) -> None:
-        connect_err = self.go_function(lib.SetConnected)
+        connect_err = self.go_function(self.lib.SetConnected)
 
         if connect_err:
             raise connect_err
 
     def set_disconnecting(self) -> None:
-        disconnecting_err = self.go_function(lib.SetDisconnecting)
+        disconnecting_err = self.go_function(self.lib.SetDisconnecting)
 
         if disconnecting_err:
             raise disconnecting_err
 
     def set_connecting(self) -> None:
-        connecting_err = self.go_function(lib.SetConnecting)
+        connecting_err = self.go_function(self.lib.SetConnecting)
 
         if connecting_err:
             raise connecting_err
 
     def set_disconnected(self, cleanup=True) -> None:
-        disconnect_err = self.go_function(lib.SetDisconnected, cleanup)
+        disconnect_err = self.go_function(self.lib.SetDisconnected, cleanup)
 
         if disconnect_err:
             raise disconnect_err
 
     def set_search_server(self) -> None:
-        search_err = self.go_function(lib.SetSearchServer)
+        search_err = self.go_function(self.lib.SetSearchServer)
 
         if search_err:
             raise search_err
@@ -205,7 +215,7 @@ class EduVPN(object):
 
     def set_profile(self, profile_id: str) -> None:
         # Set the profile id
-        profile_err = self.go_function(lib.SetProfileID, profile_id)
+        profile_err = self.go_function(self.lib.SetProfileID, profile_id)
 
         # If there is a profile event, set it so that the wait callback finishes
         # And so that the Go code can move to the next state
@@ -218,14 +228,14 @@ class EduVPN(object):
     def change_secure_location(self) -> None:
         # Set the location by country code
         self.location_event = threading.Event()
-        location_err = self.go_function(lib.ChangeSecureLocation)
+        location_err = self.go_function(self.lib.ChangeSecureLocation)
 
         if location_err:
             raise location_err
 
     def set_secure_location(self, country_code: str) -> None:
         # Set the location by country code
-        location_err = self.go_function(lib.SetSecureLocation, country_code)
+        location_err = self.go_function(self.lib.SetSecureLocation, country_code)
 
         # If there is a location event, set it so that the wait callback finishes
         # And so that the Go code can move to the next state
@@ -236,18 +246,19 @@ class EduVPN(object):
             raise location_err
 
     def renew_session(self) -> None:
-        renew_err = self.go_function(lib.RenewSession)
+        renew_err = self.go_function(self.lib.RenewSession)
 
         if renew_err:
             raise renew_err
 
     def should_renew_button(self) -> bool:
-        return self.go_function(lib.ShouldRenewButton)
+        return self.go_function(self.lib.ShouldRenewButton)
 
     def in_fsm_state(self, state_id: State) -> bool:
-        return self.go_function(lib.InFSMState, state_id)
+        return self.go_function(self.lib.InFSMState, state_id)
 
     def get_saved_servers(self) -> str:
         return self.go_function_custom_decode(
-            lib.GetSavedServers, decode_func=lambda x: get_data_error(x, get_servers)
+            self.lib.GetSavedServers,
+            decode_func=lambda lib, x: get_data_error(lib, x, get_servers),
         )

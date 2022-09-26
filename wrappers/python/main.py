@@ -1,9 +1,7 @@
 import eduvpn_common.main as eduvpn
 from eduvpn_common.state import State, StateType
 import webbrowser
-import json
 import sys
-import time
 from typing import List
 
 # Asks the user for a profile index
@@ -78,9 +76,9 @@ if __name__ == "__main__":
     except Exception as e:
         print("Failed registering:", e)
 
-    #server = input(
-    #    "Which server (Custom/Institute Access) do you want to connect to? (e.g. https://eduvpn.example.com): "
-    #)
+    server = input(
+        "Which server (Custom/Institute Access) do you want to connect to? (e.g. https://eduvpn.example.com): "
+    )
 
     # Get a Wireguard/OpenVPN config
     try:

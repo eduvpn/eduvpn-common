@@ -1,4 +1,8 @@
-from eduvpn_common import lib, cDiscoveryOrganizations, cDiscoveryServers, get_ptr_list_strings
+from eduvpn_common.types import (
+    cDiscoveryOrganizations,
+    cDiscoveryServers,
+    get_ptr_list_strings,
+)
 from ctypes import cast, POINTER
 
 
@@ -62,7 +66,7 @@ def get_disco_organization(ptr):
     return DiscoOrganization(display_name, org_id, secure_internet_home, keyword_list)
 
 
-def get_disco_server(ptr):
+def get_disco_server(lib, ptr):
     if not ptr:
         return None
 
@@ -75,11 +79,11 @@ def get_disco_server(ptr):
     display_name = current_server.display_name.decode("utf-8")
     keyword_list = current_server.keyword_list.decode("utf-8")
     public_keys = get_ptr_list_strings(
-        current_server.public_key_list, current_server.total_public_keys
+        lib, current_server.public_key_list, current_server.total_public_keys
     )
     server_type = current_server.server_type.decode("utf-8")
     support_contacts = get_ptr_list_strings(
-        current_server.support_contact, current_server.total_support_contact
+        lib, current_server.support_contact, current_server.total_support_contact
     )
     return DiscoServer(
         authentication_url_template,
@@ -93,7 +97,7 @@ def get_disco_server(ptr):
     )
 
 
-def get_disco_servers(ptr):
+def get_disco_servers(lib, ptr):
     if ptr:
         svrs = cast(ptr, POINTER(cDiscoveryServers)).contents
 
@@ -101,7 +105,7 @@ def get_disco_servers(ptr):
 
         if svrs.servers:
             for i in range(svrs.total_servers):
-                current = get_disco_server(svrs.servers[i])
+                current = get_disco_server(lib, svrs.servers[i])
 
                 if current is None:
                     continue
@@ -111,7 +115,7 @@ def get_disco_servers(ptr):
     return None
 
 
-def get_disco_organizations(ptr):
+def get_disco_organizations(lib, ptr):
     if ptr:
         orgs = cast(ptr, POINTER(cDiscoveryOrganizations)).contents
         organizations = []
