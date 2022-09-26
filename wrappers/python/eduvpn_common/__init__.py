@@ -4,7 +4,7 @@ import pathlib
 import platform
 from typing import Tuple, Optional
 from typing import List
-from .error import WrappedError, ErrorLevel
+from eduvpn_common.error import WrappedError, ErrorLevel
 
 _lib_prefixes = defaultdict(
     lambda: "lib",

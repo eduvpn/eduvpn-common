@@ -1,10 +1,10 @@
-from . import lib, VPNStateChange, encode_args, decode_res, get_data_error
+from eduvpn_common import lib, VPNStateChange, encode_args, decode_res, get_data_error
 from typing import Optional, Tuple
 import threading
-from .discovery import get_disco_organizations, get_disco_servers
-from .event import EventHandler
-from .state import State, StateType
-from .server import get_servers
+from eduvpn_common.discovery import get_disco_organizations, get_disco_servers
+from eduvpn_common.event import EventHandler
+from eduvpn_common.state import State, StateType
+from eduvpn_common.server import get_servers
 
 eduvpn_objects = {}
 

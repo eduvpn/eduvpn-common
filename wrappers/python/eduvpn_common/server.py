@@ -1,4 +1,4 @@
-from . import lib, cServer, cServers, cServerLocations, cServerProfiles
+from eduvpn_common import lib, cServer, cServers, cServerLocations, cServerProfiles
 from ctypes import cast, POINTER, c_char_p
 from datetime import datetime
 

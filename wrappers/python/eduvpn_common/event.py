@@ -1,8 +1,8 @@
-from . import VPNStateChange, get_ptr_string
+from eduvpn_common import VPNStateChange, get_ptr_string
 from enum import Enum
 from typing import Callable
-from .state import State, StateType
-from .server import (
+from eduvpn_common.state import State, StateType
+from eduvpn_common.server import (
     get_locations,
     get_transition_profiles,
     get_transition_server,

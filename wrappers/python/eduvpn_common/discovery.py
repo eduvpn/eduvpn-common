@@ -1,4 +1,4 @@
-from . import lib, cDiscoveryOrganizations, cDiscoveryServers, get_ptr_list_strings
+from eduvpn_common import lib, cDiscoveryOrganizations, cDiscoveryServers, get_ptr_list_strings
 from ctypes import cast, POINTER
 
 
