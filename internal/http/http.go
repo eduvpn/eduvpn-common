@@ -147,7 +147,7 @@ func HTTPMethodWithOpts(
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		// We make this a custom error because we want to extract the status code later
-		statusErr := &HTTPStatusError{URL: url, Status: resp.StatusCode}
+		statusErr := &HTTPStatusError{URL: url, Body: string(body), Status: resp.StatusCode}
 		return resp.Header, body, &types.WrappedErrorMessage{Message: errorMessage, Err: statusErr}
 	}
 
@@ -157,14 +157,16 @@ func HTTPMethodWithOpts(
 
 type HTTPStatusError struct {
 	URL    string
+	Body string
 	Status int
 }
 
 func (e *HTTPStatusError) Error() string {
 	return fmt.Sprintf(
-		"failed obtaining HTTP resource: %s as it gave an unsuccesful status code: %d",
+		"failed obtaining HTTP resource: %s as it gave an unsuccesful status code: %d. Body: %s",
 		e.URL,
 		e.Status,
+		e.Body,
 	)
 }
 
