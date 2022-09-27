@@ -30,7 +30,6 @@ class Server:
         self.url = url
         self.display_name = display_name
         self.profiles = profiles
-        self.current_profile = None
         self.expire_time = datetime.fromtimestamp(expire_time)
 
     def __str__(self):
