@@ -36,11 +36,19 @@ class Server:
     def __str__(self):
         return self.display_name
 
+    @property
+    def category(self):
+        return "Custom Server"
+
 
 class InstituteServer(Server):
     def __init__(self, url, display_name, support_contact, profiles, expire_time):
         super().__init__(url, display_name, profiles, expire_time)
         self.support_contact = support_contact
+
+    @property
+    def category(self):
+        return "Institute Access Server"
 
 
 class SecureInternetServer(Server):
@@ -57,6 +65,10 @@ class SecureInternetServer(Server):
         self.org_id = org_id
         self.support_contact = support_contact
         self.country_code = country_code
+
+    @property
+    def category(self):
+        return "Secure Internet Server"
 
 
 def get_type_for_str(type_str: str):
