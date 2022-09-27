@@ -18,10 +18,16 @@ type FileLogger struct {
 type LogLevel int8
 
 const (
+	// No level set, not allowed
 	LOG_NOTSET LogLevel = iota
+	// Log info, this message is not an error
 	LOG_INFO
+	// Log only to provide a warning, the app still functions
 	LOG_WARNING
+	// Log to provide a generic error, the app still functions but some functionality might not work
 	LOG_ERROR
+	// Log to provide a fatal error, the app cannot function correctly when such an error occurs
+	LOG_FATAL
 )
 
 func (e LogLevel) String() string {
@@ -34,6 +40,8 @@ func (e LogLevel) String() string {
 		return "WARNING"
 	case LOG_ERROR:
 		return "ERROR"
+	case LOG_FATAL:
+		return "FATAL"
 	default:
 		return "UNKNOWN"
 	}
@@ -60,6 +68,22 @@ func (logger *FileLogger) Init(level LogLevel, name string, directory string) er
 	return nil
 }
 
+func (logger *FileLogger) Inherit(err error, msg string) {
+	level := types.GetErrorLevel(err)
+
+	switch(level) {
+	case types.ERR_INFO:
+		logger.Info(msg)
+	case types.ERR_WARNING:
+		logger.Warning(msg)
+	case types.ERR_OTHER:
+		logger.Error(msg)
+	case types.ERR_FATAL:
+		logger.Fatal(msg)
+	}
+
+}
+
 func (logger *FileLogger) Info(msg string) {
 	logger.log(LOG_INFO, msg)
 }
@@ -70,6 +94,10 @@ func (logger *FileLogger) Warning(msg string) {
 
 func (logger *FileLogger) Error(msg string) {
 	logger.log(LOG_ERROR, msg)
+}
+
+func (logger *FileLogger) Fatal(msg string) {
+	logger.log(LOG_FATAL, msg)
 }
 
 func (logger *FileLogger) Close() {

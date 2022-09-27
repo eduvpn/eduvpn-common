@@ -8,11 +8,17 @@ import (
 type ErrorLevel int8
 
 const (
-	// All other errors
+	// All other errors, default
 	ERR_OTHER ErrorLevel = iota
 
-	// The error is just here as additional info
+	// The erorr is just here as additional info
 	ERR_INFO
+
+	// The error is just here as a warning
+	ERR_WARNING
+
+	// The error is fatal, the app cannot function
+	ERR_FATAL
 )
 
 type WrappedErrorMessage struct {

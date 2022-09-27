@@ -478,7 +478,8 @@ func (state *VPNState) GetConfigSecureInternet(
 
 	config, configType, configErr := state.getConfig(server, forceTCP)
 	if configErr != nil {
-		state.Logger.Error(
+		state.Logger.Inherit(
+			configErr,
 			fmt.Sprintf(
 				"Failed getting a secure internet configuration with error: %s",
 				GetErrorTraceback(configErr),
@@ -548,7 +549,7 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 
 	config, configType, configErr := state.getConfig(server, forceTCP)
 	if configErr != nil {
-		state.Logger.Error(
+		state.Logger.Inherit(configErr,
 			fmt.Sprintf(
 				"Failed getting an institute access server configuration with error: %s",
 				GetErrorTraceback(configErr),
@@ -577,7 +578,8 @@ func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string,
 
 	config, configType, configErr := state.getConfig(server, forceTCP)
 	if configErr != nil {
-		state.Logger.Error(
+		state.Logger.Inherit(
+			configErr,
 			fmt.Sprintf(
 				"Failed getting a custom server with error: %s",
 				GetErrorTraceback(configErr),
