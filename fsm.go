@@ -107,8 +107,9 @@ func newFSM(
 		STATE_NO_SERVER: FSMState{
 			Transitions: []FSMTransition{
 				{To: STATE_NO_SERVER, Description: "Reload list"},
-				{To: STATE_CHOSEN_SERVER, Description: "User chooses a server"},
-				{To: STATE_SEARCH_SERVER, Description: "The user is trying to choose a Server in the UI"},
+				{To: STATE_LOADING_SERVER, Description: "User clicks a server in the UI"},
+				{To: STATE_CHOSEN_SERVER, Description: "The server has been chosen"},
+				{To: STATE_SEARCH_SERVER, Description: "The user is trying to choose a new server in the UI"},
 				{To: STATE_CONNECTED, Description: "The user is already connected"},
 				{To: STATE_ASK_LOCATION, Description: "Change the location in the main screen"},
 			},
