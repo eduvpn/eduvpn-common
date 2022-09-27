@@ -18,7 +18,7 @@ endif
 # This extra target prevents unnecessary rebuild
 lib/$(GOOS)/$(GOARCH)/$(LIB_FILE): ..
 	CGO_ENABLED=1 go build -o $@ -buildmode=c-shared .
-	mv lib/$(GOOS)/$(GOARCH)/$(LIB_PREFIX)$(LIB_NAME).h lib/$(GOOS)/$(GOARCH)/$(LIB_NAME).h || true	# Normalize header name
+	mv lib/$(GOOS)/$(GOARCH)/$(LIB_PREFIX)$(LIB_NAME_VERSION).h lib/$(GOOS)/$(GOARCH)/$(LIB_NAME).h || true	# Normalize header name
 
 clean:
 	rm -rf ../exports/lib/*

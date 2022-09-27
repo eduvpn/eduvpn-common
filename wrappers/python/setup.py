@@ -10,43 +10,43 @@ from setuptools import setup
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 _libname = "eduvpn_common"
-
+__version__ = "0.1.0"
 
 def getlibpath(plat_name: str) -> typing.Union[str, None]:
     """Get library path for plat_name relative to exports/lib/ folder."""
 
-    _plat_map = defaultdict(
+    plat_map = defaultdict(
         lambda: plat_name,
         {
             "win32": "win-x86",
         },
     )
 
-    plat_split = _plat_map[plat_name].split("-", 1)
+    plat_split = plat_map[plat_name].split("-", 1)
     if len(plat_split) != 2:
         return None
     plat_os, plat_arch = plat_split
 
-    _os_map = defaultdict(
+    os_map = defaultdict(
         lambda: plat_os,
         {
             "win": "windows",
         },
     )
-    _lib_prefixes = defaultdict(
+    lib_prefixes = defaultdict(
         lambda: "lib",
         {
             "windows": "",
         },
     )
-    _lib_suffixes = defaultdict(
+    lib_suffixes = defaultdict(
         lambda: ".so",
         {
             "windows": ".dll",
             "darwin": ".dylib",
         },
     )
-    _arch_map = defaultdict(
+    arch_map = defaultdict(
         lambda: plat_arch,
         {
             "aarch64_be": "arm64",
@@ -63,10 +63,10 @@ def getlibpath(plat_name: str) -> typing.Union[str, None]:
         },
     )
 
-    processed_os = _os_map[plat_os]
+    processed_os = os_map[plat_os]
     return (
-        f"{processed_os}/{_arch_map[plat_arch]}/"
-        f"{_lib_prefixes[processed_os]}{_libname}{_lib_suffixes[processed_os]}"
+        f"{processed_os}/{arch_map[plat_arch]}/"
+        f"{lib_prefixes[processed_os]}{_libname}-{__version__}{lib_suffixes[processed_os]}"
     )
 
 
@@ -101,7 +101,7 @@ class bdist_wheel(_bdist_wheel):
 
 setup(
     name="eduvpn_common",
-    version="0.1.0",
+    version=__version__,
     packages=["eduvpn_common"],
     python_requires=">=3.6",
     package_dir={"eduvpn_common": "eduvpn_common"},

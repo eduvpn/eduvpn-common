@@ -9,8 +9,6 @@ from eduvpn_common.state import State, StateType
 
 eduvpn_objects = {}
 
-VERSION = "0.1.0"
-
 
 def add_as_global_object(eduvpn) -> bool:
     global eduvpn_objects
@@ -39,7 +37,7 @@ class EduVPN(object):
         self.config_directory = config_directory
 
         # Load the library
-        self.lib = load_lib(VERSION)
+        self.lib = load_lib()
         initialize_functions(self.lib)
 
         self.event_handler = EventHandler(self.lib)

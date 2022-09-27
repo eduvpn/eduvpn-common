@@ -18,10 +18,14 @@ LIB_PREFIX ?= lib
 LIB_SUFFIX ?= .so
 endif
 
+# Current version
+VERSION = 0.1.0
+
 # Library name without prefixes/suffixes
 LIB_NAME ?= eduvpn_common
+LIB_NAME_VERSION ?= $(LIB_NAME)-$(VERSION)
 # Library file name
-LIB_FILE ?= $(LIB_PREFIX)$(LIB_NAME)$(LIB_SUFFIX)
+LIB_FILE ?= $(LIB_PREFIX)$(LIB_NAME_VERSION)$(LIB_SUFFIX)
 
 # Get relative exports/ directory when included from a wrapper, without trailing slash
 override EXPORTS_PATH = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))

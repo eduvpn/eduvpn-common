@@ -2,10 +2,11 @@ from ctypes import *
 from collections import defaultdict
 import pathlib
 import platform
+from eduvpn_common import __version__
 from eduvpn_common.types import *
 
 
-def load_lib(version: str):
+def load_lib():
     lib_prefixes = defaultdict(
         lambda: "lib",
         {
@@ -24,7 +25,7 @@ def load_lib(version: str):
     os = platform.system().lower()
 
     libname = "eduvpn_common"
-    libfile = f"{lib_prefixes[os]}{libname}{lib_suffixes[os]}"
+    libfile = f"{lib_prefixes[os]}{libname}-{__version__}{lib_suffixes[os]}"
 
     lib = None
 

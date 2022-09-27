@@ -41,7 +41,7 @@ popd
 
 %package -n python3-%{libname}
 BuildArch: noarch
-Requires: %{name}
+Requires: %{name} >= 0.1.0, %{name} < 0.2.0
 Summary: Python3 eduvpncommon wrapper
 
 %description -n python3-%{libname}
