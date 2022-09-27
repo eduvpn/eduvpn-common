@@ -27,23 +27,23 @@ def ask_profile_input(total: int) -> int:
 # Sets up the callbacks using the provided class
 def setup_callbacks(_eduvpn: eduvpn.EduVPN) -> None:
     # The callback that starst OAuth
-    @_eduvpn.event.on(State.NO_SERVER, StateType.Enter)
+    @_eduvpn.event.on(State.NO_SERVER, StateType.ENTER)
     def no_server(old_state: str, servers) -> None:
         for server in servers:
             print(type(server))
             print(server)
     # It needs to open the URL in the web browser
-    @_eduvpn.event.on(State.OAUTH_STARTED, StateType.Enter)
+    @_eduvpn.event.on(State.OAUTH_STARTED, StateType.ENTER)
     def oauth_initialized(old_state: str, url: str) -> None:
         print(f"Got OAuth URL {url}, old state: {old_state}")
         webbrowser.open(url)
 
-    @_eduvpn.event.on(State.ASK_LOCATION, StateType.Enter)
+    @_eduvpn.event.on(State.ASK_LOCATION, StateType.ENTER)
     def ask_location(old_state: str, locations: List[str]):
         _eduvpn.set_secure_location(locations[1])
 
     ## The callback which asks the user for a profile
-    #@_eduvpn.event.on(State.ASK_PROFILE, StateType.Enter)
+    #@_eduvpn.event.on(State.ASK_PROFILE, StateType.ENTER)
     #def ask_profile(old_state: str, profiles: str):
     #    print("Multiple profiles found, you need to select a profile:")
 

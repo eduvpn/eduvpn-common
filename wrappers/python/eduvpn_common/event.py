@@ -105,6 +105,6 @@ class EventHandler(object):
         converted = data
         if convert:
             converted = convert_data(self.lib, new_state, data)
-        self.run_state(old_state, new_state, StateType.Leave, converted)
-        self.run_state(new_state, old_state, StateType.Enter, converted)
-        self.run_state(new_state, old_state, StateType.Wait, converted)
+        self.run_state(old_state, new_state, StateType.LEAVE, converted)
+        self.run_state(new_state, old_state, StateType.ENTER, converted)
+        self.run_state(new_state, old_state, StateType.WAIT, converted)

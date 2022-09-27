@@ -49,12 +49,12 @@ class EduVPN(object):
         self.profile_event: Optional[threading.Event] = None
         self.location_event: Optional[threading.Event] = None
 
-        @self.event.on(State.ASK_PROFILE, StateType.Wait)
+        @self.event.on(State.ASK_PROFILE, StateType.WAIT)
         def wait_profile_event(old_state: int, profiles: str):
             if self.profile_event:
                 self.profile_event.wait()
 
-        @self.event.on(State.ASK_LOCATION, StateType.Wait)
+        @self.event.on(State.ASK_LOCATION, StateType.WAIT)
         def wait_location_event(old_state: int, locations: str):
             if self.location_event:
                 self.location_event.wait()

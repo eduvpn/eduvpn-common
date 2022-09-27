@@ -2,9 +2,9 @@ from enum import IntEnum
 
 
 class StateType(IntEnum):
-    Enter = 1
-    Leave = 2
-    Wait = 3
+    ENTER = 1
+    LEAVE = 2
+    WAIT = 3
 
 
 class State(IntEnum):

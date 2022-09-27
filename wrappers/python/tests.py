@@ -22,7 +22,7 @@ class ConfigTests(unittest.TestCase):
         # This can throw an exception
         _eduvpn.register()
 
-        @_eduvpn.event.on(State.OAUTH_STARTED, StateType.Enter)
+        @_eduvpn.event.on(State.OAUTH_STARTED, StateType.ENTER)
         def oauth_initialized(old_state, url_json):
             login_eduvpn(url_json)
 
