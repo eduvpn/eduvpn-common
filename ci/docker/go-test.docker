@@ -8,7 +8,7 @@ WORKDIR /eduvpn
 # Firefox
 RUN echo "deb http://deb.debian.org/debian/ unstable main contrib non-free" >> /etc/apt/sources.list.d/debian.list
 RUN apt-get update
-RUN apt-get -y install openjdk-11-jre xvfb python3-selenium firefox python3-pyvirtualdisplay python3-pip
+RUN apt-get -y install openjdk-11-jre xvfb python3-selenium firefox python3-pip
 
 # Install geckodriver and add to path
 WORKDIR /eduvpn/vendor
