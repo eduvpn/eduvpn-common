@@ -15,9 +15,12 @@ import (
 )
 
 type (
+	// VPNServerBase is an alias to the internal ServerBase
+	// This contains the details for each server
 	VPNServerBase = server.ServerBase
 )
 
+// VPNState is the main struct for the library
 type VPNState struct {
 	// The language used for language matching
 	Language string `json:"-"` // language should not be saved
@@ -46,7 +49,7 @@ type VPNState struct {
 //  - directory: the directory where the config files are stored. Absolute or relative
 //  - stateCallback: the callback function for the FSM that takes two states (old and new) and the data as an interface
 //  - debug: whether or not we want to enable debugging
-// It returns an error if initialization failed, for example when discovery cannot be obtained and when there are no servers
+// It returns an error if initialization failed, for example when discovery cannot be obtained and when there are no servers.
 func (state *VPNState) Register(
 	name string,
 	directory string,
@@ -116,7 +119,7 @@ func (state *VPNState) Register(
 	return nil
 }
 
-// Deregister 'deregisters' the state, meaning saving the log file and the config and emptying out the state
+// Deregister 'deregisters' the state, meaning saving the log file and the config and emptying out the state.
 func (state *VPNState) Deregister() {
 	// Close the log file
 	state.Logger.Close()
@@ -136,7 +139,7 @@ func (state *VPNState) Deregister() {
 	*state = VPNState{}
 }
 
-// goBackInternal uses the public go back but logs an error if it happened
+// goBackInternal uses the public go back but logs an error if it happened.
 func (state *VPNState) goBackInternal() {
 	goBackErr := state.GoBack()
 	if goBackErr != nil {
@@ -149,7 +152,7 @@ func (state *VPNState) goBackInternal() {
 	}
 }
 
-// GoBack transitions the FSM back to the previous UI state, for now this is always the NO_SERVER state
+// GoBack transitions the FSM back to the previous UI state, for now this is always the NO_SERVER state.
 func (state *VPNState) GoBack() error {
 	errorMessage := "failed to go back"
 	if state.InFSMState(STATE_DEREGISTERED) {
@@ -165,6 +168,8 @@ func (state *VPNState) GoBack() error {
 	return nil
 }
 
+// ensureLogin logs the user back in if needed.
+// It runs the FSM transitions to ask for user input.
 func (state *VPNState) ensureLogin(chosenServer server.Server) error {
 	errorMessage := "failed ensuring login"
 	// Relogin with oauth
@@ -191,6 +196,8 @@ func (state *VPNState) ensureLogin(chosenServer server.Server) error {
 	return nil
 }
 
+// getConfigAuth gets a config with authorization and authentication.
+// It also asks for a profile if no valid profile is found.
 func (state *VPNState) getConfigAuth(
 	chosenServer server.Server,
 	forceTCP bool,
@@ -218,6 +225,8 @@ func (state *VPNState) getConfigAuth(
 	return server.GetConfig(chosenServer, forceTCP)
 }
 
+// retryConfigAuth retries the getConfigAuth function if the tokens are invalid.
+// If OAuth is cancelled, it makes sure that we only forward the error as additional info.
 func (state *VPNState) retryConfigAuth(
 	chosenServer server.Server,
 	forceTCP bool,
@@ -248,6 +257,7 @@ func (state *VPNState) retryConfigAuth(
 	return config, configType, nil
 }
 
+// getConfig gets an OpenVPN/WireGuard configuration by contacting the server, moving the FSM towards the DISCONNECTED state and then saving the local configuration file.
 func (state *VPNState) getConfig(
 	chosenServer server.Server,
 	forceTCP bool,
@@ -288,7 +298,8 @@ func (state *VPNState) getConfig(
 	return config, configType, nil
 }
 
-// SetSecureLocation sets the location for the current secure location server. countryCode is the secure location to be chosen. This function returns an error e.g. if the server cannot be found or the location is wrong.
+// SetSecureLocation sets the location for the current secure location server. countryCode is the secure location to be chosen.
+// This function returns an error e.g. if the server cannot be found or the location is wrong.
 func (state *VPNState) SetSecureLocation(countryCode string) error {
 	errorMessage := "failed asking secure location"
 
@@ -319,6 +330,7 @@ func (state *VPNState) SetSecureLocation(countryCode string) error {
 	return nil
 }
 
+// askProfile asks the user for a profile by moving the FSM to the ASK_PROFILE state.
 func (state *VPNState) askProfile(chosenServer server.Server) error {
 	base, baseErr := chosenServer.GetBase()
 	if baseErr != nil {
@@ -328,6 +340,7 @@ func (state *VPNState) askProfile(chosenServer server.Server) error {
 	return nil
 }
 
+// askSecureLocation asks the user to choose a Secure Internet location by moving the FSM to the STATE_ASK_LOCATION state.
 func (state *VPNState) askSecureLocation() error {
 	locations := state.Discovery.GetSecureLocationList()
 
@@ -345,6 +358,8 @@ func (state *VPNState) askSecureLocation() error {
 	return nil
 }
 
+// addSecureInternetHomeServer adds a Secure Internet Home Server with `orgID` that was obtained from the Discovery file.
+// Because there is only one Secure Internet Home Server, it replaces the existing one.
 func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server, error) {
 	errorMessage := fmt.Sprintf(
 		"failed adding Secure Internet home server with organization ID %s",
@@ -379,7 +394,9 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 	return server, nil
 }
 
-// RemoveSecureInternet removes the current secure internet server. It returns an error if the server cannot be removed due to the state being DEREGISTERED. Note that if the server does not exist, it returns nil as an error.
+// RemoveSecureInternet removes the current secure internet server.
+// It returns an error if the server cannot be removed due to the state being DEREGISTERED.
+// Note that if the server does not exist, it returns nil as an error.
 func (state *VPNState) RemoveSecureInternet() error {
 	if state.InFSMState(STATE_DEREGISTERED) {
 		state.Logger.Error("Failed removing secure internet server due to deregistered")
@@ -404,7 +421,9 @@ func (state *VPNState) RemoveSecureInternet() error {
 	return nil
 }
 
-// RemoveInstituteAccess removes the institute access server with `url`. It returns an error if the server cannot be removed due to the state being DEREGISTERED. Note that if the server does not exist, it returns nil as an error.
+// RemoveInstituteAccess removes the institute access server with `url`.
+// It returns an error if the server cannot be removed due to the state being DEREGISTERED.
+// Note that if the server does not exist, it returns nil as an error.
 func (state *VPNState) RemoveInstituteAccess(url string) error {
 	if state.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
@@ -428,7 +447,9 @@ func (state *VPNState) RemoveInstituteAccess(url string) error {
 	return nil
 }
 
-// RemoveCustomServer removes the custom server with `url`. It returns an error if the server cannot be removed due to the state being DEREGISTERED. Note that if the server does not exist, it returns nil as an error.
+// RemoveCustomServer removes the custom server with `url`.
+// It returns an error if the server cannot be removed due to the state being DEREGISTERED.
+// Note that if the server does not exist, it returns nil as an error.
 func (state *VPNState) RemoveCustomServer(url string) error {
 	if state.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
@@ -452,7 +473,9 @@ func (state *VPNState) RemoveCustomServer(url string) error {
 	return nil
 }
 
-// RemoveConfigSecureInternet
+// GetConfigSecureInternet gets a configuration for a Secure Internet Server.
+// It ensures that the Secure Internet Server exists by creating or using an existing one with the orgID.
+// `forceTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
 func (state *VPNState) GetConfigSecureInternet(
 	orgID string,
 	forceTCP bool,
@@ -490,6 +513,7 @@ func (state *VPNState) GetConfigSecureInternet(
 	return config, configType, nil
 }
 
+// addInstituteServer adds an Institute Access server by `url`.
 func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
 	errorMessage := fmt.Sprintf("failed adding Institute Access server with url %s", url)
 	instituteServer, discoErr := state.Discovery.GetServerByURL(url, "institute_access")
@@ -507,6 +531,7 @@ func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
 	return server, nil
 }
 
+// addCustomServer adds a Custom Server by `url`
 func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 	errorMessage := fmt.Sprintf("failed adding Custom server with url %s", url)
 
@@ -532,6 +557,9 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 	return server, nil
 }
 
+// GetConfigInstituteAccess gets a configuration for an Institute Access Server.
+// It ensures that the Institute Access Server exists by creating or using an existing one with the url.
+// `forceTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
 func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for Institute Access %s", url)
 	state.FSM.GoTransition(STATE_LOADING_SERVER)
@@ -560,6 +588,9 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 	return config, configType, nil
 }
 
+// GetConfigCustomServer gets a configuration for a Custom Server.
+// It ensures that the Custom Server exists by creating or using an existing one with the url.
+// `forceTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
 func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for custom server %s", url)
 	state.FSM.GoTransition(STATE_LOADING_SERVER)
@@ -590,6 +621,9 @@ func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string,
 	return config, configType, nil
 }
 
+// CancelOAuth cancels OAuth if one is in progress.
+// If OAuth is not in progress, it returns an error.
+// An error is also returned if OAuth is in progress but it fails to cancel it.
 func (state *VPNState) CancelOAuth() error {
 	errorMessage := "failed to cancel OAuth"
 	if !state.InFSMState(STATE_OAUTH_STARTED) {
@@ -617,6 +651,9 @@ func (state *VPNState) CancelOAuth() error {
 	return nil
 }
 
+// ChangeSecureLocation changes the location for an existing Secure Internet Server.
+// Changing a secure internet location is only possible when the user is in the main screen (STATE_NO_SERVER), otherwise it returns an error.
+// It also returns an error if something has gone wrong when selecting the new location
 func (state *VPNState) ChangeSecureLocation() error {
 	errorMessage := "failed to change location from the main screen"
 
@@ -648,6 +685,10 @@ func (state *VPNState) ChangeSecureLocation() error {
 	return nil
 }
 
+// GetDiscoOrganizations gets the organizations list from the discovery server
+// If the list cannot be retrieved an error is returned.
+// If this is the case then a previous version of the list is returned if there is any.
+// This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#organization-list.
 func (state *VPNState) GetDiscoOrganizations() (*types.DiscoveryOrganizations, error) {
 	orgs, orgsErr := state.Discovery.GetOrganizationsList()
 	if orgsErr != nil {
@@ -665,6 +706,10 @@ func (state *VPNState) GetDiscoOrganizations() (*types.DiscoveryOrganizations, e
 	return orgs, nil
 }
 
+// GetDiscoDiscovers gets the servers list from the discovery server
+// If the list cannot be retrieved an error is returned.
+// If this is the case then a previous version of the list is returned if there is any.
+// This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#server-list.
 func (state *VPNState) GetDiscoServers() (*types.DiscoveryServers, error) {
 	servers, serversErr := state.Discovery.GetServersList()
 	if serversErr != nil {
@@ -679,6 +724,8 @@ func (state *VPNState) GetDiscoServers() (*types.DiscoveryServers, error) {
 	return servers, nil
 }
 
+// SetProfileID sets a `profileID` for the current server.
+// An error is returned if this is not possible, for example when no server is configured.
 func (state *VPNState) SetProfileID(profileID string) error {
 	errorMessage := "failed to set the profile ID for the current server"
 	server, serverErr := state.Servers.GetCurrentServer()
@@ -705,6 +752,9 @@ func (state *VPNState) SetProfileID(profileID string) error {
 	return nil
 }
 
+// SetSearchServer sets the FSM to the SEARCH_SERVER state.
+// This indicates that the user wants to search for a new server.
+// Returns an error if this state transition is not possible.
 func (state *VPNState) SetSearchServer() error {
 	if !state.FSM.HasTransition(STATE_SEARCH_SERVER) {
 		state.Logger.Warning(
@@ -726,6 +776,9 @@ func (state *VPNState) SetSearchServer() error {
 	return nil
 }
 
+// SetConnected sets the FSM to the CONNECTED state.
+// This indicates that the VPN is connected to the server.
+// Returns an error if this state transition is not possible.
 func (state *VPNState) SetConnected() error {
 	errorMessage := "failed to set connected"
 	if state.InFSMState(STATE_CONNECTED) {
@@ -764,6 +817,9 @@ func (state *VPNState) SetConnected() error {
 	return nil
 }
 
+// SetConnecting sets the FSM to the CONNECTING state.
+// This indicates that the VPN is currently connecting to the server.
+// Returns an error if this state transition is not possible.
 func (state *VPNState) SetConnecting() error {
 	errorMessage := "failed to set connecting"
 	if state.InFSMState(STATE_CONNECTING) {
@@ -802,6 +858,9 @@ func (state *VPNState) SetConnecting() error {
 	return nil
 }
 
+// SetDisconnecting sets the FSM to the DISCONNECTING state.
+// This indicates that the VPN is currently disconnecting from the server.
+// Returns an error if this state transition is not possible.
 func (state *VPNState) SetDisconnecting() error {
 	errorMessage := "failed to set disconnecting"
 	if state.InFSMState(STATE_DISCONNECTING) {
@@ -840,6 +899,10 @@ func (state *VPNState) SetDisconnecting() error {
 	return nil
 }
 
+// SetDisconnected sets the FSM to the DISCONNECTED state.
+// This indicates that the VPN is currently disconnected from the server.
+// This also sends the /disconnect API call to the server.
+// Returns an error if this state transition is not possible.
 func (state *VPNState) SetDisconnected(cleanup bool) error {
 	errorMessage := "failed to set disconnected"
 	if state.InFSMState(STATE_DISCONNECTED) {
@@ -884,6 +947,8 @@ func (state *VPNState) SetDisconnected(cleanup bool) error {
 	return nil
 }
 
+// RenewSession renews the session for the current VPN server.
+// This logs the user back in.
 func (state *VPNState) RenewSession() error {
 	errorMessage := "failed to renew session"
 
@@ -912,6 +977,9 @@ func (state *VPNState) RenewSession() error {
 	return nil
 }
 
+// ShouldRenewButton returns true if the renew button should be shown
+// If there is no server then this returns false and logs with INFO if so
+// In other cases it simply checks the expiry time and calculates according to: https://github.com/eduvpn/documentation/blob/b93854dcdd22050d5f23e401619e0165cb8bc591/API.md#session-expiry.
 func (state *VPNState) ShouldRenewButton() bool {
 	if !state.InFSMState(STATE_CONNECTED) && !state.InFSMState(STATE_CONNECTING) &&
 		!state.InFSMState(STATE_DISCONNECTED) &&
@@ -934,22 +1002,27 @@ func (state *VPNState) ShouldRenewButton() bool {
 	return server.ShouldRenewButton(currentServer)
 }
 
+// InFSMState is a helper to check if the FSM is in state `checkState`.
 func (state *VPNState) InFSMState(checkState FSMStateID) bool {
 	return state.FSM.InState(checkState)
 }
 
+// GetErrorCause gets the cause for error `err`.
 func GetErrorCause(err error) error {
 	return types.GetErrorCause(err)
 }
 
+// GetErrorCause gets the level for error `err`.
 func GetErrorLevel(err error) types.ErrorLevel {
 	return types.GetErrorLevel(err)
 }
 
+// GetErrorCause gets the traceback for error `err`.
 func GetErrorTraceback(err error) string {
 	return types.GetErrorTraceback(err)
 }
 
+// GetTranslated gets the translation for `languages` using the current state language.
 func (state *VPNState) GetTranslated(languages map[string]string) string {
 	return util.GetLanguageMatched(languages, state.Language)
 }
