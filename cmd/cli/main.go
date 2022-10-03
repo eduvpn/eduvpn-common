@@ -140,7 +140,7 @@ func printConfig(url string, serverType ServerTypes) {
 func main() {
 	customUrlArg := flag.String("get-custom", "", "The url of a custom server to connect to")
 	urlArg := flag.String("get-institute", "", "The url of an institute to connect to")
-	secureInternet := flag.String("get-secure", "", "Gets secure internet servers.")
+	secureInternet := flag.String("get-secure", "", "Gets secure internet servers")
 	flag.Parse()
 
 	// Connect to a VPN by getting an Institute Access config
