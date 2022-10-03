@@ -7,4 +7,6 @@ import "github.com/eduvpn/eduvpn-common"
 
 This brings the library into scope using the eduvpn-common prefix.
 
-The functions that we define all operate on a `VPNState` object, thus to call a function it needs to be first created and then the function needs to be called. An example of how to tie all of this together is done at the end.
+The documentation to then use this API is online at [pkg.go.dev](https://pkg.go.dev/github.com/eduvpn/eduvpn-common).
+
+[We also provide an example](./example.md).

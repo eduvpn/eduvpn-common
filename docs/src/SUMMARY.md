@@ -20,7 +20,6 @@
 	- [Deregistering](./api/overview/deregistering.md)
 	- [Typical flow](./api/overview/flow.md)
   - [Go](./api/go/README.md)
-	- [Functions](./api/go/functions.md)
 	- [Example](./api/go/example.md)
   - [Python](./api/python/README.md)
 	- [Functions](./api/python/functions.md)
