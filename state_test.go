@@ -351,7 +351,7 @@ func Test_invalid_profile_corrected(t *testing.T) {
 	}
 }
 
-// Test if an invalid profile will be corrected
+// Test if prefer tcp is handled correctly by checking the returned config and config type
 func Test_prefer_tcp(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &VPNState{}

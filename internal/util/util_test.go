@@ -120,8 +120,6 @@ func Test_ReplaceWAYF(t *testing.T) {
 }
 
 func Test_GetLanguageMatched(t *testing.T) {
-	// func GetLanguageMatched(languageMap map[string]string, languageTag string) string {
-
 	// exact match
 	returned := GetLanguageMatched(map[string]string{"en": "test", "de": "test2"}, "en")
 	if returned != "test" {
