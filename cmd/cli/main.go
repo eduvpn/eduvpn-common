@@ -34,7 +34,7 @@ func openBrowser(url interface{}) {
 }
 
 // Ask for a profile in the command line
-func sendProfile(state *eduvpn.VPNState, data interface{}) {
+func sendProfile(state *eduvpn.Client, data interface{}) {
 	fmt.Printf("Multiple VPN profiles found. Please select a profile by entering e.g. 1")
 	serverProfiles, ok := data.(*server.ServerProfileInfo)
 
@@ -76,7 +76,7 @@ func sendProfile(state *eduvpn.VPNState, data interface{}) {
 // If we ask for a profile, we send the profile using command line input
 // Note that this has an additional argument, the vpn state which was wrapped into this callback function below
 func stateCallback(
-	state *eduvpn.VPNState,
+	state *eduvpn.Client,
 	oldState eduvpn.FSMStateID,
 	newState eduvpn.FSMStateID,
 	data interface{},
@@ -91,7 +91,7 @@ func stateCallback(
 }
 
 // Get a config for Institute Access or Secure Internet Server
-func getConfig(state *eduvpn.VPNState, url string, serverType ServerTypes) (string, string, error) {
+func getConfig(state *eduvpn.Client, url string, serverType ServerTypes) (string, string, error) {
 	if !strings.HasPrefix(url, "http") {
 		url = "https://" + url
 	}
@@ -106,7 +106,7 @@ func getConfig(state *eduvpn.VPNState, url string, serverType ServerTypes) (stri
 
 // Get a config for a single server, Institute Access or Secure Internet
 func printConfig(url string, serverType ServerTypes) {
-	state := &eduvpn.VPNState{}
+	state := &eduvpn.Client{}
 
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",

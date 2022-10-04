@@ -162,7 +162,7 @@ func freeCListStrings(allStrings **C.char, totalStrings C.size_t) {
 // Function for getting the server,
 // It gets the main state as a pointer as we need to convert some string maps to localized strings
 // It gets the base information for a server as well
-func getCPtrServer(state *eduvpn.VPNState, base *eduvpn.VPNServerBase) *C.server {
+func getCPtrServer(state *eduvpn.Client, base *eduvpn.ServerBase) *C.server {
 	// Allocation using malloc and the size of the struct
 	server := (*C.server)(C.malloc(C.size_t(unsafe.Sizeof(C.server{}))))
 	// String allocation and translate the display name
@@ -212,7 +212,7 @@ func FreeServer(info *C.server) {
 
 // Get the C ptr to the servers, returns the length in size_t and the double pointer to the struct
 func getCPtrServers(
-	state *eduvpn.VPNState,
+	state *eduvpn.Client,
 	serverMap map[string]*server.InstituteAccessServer,
 ) (C.size_t, **C.server) {
 	totalServers := C.size_t(len(serverMap))
@@ -263,7 +263,7 @@ func FreeServers(cServers *C.servers) {
 // Return the servers as a C struct pointer
 // It takes the state as a pointer as we need to translate some strings
 // It also takes the servers as a pointer that belongs to the main state or gathered from the callback
-func getSavedServersWithOptions(state *eduvpn.VPNState, servers *server.Servers) *C.servers {
+func getSavedServersWithOptions(state *eduvpn.Client, servers *server.Servers) *C.servers {
 	// Allocate the struct that we will return
 	// With the size of the c struct
 	returnedStruct := (*C.servers)(C.malloc(C.size_t(unsafe.Sizeof(C.servers{}))))
@@ -306,7 +306,7 @@ func GetSavedServers(name *C.char) (*C.servers, *C.error) {
 
 // This function takes the state as input which is the main state
 // It also takes the data as an interface and if it has the servers type gets the data as a c struct otherwise nil
-func getTransitionDataServers(state *eduvpn.VPNState, data interface{}) *C.servers {
+func getTransitionDataServers(state *eduvpn.Client, data interface{}) *C.servers {
 	if converted, ok := data.(server.Servers); ok {
 		return getSavedServersWithOptions(state, &converted)
 	}
@@ -335,7 +335,7 @@ func getTransitionProfiles(data interface{}) *C.serverProfiles {
 	return nil
 }
 
-func getTransitionServer(state *eduvpn.VPNState, data interface{}) *C.server {
+func getTransitionServer(state *eduvpn.Client, data interface{}) *C.server {
 	if server, ok := data.(server.Server); ok {
 		base, baseErr := server.GetBase()
 		if baseErr != nil {

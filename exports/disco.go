@@ -47,7 +47,7 @@ import (
 )
 
 func getCPtrDiscoOrganization(
-	state *eduvpn.VPNState,
+	state *eduvpn.Client,
 	organization *types.DiscoveryOrganization,
 ) *C.discoveryOrganization {
 	returnedStruct := (*C.discoveryOrganization)(
@@ -61,7 +61,7 @@ func getCPtrDiscoOrganization(
 }
 
 func getCPtrDiscoOrganizations(
-	state *eduvpn.VPNState,
+	state *eduvpn.Client,
 	organizations *types.DiscoveryOrganizations,
 ) (C.size_t, **C.discoveryOrganization) {
 	totalOrganizations := C.size_t(len(organizations.List))
@@ -82,7 +82,7 @@ func getCPtrDiscoOrganizations(
 }
 
 func getCPtrDiscoServer(
-	state *eduvpn.VPNState,
+	state *eduvpn.Client,
 	server *types.DiscoveryServer,
 ) *C.discoveryServer {
 	returnedStruct := (*C.discoveryServer)(
@@ -104,7 +104,7 @@ func getCPtrDiscoServer(
 }
 
 func getCPtrDiscoServers(
-	state *eduvpn.VPNState,
+	state *eduvpn.Client,
 	servers *types.DiscoveryServers,
 ) (C.size_t, **C.discoveryServer) {
 	totalServers := C.size_t(len(servers.List))

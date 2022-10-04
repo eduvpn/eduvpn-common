@@ -22,10 +22,10 @@ import (
 
 var P_StateCallbacks map[string]C.PythonCB
 
-var VPNStates map[string]*eduvpn.VPNState
+var VPNStates map[string]*eduvpn.Client
 
 func GetStateData(
-	state *eduvpn.VPNState,
+	state *eduvpn.Client,
 	stateID eduvpn.FSMStateID,
 	data interface{},
 ) unsafe.Pointer {
@@ -55,7 +55,7 @@ func GetStateData(
 }
 
 func StateCallback(
-	state *eduvpn.VPNState,
+	state *eduvpn.Client,
 	name string,
 	old_state eduvpn.FSMStateID,
 	new_state eduvpn.FSMStateID,
@@ -74,7 +74,7 @@ func StateCallback(
 	// data_c gets freed by the wrapper
 }
 
-func GetVPNState(name string) (*eduvpn.VPNState, error) {
+func GetVPNState(name string) (*eduvpn.Client, error) {
 	state, exists := VPNStates[name]
 
 	if !exists || state == nil {
@@ -94,10 +94,10 @@ func Register(
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		state = &eduvpn.VPNState{}
+		state = &eduvpn.Client{}
 	}
 	if VPNStates == nil {
-		VPNStates = make(map[string]*eduvpn.VPNState)
+		VPNStates = make(map[string]*eduvpn.Client)
 	}
 	if P_StateCallbacks == nil {
 		P_StateCallbacks = make(map[string]C.PythonCB)

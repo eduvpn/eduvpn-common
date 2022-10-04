@@ -13,7 +13,6 @@ import (
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
-	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
@@ -37,7 +36,7 @@ func runCommand(t *testing.T, errBuffer *strings.Builder, name string, args ...s
 	return cmd.Wait()
 }
 
-func loginOAuthSelenium(t *testing.T, url string, state *VPNState) {
+func loginOAuthSelenium(t *testing.T, url string, state *Client) {
 	// We could use the go selenium library
 	// But it does not support the latest selenium v4 just yet
 	var errBuffer strings.Builder
@@ -57,7 +56,7 @@ func stateCallback(
 	oldState FSMStateID,
 	newState FSMStateID,
 	data interface{},
-	state *VPNState,
+	state *Client,
 ) {
 	if newState == STATE_OAUTH_STARTED {
 		url, ok := data.(string)
@@ -71,7 +70,7 @@ func stateCallback(
 
 func Test_server(t *testing.T) {
 	serverURI := getServerURI(t)
-	state := &VPNState{}
+	state := &Client{}
 
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
@@ -97,7 +96,7 @@ func test_connect_oauth_parameter(
 	expectedErr interface{},
 ) {
 	serverURI := getServerURI(t)
-	state := &VPNState{}
+	state := &Client{}
 	configDirectory := "test_oauth_parameters"
 
 	registerErr := state.Register(
@@ -181,7 +180,7 @@ func Test_token_expired(t *testing.T) {
 	}
 
 	// Get a vpn state
-	state := &VPNState{}
+	state := &Client{}
 
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
@@ -235,7 +234,7 @@ func Test_token_expired(t *testing.T) {
 
 func Test_token_invalid(t *testing.T) {
 	serverURI := getServerURI(t)
-	state := &VPNState{}
+	state := &Client{}
 
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
@@ -286,7 +285,7 @@ func Test_token_invalid(t *testing.T) {
 // Test if an invalid profile will be corrected
 func Test_invalid_profile_corrected(t *testing.T) {
 	serverURI := getServerURI(t)
-	state := &VPNState{}
+	state := &Client{}
 
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
@@ -337,7 +336,7 @@ func Test_invalid_profile_corrected(t *testing.T) {
 // Test if prefer tcp is handled correctly by checking the returned config and config type
 func Test_prefer_tcp(t *testing.T) {
 	serverURI := getServerURI(t)
-	state := &VPNState{}
+	state := &Client{}
 
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",

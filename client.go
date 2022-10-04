@@ -15,13 +15,13 @@ import (
 )
 
 type (
-	// VPNServerBase is an alias to the internal ServerBase
+	// ServerBase is an alias to the internal ServerBase
 	// This contains the details for each server
-	VPNServerBase = server.ServerBase
+	ServerBase = server.ServerBase
 )
 
-// VPNState is the main struct for the library
-type VPNState struct {
+// Client is the main struct for the VPN client
+type Client struct {
 	// The language used for language matching
 	Language string `json:"-"` // language should not be saved
 
@@ -44,20 +44,20 @@ type VPNState struct {
 	Debug bool `json:"-"`
 }
 
-// Register initializes the state with the following parameters:
+// Register initializes the clientwith the following parameters:
 //  - name: the name of the client
 //  - directory: the directory where the config files are stored. Absolute or relative
 //  - stateCallback: the callback function for the FSM that takes two states (old and new) and the data as an interface
 //  - debug: whether or not we want to enable debugging
 // It returns an error if initialization failed, for example when discovery cannot be obtained and when there are no servers.
-func (state *VPNState) Register(
+func (client *Client) Register(
 	name string,
 	directory string,
 	stateCallback func(FSMStateID, FSMStateID, interface{}),
 	debug bool,
 ) error {
 	errorMessage := "failed to register with the GO library"
-	if !state.InFSMState(STATE_DEREGISTERED) {
+	if !client.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err:     FSMDeregisteredError{}.CustomError(),
@@ -65,36 +65,36 @@ func (state *VPNState) Register(
 	}
 	// Initialize the logger
 	logLevel := log.LOG_WARNING
-	state.Language = "en"
+	client.Language = "en"
 
 	if debug {
 		logLevel = log.LOG_INFO
 	}
 
-	loggerErr := state.Logger.Init(logLevel, name, directory)
+	loggerErr := client.Logger.Init(logLevel, name, directory)
 	if loggerErr != nil {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: loggerErr}
 	}
 
 	// Initialize the FSM
-	state.FSM = newFSM(name, stateCallback, directory, debug)
-	state.Debug = debug
+	client.FSM = newFSM(name, stateCallback, directory, debug)
+	client.Debug = debug
 
 	// Initialize the Config
-	state.Config.Init(name, directory)
+	client.Config.Init(name, directory)
 
 	// Try to load the previous configuration
-	if state.Config.Load(&state) != nil {
+	if client.Config.Load(&client) != nil {
 		// This error can be safely ignored, as when the config does not load, the struct will not be filled
-		state.Logger.Info("Previous configuration not found")
+		client.Logger.Info("Previous configuration not found")
 	}
 
-	discoServers, discoServersErr := state.GetDiscoServers()
+	discoServers, discoServersErr := client.GetDiscoServers()
 
-	_, currentServerErr := state.Servers.GetCurrentServer()
+	_, currentServerErr := client.Servers.GetCurrentServer()
 	// Only actually return the error if we have no disco servers and no current server
 	if discoServersErr != nil && (discoServers == nil || discoServers.Version == 0) && currentServerErr != nil {
-		state.Logger.Error(
+		client.Logger.Error(
 			fmt.Sprintf(
 				"No configured servers, discovery servers is empty and no servers with error: %s",
 				GetErrorTraceback(discoServersErr),
@@ -102,11 +102,11 @@ func (state *VPNState) Register(
 		)
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: discoServersErr}
 	}
-	discoOrgs, discoOrgsErr := state.GetDiscoOrganizations()
+	discoOrgs, discoOrgsErr := client.GetDiscoOrganizations()
 
 	// Only actually return the error if we have no disco organizations and no current server
 	if discoOrgsErr != nil && (discoOrgs == nil || discoOrgs.Version == 0) && currentServerErr != nil {
-		state.Logger.Error(
+		client.Logger.Error(
 			fmt.Sprintf(
 				"No configured organizations, discovery organizations empty and no servers with error: %s",
 				GetErrorTraceback(discoOrgsErr),
@@ -115,19 +115,19 @@ func (state *VPNState) Register(
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: discoOrgsErr}
 	}
 	// Go to the No Server state with the saved servers
-	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.Servers, true)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, true)
 	return nil
 }
 
-// Deregister 'deregisters' the state, meaning saving the log file and the config and emptying out the state.
-func (state *VPNState) Deregister() {
+// Deregister 'deregisters' the client, meaning saving the log file and the config and emptying out the client struct.
+func (client *Client) Deregister() {
 	// Close the log file
-	state.Logger.Close()
+	client.Logger.Close()
 
 	// Save the config
-	saveErr := state.Config.Save(&state)
+	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		state.Logger.Info(
+		client.Logger.Info(
 			fmt.Sprintf(
 				"Failed saving configuration, error: %s",
 				GetErrorTraceback(saveErr),
@@ -136,14 +136,14 @@ func (state *VPNState) Deregister() {
 	}
 
 	// Empty out the state
-	*state = VPNState{}
+	*client = Client{}
 }
 
 // goBackInternal uses the public go back but logs an error if it happened.
-func (state *VPNState) goBackInternal() {
-	goBackErr := state.GoBack()
+func (client *Client) goBackInternal() {
+	goBackErr := client.GoBack()
 	if goBackErr != nil {
-		state.Logger.Info(
+		client.Logger.Info(
 			fmt.Sprintf(
 				"Failed going back, error: %s",
 				GetErrorTraceback(goBackErr),
@@ -153,10 +153,10 @@ func (state *VPNState) goBackInternal() {
 }
 
 // GoBack transitions the FSM back to the previous UI state, for now this is always the NO_SERVER state.
-func (state *VPNState) GoBack() error {
+func (client *Client) GoBack() error {
 	errorMessage := "failed to go back"
-	if state.InFSMState(STATE_DEREGISTERED) {
-		state.Logger.Error("Wrong state, cannot go back when deregistered")
+	if client.InFSMState(STATE_DEREGISTERED) {
+		client.Logger.Error("Wrong state, cannot go back when deregistered")
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err:     FSMDeregisteredError{}.CustomError(),
@@ -164,49 +164,49 @@ func (state *VPNState) GoBack() error {
 	}
 
 	// FIXME: Abitrary back transitions don't work because we need the approriate data
-	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.Servers, false)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
 	return nil
 }
 
 // ensureLogin logs the user back in if needed.
 // It runs the FSM transitions to ask for user input.
-func (state *VPNState) ensureLogin(chosenServer server.Server) error {
+func (client *Client) ensureLogin(chosenServer server.Server) error {
 	errorMessage := "failed ensuring login"
 	// Relogin with oauth
 	// This moves the state to authorized
 	if server.NeedsRelogin(chosenServer) {
-		url, urlErr := server.GetOAuthURL(chosenServer, state.FSM.Name)
+		url, urlErr := server.GetOAuthURL(chosenServer, client.FSM.Name)
 
-		state.FSM.GoTransitionWithData(STATE_OAUTH_STARTED, url, true)
+		client.FSM.GoTransitionWithData(STATE_OAUTH_STARTED, url, true)
 
 		if urlErr != nil {
-			state.goBackInternal()
+			client.goBackInternal()
 			return &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
 		}
 
 		exchangeErr := server.OAuthExchange(chosenServer)
 
 		if exchangeErr != nil {
-			state.goBackInternal()
+			client.goBackInternal()
 			return &types.WrappedErrorMessage{Message: errorMessage, Err: exchangeErr}
 		}
 	}
 	// OAuth was valid, ensure we are in the authorized state
-	state.FSM.GoTransition(STATE_AUTHORIZED)
+	client.FSM.GoTransition(STATE_AUTHORIZED)
 	return nil
 }
 
 // getConfigAuth gets a config with authorization and authentication.
 // It also asks for a profile if no valid profile is found.
-func (state *VPNState) getConfigAuth(
+func (client *Client) getConfigAuth(
 	chosenServer server.Server,
 	preferTCP bool,
 ) (string, string, error) {
-	loginErr := state.ensureLogin(chosenServer)
+	loginErr := client.ensureLogin(chosenServer)
 	if loginErr != nil {
 		return "", "", loginErr
 	}
-	state.FSM.GoTransition(STATE_REQUEST_CONFIG)
+	client.FSM.GoTransition(STATE_REQUEST_CONFIG)
 
 	validProfile, profileErr := server.HasValidProfile(chosenServer)
 	if profileErr != nil {
@@ -215,7 +215,7 @@ func (state *VPNState) getConfigAuth(
 
 	// No valid profile, ask for one
 	if !validProfile {
-		askProfileErr := state.askProfile(chosenServer)
+		askProfileErr := client.askProfile(chosenServer)
 		if askProfileErr != nil {
 			return "", "", askProfileErr
 		}
@@ -227,12 +227,12 @@ func (state *VPNState) getConfigAuth(
 
 // retryConfigAuth retries the getConfigAuth function if the tokens are invalid.
 // If OAuth is cancelled, it makes sure that we only forward the error as additional info.
-func (state *VPNState) retryConfigAuth(
+func (client *Client) retryConfigAuth(
 	chosenServer server.Server,
 	preferTCP bool,
 ) (string, string, error) {
 	errorMessage := "failed authorized config retry"
-	config, configType, configErr := state.getConfigAuth(chosenServer, preferTCP)
+	config, configType, configErr := client.getConfigAuth(chosenServer, preferTCP)
 	if configErr != nil {
 		level := types.ERR_OTHER
 		var error *oauth.OAuthTokensInvalidError
@@ -240,7 +240,7 @@ func (state *VPNState) retryConfigAuth(
 
 		// Only retry if the error is that the tokens are invalid
 		if errors.As(configErr, &error) {
-			config, configType, configErr = state.getConfigAuth(
+			config, configType, configErr = client.getConfigAuth(
 				chosenServer,
 				preferTCP,
 			)
@@ -251,43 +251,43 @@ func (state *VPNState) retryConfigAuth(
 		if errors.As(configErr, &oauthCancelledError) {
 			level = types.ERR_INFO
 		}
-		state.goBackInternal()
+		client.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Level: level, Message: errorMessage, Err: configErr}
 	}
 	return config, configType, nil
 }
 
 // getConfig gets an OpenVPN/WireGuard configuration by contacting the server, moving the FSM towards the DISCONNECTED state and then saving the local configuration file.
-func (state *VPNState) getConfig(
+func (client *Client) getConfig(
 	chosenServer server.Server,
 	preferTCP bool,
 ) (string, string, error) {
 	errorMessage := "failed to get a configuration for OpenVPN/Wireguard"
-	if state.InFSMState(STATE_DEREGISTERED) {
+	if client.InFSMState(STATE_DEREGISTERED) {
 		return "", "", &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
 
-	config, configType, configErr := state.retryConfigAuth(chosenServer, preferTCP)
+	config, configType, configErr := client.retryConfigAuth(chosenServer, preferTCP)
 
 	if configErr != nil {
 		return "", "", &types.WrappedErrorMessage{Level: GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
 	}
 
-	currentServer, currentServerErr := state.Servers.GetCurrentServer()
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
 
 	// Signal the server display info
-	state.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer, false)
+	client.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer, false)
 
 	// Save the config
-	saveErr := state.Config.Save(&state)
+	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		state.Logger.Info(
+		client.Logger.Info(
 			fmt.Sprintf(
 				"Failed saving configuration after getting a server: %s",
 				GetErrorTraceback(saveErr),
@@ -300,55 +300,55 @@ func (state *VPNState) getConfig(
 
 // SetSecureLocation sets the location for the current secure location server. countryCode is the secure location to be chosen.
 // This function returns an error e.g. if the server cannot be found or the location is wrong.
-func (state *VPNState) SetSecureLocation(countryCode string) error {
+func (client *Client) SetSecureLocation(countryCode string) error {
 	errorMessage := "failed asking secure location"
 
-	server, serverErr := state.Discovery.GetServerByCountryCode(countryCode, "secure_internet")
+	server, serverErr := client.Discovery.GetServerByCountryCode(countryCode, "secure_internet")
 	if serverErr != nil {
-		state.Logger.Error(
+		client.Logger.Error(
 			fmt.Sprintf(
 				"Failed getting secure internet server by country code: %s with error: %s",
 				countryCode,
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.goBackInternal()
+		client.goBackInternal()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	setLocationErr := state.Servers.SetSecureLocation(server)
+	setLocationErr := client.Servers.SetSecureLocation(server)
 	if setLocationErr != nil {
-		state.Logger.Error(
+		client.Logger.Error(
 			fmt.Sprintf(
 				"Failed setting secure internet server with error: %s",
 				GetErrorTraceback(setLocationErr),
 			),
 		)
-		state.goBackInternal()
+		client.goBackInternal()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: setLocationErr}
 	}
 	return nil
 }
 
 // askProfile asks the user for a profile by moving the FSM to the ASK_PROFILE state.
-func (state *VPNState) askProfile(chosenServer server.Server) error {
+func (client *Client) askProfile(chosenServer server.Server) error {
 	base, baseErr := chosenServer.GetBase()
 	if baseErr != nil {
 		return &types.WrappedErrorMessage{Message: "failed asking for profiles", Err: baseErr}
 	}
-	state.FSM.GoTransitionWithData(STATE_ASK_PROFILE, &base.Profiles, false)
+	client.FSM.GoTransitionWithData(STATE_ASK_PROFILE, &base.Profiles, false)
 	return nil
 }
 
 // askSecureLocation asks the user to choose a Secure Internet location by moving the FSM to the STATE_ASK_LOCATION state.
-func (state *VPNState) askSecureLocation() error {
-	locations := state.Discovery.GetSecureLocationList()
+func (client *Client) askSecureLocation() error {
+	locations := client.Discovery.GetSecureLocationList()
 
 	// Ask for the location in the callback
-	state.FSM.GoTransitionWithData(STATE_ASK_LOCATION, locations, false)
+	client.FSM.GoTransitionWithData(STATE_ASK_LOCATION, locations, false)
 
 	// The state has changed, meaning setting the secure location was not successful
-	if state.FSM.Current != STATE_ASK_LOCATION {
+	if client.FSM.Current != STATE_ASK_LOCATION {
 		// TODO: maybe a custom type for this errors.new?
 		return &types.WrappedErrorMessage{
 			Message: "failed setting secure location",
@@ -360,19 +360,19 @@ func (state *VPNState) askSecureLocation() error {
 
 // addSecureInternetHomeServer adds a Secure Internet Home Server with `orgID` that was obtained from the Discovery file.
 // Because there is only one Secure Internet Home Server, it replaces the existing one.
-func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server, error) {
+func (client *Client) addSecureInternetHomeServer(orgID string) (server.Server, error) {
 	errorMessage := fmt.Sprintf(
 		"failed adding Secure Internet home server with organization ID %s",
 		orgID,
 	)
 	// Get the secure internet URL from discovery
-	secureOrg, secureServer, discoErr := state.Discovery.GetSecureHomeArgs(orgID)
+	secureOrg, secureServer, discoErr := client.Discovery.GetSecureHomeArgs(orgID)
 	if discoErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: discoErr}
 	}
 
 	// Add the secure internet server
-	server, serverErr := state.Servers.AddSecureInternet(secureOrg, secureServer)
+	server, serverErr := client.Servers.AddSecureInternet(secureOrg, secureServer)
 
 	if serverErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
@@ -380,11 +380,11 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 
 	var locationErr error
 
-	if !state.Servers.HasSecureLocation() {
-		locationErr = state.askSecureLocation()
+	if !client.Servers.HasSecureLocation() {
+		locationErr = client.askSecureLocation()
 	} else {
 		// reinitialize
-		locationErr = state.SetSecureLocation(state.Servers.GetSecureLocation())
+		locationErr = client.SetSecureLocation(client.Servers.GetSecureLocation())
 	}
 
 	if locationErr != nil {
@@ -397,21 +397,21 @@ func (state *VPNState) addSecureInternetHomeServer(orgID string) (server.Server,
 // RemoveSecureInternet removes the current secure internet server.
 // It returns an error if the server cannot be removed due to the state being DEREGISTERED.
 // Note that if the server does not exist, it returns nil as an error.
-func (state *VPNState) RemoveSecureInternet() error {
-	if state.InFSMState(STATE_DEREGISTERED) {
-		state.Logger.Error("Failed removing secure internet server due to deregistered")
+func (client *Client) RemoveSecureInternet() error {
+	if client.InFSMState(STATE_DEREGISTERED) {
+		client.Logger.Error("Failed removing secure internet server due to deregistered")
 		return &types.WrappedErrorMessage{
 			Message: "failed to remove Secure Internet",
 			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
 	// No error because we can only have one secure internet server and if there are no secure internet servers, this is a NO-OP
-	state.Servers.RemoveSecureInternet()
-	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.Servers, false)
+	client.Servers.RemoveSecureInternet()
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
 	// Save the config
-	saveErr := state.Config.Save(&state)
+	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		state.Logger.Info(
+		client.Logger.Info(
 			fmt.Sprintf(
 				"Failed saving configuration after removing a secure internet server: %s",
 				GetErrorTraceback(saveErr),
@@ -424,20 +424,20 @@ func (state *VPNState) RemoveSecureInternet() error {
 // RemoveInstituteAccess removes the institute access server with `url`.
 // It returns an error if the server cannot be removed due to the state being DEREGISTERED.
 // Note that if the server does not exist, it returns nil as an error.
-func (state *VPNState) RemoveInstituteAccess(url string) error {
-	if state.InFSMState(STATE_DEREGISTERED) {
+func (client *Client) RemoveInstituteAccess(url string) error {
+	if client.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
 			Message: "failed to remove Institute Access",
 			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
 	// No error because this is a NO-OP if the server doesn't exist
-	state.Servers.RemoveInstituteAccess(url)
-	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.Servers, false)
+	client.Servers.RemoveInstituteAccess(url)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
 	// Save the config
-	saveErr := state.Config.Save(&state)
+	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		state.Logger.Info(
+		client.Logger.Info(
 			fmt.Sprintf(
 				"Failed saving configuration after removing an institute access server: %s",
 				GetErrorTraceback(saveErr),
@@ -450,20 +450,20 @@ func (state *VPNState) RemoveInstituteAccess(url string) error {
 // RemoveCustomServer removes the custom server with `url`.
 // It returns an error if the server cannot be removed due to the state being DEREGISTERED.
 // Note that if the server does not exist, it returns nil as an error.
-func (state *VPNState) RemoveCustomServer(url string) error {
-	if state.InFSMState(STATE_DEREGISTERED) {
+func (client *Client) RemoveCustomServer(url string) error {
+	if client.InFSMState(STATE_DEREGISTERED) {
 		return &types.WrappedErrorMessage{
 			Message: "failed to remove Custom Server",
 			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
 	// No error because this is a NO-OP if the server doesn't exist
-	state.Servers.RemoveCustomServer(url)
-	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.Servers, false)
+	client.Servers.RemoveCustomServer(url)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
 	// Save the config
-	saveErr := state.Config.Save(&state)
+	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		state.Logger.Info(
+		client.Logger.Info(
 			fmt.Sprintf(
 				"Failed saving configuration after removing a custom server: %s",
 				GetErrorTraceback(saveErr),
@@ -476,7 +476,7 @@ func (state *VPNState) RemoveCustomServer(url string) error {
 // GetConfigSecureInternet gets a configuration for a Secure Internet Server.
 // It ensures that the Secure Internet Server exists by creating or using an existing one with the orgID.
 // `preferTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
-func (state *VPNState) GetConfigSecureInternet(
+func (client *Client) GetConfigSecureInternet(
 	orgID string,
 	preferTCP bool,
 ) (string, string, error) {
@@ -484,24 +484,24 @@ func (state *VPNState) GetConfigSecureInternet(
 		"failed getting a configuration for Secure Internet organization %s",
 		orgID,
 	)
-	state.FSM.GoTransition(STATE_LOADING_SERVER)
-	server, serverErr := state.addSecureInternetHomeServer(orgID)
+	client.FSM.GoTransition(STATE_LOADING_SERVER)
+	server, serverErr := client.addSecureInternetHomeServer(orgID)
 	if serverErr != nil {
-		state.Logger.Error(
+		client.Logger.Error(
 			fmt.Sprintf(
 				"Failed adding a secure internet server with error: %s",
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.goBackInternal()
+		client.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	state.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
-	config, configType, configErr := state.getConfig(server, preferTCP)
+	config, configType, configErr := client.getConfig(server, preferTCP)
 	if configErr != nil {
-		state.Logger.Inherit(
+		client.Logger.Inherit(
 			configErr,
 			fmt.Sprintf(
 				"Failed getting a secure internet configuration with error: %s",
@@ -514,25 +514,25 @@ func (state *VPNState) GetConfigSecureInternet(
 }
 
 // addInstituteServer adds an Institute Access server by `url`.
-func (state *VPNState) addInstituteServer(url string) (server.Server, error) {
+func (client *Client) addInstituteServer(url string) (server.Server, error) {
 	errorMessage := fmt.Sprintf("failed adding Institute Access server with url %s", url)
-	instituteServer, discoErr := state.Discovery.GetServerByURL(url, "institute_access")
+	instituteServer, discoErr := client.Discovery.GetServerByURL(url, "institute_access")
 	if discoErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: discoErr}
 	}
 	// Add the secure internet server
-	server, serverErr := state.Servers.AddInstituteAccessServer(instituteServer)
+	server, serverErr := client.Servers.AddInstituteAccessServer(instituteServer)
 	if serverErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	state.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
 	return server, nil
 }
 
 // addCustomServer adds a Custom Server by `url`
-func (state *VPNState) addCustomServer(url string) (server.Server, error) {
+func (client *Client) addCustomServer(url string) (server.Server, error) {
 	errorMessage := fmt.Sprintf("failed adding Custom server with url %s", url)
 
 	url, urlErr := util.EnsureValidURL(url)
@@ -547,12 +547,12 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 	}
 
 	// A custom server is just an institute access server under the hood
-	server, serverErr := state.Servers.AddCustomServer(customServer)
+	server, serverErr := client.Servers.AddCustomServer(customServer)
 	if serverErr != nil {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	state.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
 	return server, nil
 }
@@ -560,24 +560,24 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 // GetConfigInstituteAccess gets a configuration for an Institute Access Server.
 // It ensures that the Institute Access Server exists by creating or using an existing one with the url.
 // `preferTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
-func (state *VPNState) GetConfigInstituteAccess(url string, preferTCP bool) (string, string, error) {
+func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for Institute Access %s", url)
-	state.FSM.GoTransition(STATE_LOADING_SERVER)
-	server, serverErr := state.addInstituteServer(url)
+	client.FSM.GoTransition(STATE_LOADING_SERVER)
+	server, serverErr := client.addInstituteServer(url)
 	if serverErr != nil {
-		state.Logger.Error(
+		client.Logger.Error(
 			fmt.Sprintf(
 				"Failed adding an institute access server with error: %s",
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.goBackInternal()
+		client.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	config, configType, configErr := state.getConfig(server, preferTCP)
+	config, configType, configErr := client.getConfig(server, preferTCP)
 	if configErr != nil {
-		state.Logger.Inherit(configErr,
+		client.Logger.Inherit(configErr,
 			fmt.Sprintf(
 				"Failed getting an institute access server configuration with error: %s",
 				GetErrorTraceback(configErr),
@@ -591,25 +591,25 @@ func (state *VPNState) GetConfigInstituteAccess(url string, preferTCP bool) (str
 // GetConfigCustomServer gets a configuration for a Custom Server.
 // It ensures that the Custom Server exists by creating or using an existing one with the url.
 // `preferTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
-func (state *VPNState) GetConfigCustomServer(url string, preferTCP bool) (string, string, error) {
+func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for custom server %s", url)
-	state.FSM.GoTransition(STATE_LOADING_SERVER)
-	server, serverErr := state.addCustomServer(url)
+	client.FSM.GoTransition(STATE_LOADING_SERVER)
+	server, serverErr := client.addCustomServer(url)
 
 	if serverErr != nil {
-		state.Logger.Error(
+		client.Logger.Error(
 			fmt.Sprintf(
 				"Failed adding a custom server with error: %s",
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.goBackInternal()
+		client.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	config, configType, configErr := state.getConfig(server, preferTCP)
+	config, configType, configErr := client.getConfig(server, preferTCP)
 	if configErr != nil {
-		state.Logger.Inherit(
+		client.Logger.Inherit(
 			configErr,
 			fmt.Sprintf(
 				"Failed getting a custom server with error: %s",
@@ -624,22 +624,22 @@ func (state *VPNState) GetConfigCustomServer(url string, preferTCP bool) (string
 // CancelOAuth cancels OAuth if one is in progress.
 // If OAuth is not in progress, it returns an error.
 // An error is also returned if OAuth is in progress but it fails to cancel it.
-func (state *VPNState) CancelOAuth() error {
+func (client *Client) CancelOAuth() error {
 	errorMessage := "failed to cancel OAuth"
-	if !state.InFSMState(STATE_OAUTH_STARTED) {
-		state.Logger.Error("Failed cancelling OAuth, not in the right state")
+	if !client.InFSMState(STATE_OAUTH_STARTED) {
+		client.Logger.Error("Failed cancelling OAuth, not in the right state")
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err: FSMWrongStateError{
-				Got:  state.FSM.Current,
+				Got:  client.FSM.Current,
 				Want: STATE_OAUTH_STARTED,
 			}.CustomError(),
 		}
 	}
 
-	currentServer, serverErr := state.Servers.GetCurrentServer()
+	currentServer, serverErr := client.Servers.GetCurrentServer()
 	if serverErr != nil {
-		state.Logger.Warning(
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed cancelling OAuth, no server configured to cancel OAuth for (err: %v)",
 				serverErr,
@@ -654,23 +654,23 @@ func (state *VPNState) CancelOAuth() error {
 // ChangeSecureLocation changes the location for an existing Secure Internet Server.
 // Changing a secure internet location is only possible when the user is in the main screen (STATE_NO_SERVER), otherwise it returns an error.
 // It also returns an error if something has gone wrong when selecting the new location
-func (state *VPNState) ChangeSecureLocation() error {
+func (client *Client) ChangeSecureLocation() error {
 	errorMessage := "failed to change location from the main screen"
 
-	if !state.InFSMState(STATE_NO_SERVER) {
-		state.Logger.Error("Failed changing secure internet location, not in the right state")
+	if !client.InFSMState(STATE_NO_SERVER) {
+		client.Logger.Error("Failed changing secure internet location, not in the right state")
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err: FSMWrongStateError{
-				Got:  state.FSM.Current,
+				Got:  client.FSM.Current,
 				Want: STATE_NO_SERVER,
 			}.CustomError(),
 		}
 	}
 
-	askLocationErr := state.askSecureLocation()
+	askLocationErr := client.askSecureLocation()
 	if askLocationErr != nil {
-		state.Logger.Error(
+		client.Logger.Error(
 			fmt.Sprintf(
 				"Failed changing secure internet location, err: %s",
 				GetErrorTraceback(askLocationErr),
@@ -680,7 +680,7 @@ func (state *VPNState) ChangeSecureLocation() error {
 	}
 
 	// Go back to the main screen
-	state.FSM.GoTransitionWithData(STATE_NO_SERVER, state.Servers, false)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
 
 	return nil
 }
@@ -689,10 +689,10 @@ func (state *VPNState) ChangeSecureLocation() error {
 // If the list cannot be retrieved an error is returned.
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#organization-list.
-func (state *VPNState) GetDiscoOrganizations() (*types.DiscoveryOrganizations, error) {
-	orgs, orgsErr := state.Discovery.GetOrganizationsList()
+func (client *Client) GetDiscoOrganizations() (*types.DiscoveryOrganizations, error) {
+	orgs, orgsErr := client.Discovery.GetOrganizationsList()
 	if orgsErr != nil {
-		state.Logger.Warning(
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed getting discovery organizations, Err: %s",
 				GetErrorTraceback(orgsErr),
@@ -710,10 +710,10 @@ func (state *VPNState) GetDiscoOrganizations() (*types.DiscoveryOrganizations, e
 // If the list cannot be retrieved an error is returned.
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#server-list.
-func (state *VPNState) GetDiscoServers() (*types.DiscoveryServers, error) {
-	servers, serversErr := state.Discovery.GetServersList()
+func (client *Client) GetDiscoServers() (*types.DiscoveryServers, error) {
+	servers, serversErr := client.Discovery.GetServersList()
 	if serversErr != nil {
-		state.Logger.Warning(
+		client.Logger.Warning(
 			fmt.Sprintf("Failed getting discovery servers, Err: %s", GetErrorTraceback(serversErr)),
 		)
 		return nil, &types.WrappedErrorMessage{
@@ -726,26 +726,26 @@ func (state *VPNState) GetDiscoServers() (*types.DiscoveryServers, error) {
 
 // SetProfileID sets a `profileID` for the current server.
 // An error is returned if this is not possible, for example when no server is configured.
-func (state *VPNState) SetProfileID(profileID string) error {
+func (client *Client) SetProfileID(profileID string) error {
 	errorMessage := "failed to set the profile ID for the current server"
-	server, serverErr := state.Servers.GetCurrentServer()
+	server, serverErr := client.Servers.GetCurrentServer()
 	if serverErr != nil {
-		state.Logger.Warning(
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed setting a profile ID because no server configured, Err: %s",
 				GetErrorTraceback(serverErr),
 			),
 		)
-		state.goBackInternal()
+		client.goBackInternal()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
 	base, baseErr := server.GetBase()
 	if baseErr != nil {
-		state.Logger.Error(
+		client.Logger.Error(
 			fmt.Sprintf("Failed setting a profile ID, Err: %s", GetErrorTraceback(serverErr)),
 		)
-		state.goBackInternal()
+		client.goBackInternal()
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 	base.Profiles.Current = profileID
@@ -755,56 +755,56 @@ func (state *VPNState) SetProfileID(profileID string) error {
 // SetSearchServer sets the FSM to the SEARCH_SERVER state.
 // This indicates that the user wants to search for a new server.
 // Returns an error if this state transition is not possible.
-func (state *VPNState) SetSearchServer() error {
-	if !state.FSM.HasTransition(STATE_SEARCH_SERVER) {
-		state.Logger.Warning(
+func (client *Client) SetSearchServer() error {
+	if !client.FSM.HasTransition(STATE_SEARCH_SERVER) {
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed setting search server, wrong state %s",
-				GetStateName(state.FSM.Current),
+				GetStateName(client.FSM.Current),
 			),
 		)
 		return &types.WrappedErrorMessage{
 			Message: "failed to set search server",
 			Err: FSMWrongStateTransitionError{
-				Got:  state.FSM.Current,
+				Got:  client.FSM.Current,
 				Want: STATE_CONNECTED,
 			}.CustomError(),
 		}
 	}
 
-	state.FSM.GoTransition(STATE_SEARCH_SERVER)
+	client.FSM.GoTransition(STATE_SEARCH_SERVER)
 	return nil
 }
 
 // SetConnected sets the FSM to the CONNECTED state.
 // This indicates that the VPN is connected to the server.
 // Returns an error if this state transition is not possible.
-func (state *VPNState) SetConnected() error {
+func (client *Client) SetConnected() error {
 	errorMessage := "failed to set connected"
-	if state.InFSMState(STATE_CONNECTED) {
+	if client.InFSMState(STATE_CONNECTED) {
 		// already connected, show no error
-		state.Logger.Warning("Already connected")
+		client.Logger.Warning("Already connected")
 		return nil
 	}
-	if !state.FSM.HasTransition(STATE_CONNECTED) {
-		state.Logger.Warning(
+	if !client.FSM.HasTransition(STATE_CONNECTED) {
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed setting connected, wrong state: %s",
-				GetStateName(state.FSM.Current),
+				GetStateName(client.FSM.Current),
 			),
 		)
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err: FSMWrongStateTransitionError{
-				Got:  state.FSM.Current,
+				Got:  client.FSM.Current,
 				Want: STATE_CONNECTED,
 			}.CustomError(),
 		}
 	}
 
-	currentServer, currentServerErr := state.Servers.GetCurrentServer()
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		state.Logger.Warning(
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed setting connected, cannot get current server with error: %s",
 				GetErrorTraceback(currentServerErr),
@@ -813,39 +813,39 @@ func (state *VPNState) SetConnected() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
 
-	state.FSM.GoTransitionWithData(STATE_CONNECTED, currentServer, false)
+	client.FSM.GoTransitionWithData(STATE_CONNECTED, currentServer, false)
 	return nil
 }
 
 // SetConnecting sets the FSM to the CONNECTING state.
 // This indicates that the VPN is currently connecting to the server.
 // Returns an error if this state transition is not possible.
-func (state *VPNState) SetConnecting() error {
+func (client *Client) SetConnecting() error {
 	errorMessage := "failed to set connecting"
-	if state.InFSMState(STATE_CONNECTING) {
+	if client.InFSMState(STATE_CONNECTING) {
 		// already loading connection, show no error
-		state.Logger.Warning("Already connecting")
+		client.Logger.Warning("Already connecting")
 		return nil
 	}
-	if !state.FSM.HasTransition(STATE_CONNECTING) {
-		state.Logger.Warning(
+	if !client.FSM.HasTransition(STATE_CONNECTING) {
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed setting connecting, wrong state: %s",
-				GetStateName(state.FSM.Current),
+				GetStateName(client.FSM.Current),
 			),
 		)
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err: FSMWrongStateTransitionError{
-				Got:  state.FSM.Current,
+				Got:  client.FSM.Current,
 				Want: STATE_CONNECTING,
 			}.CustomError(),
 		}
 	}
 
-	currentServer, currentServerErr := state.Servers.GetCurrentServer()
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		state.Logger.Warning(
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed setting connecting, cannot get current server with error: %s",
 				GetErrorTraceback(currentServerErr),
@@ -854,39 +854,39 @@ func (state *VPNState) SetConnecting() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
 
-	state.FSM.GoTransitionWithData(STATE_CONNECTING, currentServer, false)
+	client.FSM.GoTransitionWithData(STATE_CONNECTING, currentServer, false)
 	return nil
 }
 
 // SetDisconnecting sets the FSM to the DISCONNECTING state.
 // This indicates that the VPN is currently disconnecting from the server.
 // Returns an error if this state transition is not possible.
-func (state *VPNState) SetDisconnecting() error {
+func (client *Client) SetDisconnecting() error {
 	errorMessage := "failed to set disconnecting"
-	if state.InFSMState(STATE_DISCONNECTING) {
+	if client.InFSMState(STATE_DISCONNECTING) {
 		// already disconnecting, show no error
-		state.Logger.Warning("Already disconnecting")
+		client.Logger.Warning("Already disconnecting")
 		return nil
 	}
-	if !state.FSM.HasTransition(STATE_DISCONNECTING) {
-		state.Logger.Warning(
+	if !client.FSM.HasTransition(STATE_DISCONNECTING) {
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed setting disconnecting, wrong state: %s",
-				GetStateName(state.FSM.Current),
+				GetStateName(client.FSM.Current),
 			),
 		)
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err: FSMWrongStateTransitionError{
-				Got:  state.FSM.Current,
+				Got:  client.FSM.Current,
 				Want: STATE_DISCONNECTING,
 			}.CustomError(),
 		}
 	}
 
-	currentServer, currentServerErr := state.Servers.GetCurrentServer()
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		state.Logger.Warning(
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed setting disconnected, cannot get current server with error: %s",
 				GetErrorTraceback(currentServerErr),
@@ -895,7 +895,7 @@ func (state *VPNState) SetDisconnecting() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
 
-	state.FSM.GoTransitionWithData(STATE_DISCONNECTING, currentServer, false)
+	client.FSM.GoTransitionWithData(STATE_DISCONNECTING, currentServer, false)
 	return nil
 }
 
@@ -903,32 +903,32 @@ func (state *VPNState) SetDisconnecting() error {
 // This indicates that the VPN is currently disconnected from the server.
 // This also sends the /disconnect API call to the server.
 // Returns an error if this state transition is not possible.
-func (state *VPNState) SetDisconnected(cleanup bool) error {
+func (client *Client) SetDisconnected(cleanup bool) error {
 	errorMessage := "failed to set disconnected"
-	if state.InFSMState(STATE_DISCONNECTED) {
+	if client.InFSMState(STATE_DISCONNECTED) {
 		// already disconnected, show no error
-		state.Logger.Warning("Already disconnected")
+		client.Logger.Warning("Already disconnected")
 		return nil
 	}
-	if !state.FSM.HasTransition(STATE_DISCONNECTED) {
-		state.Logger.Warning(
+	if !client.FSM.HasTransition(STATE_DISCONNECTED) {
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed setting disconnected, wrong state: %s",
-				GetStateName(state.FSM.Current),
+				GetStateName(client.FSM.Current),
 			),
 		)
 		return &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err: FSMWrongStateTransitionError{
-				Got:  state.FSM.Current,
+				Got:  client.FSM.Current,
 				Want: STATE_DISCONNECTED,
 			}.CustomError(),
 		}
 	}
 
-	currentServer, currentServerErr := state.Servers.GetCurrentServer()
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		state.Logger.Warning(
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed setting disconnect, failed getting current server with error: %s",
 				GetErrorTraceback(currentServerErr),
@@ -942,19 +942,19 @@ func (state *VPNState) SetDisconnected(cleanup bool) error {
 		server.Disconnect(currentServer)
 	}
 
-	state.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer, false)
+	client.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer, false)
 
 	return nil
 }
 
 // RenewSession renews the session for the current VPN server.
 // This logs the user back in.
-func (state *VPNState) RenewSession() error {
+func (client *Client) RenewSession() error {
 	errorMessage := "failed to renew session"
 
-	currentServer, currentServerErr := state.Servers.GetCurrentServer()
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		state.Logger.Warning(
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed getting current server to renew, error: %s",
 				GetErrorTraceback(currentServerErr),
@@ -963,9 +963,9 @@ func (state *VPNState) RenewSession() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
 
-	loginErr := state.ensureLogin(currentServer)
+	loginErr := client.ensureLogin(currentServer)
 	if loginErr != nil {
-		state.Logger.Warning(
+		client.Logger.Warning(
 			fmt.Sprintf(
 				"Failed logging in server for renew, error: %s",
 				GetErrorTraceback(loginErr),
@@ -980,17 +980,17 @@ func (state *VPNState) RenewSession() error {
 // ShouldRenewButton returns true if the renew button should be shown
 // If there is no server then this returns false and logs with INFO if so
 // In other cases it simply checks the expiry time and calculates according to: https://github.com/eduvpn/documentation/blob/b93854dcdd22050d5f23e401619e0165cb8bc591/API.md#session-expiry.
-func (state *VPNState) ShouldRenewButton() bool {
-	if !state.InFSMState(STATE_CONNECTED) && !state.InFSMState(STATE_CONNECTING) &&
-		!state.InFSMState(STATE_DISCONNECTED) &&
-		!state.InFSMState(STATE_DISCONNECTING) {
+func (client *Client) ShouldRenewButton() bool {
+	if !client.InFSMState(STATE_CONNECTED) && !client.InFSMState(STATE_CONNECTING) &&
+		!client.InFSMState(STATE_DISCONNECTED) &&
+		!client.InFSMState(STATE_DISCONNECTING) {
 		return false
 	}
 
-	currentServer, currentServerErr := state.Servers.GetCurrentServer()
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 
 	if currentServerErr != nil {
-		state.Logger.Info(
+		client.Logger.Info(
 			fmt.Sprintf(
 				"No server found to renew with err: %s",
 				GetErrorTraceback(currentServerErr),
@@ -1003,8 +1003,8 @@ func (state *VPNState) ShouldRenewButton() bool {
 }
 
 // InFSMState is a helper to check if the FSM is in state `checkState`.
-func (state *VPNState) InFSMState(checkState FSMStateID) bool {
-	return state.FSM.InState(checkState)
+func (client *Client) InFSMState(checkState FSMStateID) bool {
+	return client.FSM.InState(checkState)
 }
 
 // GetErrorCause gets the cause for error `err`.
@@ -1023,6 +1023,6 @@ func GetErrorTraceback(err error) string {
 }
 
 // GetTranslated gets the translation for `languages` using the current state language.
-func (state *VPNState) GetTranslated(languages map[string]string) string {
-	return util.GetLanguageMatched(languages, state.Language)
+func (client *Client) GetTranslated(languages map[string]string) string {
+	return util.GetLanguageMatched(languages, client.Language)
 }
