@@ -17,14 +17,6 @@ import (
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
-func ensureLocalWellKnown() {
-	wellKnown := os.Getenv("SERVER_IS_LOCAL")
-
-	if wellKnown == "1" {
-		server.WellKnownPath = "well-known.php"
-	}
-}
-
 func getServerURI(t *testing.T) string {
 	serverURI := os.Getenv("SERVER_URI")
 	if serverURI == "" {
@@ -80,7 +72,6 @@ func stateCallback(
 func Test_server(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &VPNState{}
-	ensureLocalWellKnown()
 
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
@@ -168,8 +159,6 @@ func Test_connect_oauth_parameters(t *testing.T) {
 		{&failedCallbackStateMatchError, httpw.URLParameters{"code": "42", "state": "21"}},
 	}
 
-	ensureLocalWellKnown()
-
 	for _, test := range tests {
 		test_connect_oauth_parameter(t, test.parameters, test.expectedErr)
 	}
@@ -184,8 +173,6 @@ func Test_token_expired(t *testing.T) {
 		)
 		return
 	}
-
-	ensureLocalWellKnown()
 
 	// Convert the env variable to an int and signal error if it is not possible
 	expiredInt, expiredErr := strconv.Atoi(expiredTTL)
@@ -250,8 +237,6 @@ func Test_token_invalid(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &VPNState{}
 
-	ensureLocalWellKnown()
-
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configsinvalid",
@@ -303,8 +288,6 @@ func Test_invalid_profile_corrected(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &VPNState{}
 
-	ensureLocalWellKnown()
-
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configscancelprofile",
@@ -355,8 +338,6 @@ func Test_invalid_profile_corrected(t *testing.T) {
 func Test_prefer_tcp(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &VPNState{}
-
-	ensureLocalWellKnown()
 
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
