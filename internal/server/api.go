@@ -131,10 +131,19 @@ func APIInfo(server Server) error {
 	return nil
 }
 
+// see https://github.com/eduvpn/documentation/blob/v3/API.md#request-1
+func GetPreferTCPString(preferTCP bool) string {
+	if preferTCP {
+		return "yes"
+	}
+	return "no"
+}
+
 func APIConnectWireguard(
 	server Server,
 	profile_id string,
 	pubkey string,
+	preferTCP bool,
 	supportsOpenVPN bool,
 ) (string, string, time.Time, error) {
 	errorMessage := "failed obtaining a WireGuard configuration"
@@ -143,6 +152,8 @@ func APIConnectWireguard(
 		"accept":       {"application/x-wireguard-profile"},
 	}
 
+	// This profile also supports OpenVPN
+	// Indicate that we also accept OpenVPN profiles
 	if supportsOpenVPN {
 		headers.Add("accept", "application/x-openvpn-profile")
 	}
@@ -150,6 +161,7 @@ func APIConnectWireguard(
 	urlForm := url.Values{
 		"profile_id": {profile_id},
 		"public_key": {pubkey},
+		"prefer_tcp": {GetPreferTCPString(preferTCP)},
 	}
 	header, connectBody, connectErr := apiAuthorizedRetry(
 		server,
@@ -180,7 +192,7 @@ func APIConnectWireguard(
 	return string(connectBody), content, pTime, nil
 }
 
-func APIConnectOpenVPN(server Server, profile_id string) (string, time.Time, error) {
+func APIConnectOpenVPN(server Server, profile_id string, preferTCP bool) (string, time.Time, error) {
 	errorMessage := "failed obtaining an OpenVPN configuration"
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
@@ -189,6 +201,7 @@ func APIConnectOpenVPN(server Server, profile_id string) (string, time.Time, err
 
 	urlForm := url.Values{
 		"profile_id": {profile_id},
+		"prefer_tcp": {GetPreferTCPString(preferTCP)},
 	}
 
 	header, connectBody, connectErr := apiAuthorizedRetry(

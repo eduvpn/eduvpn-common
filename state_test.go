@@ -350,3 +350,49 @@ func Test_invalid_profile_corrected(t *testing.T) {
 		)
 	}
 }
+
+// Test if an invalid profile will be corrected
+func Test_prefer_tcp(t *testing.T) {
+	serverURI := getServerURI(t)
+	state := &VPNState{}
+
+	ensureLocalWellKnown()
+
+	registerErr := state.Register(
+		"org.eduvpn.app.linux",
+		"configsprefertcp",
+		func(old FSMStateID, new FSMStateID, data interface{}) {
+			stateCallback(t, old, new, data, state)
+		},
+		false,
+	)
+	if registerErr != nil {
+		t.Fatalf("Register error: %v", registerErr)
+	}
+
+	// get a config with preferTCP set to true
+	config, configType, configErr := state.GetConfigCustomServer(serverURI, true)
+
+	// Test server should accept prefer TCP!
+	if configType != "openvpn" {
+		t.Fatalf("Invalid protocol for prefer TCP, got: WireGuard, want: OpenVPN")
+	}
+
+	if configErr != nil {
+		t.Fatalf("Config error: %v", configErr)
+	}
+
+	if !strings.HasSuffix(config, "remote eduvpnserver 1194 tcp\nremote eduvpnserver 1194 udp") {
+		t.Fatalf("Suffix for prefer TCP is not in the right order for config: %s", config)
+	}
+
+	// get a config with preferTCP set to false
+	config, configType, configErr = state.GetConfigCustomServer(serverURI, false)
+	if configErr != nil {
+		t.Fatalf("Config error: %v", configErr)
+	}
+
+	if configType == "openvpn" && !strings.HasSuffix(config, "remote eduvpnserver 1194 udp\nremote eduvpnserver 1194 tcp") {
+		t.Fatalf("Suffix for disable prefer TCP is not in the right order for config: %s", config)
+	}
+}

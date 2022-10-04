@@ -324,7 +324,7 @@ func getCurrentProfile(server Server) (*ServerProfile, error) {
 	}
 }
 
-func wireguardGetConfig(server Server, supportsOpenVPN bool) (string, string, error) {
+func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (string, string, error) {
 	errorMessage := "failed getting server WireGuard configuration"
 	base, baseErr := server.GetBase()
 
@@ -344,6 +344,7 @@ func wireguardGetConfig(server Server, supportsOpenVPN bool) (string, string, er
 		server,
 		profile_id,
 		wireguardPublicKey,
+		preferTCP,
 		supportsOpenVPN,
 	)
 
@@ -366,7 +367,7 @@ func wireguardGetConfig(server Server, supportsOpenVPN bool) (string, string, er
 	return config, content, nil
 }
 
-func openVPNGetConfig(server Server) (string, string, error) {
+func openVPNGetConfig(server Server, preferTCP bool) (string, string, error) {
 	errorMessage := "failed getting server OpenVPN configuration"
 	base, baseErr := server.GetBase()
 
@@ -374,7 +375,7 @@ func openVPNGetConfig(server Server) (string, string, error) {
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
 	}
 	profile_id := base.Profiles.Current
-	configOpenVPN, expires, configErr := APIConnectOpenVPN(server, profile_id)
+	configOpenVPN, expires, configErr := APIConnectOpenVPN(server, profile_id, preferTCP)
 
 	// Store start and end time
 	base.StartTime = util.GetCurrentTime()
@@ -433,14 +434,6 @@ func GetConfig(server Server, preferTCP bool) (string, string, error) {
 	supportsOpenVPN := profile.supportsOpenVPN()
 	supportsWireguard := profile.supportsWireguard()
 
-	// If preferTCP we must be able to get a config with OpenVPN
-	if preferTCP && supportsOpenVPN {
-		return "", "", &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     &ServerGetConfigForceTCPError{},
-		}
-	}
-
 	var config string
 	var configType string
 	var configErr error
@@ -448,9 +441,9 @@ func GetConfig(server Server, preferTCP bool) (string, string, error) {
 	if supportsWireguard {
 		// A wireguard connect call needs to generate a wireguard key and add it to the config
 		// Also the server could send back an OpenVPN config if it supports OpenVPN
-		config, configType, configErr = wireguardGetConfig(server, supportsOpenVPN)
+		config, configType, configErr = wireguardGetConfig(server, preferTCP, supportsOpenVPN)
 	} else {
-		config, configType, configErr = openVPNGetConfig(server)
+		config, configType, configErr = openVPNGetConfig(server, preferTCP)
 	}
 
 	if configErr != nil {

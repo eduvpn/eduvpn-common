@@ -95,7 +95,7 @@ func getConfig(state *eduvpn.VPNState, url string, serverType ServerTypes) (stri
 	if !strings.HasPrefix(url, "http") {
 		url = "https://" + url
 	}
-	// Force TCP is set to False
+	// Prefer TCP is set to False
 	if serverType == ServerTypeInstituteAccess {
 		return state.GetConfigInstituteAccess(url, false)
 	} else if serverType == ServerTypeCustom {
