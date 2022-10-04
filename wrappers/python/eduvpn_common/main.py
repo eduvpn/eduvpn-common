@@ -132,13 +132,13 @@ class EduVPN(object):
         if remove_err:
             raise remove_err
 
-    def get_config(self, url: str, func: callable, force_tcp: bool = False):
+    def get_config(self, url: str, func: callable, prefer_tcp: bool = False):
         # Because it could be the case that a profile callback is started, store a threading event
         # In the constructor, we have defined a wait event for Ask_Profile, this waits for this event to be set
         # The event is set in self.set_profile
         self.profile_event = threading.Event()
 
-        config, config_type, config_err = self.go_function(func, url, force_tcp)
+        config, config_type, config_err = self.go_function(func, url, prefer_tcp)
 
         self.profile_event = None
         self.location_event = None
@@ -149,20 +149,20 @@ class EduVPN(object):
         return config, config_type
 
     def get_config_custom_server(
-        self, url: str, force_tcp: bool = False
+        self, url: str, prefer_tcp: bool = False
     ) -> Tuple[str, str]:
-        return self.get_config(url, self.lib.GetConfigCustomServer, force_tcp)
+        return self.get_config(url, self.lib.GetConfigCustomServer, prefer_tcp)
 
     def get_config_institute_access(
-        self, url: str, force_tcp: bool = False
+        self, url: str, prefer_tcp: bool = False
     ) -> Tuple[str, str]:
-        return self.get_config(url, self.lib.GetConfigInstituteAccess, force_tcp)
+        return self.get_config(url, self.lib.GetConfigInstituteAccess, prefer_tcp)
 
     def get_config_secure_internet(
-        self, url: str, force_tcp: bool = False
+        self, url: str, prefer_tcp: bool = False
     ) -> Tuple[str, str]:
         self.location_event = threading.Event()
-        return self.get_config(url, self.lib.GetConfigSecureInternet, force_tcp)
+        return self.get_config(url, self.lib.GetConfigSecureInternet, prefer_tcp)
 
     def go_back(self) -> None:
         # Ignore the error

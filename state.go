@@ -200,7 +200,7 @@ func (state *VPNState) ensureLogin(chosenServer server.Server) error {
 // It also asks for a profile if no valid profile is found.
 func (state *VPNState) getConfigAuth(
 	chosenServer server.Server,
-	forceTCP bool,
+	preferTCP bool,
 ) (string, string, error) {
 	loginErr := state.ensureLogin(chosenServer)
 	if loginErr != nil {
@@ -222,17 +222,17 @@ func (state *VPNState) getConfigAuth(
 	}
 
 	// We return the error otherwise we wrap it too much
-	return server.GetConfig(chosenServer, forceTCP)
+	return server.GetConfig(chosenServer, preferTCP)
 }
 
 // retryConfigAuth retries the getConfigAuth function if the tokens are invalid.
 // If OAuth is cancelled, it makes sure that we only forward the error as additional info.
 func (state *VPNState) retryConfigAuth(
 	chosenServer server.Server,
-	forceTCP bool,
+	preferTCP bool,
 ) (string, string, error) {
 	errorMessage := "failed authorized config retry"
-	config, configType, configErr := state.getConfigAuth(chosenServer, forceTCP)
+	config, configType, configErr := state.getConfigAuth(chosenServer, preferTCP)
 	if configErr != nil {
 		level := types.ERR_OTHER
 		var error *oauth.OAuthTokensInvalidError
@@ -242,7 +242,7 @@ func (state *VPNState) retryConfigAuth(
 		if errors.As(configErr, &error) {
 			config, configType, configErr = state.getConfigAuth(
 				chosenServer,
-				forceTCP,
+				preferTCP,
 			)
 			if configErr == nil {
 				return config, configType, nil
@@ -260,7 +260,7 @@ func (state *VPNState) retryConfigAuth(
 // getConfig gets an OpenVPN/WireGuard configuration by contacting the server, moving the FSM towards the DISCONNECTED state and then saving the local configuration file.
 func (state *VPNState) getConfig(
 	chosenServer server.Server,
-	forceTCP bool,
+	preferTCP bool,
 ) (string, string, error) {
 	errorMessage := "failed to get a configuration for OpenVPN/Wireguard"
 	if state.InFSMState(STATE_DEREGISTERED) {
@@ -270,7 +270,7 @@ func (state *VPNState) getConfig(
 		}
 	}
 
-	config, configType, configErr := state.retryConfigAuth(chosenServer, forceTCP)
+	config, configType, configErr := state.retryConfigAuth(chosenServer, preferTCP)
 
 	if configErr != nil {
 		return "", "", &types.WrappedErrorMessage{Level: GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
@@ -475,10 +475,10 @@ func (state *VPNState) RemoveCustomServer(url string) error {
 
 // GetConfigSecureInternet gets a configuration for a Secure Internet Server.
 // It ensures that the Secure Internet Server exists by creating or using an existing one with the orgID.
-// `forceTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
+// `preferTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
 func (state *VPNState) GetConfigSecureInternet(
 	orgID string,
-	forceTCP bool,
+	preferTCP bool,
 ) (string, string, error) {
 	errorMessage := fmt.Sprintf(
 		"failed getting a configuration for Secure Internet organization %s",
@@ -499,7 +499,7 @@ func (state *VPNState) GetConfigSecureInternet(
 
 	state.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
-	config, configType, configErr := state.getConfig(server, forceTCP)
+	config, configType, configErr := state.getConfig(server, preferTCP)
 	if configErr != nil {
 		state.Logger.Inherit(
 			configErr,
@@ -559,8 +559,8 @@ func (state *VPNState) addCustomServer(url string) (server.Server, error) {
 
 // GetConfigInstituteAccess gets a configuration for an Institute Access Server.
 // It ensures that the Institute Access Server exists by creating or using an existing one with the url.
-// `forceTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
-func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (string, string, error) {
+// `preferTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
+func (state *VPNState) GetConfigInstituteAccess(url string, preferTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for Institute Access %s", url)
 	state.FSM.GoTransition(STATE_LOADING_SERVER)
 	server, serverErr := state.addInstituteServer(url)
@@ -575,7 +575,7 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	config, configType, configErr := state.getConfig(server, forceTCP)
+	config, configType, configErr := state.getConfig(server, preferTCP)
 	if configErr != nil {
 		state.Logger.Inherit(configErr,
 			fmt.Sprintf(
@@ -590,8 +590,8 @@ func (state *VPNState) GetConfigInstituteAccess(url string, forceTCP bool) (stri
 
 // GetConfigCustomServer gets a configuration for a Custom Server.
 // It ensures that the Custom Server exists by creating or using an existing one with the url.
-// `forceTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
-func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string, string, error) {
+// `preferTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
+func (state *VPNState) GetConfigCustomServer(url string, preferTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for custom server %s", url)
 	state.FSM.GoTransition(STATE_LOADING_SERVER)
 	server, serverErr := state.addCustomServer(url)
@@ -607,7 +607,7 @@ func (state *VPNState) GetConfigCustomServer(url string, forceTCP bool) (string,
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
-	config, configType, configErr := state.getConfig(server, forceTCP)
+	config, configType, configErr := state.getConfig(server, preferTCP)
 	if configErr != nil {
 		state.Logger.Inherit(
 			configErr,

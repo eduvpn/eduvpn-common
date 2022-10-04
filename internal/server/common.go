@@ -422,7 +422,7 @@ func HasValidProfile(server Server) (bool, error) {
 	return false, nil
 }
 
-func GetConfig(server Server, forceTCP bool) (string, string, error) {
+func GetConfig(server Server, preferTCP bool) (string, string, error) {
 	errorMessage := "failed getting an OpenVPN/WireGuard configuration"
 
 	profile, profileErr := getCurrentProfile(server)
@@ -433,8 +433,8 @@ func GetConfig(server Server, forceTCP bool) (string, string, error) {
 	supportsOpenVPN := profile.supportsOpenVPN()
 	supportsWireguard := profile.supportsWireguard()
 
-	// If forceTCP we must be able to get a config with OpenVPN
-	if forceTCP && supportsOpenVPN {
+	// If preferTCP we must be able to get a config with OpenVPN
+	if preferTCP && supportsOpenVPN {
 		return "", "", &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err:     &ServerGetConfigForceTCPError{},
@@ -475,7 +475,7 @@ func (e *ServerGetCurrentProfileNotFoundError) Error() string {
 type ServerGetConfigForceTCPError struct{}
 
 func (e *ServerGetConfigForceTCPError) Error() string {
-	return "failed to get config, force TCP is on but the server does not support OpenVPN"
+	return "failed to get config, prefer TCP is on but the server does not support OpenVPN"
 }
 
 type ServerEnsureServerEmptyURLError struct{}

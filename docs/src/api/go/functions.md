@@ -26,11 +26,11 @@ Returns a string of JSON data with the servers/organizations and an `error`, nil
 ## OpenVPN/Wireguard config
 See [Overview](../overview/getconfig.html)
 ```go
-func GetConfigInstituteAccess(url string, forceTCP bool) (string, string, error)
-func GetConfigSecureInternet(url string, forceTCP bool) (string, string, error)
+func GetConfigInstituteAccess(url string, preferTCP bool) (string, string, error)
+func GetConfigSecureInternet(url string, preferTCP bool) (string, string, error)
 ```
 - `url`: The URL of the Institute Access or Secure Internet server to get a connect config for
-- `forceTCP`: Whether or not we want to force enable TCP
+- `preferTCP`: Whether or not we want to prefer TCP
 
 Returns:
 - A `string` of the OpenVPN/Wireguard config

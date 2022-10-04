@@ -32,13 +32,13 @@ Returns a `string` of JSON data with the servers/organizations. Raises an except
 ## OpenVPN/Wireguard config
 See [Overview](../overview/getconfig.html)
 ```python
-def get_config_institute_access(self, url: str, forceTCP: bool = False) -> Tuple[str, str]
+def get_config_institute_access(self, url: str, preferTCP: bool = False) -> Tuple[str, str]
 ```
 ```python
-def get_config_secure_internet(self, url: str, forceTCP: bool = False) -> Tuple[str, str]
+def get_config_secure_internet(self, url: str, preferTCP: bool = False) -> Tuple[str, str]
 ```
 - `url`: The url of the Secure Internet or Institute Access server to get a connect config for
-- `forceTCP`: Whether or not we want to force enable TCP, default: `False`
+- `preferTCP`: Whether or not we want to prefer TCP, default: `False`
 
 Returns:
 - A `string` of the OpenVPN/Wireguard config

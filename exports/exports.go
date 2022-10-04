@@ -195,38 +195,38 @@ func RemoveCustomServer(name *C.char, url *C.char) *C.error {
 }
 
 //export GetConfigSecureInternet
-func GetConfigSecureInternet(name *C.char, orgID *C.char, forceTCP C.int) (*C.char, *C.char, *C.error) {
+func GetConfigSecureInternet(name *C.char, orgID *C.char, preferTCP C.int) (*C.char, *C.char, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
 		return nil, nil, getError(stateErr)
 	}
-	forceTCPBool := forceTCP == 1
-	config, configType, configErr := state.GetConfigSecureInternet(C.GoString(orgID), forceTCPBool)
+	preferTCPBool := preferTCP == 1
+	config, configType, configErr := state.GetConfigSecureInternet(C.GoString(orgID), preferTCPBool)
 	return C.CString(config), C.CString(configType), getError(configErr)
 }
 
 //export GetConfigInstituteAccess
-func GetConfigInstituteAccess(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char, *C.error) {
+func GetConfigInstituteAccess(name *C.char, url *C.char, preferTCP C.int) (*C.char, *C.char, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
 		return nil, nil, getError(stateErr)
 	}
-	forceTCPBool := forceTCP == 1
-	config, configType, configErr := state.GetConfigInstituteAccess(C.GoString(url), forceTCPBool)
+	preferTCPBool := preferTCP == 1
+	config, configType, configErr := state.GetConfigInstituteAccess(C.GoString(url), preferTCPBool)
 	return C.CString(config), C.CString(configType), getError(configErr)
 }
 
 //export GetConfigCustomServer
-func GetConfigCustomServer(name *C.char, url *C.char, forceTCP C.int) (*C.char, *C.char, *C.error) {
+func GetConfigCustomServer(name *C.char, url *C.char, preferTCP C.int) (*C.char, *C.char, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
 		return nil, nil, getError(stateErr)
 	}
-	forceTCPBool := forceTCP == 1
-	config, configType, configErr := state.GetConfigCustomServer(C.GoString(url), forceTCPBool)
+	preferTCPBool := preferTCP == 1
+	config, configType, configErr := state.GetConfigCustomServer(C.GoString(url), preferTCPBool)
 	return C.CString(config), C.CString(configType), getError(configErr)
 }
 

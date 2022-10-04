@@ -2,10 +2,10 @@
 ## Summary
 name: `Get Config Institute Access` and `Get Config Secure Internet`
 
-| Arguments | Description                             | type     |
-| --------- | --------------------------------------  | -------- |
-| URL       | The url of the VPN server to connect to | string   |
-| Force TCP | Whether or not to force the use of TCP  | string   |
+| Arguments  | Description                              | type     |
+| ---------  | ---------------------------------------- | -------- |
+| URL        | The url of the VPN server to connect to  | string   |
+| Prefer TCP | Whether or not to prefer the use of TCP  | string   |
 
 Returns: `OpenVPN/Wireguard config (string)` `wireguard/openvpn type (string)`, `Error`
 
@@ -13,12 +13,12 @@ Used to obtain the OpenVPN/Wireguard config
 
 ## Detailed information
 
-To get a configuration that is used to actually establish a tunnel with the VPN server, we have the Get Config function for Institute Access and Secure Internet (the exact name depends on the language you're using) function in the library. This function has two parameters *URL* and *Force TCP*.
+To get a configuration that is used to actually establish a tunnel with the VPN server, we have the Get Config function for Institute Access and Secure Internet (the exact name depends on the language you're using) function in the library. This function has two parameters *URL* and *Prefer TCP*.
 
 *URL* is the base url of the server to connect to
 e.g. `nl.eduvpn.org`. Use the correct function to indicate if it is an Institute Access server or a Secure Internet server. A user configured server is often an Institute Access server. In case of a Secure Internet server and no Secure Internet was configured previously, this URL is set as the home server. This means that this server is set as the authorization server for all secure internet servers.
 
-The *Force TCP* flag is a boolean that indicates whether or not we want to use TCP to connect over the VPN. This flag is useful if the user has enabled e.g. a setting that forces the use of TCP, which is only supported by OpenVPN. If the Force TCP flag is set to `true` but the server only supports Wireguard then an error is returned and the config will be empty.
+The *Prefer TCP* flag is a boolean that indicates whether or not we want to prefer TCP to connect over the VPN. This flag is useful if the user has enabled e.g. a setting that prefers the use of TCP, which is only supported by OpenVPN. Note that this setting may be ignored by the server.
 
 This function takes care of OAuth which has certain callbacks with data. Additionally, there are also callbacks that need to be registered for selecting the right profile to connect to. These callbacks will be explained now.
 
