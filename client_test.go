@@ -106,7 +106,16 @@ func test_connect_oauth_parameter(
 		"en",
 		func(oldState FSMStateID, newState FSMStateID, data interface{}) {
 			if newState == STATE_OAUTH_STARTED {
-				baseURL := "http://127.0.0.1:8000/callback"
+				current, currentErr := state.Servers.GetCurrentServer()
+				if currentErr != nil {
+					t.Fatalf("No current server with error: %v", currentErr)
+				}
+				port, portErr := current.GetOAuth().GetListenerPort()
+
+				if portErr != nil {
+					t.Fatalf("No port with error: %v", portErr)
+				}
+				baseURL := fmt.Sprintf("http://127.0.0.1:%d/callback", port)
 				url, err := httpw.HTTPConstructURL(baseURL, parameters)
 				if err != nil {
 					t.Fatalf(
