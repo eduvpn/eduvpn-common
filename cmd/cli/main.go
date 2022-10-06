@@ -111,6 +111,7 @@ func printConfig(url string, serverType ServerTypes) {
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configs",
+		"en",
 		func(old eduvpn.FSMStateID, new eduvpn.FSMStateID, data interface{}) {
 			stateCallback(state, old, new, data)
 		},

@@ -75,6 +75,7 @@ func Test_server(t *testing.T) {
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configstest",
+		"en",
 		func(old FSMStateID, new FSMStateID, data interface{}) {
 			stateCallback(t, old, new, data, state)
 		},
@@ -102,6 +103,7 @@ func test_connect_oauth_parameter(
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		configDirectory,
+		"en",
 		func(oldState FSMStateID, newState FSMStateID, data interface{}) {
 			if newState == STATE_OAUTH_STARTED {
 				baseURL := "http://127.0.0.1:8000/callback"
@@ -185,6 +187,7 @@ func Test_token_expired(t *testing.T) {
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configsexpired",
+		"en",
 		func(old FSMStateID, new FSMStateID, data interface{}) {
 			stateCallback(t, old, new, data, state)
 		},
@@ -239,6 +242,7 @@ func Test_token_invalid(t *testing.T) {
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configsinvalid",
+		"en",
 		func(old FSMStateID, new FSMStateID, data interface{}) {
 			stateCallback(t, old, new, data, state)
 		},
@@ -290,6 +294,7 @@ func Test_invalid_profile_corrected(t *testing.T) {
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configscancelprofile",
+		"en",
 		func(old FSMStateID, new FSMStateID, data interface{}) {
 			stateCallback(t, old, new, data, state)
 		},
@@ -341,6 +346,7 @@ func Test_prefer_tcp(t *testing.T) {
 	registerErr := state.Register(
 		"org.eduvpn.app.linux",
 		"configsprefertcp",
+		"en",
 		func(old FSMStateID, new FSMStateID, data interface{}) {
 			stateCallback(t, old, new, data, state)
 		},
