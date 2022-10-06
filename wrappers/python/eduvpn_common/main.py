@@ -32,9 +32,10 @@ def state_callback(name, old_state, new_state, data):
 
 
 class EduVPN(object):
-    def __init__(self, name: str, config_directory: str):
+    def __init__(self, name: str, config_directory: str, language: str):
         self.name = name
         self.config_directory = config_directory
+        self.language = language
 
         # Load the library
         self.lib = load_lib()
@@ -86,7 +87,7 @@ class EduVPN(object):
             raise Exception("Already registered")
 
         register_err = self.go_function(
-            self.lib.Register, self.config_directory, state_callback, debug
+            self.lib.Register, self.config_directory, self.language, state_callback, debug
         )
 
         if register_err:

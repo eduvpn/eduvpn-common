@@ -53,6 +53,7 @@ type Client struct {
 func (client *Client) Register(
 	name string,
 	directory string,
+	language string,
 	stateCallback func(FSMStateID, FSMStateID, interface{}),
 	debug bool,
 ) error {
@@ -65,7 +66,9 @@ func (client *Client) Register(
 	}
 	// Initialize the logger
 	logLevel := log.LOG_WARNING
-	client.Language = "en"
+
+	// TODO: Verify language setting?
+	client.Language = language
 
 	if debug {
 		logLevel = log.LOG_INFO

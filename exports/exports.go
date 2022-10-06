@@ -88,6 +88,7 @@ func GetVPNState(name string) (*eduvpn.Client, error) {
 func Register(
 	name *C.char,
 	config_directory *C.char,
+	language *C.char,
 	stateCallback C.PythonCB,
 	debug C.int,
 ) *C.error {
@@ -107,6 +108,7 @@ func Register(
 	registerErr := state.Register(
 		nameStr,
 		C.GoString(config_directory),
+		C.GoString(language),
 		func(old eduvpn.FSMStateID, new eduvpn.FSMStateID, data interface{}) {
 			StateCallback(state, nameStr, old, new, data)
 		},

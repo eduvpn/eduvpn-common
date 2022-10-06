@@ -83,6 +83,7 @@ def initialize_functions(lib):
     lib.Register.argtypes, lib.Register.restype = [
         c_char_p,
         c_char_p,
+        c_char_p,
         VPNStateChange,
         c_int,
     ], c_void_p
