@@ -18,7 +18,7 @@ from selenium_eduvpn import login_eduvpn
 
 class ConfigTests(unittest.TestCase):
     def testConfig(self):
-        _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "testconfigs")
+        _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "testconfigs", "en")
         # This can throw an exception
         _eduvpn.register()
 
@@ -37,7 +37,7 @@ class ConfigTests(unittest.TestCase):
         _eduvpn.deregister()
 
     def testDoubleRegister(self):
-        _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "testconfigs")
+        _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "testconfigs", "en")
         # This can throw an exception
         _eduvpn.register()
         # This should throw
