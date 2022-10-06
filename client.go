@@ -3,6 +3,7 @@ package eduvpn
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/eduvpn/eduvpn-common/internal/config"
 	"github.com/eduvpn/eduvpn-common/internal/discovery"
@@ -20,8 +21,16 @@ type (
 	ServerBase = server.ServerBase
 )
 
+func (client Client) isLetsConnect() bool {
+	// see https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/ClientDb.php
+	return strings.HasPrefix(client.Name, "org.letsconnect-vpn.app")
+}
+
 // Client is the main struct for the VPN client
 type Client struct {
+	// The name of the client
+	Name string `json:"-"`
+
 	// The language used for language matching
 	Language string `json:"-"` // language should not be saved
 
@@ -64,12 +73,13 @@ func (client *Client) Register(
 			Err:     FSMDeregisteredError{}.CustomError(),
 		}
 	}
-	// Initialize the logger
-	logLevel := log.LOG_WARNING
+	client.Name = name
 
 	// TODO: Verify language setting?
 	client.Language = language
 
+	// Initialize the logger
+	logLevel := log.LOG_WARNING
 	if debug {
 		logLevel = log.LOG_INFO
 	}
@@ -92,33 +102,24 @@ func (client *Client) Register(
 		client.Logger.Info("Previous configuration not found")
 	}
 
-	discoServers, discoServersErr := client.GetDiscoServers()
+	// Go to the No Server state with the saved servers after we're done
+	defer client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, true)
 
-	_, currentServerErr := client.Servers.GetCurrentServer()
-	// Only actually return the error if we have no disco servers and no current server
-	if discoServersErr != nil && (discoServers == nil || discoServers.Version == 0) && currentServerErr != nil {
-		client.Logger.Error(
-			fmt.Sprintf(
-				"No configured servers, discovery servers is empty and no servers with error: %s",
-				GetErrorTraceback(discoServersErr),
-			),
-		)
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: discoServersErr}
+	// Let's Connect! doesn't care about discovery
+	if client.isLetsConnect() {
+		return nil
 	}
-	discoOrgs, discoOrgsErr := client.GetDiscoOrganizations()
 
-	// Only actually return the error if we have no disco organizations and no current server
-	if discoOrgsErr != nil && (discoOrgs == nil || discoOrgs.Version == 0) && currentServerErr != nil {
-		client.Logger.Error(
-			fmt.Sprintf(
-				"No configured organizations, discovery organizations empty and no servers with error: %s",
-				GetErrorTraceback(discoOrgsErr),
-			),
-		)
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: discoOrgsErr}
+	// Check if we are able to fetch discovery, and log if something went wrong
+	_, discoServersErr := client.GetDiscoServers()
+	if discoServersErr != nil {
+		client.Logger.Warning(fmt.Sprintf("Failed to get discovery servers: %v", discoServersErr))
 	}
-	// Go to the No Server state with the saved servers
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, true)
+	_, discoOrgsErr := client.GetDiscoOrganizations()
+	if discoOrgsErr != nil {
+		client.Logger.Warning(fmt.Sprintf("Failed to get discovery organizations: %v", discoOrgsErr))
+	}
+
 	return nil
 }
 
@@ -306,6 +307,11 @@ func (client *Client) getConfig(
 func (client *Client) SetSecureLocation(countryCode string) error {
 	errorMessage := "failed asking secure location"
 
+	// Not supported with Let's Connect!
+	if client.isLetsConnect() {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+	}
+
 	server, serverErr := client.Discovery.GetServerByCountryCode(countryCode, "secure_internet")
 	if serverErr != nil {
 		client.Logger.Error(
@@ -487,6 +493,12 @@ func (client *Client) GetConfigSecureInternet(
 		"failed getting a configuration for Secure Internet organization %s",
 		orgID,
 	)
+
+	// Not supported with Let's Connect!
+	if client.isLetsConnect() {
+		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+	}
+
 	client.FSM.GoTransition(STATE_LOADING_SERVER)
 	server, serverErr := client.addSecureInternetHomeServer(orgID)
 	if serverErr != nil {
@@ -565,6 +577,12 @@ func (client *Client) addCustomServer(url string) (server.Server, error) {
 // `preferTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
 func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (string, string, error) {
 	errorMessage := fmt.Sprintf("failed getting a configuration for Institute Access %s", url)
+
+	// Not supported with Let's Connect!
+	if client.isLetsConnect() {
+		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+	}
+
 	client.FSM.GoTransition(STATE_LOADING_SERVER)
 	server, serverErr := client.addInstituteServer(url)
 	if serverErr != nil {
@@ -693,6 +711,12 @@ func (client *Client) ChangeSecureLocation() error {
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#organization-list.
 func (client *Client) GetDiscoOrganizations() (*types.DiscoveryOrganizations, error) {
+	errorMessage := "failed getting discovery organizations list"
+	// Not supported with Let's Connect!
+	if client.isLetsConnect() {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+	}
+
 	orgs, orgsErr := client.Discovery.GetOrganizationsList()
 	if orgsErr != nil {
 		client.Logger.Warning(
@@ -702,7 +726,7 @@ func (client *Client) GetDiscoOrganizations() (*types.DiscoveryOrganizations, er
 			),
 		)
 		return nil, &types.WrappedErrorMessage{
-			Message: "failed getting discovery organizations list",
+			Message: errorMessage,
 			Err:     orgsErr,
 		}
 	}
@@ -714,13 +738,20 @@ func (client *Client) GetDiscoOrganizations() (*types.DiscoveryOrganizations, er
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#server-list.
 func (client *Client) GetDiscoServers() (*types.DiscoveryServers, error) {
+	errorMessage := "failed getting discovery servers list"
+
+	// Not supported with Let's Connect!
+	if client.isLetsConnect() {
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+	}
+
 	servers, serversErr := client.Discovery.GetServersList()
 	if serversErr != nil {
 		client.Logger.Warning(
 			fmt.Sprintf("Failed getting discovery servers, Err: %s", GetErrorTraceback(serversErr)),
 		)
 		return nil, &types.WrappedErrorMessage{
-			Message: "failed getting discovery servers list",
+			Message: errorMessage,
 			Err:     serversErr,
 		}
 	}
@@ -1028,4 +1059,10 @@ func GetErrorTraceback(err error) string {
 // GetTranslated gets the translation for `languages` using the current state language.
 func (client *Client) GetTranslated(languages map[string]string) string {
 	return util.GetLanguageMatched(languages, client.Language)
+}
+
+type LetsConnectNotSupportedError struct {}
+
+func (e LetsConnectNotSupportedError) Error() string {
+	return "Any operation that involves discovery is not allowed with the Let's Connect! client"
 }
