@@ -15,6 +15,7 @@ import "C"
 
 import (
 	"fmt"
+	"github.com/eduvpn/eduvpn-common/types"
 	"unsafe"
 
 	eduvpn "github.com/eduvpn/eduvpn-common"
@@ -139,9 +140,9 @@ func getError(err error) *C.error {
 	errorStruct := (*C.error)(
 		C.malloc(C.size_t(unsafe.Sizeof(C.error{}))),
 	)
-	errorStruct.level = C.errorLevel(eduvpn.GetErrorLevel(err))
-	errorStruct.traceback = C.CString(eduvpn.GetErrorTraceback(err))
-	errorStruct.cause = C.CString(eduvpn.GetErrorCause(err).Error())
+	errorStruct.level = C.errorLevel(types.GetErrorLevel(err))
+	errorStruct.traceback = C.CString(types.GetErrorTraceback(err))
+	errorStruct.cause = C.CString(types.GetErrorCause(err).Error())
 	return errorStruct
 }
 
@@ -172,6 +173,42 @@ func RemoveSecureInternet(name *C.char) *C.error {
 	}
 	removeErr := state.RemoveSecureInternet()
 	return getError(removeErr)
+}
+
+//export AddInstituteAccess
+func AddInstituteAccess(name *C.char, url *C.char) *C.error {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return getError(stateErr)
+	}
+	// FIXME: Return server result
+	_, addErr := state.AddInstituteServer(C.GoString(url))
+	return getError(addErr)
+}
+
+//export AddSecureInternetHomeServer
+func AddSecureInternetHomeServer(name *C.char, orgID *C.char) *C.error {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return getError(stateErr)
+	}
+	// FIXME: Return server result
+	_, addErr := state.AddSecureInternetHomeServer(C.GoString(orgID))
+	return getError(addErr)
+}
+
+//export AddCustomServer
+func AddCustomServer(name *C.char, url *C.char) *C.error {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return getError(stateErr)
+	}
+	// FIXME: Return server result
+	_, addErr := state.AddCustomServer(C.GoString(url))
+	return getError(addErr)
 }
 
 //export RemoveInstituteAccess

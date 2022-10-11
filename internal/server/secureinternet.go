@@ -1,11 +1,12 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
-	"github.com/eduvpn/eduvpn-common/types"
 	"github.com/eduvpn/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 // A secure internet server which has its own OAuth tokens
@@ -21,6 +22,13 @@ type SecureInternetHomeServer struct {
 	AuthorizationTemplate string `json:"authorization_template"`
 	HomeOrganizationID    string `json:"home_organization_id"`
 	CurrentLocation       string `json:"current_location"`
+}
+
+func (servers *Servers) GetSecureInternetHomeServer() (*SecureInternetHomeServer, error) {
+	if !servers.HasSecureLocation() {
+		return nil, errors.New("No secure internet home server")
+	}
+	return &servers.SecureInternetHomeServer, nil
 }
 
 func (servers *Servers) RemoveSecureInternet() {

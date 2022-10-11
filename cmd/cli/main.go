@@ -8,6 +8,7 @@ import (
 
 	eduvpn "github.com/eduvpn/eduvpn-common"
 	"github.com/eduvpn/eduvpn-common/internal/server"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 type ServerTypes int8
@@ -97,10 +98,22 @@ func getConfig(state *eduvpn.Client, url string, serverType ServerTypes) (string
 	}
 	// Prefer TCP is set to False
 	if serverType == ServerTypeInstituteAccess {
+        _, addErr := state.AddInstituteServer(url)
+        if addErr != nil {
+            return "", "", addErr
+        }
 		return state.GetConfigInstituteAccess(url, false)
 	} else if serverType == ServerTypeCustom {
+        _, addErr := state.AddCustomServer(url)
+        if addErr != nil {
+            return "", "", addErr
+        }
 		return state.GetConfigCustomServer(url, false)
 	}
+    _, addErr := state.AddSecureInternetHomeServer(url)
+    if addErr != nil {
+        return "", "", addErr
+    }
 	return state.GetConfigSecureInternet(url, false)
 }
 
@@ -128,8 +141,8 @@ func printConfig(url string, serverType ServerTypes) {
 
 	if configErr != nil {
 		// Show the usage of tracebacks and causes
-		fmt.Println("Error getting config:", eduvpn.GetErrorTraceback(configErr))
-		fmt.Println("Error getting config, cause:", eduvpn.GetErrorCause(configErr))
+		fmt.Println("Error getting config:", types.GetErrorTraceback(configErr))
+		fmt.Println("Error getting config, cause:", types.GetErrorCause(configErr))
 		return
 	}
 

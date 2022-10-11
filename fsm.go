@@ -157,6 +157,7 @@ func newFSM(
 			Transitions: []FSMTransition{
 				{To: STATE_OAUTH_STARTED, Description: "Re-authorize with OAuth"},
 				{To: STATE_REQUEST_CONFIG, Description: "Client requests a config"},
+				{To: STATE_NO_SERVER, Description: "Client wants to go back to the main screen"},
 			},
 		},
 		STATE_REQUEST_CONFIG: FSMState{

@@ -31,6 +31,7 @@ class ConfigTests(unittest.TestCase):
             self.fail("No SERVER_URI environment variable given")
 
         # This can throw an exception
+        _eduvpn.add_custom_server(server_uri)
         _eduvpn.get_config_custom_server(server_uri)
 
         # Deregister

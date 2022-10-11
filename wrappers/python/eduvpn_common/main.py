@@ -121,6 +121,25 @@ class EduVPN(object):
         if remove_err:
             raise remove_err
 
+    def add_institute_access(self, url: str):
+        add_err = self.go_function(self.lib.AddInstituteAccess, url)
+
+        if add_err:
+            raise add_err
+
+    def add_secure_internet_home(self, org_id: str):
+        self.location_event = threading.Event()
+        add_err = self.go_function(self.lib.AddSecureInternetHomeServer, org_id)
+
+        if add_err:
+            raise add_err
+
+    def add_custom_server(self, url: str):
+        add_err = self.go_function(self.lib.AddCustomServer, url)
+
+        if add_err:
+            raise add_err
+
     def remove_institute_access(self, url: str):
         remove_err = self.go_function(self.lib.RemoveInstituteAccess, url)
 
@@ -162,7 +181,6 @@ class EduVPN(object):
     def get_config_secure_internet(
         self, url: str, prefer_tcp: bool = False
     ) -> Tuple[str, str]:
-        self.location_event = threading.Event()
         return self.get_config(url, self.lib.GetConfigSecureInternet, prefer_tcp)
 
     def go_back(self) -> None:

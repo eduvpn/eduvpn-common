@@ -91,6 +91,18 @@ def initialize_functions(lib):
         c_char_p,
         c_char_p,
     ], c_void_p
+    lib.AddInstituteAccess.argtypes, lib.AddInstituteAccess.restype = [
+            c_char_p,
+            c_char_p,
+    ], c_void_p
+    lib.AddSecureInternetHomeServer.argtypes, lib.AddSecureInternetHomeServer.restype = [
+            c_char_p,
+            c_char_p,
+    ], c_void_p
+    lib.AddCustomServer.argtypes, lib.AddCustomServer.restype = [
+            c_char_p,
+            c_char_p,
+    ], c_void_p
     lib.RemoveInstituteAccess.argtypes, lib.RemoveInstituteAccess.restype = [
         c_char_p,
         c_char_p,

@@ -21,6 +21,13 @@ type InstituteAccessServers struct {
 	CurrentURL string                            `json:"current_url"`
 }
 
+func (servers *Servers) GetInstituteAccess(url string) (*InstituteAccessServer, error) {
+	if server, ok := servers.InstituteServers.Map[url]; ok {
+		return server, nil
+	}
+	return nil, &types.WrappedErrorMessage{Message: "failed to get institute access server", Err: fmt.Errorf("No institute access server with URL: %s", url)}
+}
+
 func (servers *Servers) RemoveInstituteAccess(url string) {
 	servers.InstituteServers.Remove(url)
 }

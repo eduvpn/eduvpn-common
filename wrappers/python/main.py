@@ -67,7 +67,7 @@ def setup_callbacks(_eduvpn: eduvpn.EduVPN) -> None:
 
 # The main entry point
 if __name__ == "__main__":
-    _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "configs")
+    _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "configs", "en")
     setup_callbacks(_eduvpn)
 
     # Register with the eduVPN-common library
@@ -82,6 +82,7 @@ if __name__ == "__main__":
 
     # Get a Wireguard/OpenVPN config
     try:
+        _eduvpn.add_secure_internet("https://idp.geant.org")
         config, config_type = _eduvpn.get_config_secure_internet("https://idp.geant.org")
         print(f"Got a config with type: {config_type} and contents:\n{config}")
     except Exception as e:
