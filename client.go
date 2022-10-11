@@ -604,6 +604,12 @@ func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (stri
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
+	// Set the server as the current
+	currentErr := client.Servers.SetInstituteAccess(server)
+	if currentErr != nil {
+		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
+	}
+
 	// The server has now been chosen
 	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
@@ -651,6 +657,12 @@ func (client *Client) GetConfigSecureInternet(
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
+	// Set the server as the current
+	currentErr := client.Servers.SetSecureInternet(server)
+	if currentErr != nil {
+		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
+	}
+
 	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
 	config, configType, configErr := client.getConfig(server, preferTCP)
@@ -691,6 +703,12 @@ func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string,
 			),
 		)
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+	}
+
+	// Set the server as the current
+	currentErr := client.Servers.SetCustomServer(server)
+	if currentErr != nil {
+		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
 	}
 
 	client.FSM.GoTransition(STATE_CHOSEN_SERVER)

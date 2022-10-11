@@ -31,6 +31,23 @@ func (servers *Servers) GetSecureInternetHomeServer() (*SecureInternetHomeServer
 	return &servers.SecureInternetHomeServer, nil
 }
 
+func (servers *Servers) SetSecureInternet(server Server) error {
+	errorMessage := "failed setting secure internet server"
+	base, baseErr := server.GetBase()
+	if baseErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+	}
+
+	if base.Type != "secure_internet" {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: errors.New("Not a secure internet server")}
+	}
+
+	// The location should already be configured
+	// TODO: check for location?
+	servers.IsType = SecureInternetServerType
+	return nil
+}
+
 func (servers *Servers) RemoveSecureInternet() {
 	// Empty out the struct
 	servers.SecureInternetHomeServer = SecureInternetHomeServer{}

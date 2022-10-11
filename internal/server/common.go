@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
-	"github.com/eduvpn/eduvpn-common/types"
 	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/eduvpn/eduvpn-common/internal/wireguard"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 // The base type for servers
@@ -155,8 +155,6 @@ func (servers *Servers) addInstituteAndCustom(
 		server = &InstituteAccessServer{}
 	}
 
-	// Set the current server
-	toAddServers.CurrentURL = url
 	instituteInitErr := server.init(
 		url,
 		discoServer.DisplayName,

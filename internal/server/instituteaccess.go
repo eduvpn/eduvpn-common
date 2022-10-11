@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
@@ -19,6 +20,26 @@ type InstituteAccessServer struct {
 type InstituteAccessServers struct {
 	Map        map[string]*InstituteAccessServer `json:"map"`
 	CurrentURL string                            `json:"current_url"`
+}
+
+func (servers *Servers) SetInstituteAccess(server Server) error {
+	errorMessage := "failed setting institute access server"
+	base, baseErr := server.GetBase()
+	if baseErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+	}
+
+	if base.Type != "institute_access" {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: errors.New("Not an institute access server")}
+	}
+
+	if _, ok := servers.InstituteServers.Map[base.URL]; ok {
+		servers.InstituteServers.CurrentURL = base.URL
+		servers.IsType = InstituteAccessServerType
+	} else {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: errors.New("No such institute access server")}
+	}
+	return nil
 }
 
 func (servers *Servers) GetInstituteAccess(url string) (*InstituteAccessServer, error) {
