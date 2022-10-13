@@ -90,11 +90,11 @@ func (client *Client) Register(
 	}
 
 	// Initialize the FSM
-	client.FSM = newFSM(name, stateCallback, directory, debug)
+	client.FSM = newFSM(stateCallback, directory, debug)
 	client.Debug = debug
 
 	// Initialize the Config
-	client.Config.Init(name, directory)
+	client.Config.Init(directory, "state")
 
 	// Try to load the previous configuration
 	if client.Config.Load(&client) != nil {

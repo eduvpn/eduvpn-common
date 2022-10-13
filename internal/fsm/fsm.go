@@ -54,7 +54,6 @@ type FSM struct {
 }
 
 func (fsm *FSM) Init(
-	name string,
 	current FSMStateID,
 	states map[FSMStateID]FSMState,
 	callback func(FSMStateID, FSMStateID, interface{}),
@@ -64,7 +63,6 @@ func (fsm *FSM) Init(
 ) {
 	fsm.States = states
 	fsm.Current = current
-	fsm.Name = name
 	fsm.StateCallback = callback
 	fsm.Directory = directory
 	fsm.GetName = nameGen
@@ -86,7 +84,7 @@ func (fsm *FSM) HasTransition(check FSMStateID) bool {
 }
 
 func (fsm *FSM) getGraphFilename(extension string) string {
-	debugPath := path.Join(fsm.Directory, fsm.Name)
+	debugPath := path.Join(fsm.Directory, "graph")
 	return fmt.Sprintf("%s%s", debugPath, extension)
 }
 

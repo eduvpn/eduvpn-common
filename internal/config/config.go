@@ -11,13 +11,13 @@ import (
 )
 
 type Config struct {
-	Name      string
 	Directory string
+	Name string
 }
 
-func (config *Config) Init(name string, directory string) {
-	config.Name = name
+func (config *Config) Init(directory string, name string) {
 	config.Directory = directory
+	config.Name = name 
 }
 
 func (config *Config) GetFilename() string {
