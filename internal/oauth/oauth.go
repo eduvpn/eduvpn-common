@@ -269,15 +269,19 @@ type oauthResponseHTML struct {
 }
 
 func writeResponseHTML(w http.ResponseWriter, title string, message string) error {
+	errorMessage := "failed writing response HTML"
 	template, templateErr := template.New("oauth-response").Parse(responseTemplate)
 	if templateErr != nil {
-		return templateErr
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: templateErr}
 	}
 
-	template.Execute(w, oauthResponseHTML{
+	executeErr := template.Execute(w, oauthResponseHTML{
 		Title:   title,
 		Message: message,
 	})
+	if executeErr != nil {
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: executeErr}
+	}
 	return nil
 }
 
