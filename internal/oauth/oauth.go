@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"net"
 	"net/http"
 	"net/url"
@@ -225,6 +226,61 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 	return nil
 }
 
+// Adapted from: https://github.com/eduvpn/apple/blob/5b18f834be7aebfed00570ae0c2f7bcbaf1c69cc/EduVPN/Helpers/Mac/OAuthRedirectHTTPHandler.m#L25
+const responseTemplate string = `
+<!DOCTYPE html>
+<html dir="ltr" xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<title>{{.Title}}</title>
+<style>
+body {
+    font-family: arial;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ccc;
+    color: #252622;
+}
+main {
+    padding: 1em 2em;
+    text-align: center;
+    border: 2pt solid #666;
+    box-shadow: rgba(0, 0, 0, 0.6) 0px 1px 4px;
+    border-color: #aaa;
+    background: #ddd;
+}
+</style>
+</head>
+<body>
+    <main>
+        <h1>{{.Title}}</h1>
+        <p>{{.Message}}</p>
+    </main>
+</body>
+</html>
+`
+
+type oauthResponseHTML struct {
+	Title string
+	Message string
+}
+
+func writeResponseHTML(w http.ResponseWriter, title string, message string) error {
+	template, templateErr := template.New("oauth-response").Parse(responseTemplate)
+	if templateErr != nil {
+		return templateErr
+	}
+
+	template.Execute(w, oauthResponseHTML{
+		Title:   title,
+		Message: message,
+	})
+	return nil
+}
+
 //
 //// The callback to retrieve the authorization code: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.1
 func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
@@ -233,6 +289,12 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	code, success := req.URL.Query()["code"]
 	// Shutdown after we're done
 	defer func() {
+		// writing the html is best effort
+		if oauth.Session.CallbackError != nil {
+			_ = writeResponseHTML(w, "Authorization Failed", "The authorization has failed. See the log file for more information.")
+		} else {
+			_ = writeResponseHTML(w, "Authorized", "The client has been successfully authorized. You can close this browser window.")
+		}
 		if oauth.Session.Server != nil {
 			go oauth.Session.Server.Shutdown(oauth.Session.Context) //nolint:errcheck
 		}
