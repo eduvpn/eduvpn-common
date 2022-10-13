@@ -224,5 +224,5 @@ func APIConnectOpenVPN(server Server, profile_id string, preferTCP bool) (string
 
 // This needs no further return value as it's best effort
 func APIDisconnect(server Server) {
-	_, _, _ = apiAuthorized(server, http.MethodPost, "/disconnect", &httpw.HTTPOptionalParams{Timeout: 1})
+	_, _, _ = apiAuthorized(server, http.MethodPost, "/disconnect", nil)
 }
