@@ -131,7 +131,7 @@ func newFSM(
 			Transitions: []FSMTransition{
 				{To: STATE_CHOSEN_SERVER, Description: "Server info loaded"},
 				{
-					To: STATE_ASK_LOCATION,
+					To:          STATE_ASK_LOCATION,
 					Description: "User chooses a Secure Internet server but no location is configured",
 				},
 				{To: STATE_NO_SERVER, Description: "Go back or Error"},

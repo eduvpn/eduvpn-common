@@ -3,8 +3,8 @@ package verify
 import (
 	"fmt"
 
-	"github.com/jedisct1/go-minisign"
 	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/jedisct1/go-minisign"
 )
 
 // Verify verifies the signature (.minisig file format) on signedJson.

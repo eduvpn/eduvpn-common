@@ -6,8 +6,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/eduvpn/eduvpn-common/types"
 	"github.com/eduvpn/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 type FileLogger struct {
@@ -71,7 +71,7 @@ func (logger *FileLogger) Init(level LogLevel, name string, directory string) er
 func (logger *FileLogger) Inherit(err error, msg string) {
 	level := types.GetErrorLevel(err)
 
-	switch(level) {
+	switch level {
 	case types.ERR_INFO:
 		logger.Info(msg)
 	case types.ERR_WARNING:
@@ -81,7 +81,6 @@ func (logger *FileLogger) Inherit(err error, msg string) {
 	case types.ERR_FATAL:
 		logger.Fatal(msg)
 	}
-
 }
 
 func (logger *FileLogger) Info(msg string) {

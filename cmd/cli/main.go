@@ -98,22 +98,22 @@ func getConfig(state *eduvpn.Client, url string, serverType ServerTypes) (string
 	}
 	// Prefer TCP is set to False
 	if serverType == ServerTypeInstituteAccess {
-        _, addErr := state.AddInstituteServer(url)
-        if addErr != nil {
-            return "", "", addErr
-        }
+		_, addErr := state.AddInstituteServer(url)
+		if addErr != nil {
+			return "", "", addErr
+		}
 		return state.GetConfigInstituteAccess(url, false)
 	} else if serverType == ServerTypeCustom {
-        _, addErr := state.AddCustomServer(url)
-        if addErr != nil {
-            return "", "", addErr
-        }
+		_, addErr := state.AddCustomServer(url)
+		if addErr != nil {
+			return "", "", addErr
+		}
 		return state.GetConfigCustomServer(url, false)
 	}
-    _, addErr := state.AddSecureInternetHomeServer(url)
-    if addErr != nil {
-        return "", "", addErr
-    }
+	_, addErr := state.AddSecureInternetHomeServer(url)
+	if addErr != nil {
+		return "", "", addErr
+	}
 	return state.GetConfigSecureInternet(url, false)
 }
 

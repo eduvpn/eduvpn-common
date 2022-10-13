@@ -15,8 +15,9 @@ import "C"
 
 import (
 	"fmt"
-	"github.com/eduvpn/eduvpn-common/types"
 	"unsafe"
+
+	"github.com/eduvpn/eduvpn-common/types"
 
 	eduvpn "github.com/eduvpn/eduvpn-common"
 )

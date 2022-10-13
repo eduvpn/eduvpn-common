@@ -157,7 +157,7 @@ func HTTPMethodWithOpts(
 
 type HTTPStatusError struct {
 	URL    string
-	Body string
+	Body   string
 	Status int
 }
 

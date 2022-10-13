@@ -479,7 +479,7 @@ func (client *Client) AddInstituteServer(url string) (server.Server, error) {
 	// Authorize it
 	loginErr := client.ensureLogin(server)
 	if loginErr != nil {
-        // Removing is best effort
+		// Removing is best effort
 		_ = client.RemoveInstituteAccess(url)
 		return nil, &types.WrappedErrorMessage{Level: types.GetErrorLevel(loginErr), Message: errorMessage, Err: loginErr}
 	}
@@ -520,7 +520,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 
 	locationErr := client.askSecureLocation()
 	if locationErr != nil {
-        // Removing is best effort
+		// Removing is best effort
 		_ = client.RemoveSecureInternet()
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: locationErr}
 	}
@@ -531,7 +531,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 	// Authorize it
 	loginErr := client.ensureLogin(server)
 	if loginErr != nil {
-        // Removing is best effort
+		// Removing is best effort
 		_ = client.RemoveSecureInternet()
 		return nil, &types.WrappedErrorMessage{Level: types.GetErrorLevel(loginErr), Message: errorMessage, Err: loginErr}
 	}
@@ -570,7 +570,7 @@ func (client *Client) AddCustomServer(url string) (server.Server, error) {
 	// Authorize it
 	loginErr := client.ensureLogin(server)
 	if loginErr != nil {
-        // removing is best effort
+		// removing is best effort
 		_ = client.RemoveCustomServer(url)
 		return nil, &types.WrappedErrorMessage{Level: types.GetErrorLevel(loginErr), Message: errorMessage, Err: loginErr}
 	}
@@ -678,7 +678,6 @@ func (client *Client) GetConfigSecureInternet(
 	}
 	return config, configType, nil
 }
-
 
 // GetConfigCustomServer gets a configuration for a Custom Server.
 // It ensures that the Custom Server exists by creating or using an existing one with the url.

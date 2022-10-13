@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+
 	"github.com/eduvpn/eduvpn-common/types"
 )
 

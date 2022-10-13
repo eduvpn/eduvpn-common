@@ -87,8 +87,8 @@ type OAuthExchangeSession struct {
 	Verifier string
 
 	// filled in when constructing the callback
-	Context context.Context
-	Server  *http.Server
+	Context  context.Context
+	Server   *http.Server
 	Listener net.Listener
 }
 

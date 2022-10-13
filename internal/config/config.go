@@ -6,18 +6,18 @@ import (
 	"io/ioutil"
 	"path"
 
-	"github.com/eduvpn/eduvpn-common/types"
 	"github.com/eduvpn/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 type Config struct {
 	Directory string
-	Name string
+	Name      string
 }
 
 func (config *Config) Init(directory string, name string) {
 	config.Directory = directory
-	config.Name = name 
+	config.Name = name
 }
 
 func (config *Config) GetFilename() string {

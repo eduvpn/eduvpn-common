@@ -85,10 +85,10 @@ func Test_server(t *testing.T) {
 		t.Fatalf("Register error: %v", registerErr)
 	}
 
-    _, addErr := state.AddCustomServer(serverURI)
-    if addErr != nil {
+	_, addErr := state.AddCustomServer(serverURI)
+	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
-    }
+	}
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 	if configErr != nil {
 		t.Fatalf("Connect error: %v", configErr)
@@ -142,7 +142,7 @@ func test_connect_oauth_parameter(
 		t.Fatalf("Register error: %v", registerErr)
 	}
 
-    _, addErr := state.AddCustomServer(serverURI)
+	_, addErr := state.AddCustomServer(serverURI)
 
 	var wrappedErr *types.WrappedErrorMessage
 
@@ -211,10 +211,10 @@ func Test_token_expired(t *testing.T) {
 		t.Fatalf("Register error: %v", registerErr)
 	}
 
-    _, addErr := state.AddCustomServer(serverURI)
-    if addErr != nil {
+	_, addErr := state.AddCustomServer(serverURI)
+	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
-    }
+	}
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
@@ -271,10 +271,10 @@ func Test_token_invalid(t *testing.T) {
 		t.Fatalf("Register error: %v", registerErr)
 	}
 
-    _, addErr := state.AddCustomServer(serverURI)
-    if addErr != nil {
+	_, addErr := state.AddCustomServer(serverURI)
+	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
-    }
+	}
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
@@ -328,10 +328,10 @@ func Test_invalid_profile_corrected(t *testing.T) {
 		t.Fatalf("Register error: %v", registerErr)
 	}
 
-    _, addErr := state.AddCustomServer(serverURI)
-    if addErr != nil {
+	_, addErr := state.AddCustomServer(serverURI)
+	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
-    }
+	}
 
 	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
 
@@ -385,10 +385,10 @@ func Test_prefer_tcp(t *testing.T) {
 		t.Fatalf("Register error: %v", registerErr)
 	}
 
-    _, addErr := state.AddCustomServer(serverURI)
-    if addErr != nil {
+	_, addErr := state.AddCustomServer(serverURI)
+	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
-    }
+	}
 
 	// get a config with preferTCP set to true
 	config, configType, configErr := state.GetConfigCustomServer(serverURI, true)
