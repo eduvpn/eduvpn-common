@@ -289,6 +289,11 @@ func writeResponseHTML(w http.ResponseWriter, title string, message string) erro
 //// The callback to retrieve the authorization code: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.1
 func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	errorMessage := "failed callback to retrieve the authorization code"
+
+	// TODO: Support iss when servers have properly implemented it
+	// See: https://todo.sr.ht/~eduvpn/server/91
+	// And (rfc): https://www.rfc-editor.org/rfc/rfc9207.html
+
 	// Extract the authorization code
 	code, success := req.URL.Query()["code"]
 	// Shutdown after we're done
