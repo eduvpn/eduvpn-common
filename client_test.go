@@ -13,6 +13,7 @@ import (
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
+	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
@@ -20,6 +21,10 @@ func getServerURI(t *testing.T) string {
 	serverURI := os.Getenv("SERVER_URI")
 	if serverURI == "" {
 		t.Skip("Skipping server test as no SERVER_URI env var has been passed")
+	}
+	serverURI, parseErr := util.EnsureValidURL(serverURI)
+	if parseErr != nil {
+		t.Skip("Skipping server test as the server uri is not valid")
 	}
 	return serverURI
 }
@@ -110,18 +115,19 @@ func test_connect_oauth_parameter(
 		"en",
 		func(oldState FSMStateID, newState FSMStateID, data interface{}) {
 			if newState == STATE_OAUTH_STARTED {
-				current, currentErr := state.Servers.GetCurrentServer()
-				if currentErr != nil {
-					t.Fatalf("No current server with error: %v", currentErr)
+				server, serverErr := state.Servers.GetCustomServer(serverURI)
+				if serverErr != nil {
+					t.Fatalf("No server with error: %v", serverErr)
 				}
-				port, portErr := current.GetOAuth().GetListenerPort()
-
+				port, portErr := server.GetOAuth().GetListenerPort()
 				if portErr != nil {
+					_ = state.CancelOAuth()
 					t.Fatalf("No port with error: %v", portErr)
 				}
 				baseURL := fmt.Sprintf("http://127.0.0.1:%d/callback", port)
 				url, err := httpw.HTTPConstructURL(baseURL, parameters)
 				if err != nil {
+					_ = state.CancelOAuth()
 					t.Fatalf(
 						"Error: Constructing url %s with parameters %s",
 						baseURL,
@@ -131,6 +137,7 @@ func test_connect_oauth_parameter(
 				go func() {
 					_, getErr := http.Get(url)
 					if getErr != nil {
+						_ = state.CancelOAuth()
 						t.Logf("HTTP GET error: %v", getErr)
 					}
 				}()
