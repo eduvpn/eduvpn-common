@@ -1,14 +1,17 @@
-from ctypes import POINTER, cast
+from ctypes import CDLL, POINTER, c_void_p, cast, pointer
+from typing import List, Optional
 
 from eduvpn_common.types import (
+    cDiscoveryOrganization,
     cDiscoveryOrganizations,
+    cDiscoveryServer,
     cDiscoveryServers,
     get_ptr_list_strings,
 )
 
 
 class DiscoOrganization:
-    def __init__(self, display_name, org_id, secure_internet_home, keyword_list):
+    def __init__(self, display_name: str, org_id: str, secure_internet_home: str, keyword_list: List[str]):
         self.display_name = display_name
         self.org_id = org_id
         self.secure_internet_home = secure_internet_home
@@ -19,7 +22,7 @@ class DiscoOrganization:
 
 
 class DiscoOrganizations:
-    def __init__(self, version, organizations):
+    def __init__(self, version: int, organizations: List[DiscoOrganization]):
         self.version = version
         self.organizations = organizations
 
@@ -27,14 +30,14 @@ class DiscoOrganizations:
 class DiscoServer:
     def __init__(
         self,
-        authentication_url_template,
-        base_url,
-        country_code,
-        display_name,
-        keyword_list,
-        public_keys,
-        server_type,
-        support_contacts,
+        authentication_url_template: str,
+        base_url: str,
+        country_code: str,
+        display_name: str,
+        keyword_list: List[str],
+        public_keys: List[str],
+        server_type: str,
+        support_contacts: List[str],
     ):
         self.authentication_url_template = authentication_url_template
         self.base_url = base_url
@@ -55,7 +58,7 @@ class DiscoServers:
         self.servers = servers
 
 
-def get_disco_organization(ptr):
+def get_disco_organization(ptr) -> Optional[DiscoOrganization]:
     if not ptr:
         return None
 
@@ -67,7 +70,7 @@ def get_disco_organization(ptr):
     return DiscoOrganization(display_name, org_id, secure_internet_home, keyword_list)
 
 
-def get_disco_server(lib, ptr):
+def get_disco_server(lib: CDLL, ptr):
     if not ptr:
         return None
 
@@ -98,7 +101,7 @@ def get_disco_server(lib, ptr):
     )
 
 
-def get_disco_servers(lib, ptr):
+def get_disco_servers(lib: CDLL, ptr: c_void_p):
     if ptr:
         svrs = cast(ptr, POINTER(cDiscoveryServers)).contents
 
@@ -116,7 +119,7 @@ def get_disco_servers(lib, ptr):
     return None
 
 
-def get_disco_organizations(lib, ptr):
+def get_disco_organizations(lib: CDLL, ptr: c_void_p):
     if ptr:
         orgs = cast(ptr, POINTER(cDiscoveryOrganizations)).contents
         organizations = []
