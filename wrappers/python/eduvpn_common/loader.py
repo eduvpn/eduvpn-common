@@ -1,9 +1,9 @@
-from ctypes import *
+from ctypes import cdll, CDLL, c_char_p, c_int, c_void_p
 from collections import defaultdict
 import pathlib
 import platform
 from eduvpn_common import __version__
-from eduvpn_common.types import *
+from eduvpn_common.types import cError, cServer, cServers, cServerProfiles, cServerLocations, cDiscoveryServer, cDiscoveryServers, ConfigError, DataError, VPNStateChange
 
 
 def load_lib():
@@ -39,7 +39,7 @@ def load_lib():
     return lib
 
 
-def initialize_functions(lib):
+def initialize_functions(lib: CDLL):
     # Exposed functions
     # We have to use c_void_p instead of c_char_p to free it properly
     # See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error

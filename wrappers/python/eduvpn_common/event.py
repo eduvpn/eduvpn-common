@@ -1,5 +1,5 @@
-from enum import Enum
-from typing import Callable
+from ctypes import c_void_p, CDLL
+from typing import Any, Callable, Dict, List, Tuple
 from eduvpn_common.state import State, StateType
 from eduvpn_common.server import (
     get_locations,
@@ -22,7 +22,7 @@ def class_state_transition(state: int, state_type: StateType) -> Callable:
     return wrapper
 
 
-def convert_data(lib, state: State, data):
+def convert_data(lib: CDLL, state: int, data: Any):
     if not data:
         return None
     if state is State.NO_SERVER:
@@ -43,11 +43,11 @@ def convert_data(lib, state: State, data):
 
 
 class EventHandler(object):
-    def __init__(self, lib):
-        self.handlers = {}
+    def __init__(self, lib: CDLL):
+        self.handlers: Dict[Tuple[int, StateType], List[Callable]] = {}
         self.lib = lib
 
-    def change_class_callbacks(self, cls, add=True) -> None:
+    def change_class_callbacks(self, cls: Any, add: bool = True) -> None:
         # Loop over method names
         for method_name in dir(cls):
             try:
@@ -98,7 +98,7 @@ class EventHandler(object):
             func(other_state, data)
 
     def run(
-        self, old_state: int, new_state: int, data: str, convert: bool = True
+        self, old_state: int, new_state: int, data: Any, convert: bool = True
     ) -> None:
         # First run leave transitions, then enter
         # The state is done when the wait event finishes
