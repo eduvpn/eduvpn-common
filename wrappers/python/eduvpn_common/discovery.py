@@ -70,7 +70,7 @@ def get_disco_organization(ptr) -> Optional[DiscoOrganization]:
     return DiscoOrganization(display_name, org_id, secure_internet_home, keyword_list)
 
 
-def get_disco_server(lib: CDLL, ptr):
+def get_disco_server(lib: CDLL, ptr) -> Optional[DiscoServer]:
     if not ptr:
         return None
 
@@ -101,7 +101,7 @@ def get_disco_server(lib: CDLL, ptr):
     )
 
 
-def get_disco_servers(lib: CDLL, ptr: c_void_p):
+def get_disco_servers(lib: CDLL, ptr: c_void_p) -> Optional[DiscoServers]:
     if ptr:
         svrs = cast(ptr, POINTER(cDiscoveryServers)).contents
 
@@ -119,7 +119,7 @@ def get_disco_servers(lib: CDLL, ptr: c_void_p):
     return None
 
 
-def get_disco_organizations(lib: CDLL, ptr: c_void_p):
+def get_disco_organizations(lib: CDLL, ptr: c_void_p) -> Optional[DiscoOrganizations]:
     if ptr:
         orgs = cast(ptr, POINTER(cDiscoveryOrganizations)).contents
         organizations = []

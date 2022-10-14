@@ -22,7 +22,7 @@ def class_state_transition(state: int, state_type: StateType) -> Callable:
     return wrapper
 
 
-def convert_data(lib: CDLL, state: int, data: Any):
+def convert_data(lib: CDLL, state: int, data: Any) -> None:
     if not data:
         return None
     if state is State.NO_SERVER:
@@ -67,7 +67,7 @@ class EventHandler(object):
                 else:
                     self.remove_event(state, state_type, method)
 
-    def remove_event(self, state: int, state_type: StateType, func: Callable):
+    def remove_event(self, state: int, state_type: StateType, func: Callable) -> None:
         for key, values in self.handlers.copy().items():
             if key == (state, state_type):
                 values.remove(func)
@@ -76,7 +76,7 @@ class EventHandler(object):
                 else:
                     self.handlers[key] = values
 
-    def add_event(self, state: int, state_type: StateType, func: Callable):
+    def add_event(self, state: int, state_type: StateType, func: Callable) -> None:
         if (state, state_type) not in self.handlers:
             self.handlers[(state, state_type)] = []
         self.handlers[(state, state_type)].append(func)
