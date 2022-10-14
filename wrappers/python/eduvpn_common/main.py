@@ -1,12 +1,15 @@
+import threading
 from ctypes import c_char_p, c_int, c_void_p
 from typing import Any, Callable, Dict, Optional, Tuple
-import threading
+
 from eduvpn_common.discovery import get_disco_organizations, get_disco_servers
 from eduvpn_common.event import EventHandler
 from eduvpn_common.loader import initialize_functions, load_lib
-from eduvpn_common.types import VPNStateChange, encode_args, decode_res, get_data_error
 from eduvpn_common.server import get_servers
 from eduvpn_common.state import State, StateType
+from eduvpn_common.types import (VPNStateChange, decode_res, encode_args,
+                                 get_data_error)
+
 
 class EduVPN(object):
     def __init__(self, name: str, config_directory: str, language: str):

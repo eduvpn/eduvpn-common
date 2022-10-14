@@ -1,6 +1,8 @@
-from ctypes import Structure, c_int, c_char_p, c_size_t, c_ulonglong, c_void_p, CFUNCTYPE, POINTER, CDLL, cast, pointer
-from eduvpn_common.error import ErrorLevel, WrappedError
+from ctypes import (CDLL, CFUNCTYPE, POINTER, Structure, c_char_p, c_int,
+                    c_size_t, c_ulonglong, c_void_p, cast, pointer)
 from typing import Any, Callable, Iterator, List, Optional, Tuple
+
+from eduvpn_common.error import ErrorLevel, WrappedError
 
 
 class cError(Structure):

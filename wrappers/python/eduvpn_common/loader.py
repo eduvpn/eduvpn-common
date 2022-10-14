@@ -1,9 +1,13 @@
-from ctypes import cdll, CDLL, c_char_p, c_int, c_void_p
-from collections import defaultdict
 import pathlib
 import platform
+from collections import defaultdict
+from ctypes import CDLL, c_char_p, c_int, c_void_p, cdll
+
 from eduvpn_common import __version__
-from eduvpn_common.types import cError, cServer, cServers, cServerProfiles, cServerLocations, cDiscoveryServer, cDiscoveryServers, ConfigError, DataError, VPNStateChange
+from eduvpn_common.types import (ConfigError, DataError, VPNStateChange,
+                                 cDiscoveryServer, cDiscoveryServers, cError,
+                                 cServer, cServerLocations, cServerProfiles,
+                                 cServers)
 
 
 def load_lib():

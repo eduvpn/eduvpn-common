@@ -1,9 +1,7 @@
-from eduvpn_common.types import (
-    cDiscoveryOrganizations,
-    cDiscoveryServers,
-    get_ptr_list_strings,
-)
-from ctypes import cast, POINTER
+from ctypes import POINTER, cast
+
+from eduvpn_common.types import (cDiscoveryOrganizations, cDiscoveryServers,
+                                 get_ptr_list_strings)
 
 
 class DiscoOrganization:

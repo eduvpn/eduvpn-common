@@ -1,14 +1,11 @@
-from ctypes import c_void_p, CDLL
+from ctypes import CDLL, c_void_p
 from typing import Any, Callable, Dict, List, Tuple
-from eduvpn_common.state import State, StateType
-from eduvpn_common.server import (
-    get_locations,
-    get_transition_profiles,
-    get_transition_server,
-    get_servers,
-)
-from eduvpn_common.types import get_ptr_string
 
+from eduvpn_common.server import (get_locations, get_servers,
+                                  get_transition_profiles,
+                                  get_transition_server)
+from eduvpn_common.state import State, StateType
+from eduvpn_common.types import get_ptr_string
 
 EDUVPN_CALLBACK_PROPERTY = "_eduvpn_property_callback"
 

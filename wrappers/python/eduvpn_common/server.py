@@ -1,7 +1,9 @@
-from typing import List, Optional, Type
-from eduvpn_common.types import cServer, cServers, cServerLocations, cServerProfiles
-from ctypes import c_void_p, cast, POINTER, CDLL
+from ctypes import CDLL, POINTER, c_void_p, cast
 from datetime import datetime
+from typing import List, Optional, Type
+
+from eduvpn_common.types import (cServer, cServerLocations, cServerProfiles,
+                                 cServers)
 
 
 class Profile:
