@@ -1,5 +1,16 @@
-from ctypes import (CDLL, CFUNCTYPE, POINTER, Structure, c_char_p, c_int,
-                    c_size_t, c_ulonglong, c_void_p, cast, pointer)
+from ctypes import (
+    CDLL,
+    CFUNCTYPE,
+    POINTER,
+    Structure,
+    c_char_p,
+    c_int,
+    c_size_t,
+    c_ulonglong,
+    c_void_p,
+    cast,
+    pointer,
+)
 from typing import Any, Callable, Iterator, List, Optional, Tuple
 
 from eduvpn_common.error import ErrorLevel, WrappedError
@@ -134,9 +145,7 @@ def get_ptr_string(lib: CDLL, ptr: c_void_p) -> str:
     return ""
 
 
-def get_ptr_list_strings(
-    lib: CDLL, strings: pointer, total_strings: int
-) -> List[str]:
+def get_ptr_list_strings(lib: CDLL, strings: pointer, total_strings: int) -> List[str]:
     if strings:
         strings_list = []
         for i in range(total_strings):

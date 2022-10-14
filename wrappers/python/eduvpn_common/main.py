@@ -7,8 +7,7 @@ from eduvpn_common.event import EventHandler
 from eduvpn_common.loader import initialize_functions, load_lib
 from eduvpn_common.server import get_servers
 from eduvpn_common.state import State, StateType
-from eduvpn_common.types import (VPNStateChange, decode_res, encode_args,
-                                 get_data_error)
+from eduvpn_common.types import VPNStateChange, decode_res, encode_args, get_data_error
 
 
 class EduVPN(object):
@@ -64,7 +63,11 @@ class EduVPN(object):
             raise Exception("Already registered")
 
         register_err = self.go_function(
-            self.lib.Register, self.config_directory, self.language, state_callback, debug
+            self.lib.Register,
+            self.config_directory,
+            self.language,
+            state_callback,
+            debug,
         )
 
         if register_err:
@@ -262,6 +265,7 @@ class EduVPN(object):
 
         return servers
 
+
 eduvpn_objects: Dict[str, EduVPN] = {}
 
 
@@ -271,7 +275,6 @@ def state_callback(name: bytes, old_state: int, new_state: int, data: Any):
     if name_decoded not in eduvpn_objects:
         return
     eduvpn_objects[name_decoded].callback(State(old_state), State(new_state), data)
-
 
 
 def add_as_global_object(eduvpn: EduVPN) -> bool:
@@ -285,4 +288,3 @@ def add_as_global_object(eduvpn: EduVPN) -> bool:
 def remove_as_global_object(eduvpn: EduVPN):
     global eduvpn_objects
     eduvpn_objects.pop(eduvpn.name, None)
-

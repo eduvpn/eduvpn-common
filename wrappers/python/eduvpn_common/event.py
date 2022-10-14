@@ -1,9 +1,12 @@
 from ctypes import CDLL, c_void_p
 from typing import Any, Callable, Dict, List, Tuple
 
-from eduvpn_common.server import (get_locations, get_servers,
-                                  get_transition_profiles,
-                                  get_transition_server)
+from eduvpn_common.server import (
+    get_locations,
+    get_servers,
+    get_transition_profiles,
+    get_transition_server,
+)
 from eduvpn_common.state import State, StateType
 from eduvpn_common.types import get_ptr_string
 

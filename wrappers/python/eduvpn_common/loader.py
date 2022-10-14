@@ -4,10 +4,18 @@ from collections import defaultdict
 from ctypes import CDLL, c_char_p, c_int, c_void_p, cdll
 
 from eduvpn_common import __version__
-from eduvpn_common.types import (ConfigError, DataError, VPNStateChange,
-                                 cDiscoveryServer, cDiscoveryServers, cError,
-                                 cServer, cServerLocations, cServerProfiles,
-                                 cServers)
+from eduvpn_common.types import (
+    ConfigError,
+    DataError,
+    VPNStateChange,
+    cDiscoveryServer,
+    cDiscoveryServers,
+    cError,
+    cServer,
+    cServerLocations,
+    cServerProfiles,
+    cServers,
+)
 
 
 def load_lib():
@@ -96,16 +104,19 @@ def initialize_functions(lib: CDLL):
         c_char_p,
     ], c_void_p
     lib.AddInstituteAccess.argtypes, lib.AddInstituteAccess.restype = [
-            c_char_p,
-            c_char_p,
+        c_char_p,
+        c_char_p,
     ], c_void_p
-    lib.AddSecureInternetHomeServer.argtypes, lib.AddSecureInternetHomeServer.restype = [
-            c_char_p,
-            c_char_p,
+    (
+        lib.AddSecureInternetHomeServer.argtypes,
+        lib.AddSecureInternetHomeServer.restype,
+    ) = [
+        c_char_p,
+        c_char_p,
     ], c_void_p
     lib.AddCustomServer.argtypes, lib.AddCustomServer.restype = [
-            c_char_p,
-            c_char_p,
+        c_char_p,
+        c_char_p,
     ], c_void_p
     lib.RemoveInstituteAccess.argtypes, lib.RemoveInstituteAccess.restype = [
         c_char_p,

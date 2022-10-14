@@ -2,8 +2,7 @@ from ctypes import CDLL, POINTER, c_void_p, cast
 from datetime import datetime
 from typing import List, Optional, Type
 
-from eduvpn_common.types import (cServer, cServerLocations, cServerProfiles,
-                                 cServers)
+from eduvpn_common.types import cServer, cServerLocations, cServerProfiles, cServers
 
 
 class Profile:
@@ -29,7 +28,13 @@ class Profiles:
 
 
 class Server:
-    def __init__(self, url: str, display_name: str, profiles: Optional[Profiles] = None, expire_time: int = 0):
+    def __init__(
+        self,
+        url: str,
+        display_name: str,
+        profiles: Optional[Profiles] = None,
+        expire_time: int = 0,
+    ):
         self.url = url
         self.display_name = display_name
         self.profiles = profiles
@@ -44,13 +49,21 @@ class Server:
 
 
 class InstituteServer(Server):
-    def __init__(self, url: str, display_name: str, support_contact: List[str], profiles: Profiles, expire_time: int):
+    def __init__(
+        self,
+        url: str,
+        display_name: str,
+        support_contact: List[str],
+        profiles: Profiles,
+        expire_time: int,
+    ):
         super().__init__(url, display_name, profiles, expire_time)
         self.support_contact = support_contact
 
     @property
     def category(self) -> str:
         return "Institute Access Server"
+
 
 class SecureInternetServer(Server):
     def __init__(
