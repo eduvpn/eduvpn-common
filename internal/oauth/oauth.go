@@ -307,8 +307,8 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	// ISS: https://www.rfc-editor.org/rfc/rfc9207.html
 	// TODO: Make this a required parameter in the future
 	urlQuery := req.URL.Query()
-	if ISS, ok := urlQuery["iss"]; ok {
-		extractedISS := ISS[0]
+	if urlQuery.Has("iss") {
+		extractedISS := urlQuery.Get("iss")
 		if oauth.Session.ISS != extractedISS {
 			oauth.Session.CallbackError = &types.WrappedErrorMessage{
 				Message: errorMessage,
@@ -318,23 +318,10 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 		}
 
 	}
-	// Extract the authorization code
-	code, success := urlQuery["code"]
-	if !success {
-		oauth.Session.CallbackError = &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     &OAuthCallbackParameterError{Parameter: "code", URL: req.URL.String()},
-		}
-		return
-	}
-	// The code is the first entry
-	extractedCode := code[0]
 
 	// Make sure the state is present and matches to protect against cross-site request forgeries
 	// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-7.15
-	state, success := urlQuery["state"]
-
-	if !success {
+	if !urlQuery.Has("state") {
 		oauth.Session.CallbackError = &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err:     &OAuthCallbackParameterError{Parameter: "state", URL: req.URL.String()},
@@ -342,7 +329,7 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// The state is the first entry
-	extractedState := state[0]
+	extractedState := urlQuery.Get("state")
 	if extractedState != oauth.Session.State {
 		oauth.Session.CallbackError = &types.WrappedErrorMessage{
 			Message: errorMessage,
@@ -353,6 +340,17 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 		}
 		return
 	}
+
+	// No authorization code
+	if !urlQuery.Has("code") {
+		oauth.Session.CallbackError = &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     &OAuthCallbackParameterError{Parameter: "code", URL: req.URL.String()},
+		}
+		return
+	}
+	// The code is the first entry
+	extractedCode := urlQuery.Get("code")
 
 	// Now that we have obtained the authorization code, we can move to the next step:
 	// Obtaining the access and refresh tokens
