@@ -253,8 +253,21 @@ func ShouldRenewButton(server Server) bool {
 	return true
 }
 
+func GetISS(server Server) (string, error) {
+	base, baseErr := server.GetBase()
+	if baseErr != nil {
+		return "", &types.WrappedErrorMessage{Message: "failed getting server ISS", Err: baseErr}
+	}
+	// The base URL does not end with a /, but the ISS does
+	return base.URL + "/", nil
+}
+
 func GetOAuthURL(server Server, name string) (string, error) {
-	return server.GetOAuth().GetAuthURL(name, server.GetTemplateAuth())
+	iss, issErr := GetISS(server)
+	if issErr != nil {
+		return "", issErr
+	}
+	return server.GetOAuth().GetAuthURL(name, iss, server.GetTemplateAuth())
 }
 
 func OAuthExchange(server Server) error {

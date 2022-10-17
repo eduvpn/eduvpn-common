@@ -170,15 +170,24 @@ func Test_connect_oauth_parameters(t *testing.T) {
 	var (
 		failedCallbackParameterError  *oauth.OAuthCallbackParameterError
 		failedCallbackStateMatchError *oauth.OAuthCallbackStateMatchError
+		failedCallbackISSMatchError *oauth.OAuthCallbackISSMatchError
 	)
 
+
+	serverURI := getServerURI(t)
+	iss := serverURI + "/"
 	tests := []struct {
 		expectedErr interface{}
 		parameters  httpw.URLParameters
 	}{
-		{&failedCallbackParameterError, httpw.URLParameters{}},
-		{&failedCallbackParameterError, httpw.URLParameters{"code": "42"}},
-		{&failedCallbackStateMatchError, httpw.URLParameters{"code": "42", "state": "21"}},
+		// missing state and code
+		{&failedCallbackParameterError, httpw.URLParameters{"iss": iss}},
+		// missing state
+		{&failedCallbackParameterError, httpw.URLParameters{"iss": iss, "code": "42"}},
+		// invalid state
+		{&failedCallbackStateMatchError, httpw.URLParameters{"iss": iss, "code": "42", "state": "21"}},
+		// invalid iss
+		{&failedCallbackISSMatchError, httpw.URLParameters{"iss": "37", "code": "42", "state": "21"}},
 	}
 
 	for _, test := range tests {

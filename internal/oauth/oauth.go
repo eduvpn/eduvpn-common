@@ -84,6 +84,7 @@ type OAuthExchangeSession struct {
 
 	// filled in in initialize
 	ClientID string
+	ISS      string
 	State    string
 	Verifier string
 
@@ -290,12 +291,6 @@ func writeResponseHTML(w http.ResponseWriter, title string, message string) erro
 func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	errorMessage := "failed callback to retrieve the authorization code"
 
-	// TODO: Support iss when servers have properly implemented it
-	// See: https://todo.sr.ht/~eduvpn/server/91
-	// And (rfc): https://www.rfc-editor.org/rfc/rfc9207.html
-
-	// Extract the authorization code
-	code, success := req.URL.Query()["code"]
 	// Shutdown after we're done
 	defer func() {
 		// writing the html is best effort
@@ -308,6 +303,23 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 			go oauth.Session.Server.Shutdown(oauth.Session.Context) //nolint:errcheck
 		}
 	}()
+
+	// ISS: https://www.rfc-editor.org/rfc/rfc9207.html
+	// TODO: Make this a required parameter in the future
+	urlQuery := req.URL.Query()
+	if ISS, ok := urlQuery["iss"]; ok {
+		extractedISS := ISS[0]
+		if oauth.Session.ISS != extractedISS {
+			oauth.Session.CallbackError = &types.WrappedErrorMessage{
+				Message: errorMessage,
+				Err:     &OAuthCallbackISSMatchError{ISS: extractedISS, ExpectedISS: oauth.Session.ISS},
+			}
+			return
+		}
+
+	}
+	// Extract the authorization code
+	code, success := urlQuery["code"]
 	if !success {
 		oauth.Session.CallbackError = &types.WrappedErrorMessage{
 			Message: errorMessage,
@@ -320,7 +332,7 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 
 	// Make sure the state is present and matches to protect against cross-site request forgeries
 	// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-7.15
-	state, success := req.URL.Query()["state"]
+	state, success := urlQuery["state"]
 
 	if !success {
 		oauth.Session.CallbackError = &types.WrappedErrorMessage{
@@ -369,7 +381,7 @@ func (oauth OAuth) GetListenerPort() (int, error) {
 }
 
 // Starts the OAuth exchange for eduvpn.
-func (oauth *OAuth) GetAuthURL(name string, postProcessAuth func(string) string) (string, error) {
+func (oauth *OAuth) GetAuthURL(name string, iss string, postProcessAuth func(string) string) (string, error) {
 	errorMessage := "failed starting OAuth exchange"
 
 	// Generate the verifier and challenge
@@ -386,7 +398,7 @@ func (oauth *OAuth) GetAuthURL(name string, postProcessAuth func(string) string)
 	}
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
-	oauthSession := OAuthExchangeSession{ClientID: name, State: state, Verifier: verifier}
+	oauthSession := OAuthExchangeSession{ClientID: name, ISS: iss, State: state, Verifier: verifier}
 	oauth.Session = oauthSession
 
 	// set up the listener to get the redirect URI
@@ -496,6 +508,15 @@ type OAuthCallbackStateMatchError struct {
 
 func (e *OAuthCallbackStateMatchError) Error() string {
 	return fmt.Sprintf("failed matching state, got: %s, want: %s", e.State, e.ExpectedState)
+}
+
+type OAuthCallbackISSMatchError struct {
+	ISS         string
+	ExpectedISS string
+}
+
+func (e *OAuthCallbackISSMatchError) Error() string {
+	return fmt.Sprintf("failed matching ISS, got: %s, want: %s", e.ISS, e.ExpectedISS)
 }
 
 type OAuthTokensInvalidError struct {

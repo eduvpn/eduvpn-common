@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -22,6 +23,11 @@ func EnsureValidURL(s string) (string, error) {
 
 	if parsedURL.Scheme == "" {
 		parsedURL.Scheme = "https"
+	}
+	if parsedURL.Path != "" {
+		// Clean the path
+		// https://pkg.go.dev/path#Clean
+		parsedURL.Path = path.Clean(parsedURL.Path)
 	}
 	return parsedURL.String(), nil
 }
