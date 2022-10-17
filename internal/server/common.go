@@ -258,8 +258,8 @@ func GetISS(server Server) (string, error) {
 	if baseErr != nil {
 		return "", &types.WrappedErrorMessage{Message: "failed getting server ISS", Err: baseErr}
 	}
-	// The base URL does not end with a /, but the ISS does
-	return base.URL + "/", nil
+	// We have already ensured that the base URL ends with a /
+	return base.URL, nil
 }
 
 func GetOAuthURL(server Server, name string) (string, error) {

@@ -29,7 +29,14 @@ func EnsureValidURL(s string) (string, error) {
 		// https://pkg.go.dev/path#Clean
 		parsedURL.Path = path.Clean(parsedURL.Path)
 	}
-	return parsedURL.String(), nil
+
+	returnedURL := parsedURL.String()
+
+	// Make sure the URL ends with a /
+	if returnedURL[len(returnedURL)-1:] != "/" {
+		returnedURL = returnedURL + "/"
+	}
+	return returnedURL, nil
 }
 
 // Creates a random byteslice of `size`

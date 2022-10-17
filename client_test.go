@@ -175,7 +175,8 @@ func Test_connect_oauth_parameters(t *testing.T) {
 
 
 	serverURI := getServerURI(t)
-	iss := serverURI + "/"
+	// serverURI already ends with a / due to using the util EnsureValidURL function
+	iss := serverURI
 	tests := []struct {
 		expectedErr interface{}
 		parameters  httpw.URLParameters
