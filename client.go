@@ -1081,6 +1081,7 @@ func (client *Client) RenewSession() error {
 		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
 	}
 
+	server.MarkTokensForRenew(currentServer)
 	loginErr := client.ensureLogin(currentServer)
 	if loginErr != nil {
 		client.Logger.Warning(

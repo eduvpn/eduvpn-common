@@ -282,6 +282,10 @@ func MarkTokenExpired(server Server) {
 	server.GetOAuth().Token.ExpiredTimestamp = util.GetCurrentTime()
 }
 
+func MarkTokensForRenew(server Server) {
+	server.GetOAuth().Token = oauth.OAuthToken{}
+}
+
 func EnsureTokens(server Server) error {
 	ensureErr := server.GetOAuth().EnsureTokens()
 	if ensureErr != nil {
