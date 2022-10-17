@@ -132,7 +132,7 @@ def get_server(ptr, _type=None) -> Optional[Server]:
             support_contact.append(current_server.support_contact[i].decode("utf-8"))
     profiles = get_profiles(current_server.profiles)
     if profiles is None:
-        return None
+        profiles = Profiles([], 0)
     if _type is SecureInternetServer:
         return SecureInternetServer(
             identifier,
