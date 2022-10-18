@@ -601,6 +601,7 @@ func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (stri
 				types.GetErrorTraceback(serverErr),
 			),
 		)
+		client.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -621,6 +622,7 @@ func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (stri
 				types.GetErrorTraceback(configErr),
 			),
 		)
+		client.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Level: types.GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
 	}
 	return config, configType, nil
@@ -654,6 +656,7 @@ func (client *Client) GetConfigSecureInternet(
 				types.GetErrorTraceback(serverErr),
 			),
 		)
+		client.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -674,6 +677,7 @@ func (client *Client) GetConfigSecureInternet(
 				types.GetErrorTraceback(configErr),
 			),
 		)
+		client.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Level: types.GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
 	}
 	return config, configType, nil
@@ -701,6 +705,7 @@ func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string,
 				types.GetErrorTraceback(serverErr),
 			),
 		)
+		client.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
@@ -721,6 +726,7 @@ func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string,
 				types.GetErrorTraceback(configErr),
 			),
 		)
+		client.goBackInternal()
 		return "", "", &types.WrappedErrorMessage{Level: types.GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
 	}
 	return config, configType, nil
