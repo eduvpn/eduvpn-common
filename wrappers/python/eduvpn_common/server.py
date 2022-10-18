@@ -6,6 +6,12 @@ from eduvpn_common.types import cServer, cServerLocations, cServerProfiles, cSer
 
 
 class Profile:
+    """The class that represents a server profile.
+
+    :param: identifier: str: The identifier (id) of the profile
+    :param: display_name: str: The display name of the profile
+    :param: default_gateway: str: Whether or not this profile should have the default gateway set
+    """
     def __init__(self, identifier: str, display_name: str, default_gateway: bool):
         self.identifier = identifier
         self.display_name = display_name
@@ -16,18 +22,35 @@ class Profile:
 
 
 class Profiles:
+    """The class that represents a list of profiles
+
+    :param: profiles: List[Profile]: A list of profiles
+    :param: current: int: The current profile index
+    """
     def __init__(self, profiles: List[Profile], current: int):
         self.profiles = profiles
         self.current_index = current
 
     @property
     def current(self) -> Optional[Profile]:
+        """Get the current profile if there is any
+
+        :return: The profile if there is a current one (meaning the index is valid)
+        :rtype: Optional[Profile]
+        """
         if self.current_index < len(self.profiles):
             return self.profiles[self.current_index]
         return None
 
 
 class Server:
+    """The class that represents a server. Use this for a custom server
+
+    :param: url: str: The base URL of the server
+    :param: display_name: str: The display name of the server
+    :param: profiles: Optional[Profiles]: The profiles if there are any already obtained, defaults to None
+    :param: expire_time: int: The expiry time in a Unix timestamp, defaults to 0
+    """
     def __init__(
         self,
         url: str,
@@ -45,10 +68,23 @@ class Server:
 
     @property
     def category(self) -> str:
+        """Return the category of the server as a string
+
+        :return: The category string, "Custom Server"
+        :rtype: str
+        """
         return "Custom Server"
 
 
 class InstituteServer(Server):
+    """The class that represents an Institute Access Server
+
+    :param: url: str: The base URL of the Institute Access Server
+    :param: display_name: str: The display name of the Institute Access Server
+    :param: support_contact: List[str]: The list of support contacts
+    :param: profiles: Profiles: The profiles of the server
+    :param: expire_time: int: The expiry time in a Unix timestamp
+    """
     def __init__(
         self,
         url: str,
@@ -62,10 +98,24 @@ class InstituteServer(Server):
 
     @property
     def category(self) -> str:
+        """Return the category of the institute server as a string
+
+        :return: The category string, "Institute Access Server"
+        :rtype: str
+        """
         return "Institute Access Server"
 
 
 class SecureInternetServer(Server):
+    """The class that represents a Secure Internet Server
+
+    :param: org_id: str: The organization ID of the Secure Internet Server as returned by Discovery
+    :param: display_name: str: The display name of the server
+    :param: support_contact: List[str]: The list of support contacts of the server
+    :param: profiles: Profiles: The list of profiles that the server has
+    :param: expire_time: int: The expiry time in a Unix timestamp
+    :param: country_code: str: The country code of the server
+    """
     def __init__(
         self,
         org_id: str,
@@ -82,10 +132,22 @@ class SecureInternetServer(Server):
 
     @property
     def category(self) -> str:
+        """Return the category of the secure internet server as a string
+
+        :return: The category string, "Secure Internet Server"
+        :rtype: str
+        """
         return "Secure Internet Server"
 
 
 def get_type_for_str(type_str: str) -> Type[Server]:
+    """Get the right class type for a certain string input
+
+    :param type_str: str: The string that represents the type of server, one of secure_internet, institute_access, custom_server
+
+    :return: The server, defaults to Institute Server if an invalid input is given
+    :rtype: Type[Server]
+    """
     if type_str == "secure_internet":
         return SecureInternetServer
     if type_str == "custom_server":
@@ -94,6 +156,15 @@ def get_type_for_str(type_str: str) -> Type[Server]:
 
 
 def get_profiles(ptr) -> Optional[Profiles]:
+    """Get the profiles from the Go shared library and convert it to a Python usable structure
+
+    :param ptr: The pointer to the Profiles as returned by the Go library
+
+    :meta: private:
+
+    :return: Profiles if there are any
+    :rtype: Optional[Profiles]
+    """
     if not ptr:
         return None
     profiles = []
@@ -115,7 +186,17 @@ def get_profiles(ptr) -> Optional[Profiles]:
     return Profiles(profiles, current_profile)
 
 
-def get_server(ptr, _type=None) -> Optional[Server]:
+def get_server(ptr, _type: Optional[str] = None) -> Optional[Server]:
+    """Get the server from the Go shared library and convert it to a Python usable structure
+
+    :param ptr: The pointer as returned by the Go library
+    :param _type:  (Default value = None): The optional parameter that represents whether or not the type is enforced to the input. If None it is automatically determined
+
+    :meta: private:
+
+    :return: Server if there is any
+    :rtype: Optional[Server]
+    """
     if not ptr:
         return None
 
@@ -154,18 +235,48 @@ def get_server(ptr, _type=None) -> Optional[Server]:
 
 
 def get_transition_server(lib: CDLL, ptr: c_void_p) -> Optional[Server]:
+    """Get a server from a transition event
+
+    :param lib: CDLL: The Go shared library
+    :param ptr: c_void_p: The Go's returned C pointer that represents the Server
+
+    :meta: private:
+
+    :return: The server if there is any
+    :rtype: Optional[Server]
+    """
     server = get_server(cast(ptr, POINTER(cServer)))
     lib.FreeServer(ptr)
     return server
 
 
 def get_transition_profiles(lib: CDLL, ptr: c_void_p) -> Optional[Profiles]:
+    """Get profiles from a transition event
+
+    :param lib: CDLL: The Go shared library
+    :param ptr: c_void_p: The Go's returned C pointer that represents the profiles
+
+    :meta: private:
+
+    :return: The profiles if there is any
+    :rtype: Optional[Profiles]
+    """
     profiles = get_profiles(cast(ptr, POINTER(cServerProfiles)))
     lib.FreeProfiles(ptr)
     return profiles
 
 
 def get_servers(lib: CDLL, ptr: c_void_p) -> Optional[List[Server]]:
+    """Get servers from the Go library as a C structure and return a Python usable structure
+
+    :param lib: CDLL: The Go shared library
+    :param ptr: c_void_p: The C pointer to the servers structure
+
+    :meta: private:
+
+    :return: The list of Servers if there is any
+    :rtype: Optional[List[Server]]
+    """
     if ptr:
         returned = []
         servers = cast(ptr, POINTER(cServers)).contents
@@ -193,6 +304,16 @@ def get_servers(lib: CDLL, ptr: c_void_p) -> Optional[List[Server]]:
 
 
 def get_locations(lib: CDLL, ptr: c_void_p) -> Optional[List[str]]:
+    """Get locations from the Go library as a C structure and return a Python usable structure
+
+    :param lib: CDLL: The Go shared library
+    :param ptr: c_void_p: The C pointer to the locations structure
+
+    :meta: private:
+
+    :return: The list of servers if there are any
+    :rtype: Optional[List[str]]
+    """
     if ptr:
         locations = cast(ptr, POINTER(cServerLocations)).contents
         location_list = []

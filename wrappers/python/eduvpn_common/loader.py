@@ -18,7 +18,12 @@ from eduvpn_common.types import (
 )
 
 
-def load_lib():
+def load_lib() -> CDLL:
+    """The function that loads the Go shared library
+
+    :return: The Go shared library loaded with cdll.LoadLibrary from ctypes
+    :rtype: CDLL
+    """
     lib_prefixes = defaultdict(
         lambda: "lib",
         {
@@ -51,7 +56,12 @@ def load_lib():
     return lib
 
 
-def initialize_functions(lib: CDLL):
+def initialize_functions(lib: CDLL) -> None:
+    """Initializes the Go shared library functions
+
+    :param lib: CDLL: The Go shared library
+
+    """
     # Exposed functions
     # We have to use c_void_p instead of c_char_p to free it properly
     # See https://stackoverflow.com/questions/13445568/python-ctypes-how-to-free-memory-getting-invalid-pointer-error

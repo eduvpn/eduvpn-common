@@ -11,6 +11,13 @@ from eduvpn_common.types import (
 
 
 class DiscoOrganization:
+    """The class that represents an organization from discovery
+
+    :param: display_name: str: The display name of the organizations
+    :param: org_id: str: The organization ID
+    :param: secure_internet_home: str: Indicating which server is the secure internet home server
+    :param: keyword_list: The list of strings that the users gets to search on to find the server
+    """
     def __init__(self, display_name: str, org_id: str, secure_internet_home: str, keyword_list: List[str]):
         self.display_name = display_name
         self.org_id = org_id
@@ -22,12 +29,29 @@ class DiscoOrganization:
 
 
 class DiscoOrganizations:
+    """The class that represents the list of disco organizations from discovery.
+    Additionally it has provided a version which indicates which exact 'version' was used from discovery
+
+    :param: version: int: The version of the list as returned by Discovery
+    :param: organizations: List[DiscoOrganizations]: The actual list of discovery organizations
+    """
     def __init__(self, version: int, organizations: List[DiscoOrganization]):
         self.version = version
         self.organizations = organizations
 
 
 class DiscoServer:
+    """The class that represents a discovery server, this can be an institute access or secure internet server
+
+    :param: authentication_url_template: str: The OAuth template to use to skip WAYF
+    :param: base_url: str: The base URL of the server
+    :param: country_code: str: The country code of the server
+    :param: display_name: str: The display name of the server
+    :param: keyword_list: List[str]: The list of keywords that the user can use to find the server
+    :param: public_keys: List[str]: The list of public keys
+    :param: server_type: str: The server type as a string
+    :param: support_contacts: List[str]: The list of support contacts
+    """
     def __init__(
         self,
         authentication_url_template: str,
@@ -53,12 +77,27 @@ class DiscoServer:
 
 
 class DiscoServers:
-    def __init__(self, version, servers):
+    """This class represents the list of discovery servers.
+    The version indicates which exact 'version' from Discovery was used.
+
+    :param: version: int: The version of the list as returned by Discovery
+    :param: servers: List[DiscoServers]: The list of discovery servers
+    """
+    def __init__(self, version: int, servers: List[DiscoServer]):
         self.version = version
         self.servers = servers
 
 
 def get_disco_organization(ptr) -> Optional[DiscoOrganization]:
+    """Gets a discovery organization from the Go library in a C structure and returns a Python usable structure
+
+    :param ptr: The pointer returned by the go library that contains a discovery organization
+
+    :meta: private:
+
+    :return: The Discovery Organization if there is one
+    :rtype: Optional[DiscoOrganization]
+    """
     if not ptr:
         return None
 
@@ -71,6 +110,16 @@ def get_disco_organization(ptr) -> Optional[DiscoOrganization]:
 
 
 def get_disco_server(lib: CDLL, ptr) -> Optional[DiscoServer]:
+    """Gets a discovery server from the Go library in a C structure and returns a Python usable structure
+
+    :param lib: CDLL: The Go shared library
+    :param ptr: The pointer to a discovery server returned by the Go library
+
+    :meta: private:
+
+    :return: The Discovery Server if there is one
+    :rtype: Optional[DiscoServer]
+    """
     if not ptr:
         return None
 
@@ -102,6 +151,16 @@ def get_disco_server(lib: CDLL, ptr) -> Optional[DiscoServer]:
 
 
 def get_disco_servers(lib: CDLL, ptr: c_void_p) -> Optional[DiscoServers]:
+    """Gets servers from the Go library in a C structure and returns a Python usable structure
+
+    :param lib: CDLL: The Go shared library
+    :param ptr: c_void_p: The pointer returned by the Go library for the discovery servers
+
+    :meta: private:
+
+    :return: The Discovery Servers if there are any
+    :rtype: Optional[DiscoServers]
+    """
     if ptr:
         svrs = cast(ptr, POINTER(cDiscoveryServers)).contents
 
@@ -120,6 +179,16 @@ def get_disco_servers(lib: CDLL, ptr: c_void_p) -> Optional[DiscoServers]:
 
 
 def get_disco_organizations(lib: CDLL, ptr: c_void_p) -> Optional[DiscoOrganizations]:
+    """Gets organizations from the Go library in a C structure and returns a Python usable structure
+
+    :param lib: CDLL: The Go shared library
+    :param ptr: c_void_p: The pointer returned by the Go library for the discovery organizations
+
+    :meta: private:
+
+    :return: The Discovery Organizations if there are any
+    :rtype: Optional[DiscoOrganizations]
+    """
     if ptr:
         orgs = cast(ptr, POINTER(cDiscoveryOrganizations)).contents
         organizations = []

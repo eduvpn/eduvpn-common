@@ -2,12 +2,18 @@ from enum import IntEnum
 
 
 class StateType(IntEnum):
+    """
+    The State Type enum. Wait types are mostly used for internal code
+    """
     ENTER = 1
     LEAVE = 2
     WAIT = 3
 
 
 class State(IntEnum):
+    """
+    The State enum. Each state here also exists in the Go library
+    """
     DEREGISTERED = 0
     NO_SERVER = 1
     ASK_LOCATION = 2
