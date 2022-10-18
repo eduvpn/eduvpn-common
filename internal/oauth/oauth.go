@@ -307,8 +307,8 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	// ISS: https://www.rfc-editor.org/rfc/rfc9207.html
 	// TODO: Make this a required parameter in the future
 	urlQuery := req.URL.Query()
-	if urlQuery.Has("iss") {
-		extractedISS := urlQuery.Get("iss")
+	extractedISS := urlQuery.Get("iss")
+	if extractedISS != "" {
 		if oauth.Session.ISS != extractedISS {
 			oauth.Session.CallbackError = &types.WrappedErrorMessage{
 				Message: errorMessage,
@@ -321,7 +321,8 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 
 	// Make sure the state is present and matches to protect against cross-site request forgeries
 	// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-7.15
-	if !urlQuery.Has("state") {
+	extractedState := urlQuery.Get("state")
+	if extractedState == "" {
 		oauth.Session.CallbackError = &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err:     &OAuthCallbackParameterError{Parameter: "state", URL: req.URL.String()},
@@ -329,7 +330,6 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// The state is the first entry
-	extractedState := urlQuery.Get("state")
 	if extractedState != oauth.Session.State {
 		oauth.Session.CallbackError = &types.WrappedErrorMessage{
 			Message: errorMessage,
@@ -342,15 +342,14 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// No authorization code
-	if !urlQuery.Has("code") {
+	extractedCode := urlQuery.Get("code")
+	if extractedCode == "" {
 		oauth.Session.CallbackError = &types.WrappedErrorMessage{
 			Message: errorMessage,
 			Err:     &OAuthCallbackParameterError{Parameter: "code", URL: req.URL.String()},
 		}
 		return
 	}
-	// The code is the first entry
-	extractedCode := urlQuery.Get("code")
 
 	// Now that we have obtained the authorization code, we can move to the next step:
 	// Obtaining the access and refresh tokens
