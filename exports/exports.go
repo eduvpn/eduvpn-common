@@ -17,38 +17,37 @@ import (
 	"fmt"
 	"unsafe"
 
+	"github.com/eduvpn/eduvpn-common/client"
 	"github.com/eduvpn/eduvpn-common/types"
-
-	eduvpn "github.com/eduvpn/eduvpn-common"
 )
 
 var P_StateCallbacks map[string]C.PythonCB
 
-var VPNStates map[string]*eduvpn.Client
+var VPNStates map[string]*client.Client
 
 func GetStateData(
-	state *eduvpn.Client,
-	stateID eduvpn.FSMStateID,
+	state *client.Client,
+	stateID client.FSMStateID,
 	data interface{},
 ) unsafe.Pointer {
 	switch stateID {
-	case eduvpn.STATE_NO_SERVER:
+	case client.STATE_NO_SERVER:
 		return (unsafe.Pointer)(getTransitionDataServers(state, data))
-	case eduvpn.STATE_OAUTH_STARTED:
+	case client.STATE_OAUTH_STARTED:
 		if converted, ok := data.(string); ok {
 			return (unsafe.Pointer)(C.CString(converted))
 		}
-	case eduvpn.STATE_ASK_LOCATION:
+	case client.STATE_ASK_LOCATION:
 		return (unsafe.Pointer)(getTransitionSecureLocations(data))
-	case eduvpn.STATE_ASK_PROFILE:
+	case client.STATE_ASK_PROFILE:
 		return (unsafe.Pointer)(getTransitionProfiles(data))
-	case eduvpn.STATE_DISCONNECTED:
+	case client.STATE_DISCONNECTED:
 		return (unsafe.Pointer)(getTransitionServer(state, data))
-	case eduvpn.STATE_DISCONNECTING:
+	case client.STATE_DISCONNECTING:
 		return (unsafe.Pointer)(getTransitionServer(state, data))
-	case eduvpn.STATE_CONNECTING:
+	case client.STATE_CONNECTING:
 		return (unsafe.Pointer)(getTransitionServer(state, data))
-	case eduvpn.STATE_CONNECTED:
+	case client.STATE_CONNECTED:
 		return (unsafe.Pointer)(getTransitionServer(state, data))
 	default:
 		return nil
@@ -57,10 +56,10 @@ func GetStateData(
 }
 
 func StateCallback(
-	state *eduvpn.Client,
+	state *client.Client,
 	name string,
-	old_state eduvpn.FSMStateID,
-	new_state eduvpn.FSMStateID,
+	old_state client.FSMStateID,
+	new_state client.FSMStateID,
 	data interface{},
 ) {
 	P_StateCallback, exists := P_StateCallbacks[name]
@@ -76,7 +75,7 @@ func StateCallback(
 	// data_c gets freed by the wrapper
 }
 
-func GetVPNState(name string) (*eduvpn.Client, error) {
+func GetVPNState(name string) (*client.Client, error) {
 	state, exists := VPNStates[name]
 
 	if !exists || state == nil {
@@ -97,10 +96,10 @@ func Register(
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		state = &eduvpn.Client{}
+		state = &client.Client{}
 	}
 	if VPNStates == nil {
-		VPNStates = make(map[string]*eduvpn.Client)
+		VPNStates = make(map[string]*client.Client)
 	}
 	if P_StateCallbacks == nil {
 		P_StateCallbacks = make(map[string]C.PythonCB)
@@ -111,7 +110,7 @@ func Register(
 		nameStr,
 		C.GoString(config_directory),
 		C.GoString(language),
-		func(old eduvpn.FSMStateID, new eduvpn.FSMStateID, data interface{}) {
+		func(old client.FSMStateID, new client.FSMStateID, data interface{}) {
 			StateCallback(state, nameStr, old, new, data)
 		},
 		debug != 0,
@@ -401,7 +400,7 @@ func InFSMState(name *C.char, checkState C.int) C.int {
 	if stateErr != nil {
 		return C.int(0)
 	}
-	inStateBool := state.InFSMState(eduvpn.FSMStateID(checkState))
+	inStateBool := state.InFSMState(client.FSMStateID(checkState))
 	if inStateBool {
 		return C.int(1)
 	}

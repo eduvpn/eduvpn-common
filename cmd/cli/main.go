@@ -6,9 +6,9 @@ import (
 	"os/exec"
 	"strings"
 
-	eduvpn "github.com/eduvpn/eduvpn-common"
-	"github.com/eduvpn/eduvpn-common/internal/server"
+	"github.com/eduvpn/eduvpn-common/client"
 	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/eduvpn/eduvpn-common/internal/server"
 )
 
 type ServerTypes int8
@@ -35,7 +35,7 @@ func openBrowser(url interface{}) {
 }
 
 // Ask for a profile in the command line
-func sendProfile(state *eduvpn.Client, data interface{}) {
+func sendProfile(state *client.Client, data interface{}) {
 	fmt.Printf("Multiple VPN profiles found. Please select a profile by entering e.g. 1")
 	serverProfiles, ok := data.(*server.ServerProfileInfo)
 
@@ -77,22 +77,22 @@ func sendProfile(state *eduvpn.Client, data interface{}) {
 // If we ask for a profile, we send the profile using command line input
 // Note that this has an additional argument, the vpn state which was wrapped into this callback function below
 func stateCallback(
-	state *eduvpn.Client,
-	oldState eduvpn.FSMStateID,
-	newState eduvpn.FSMStateID,
+	state *client.Client,
+	oldState client.FSMStateID,
+	newState client.FSMStateID,
 	data interface{},
 ) {
-	if newState == eduvpn.STATE_OAUTH_STARTED {
+	if newState == client.STATE_OAUTH_STARTED {
 		openBrowser(data)
 	}
 
-	if newState == eduvpn.STATE_ASK_PROFILE {
+	if newState == client.STATE_ASK_PROFILE {
 		sendProfile(state, data)
 	}
 }
 
 // Get a config for Institute Access or Secure Internet Server
-func getConfig(state *eduvpn.Client, url string, serverType ServerTypes) (string, string, error) {
+func getConfig(state *client.Client, url string, serverType ServerTypes) (string, string, error) {
 	if !strings.HasPrefix(url, "http") {
 		url = "https://" + url
 	}
@@ -119,13 +119,13 @@ func getConfig(state *eduvpn.Client, url string, serverType ServerTypes) (string
 
 // Get a config for a single server, Institute Access or Secure Internet
 func printConfig(url string, serverType ServerTypes) {
-	state := &eduvpn.Client{}
+	state := &client.Client{}
 
 	registerErr := state.Register(
-		"org.eduvpn.app.linux",
+		"org.client.app.linux",
 		"configs",
 		"en",
-		func(old eduvpn.FSMStateID, new eduvpn.FSMStateID, data interface{}) {
+		func(old client.FSMStateID, new client.FSMStateID, data interface{}) {
 			stateCallback(state, old, new, data)
 		},
 		true,

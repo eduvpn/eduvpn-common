@@ -1,4 +1,4 @@
-package eduvpn
+package client
 
 import (
 	"errors"

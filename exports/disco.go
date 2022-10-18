@@ -42,12 +42,12 @@ import "C"
 import (
 	"unsafe"
 
-	eduvpn "github.com/eduvpn/eduvpn-common"
+	"github.com/eduvpn/eduvpn-common/client"
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
 func getCPtrDiscoOrganization(
-	state *eduvpn.Client,
+	state *client.Client,
 	organization *types.DiscoveryOrganization,
 ) *C.discoveryOrganization {
 	returnedStruct := (*C.discoveryOrganization)(
@@ -61,7 +61,7 @@ func getCPtrDiscoOrganization(
 }
 
 func getCPtrDiscoOrganizations(
-	state *eduvpn.Client,
+	state *client.Client,
 	organizations *types.DiscoveryOrganizations,
 ) (C.size_t, **C.discoveryOrganization) {
 	totalOrganizations := C.size_t(len(organizations.List))
@@ -82,7 +82,7 @@ func getCPtrDiscoOrganizations(
 }
 
 func getCPtrDiscoServer(
-	state *eduvpn.Client,
+	state *client.Client,
 	server *types.DiscoveryServer,
 ) *C.discoveryServer {
 	returnedStruct := (*C.discoveryServer)(
@@ -104,7 +104,7 @@ func getCPtrDiscoServer(
 }
 
 func getCPtrDiscoServers(
-	state *eduvpn.Client,
+	state *client.Client,
 	servers *types.DiscoveryServers,
 ) (C.size_t, **C.discoveryServer) {
 	totalServers := C.size_t(len(servers.List))
