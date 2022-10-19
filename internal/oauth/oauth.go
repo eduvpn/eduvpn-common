@@ -71,6 +71,7 @@ func genVerifier() (string, error) {
 }
 
 type OAuth struct {
+	ISS                  string               `json:"iss"`
 	Session              OAuthExchangeSession `json:"-"`
 	Token                OAuthToken           `json:"token"`
 	BaseAuthorizationURL string               `json:"base_authorization_url"`
@@ -363,7 +364,8 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string) {
+func (oauth *OAuth) Init(iss string, baseAuthorizationURL string, tokenURL string) {
+	oauth.ISS = iss
 	oauth.BaseAuthorizationURL = baseAuthorizationURL
 	oauth.TokenURL = tokenURL
 }
@@ -378,7 +380,7 @@ func (oauth OAuth) GetListenerPort() (int, error) {
 }
 
 // Starts the OAuth exchange for eduvpn.
-func (oauth *OAuth) GetAuthURL(name string, iss string, postProcessAuth func(string) string) (string, error) {
+func (oauth *OAuth) GetAuthURL(name string, postProcessAuth func(string) string) (string, error) {
 	errorMessage := "failed starting OAuth exchange"
 
 	// Generate the verifier and challenge
@@ -395,7 +397,7 @@ func (oauth *OAuth) GetAuthURL(name string, iss string, postProcessAuth func(str
 	}
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
-	oauthSession := OAuthExchangeSession{ClientID: name, ISS: iss, State: state, Verifier: verifier}
+	oauthSession := OAuthExchangeSession{ClientID: name, ISS: oauth.ISS, State: state, Verifier: verifier}
 	oauth.Session = oauthSession
 
 	// set up the listener to get the redirect URI

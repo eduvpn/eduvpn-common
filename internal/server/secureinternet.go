@@ -149,7 +149,7 @@ func (secure *SecureInternetHomeServer) init(
 	}
 
 	// Make sure oauth contains our endpoints
-	secure.OAuth.Init(base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token)
+	secure.OAuth.Init(base.URL, base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token)
 	return nil
 }
 

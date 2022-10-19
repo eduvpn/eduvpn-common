@@ -84,7 +84,7 @@ func (institute *InstituteAccessServer) init(
 	serverType string,
 	supportContact []string,
 ) error {
-	errorMessage := fmt.Sprintf("failed initializing institute server %s", url)
+	errorMessage := fmt.Sprintf("failed initializing server %s", url)
 	institute.Base.URL = url
 	institute.Base.DisplayName = displayName
 	institute.Base.SupportContact = supportContact
@@ -93,7 +93,7 @@ func (institute *InstituteAccessServer) init(
 	if endpointsErr != nil {
 		return types.NewWrappedError(errorMessage, endpointsErr)
 	}
-	institute.OAuth.Init(endpoints.API.V3.Authorization, endpoints.API.V3.Token)
+	institute.OAuth.Init(url, endpoints.API.V3.Authorization, endpoints.API.V3.Token)
 	institute.Base.Endpoints = *endpoints
 	return nil
 }
