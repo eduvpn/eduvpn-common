@@ -255,6 +255,13 @@ func (client *Client) AddInstituteServer(url string) (server.Server, error) {
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
 	}
 
+	// Set the server as the current so OAuth can be cancelled
+	currentErr := client.Servers.SetInstituteAccess(server)
+	if currentErr != nil {
+		client.goBackInternal()
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
+	}
+
 	// Indicate that we want to authorize this server
 	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
@@ -303,8 +310,16 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 	locationErr := client.askSecureLocation()
 	if locationErr != nil {
 		// Removing is best effort
+		// This already goes back to the main screen
 		_ = client.RemoveSecureInternet()
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: locationErr}
+	}
+
+	// Set the server as the current so OAuth can be cancelled
+	currentErr := client.Servers.SetSecureInternet(server)
+	if currentErr != nil {
+		client.goBackInternal()
+		return nil,  &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
 	}
 
 	// Server has been chosen for authentication
@@ -344,6 +359,13 @@ func (client *Client) AddCustomServer(url string) (server.Server, error) {
 	if serverErr != nil {
 		client.goBackInternal()
 		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+	}
+
+	// Set the server as the current so OAuth can be cancelled
+	currentErr := client.Servers.SetCustomServer(server)
+	if currentErr != nil {
+		client.goBackInternal()
+		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
 	}
 
 	// Server has been chosen for authentication
