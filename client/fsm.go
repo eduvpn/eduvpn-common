@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/eduvpn/eduvpn-common/internal/fsm"
+	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
@@ -245,4 +246,265 @@ func (e FSMWrongStateError) CustomError() *types.WrappedErrorMessage {
 			GetStateName(e.Want),
 		),
 	}
+}
+
+
+// SetSearchServer sets the FSM to the SEARCH_SERVER state.
+// This indicates that the user wants to search for a new server.
+// Returns an error if this state transition is not possible.
+func (client *Client) SetSearchServer() error {
+	if !client.FSM.HasTransition(STATE_SEARCH_SERVER) {
+		client.Logger.Warning(
+			fmt.Sprintf(
+				"Failed setting search server, wrong state %s",
+				GetStateName(client.FSM.Current),
+			),
+		)
+		return &types.WrappedErrorMessage{
+			Message: "failed to set search server",
+			Err: FSMWrongStateTransitionError{
+				Got:  client.FSM.Current,
+				Want: STATE_SEARCH_SERVER,
+			}.CustomError(),
+		}
+	}
+
+	client.FSM.GoTransition(STATE_SEARCH_SERVER)
+	return nil
+}
+
+// SetConnected sets the FSM to the CONNECTED state.
+// This indicates that the VPN is connected to the server.
+// Returns an error if this state transition is not possible.
+func (client *Client) SetConnected() error {
+	errorMessage := "failed to set connected"
+	if client.InFSMState(STATE_CONNECTED) {
+		// already connected, show no error
+		client.Logger.Warning("Already connected")
+		return nil
+	}
+	if !client.FSM.HasTransition(STATE_CONNECTED) {
+		client.Logger.Warning(
+			fmt.Sprintf(
+				"Failed setting connected, wrong state: %s",
+				GetStateName(client.FSM.Current),
+			),
+		)
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: FSMWrongStateTransitionError{
+				Got:  client.FSM.Current,
+				Want: STATE_CONNECTED,
+			}.CustomError(),
+		}
+	}
+
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
+	if currentServerErr != nil {
+		client.Logger.Warning(
+			fmt.Sprintf(
+				"Failed setting connected, cannot get current server with error: %s",
+				types.GetErrorTraceback(currentServerErr),
+			),
+		)
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+	}
+
+	client.FSM.GoTransitionWithData(STATE_CONNECTED, currentServer, false)
+	return nil
+}
+
+// SetConnecting sets the FSM to the CONNECTING state.
+// This indicates that the VPN is currently connecting to the server.
+// Returns an error if this state transition is not possible.
+func (client *Client) SetConnecting() error {
+	errorMessage := "failed to set connecting"
+	if client.InFSMState(STATE_CONNECTING) {
+		// already loading connection, show no error
+		client.Logger.Warning("Already connecting")
+		return nil
+	}
+	if !client.FSM.HasTransition(STATE_CONNECTING) {
+		client.Logger.Warning(
+			fmt.Sprintf(
+				"Failed setting connecting, wrong state: %s",
+				GetStateName(client.FSM.Current),
+			),
+		)
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: FSMWrongStateTransitionError{
+				Got:  client.FSM.Current,
+				Want: STATE_CONNECTING,
+			}.CustomError(),
+		}
+	}
+
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
+	if currentServerErr != nil {
+		client.Logger.Warning(
+			fmt.Sprintf(
+				"Failed setting connecting, cannot get current server with error: %s",
+				types.GetErrorTraceback(currentServerErr),
+			),
+		)
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+	}
+
+	client.FSM.GoTransitionWithData(STATE_CONNECTING, currentServer, false)
+	return nil
+}
+
+// SetDisconnecting sets the FSM to the DISCONNECTING state.
+// This indicates that the VPN is currently disconnecting from the server.
+// Returns an error if this state transition is not possible.
+func (client *Client) SetDisconnecting() error {
+	errorMessage := "failed to set disconnecting"
+	if client.InFSMState(STATE_DISCONNECTING) {
+		// already disconnecting, show no error
+		client.Logger.Warning("Already disconnecting")
+		return nil
+	}
+	if !client.FSM.HasTransition(STATE_DISCONNECTING) {
+		client.Logger.Warning(
+			fmt.Sprintf(
+				"Failed setting disconnecting, wrong state: %s",
+				GetStateName(client.FSM.Current),
+			),
+		)
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: FSMWrongStateTransitionError{
+				Got:  client.FSM.Current,
+				Want: STATE_DISCONNECTING,
+			}.CustomError(),
+		}
+	}
+
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
+	if currentServerErr != nil {
+		client.Logger.Warning(
+			fmt.Sprintf(
+				"Failed setting disconnected, cannot get current server with error: %s",
+				types.GetErrorTraceback(currentServerErr),
+			),
+		)
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+	}
+
+	client.FSM.GoTransitionWithData(STATE_DISCONNECTING, currentServer, false)
+	return nil
+}
+
+// SetDisconnected sets the FSM to the DISCONNECTED state.
+// This indicates that the VPN is currently disconnected from the server.
+// This also sends the /disconnect API call to the server.
+// Returns an error if this state transition is not possible.
+func (client *Client) SetDisconnected(cleanup bool) error {
+	errorMessage := "failed to set disconnected"
+	if client.InFSMState(STATE_DISCONNECTED) {
+		// already disconnected, show no error
+		client.Logger.Warning("Already disconnected")
+		return nil
+	}
+	if !client.FSM.HasTransition(STATE_DISCONNECTED) {
+		client.Logger.Warning(
+			fmt.Sprintf(
+				"Failed setting disconnected, wrong state: %s",
+				GetStateName(client.FSM.Current),
+			),
+		)
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: FSMWrongStateTransitionError{
+				Got:  client.FSM.Current,
+				Want: STATE_DISCONNECTED,
+			}.CustomError(),
+		}
+	}
+
+	currentServer, currentServerErr := client.Servers.GetCurrentServer()
+	if currentServerErr != nil {
+		client.Logger.Warning(
+			fmt.Sprintf(
+				"Failed setting disconnect, failed getting current server with error: %s",
+				types.GetErrorTraceback(currentServerErr),
+			),
+		)
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+	}
+
+	if cleanup {
+		// Do the /disconnect API call and go to disconnected after...
+		server.Disconnect(currentServer)
+	}
+
+	client.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer, false)
+
+	return nil
+}
+
+// goBackInternal uses the public go back but logs an error if it happened.
+func (client *Client) goBackInternal() {
+	goBackErr := client.GoBack()
+	if goBackErr != nil {
+		client.Logger.Info(
+			fmt.Sprintf(
+				"Failed going back, error: %s",
+				types.GetErrorTraceback(goBackErr),
+			),
+		)
+	}
+}
+
+// GoBack transitions the FSM back to the previous UI state, for now this is always the NO_SERVER state.
+func (client *Client) GoBack() error {
+	errorMessage := "failed to go back"
+	if client.InFSMState(STATE_DEREGISTERED) {
+		client.Logger.Error("Wrong state, cannot go back when deregistered")
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err:     FSMDeregisteredError{}.CustomError(),
+		}
+	}
+
+	// FIXME: Abitrary back transitions don't work because we need the approriate data
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
+	return nil
+}
+
+// CancelOAuth cancels OAuth if one is in progress.
+// If OAuth is not in progress, it returns an error.
+// An error is also returned if OAuth is in progress but it fails to cancel it.
+func (client *Client) CancelOAuth() error {
+	errorMessage := "failed to cancel OAuth"
+	if !client.InFSMState(STATE_OAUTH_STARTED) {
+		client.Logger.Error("Failed cancelling OAuth, not in the right state")
+		return &types.WrappedErrorMessage{
+			Message: errorMessage,
+			Err: FSMWrongStateError{
+				Got:  client.FSM.Current,
+				Want: STATE_OAUTH_STARTED,
+			}.CustomError(),
+		}
+	}
+
+	currentServer, serverErr := client.Servers.GetCurrentServer()
+	if serverErr != nil {
+		client.Logger.Warning(
+			fmt.Sprintf(
+				"Failed cancelling OAuth, no server configured to cancel OAuth for (err: %v)",
+				serverErr,
+			),
+		)
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+	}
+	server.CancelOAuth(currentServer)
+	return nil
+}
+
+
+// InFSMState is a helper to check if the FSM is in state `checkState`.
+func (client *Client) InFSMState(checkState FSMStateID) bool {
+	return client.FSM.InState(checkState)
 }
