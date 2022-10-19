@@ -12,10 +12,10 @@ func GenerateKey() (wgtypes.Key, error) {
 	key, keyErr := wgtypes.GeneratePrivateKey()
 
 	if keyErr != nil {
-		return key, &types.WrappedErrorMessage{
-			Message: "failed generating WireGuard key",
-			Err:     keyErr,
-		}
+		return key, types.NewWrappedError(
+			"failed generating WireGuard key",
+			keyErr,
+		)
 	}
 	return key, nil
 }

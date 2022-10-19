@@ -29,11 +29,11 @@ func (config *Config) Save(readStruct interface{}) error {
 	errorMessage := "failed saving configuration"
 	configDirErr := util.EnsureDirectory(config.Directory)
 	if configDirErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: configDirErr}
+		return types.NewWrappedError(errorMessage, configDirErr)
 	}
 	jsonString, marshalErr := json.Marshal(readStruct)
 	if marshalErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: marshalErr}
+		return types.NewWrappedError(errorMessage, marshalErr)
 	}
 	return ioutil.WriteFile(config.GetFilename(), jsonString, 0o600)
 }
@@ -41,7 +41,7 @@ func (config *Config) Save(readStruct interface{}) error {
 func (config *Config) Load(writeStruct interface{}) error {
 	bytes, readErr := ioutil.ReadFile(config.GetFilename())
 	if readErr != nil {
-		return &types.WrappedErrorMessage{Message: "failed loading configuration", Err: readErr}
+		return types.NewWrappedError("failed loading configuration", readErr)
 	}
 	return json.Unmarshal(bytes, writeStruct)
 }

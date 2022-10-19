@@ -97,10 +97,10 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 	errorMessage := "failed getting current server"
 	if servers.IsType == SecureInternetServerType {
 		if !servers.HasSecureLocation() {
-			return nil, &types.WrappedErrorMessage{
-				Message: errorMessage,
-				Err:     &ServerGetCurrentNotFoundError{},
-			}
+			return nil, types.NewWrappedError(
+				errorMessage,
+				&ServerGetCurrentNotFoundError{},
+			)
 		}
 		return &servers.SecureInternetHomeServer, nil
 	}
@@ -113,18 +113,18 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 	currentServerURL := serversStruct.CurrentURL
 	bases := serversStruct.Map
 	if bases == nil {
-		return nil, &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     &ServerGetCurrentNoMapError{},
-		}
+		return nil, types.NewWrappedError(
+			errorMessage,
+			&ServerGetCurrentNoMapError{},
+		)
 	}
 	server, exists := bases[currentServerURL]
 
 	if !exists || server == nil {
-		return nil, &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     &ServerGetCurrentNotFoundError{},
-		}
+		return nil, types.NewWrappedError(
+			errorMessage,
+			&ServerGetCurrentNotFoundError{},
+		)
 	}
 	return server, nil
 }
@@ -161,7 +161,7 @@ func (servers *Servers) addInstituteAndCustom(
 		discoServer.SupportContact,
 	)
 	if instituteInitErr != nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: instituteInitErr}
+		return nil, types.NewWrappedError(errorMessage, instituteInitErr)
 	}
 	toAddServers.Map[url] = server
 	servers.IsType = serverType
@@ -192,7 +192,7 @@ func (servers *Servers) SetSecureLocation(
 	_, addLocationErr := servers.SecureInternetHomeServer.addLocation(chosenLocationServer)
 
 	if addLocationErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: addLocationErr}
+		return types.NewWrappedError(errorMessage, addLocationErr)
 	}
 
 	servers.SecureInternetHomeServer.CurrentLocation = chosenLocationServer.CountryCode
@@ -209,7 +209,7 @@ func (servers *Servers) AddSecureInternet(
 	initErr := servers.SecureInternetHomeServer.init(secureOrg, secureServer)
 
 	if initErr != nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: initErr}
+		return nil, types.NewWrappedError(errorMessage, initErr)
 	}
 
 	servers.IsType = SecureInternetServerType
@@ -255,7 +255,7 @@ func ShouldRenewButton(server Server) bool {
 func GetISS(server Server) (string, error) {
 	base, baseErr := server.GetBase()
 	if baseErr != nil {
-		return "", &types.WrappedErrorMessage{Message: "failed getting server ISS", Err: baseErr}
+		return "", types.NewWrappedError("failed getting server ISS", baseErr)
 	}
 	// We have already ensured that the base URL ends with a /
 	return base.URL, nil
@@ -288,7 +288,7 @@ func MarkTokensForRenew(server Server) {
 func EnsureTokens(server Server) error {
 	ensureErr := server.GetOAuth().EnsureTokens()
 	if ensureErr != nil {
-		return &types.WrappedErrorMessage{Message: "failed ensuring server tokens", Err: ensureErr}
+		return types.NewWrappedError("failed ensuring server tokens", ensureErr)
 	}
 	return nil
 }
@@ -323,7 +323,7 @@ func getCurrentProfile(server Server) (*ServerProfile, error) {
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		return nil, types.NewWrappedError(errorMessage, baseErr)
 	}
 	profileID := base.Profiles.Current
 	for _, profile := range base.Profiles.Info.ProfileList {
@@ -332,10 +332,10 @@ func getCurrentProfile(server Server) (*ServerProfile, error) {
 		}
 	}
 
-	return nil, &types.WrappedErrorMessage{
-		Message: errorMessage,
-		Err:     &ServerGetCurrentProfileNotFoundError{ProfileID: profileID},
-	}
+	return nil, types.NewWrappedError(
+		errorMessage,
+		&ServerGetCurrentProfileNotFoundError{ProfileID: profileID},
+	)
 }
 
 func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (string, string, error) {
@@ -343,14 +343,14 @@ func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (st
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		return "", "", types.NewWrappedError(errorMessage, baseErr)
 	}
 
 	profile_id := base.Profiles.Current
 	wireguardKey, wireguardErr := wireguard.GenerateKey()
 
 	if wireguardErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: wireguardErr}
+		return "", "", types.NewWrappedError(errorMessage, wireguardErr)
 	}
 
 	wireguardPublicKey := wireguardKey.PublicKey().String()
@@ -363,7 +363,7 @@ func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (st
 	)
 
 	if configErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
+		return "", "", types.NewWrappedError(errorMessage, configErr)
 	}
 
 	// Store start and end time
@@ -386,7 +386,7 @@ func openVPNGetConfig(server Server, preferTCP bool) (string, string, error) {
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		return "", "", types.NewWrappedError(errorMessage, baseErr)
 	}
 	profile_id := base.Profiles.Current
 	configOpenVPN, expires, configErr := APIConnectOpenVPN(server, profile_id, preferTCP)
@@ -396,7 +396,7 @@ func openVPNGetConfig(server Server, preferTCP bool) (string, string, error) {
 	base.EndTime = expires
 
 	if configErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
+		return "", "", types.NewWrappedError(errorMessage, configErr)
 	}
 
 	return configOpenVPN, "openvpn", nil
@@ -409,12 +409,12 @@ func HasValidProfile(server Server) (bool, error) {
 	// This does not override the current profile
 	infoErr := APIInfo(server)
 	if infoErr != nil {
-		return false, &types.WrappedErrorMessage{Message: errorMessage, Err: infoErr}
+		return false, types.NewWrappedError(errorMessage, infoErr)
 	}
 
 	base, baseErr := server.GetBase()
 	if baseErr != nil {
-		return false, &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		return false, types.NewWrappedError(errorMessage, baseErr)
 	}
 
 	// If there was a profile chosen and it doesn't exist anymore, reset it
@@ -442,7 +442,7 @@ func GetConfig(server Server, preferTCP bool) (string, string, error) {
 
 	profile, profileErr := getCurrentProfile(server)
 	if profileErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: profileErr}
+		return "", "", types.NewWrappedError(errorMessage, profileErr)
 	}
 
 	supportsOpenVPN := profile.supportsOpenVPN()
@@ -461,7 +461,7 @@ func GetConfig(server Server, preferTCP bool) (string, string, error) {
 	}
 
 	if configErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: configErr}
+		return "", "", types.NewWrappedError(errorMessage, configErr)
 	}
 
 	return config, configType, nil

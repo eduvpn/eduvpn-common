@@ -208,12 +208,12 @@ func newFSM(
 type FSMDeregisteredError struct{}
 
 func (e FSMDeregisteredError) CustomError() *types.WrappedErrorMessage {
-	return &types.WrappedErrorMessage{
-		Message: "Client not registered with the GO library",
-		Err: errors.New(
+	return types.NewWrappedError(
+		"Client not registered with the GO library",
+		errors.New(
 			"the current FSM state is deregistered, but the function needs a state that is not deregistered",
 		),
-	}
+	)
 }
 
 type FSMWrongStateTransitionError struct {
@@ -222,14 +222,14 @@ type FSMWrongStateTransitionError struct {
 }
 
 func (e FSMWrongStateTransitionError) CustomError() *types.WrappedErrorMessage {
-	return &types.WrappedErrorMessage{
-		Message: "Wrong FSM transition",
-		Err: fmt.Errorf(
+	return types.NewWrappedError(
+		"Wrong FSM transition",
+		fmt.Errorf(
 			"wrong FSM state, got: %s, want: a state with a transition to: %s",
 			GetStateName(e.Got),
 			GetStateName(e.Want),
 		),
-	}
+	)
 }
 
 type FSMWrongStateError struct {
@@ -238,14 +238,14 @@ type FSMWrongStateError struct {
 }
 
 func (e FSMWrongStateError) CustomError() *types.WrappedErrorMessage {
-	return &types.WrappedErrorMessage{
-		Message: "Wrong FSM State",
-		Err: fmt.Errorf(
+	return types.NewWrappedError(
+		"Wrong FSM State",
+		fmt.Errorf(
 			"wrong FSM state, got: %s, want: %s",
 			GetStateName(e.Got),
 			GetStateName(e.Want),
 		),
-	}
+	)
 }
 
 
@@ -254,19 +254,13 @@ func (e FSMWrongStateError) CustomError() *types.WrappedErrorMessage {
 // Returns an error if this state transition is not possible.
 func (client *Client) SetSearchServer() error {
 	if !client.FSM.HasTransition(STATE_SEARCH_SERVER) {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed setting search server, wrong state %s",
-				GetStateName(client.FSM.Current),
-			),
-		)
-		return &types.WrappedErrorMessage{
-			Message: "failed to set search server",
-			Err: FSMWrongStateTransitionError{
+		return client.handleError(
+			"failed to set search server",
+			FSMWrongStateTransitionError{
 				Got:  client.FSM.Current,
 				Want: STATE_SEARCH_SERVER,
 			}.CustomError(),
-		}
+		)
 	}
 
 	client.FSM.GoTransition(STATE_SEARCH_SERVER)
@@ -284,30 +278,18 @@ func (client *Client) SetConnected() error {
 		return nil
 	}
 	if !client.FSM.HasTransition(STATE_CONNECTED) {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed setting connected, wrong state: %s",
-				GetStateName(client.FSM.Current),
-			),
-		)
-		return &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err: FSMWrongStateTransitionError{
+		return client.handleError(
+			errorMessage,
+			FSMWrongStateTransitionError{
 				Got:  client.FSM.Current,
 				Want: STATE_CONNECTED,
 			}.CustomError(),
-		}
+		)
 	}
 
 	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed setting connected, cannot get current server with error: %s",
-				types.GetErrorTraceback(currentServerErr),
-			),
-		)
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+		return client.handleError(errorMessage, currentServerErr)
 	}
 
 	client.FSM.GoTransitionWithData(STATE_CONNECTED, currentServer, false)
@@ -325,30 +307,18 @@ func (client *Client) SetConnecting() error {
 		return nil
 	}
 	if !client.FSM.HasTransition(STATE_CONNECTING) {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed setting connecting, wrong state: %s",
-				GetStateName(client.FSM.Current),
-			),
-		)
-		return &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err: FSMWrongStateTransitionError{
+		return client.handleError(
+			errorMessage,
+			FSMWrongStateTransitionError{
 				Got:  client.FSM.Current,
 				Want: STATE_CONNECTING,
 			}.CustomError(),
-		}
+		)
 	}
 
 	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed setting connecting, cannot get current server with error: %s",
-				types.GetErrorTraceback(currentServerErr),
-			),
-		)
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+		return client.handleError(errorMessage, currentServerErr)
 	}
 
 	client.FSM.GoTransitionWithData(STATE_CONNECTING, currentServer, false)
@@ -366,30 +336,18 @@ func (client *Client) SetDisconnecting() error {
 		return nil
 	}
 	if !client.FSM.HasTransition(STATE_DISCONNECTING) {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed setting disconnecting, wrong state: %s",
-				GetStateName(client.FSM.Current),
-			),
-		)
-		return &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err: FSMWrongStateTransitionError{
+		return client.handleError(
+			errorMessage,
+			FSMWrongStateTransitionError{
 				Got:  client.FSM.Current,
 				Want: STATE_DISCONNECTING,
 			}.CustomError(),
-		}
+		)
 	}
 
 	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed setting disconnected, cannot get current server with error: %s",
-				types.GetErrorTraceback(currentServerErr),
-			),
-		)
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+		return client.handleError(errorMessage, currentServerErr)
 	}
 
 	client.FSM.GoTransitionWithData(STATE_DISCONNECTING, currentServer, false)
@@ -408,30 +366,18 @@ func (client *Client) SetDisconnected(cleanup bool) error {
 		return nil
 	}
 	if !client.FSM.HasTransition(STATE_DISCONNECTED) {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed setting disconnected, wrong state: %s",
-				GetStateName(client.FSM.Current),
-			),
-		)
-		return &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err: FSMWrongStateTransitionError{
+		return client.handleError(
+			errorMessage,
+			FSMWrongStateTransitionError{
 				Got:  client.FSM.Current,
 				Want: STATE_DISCONNECTED,
 			}.CustomError(),
-		}
+		)
 	}
 
 	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed setting disconnect, failed getting current server with error: %s",
-				types.GetErrorTraceback(currentServerErr),
-			),
-		)
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+		return client.handleError(errorMessage, currentServerErr)
 	}
 
 	if cleanup {
@@ -461,11 +407,10 @@ func (client *Client) goBackInternal() {
 func (client *Client) GoBack() error {
 	errorMessage := "failed to go back"
 	if client.InFSMState(STATE_DEREGISTERED) {
-		client.Logger.Error("Wrong state, cannot go back when deregistered")
-		return &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     FSMDeregisteredError{}.CustomError(),
-		}
+		return client.handleError(
+			errorMessage,
+			FSMDeregisteredError{}.CustomError(),
+		)
 	}
 
 	// FIXME: Abitrary back transitions don't work because we need the approriate data
@@ -479,25 +424,18 @@ func (client *Client) GoBack() error {
 func (client *Client) CancelOAuth() error {
 	errorMessage := "failed to cancel OAuth"
 	if !client.InFSMState(STATE_OAUTH_STARTED) {
-		client.Logger.Error("Failed cancelling OAuth, not in the right state")
-		return &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err: FSMWrongStateError{
+		return client.handleError(
+			errorMessage,
+			FSMWrongStateError{
 				Got:  client.FSM.Current,
 				Want: STATE_OAUTH_STARTED,
 			}.CustomError(),
-		}
+		)
 	}
 
 	currentServer, serverErr := client.Servers.GetCurrentServer()
 	if serverErr != nil {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed cancelling OAuth, no server configured to cancel OAuth for (err: %v)",
-				serverErr,
-			),
-		)
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+		return client.handleError(errorMessage, serverErr)
 	}
 	server.CancelOAuth(currentServer)
 	return nil

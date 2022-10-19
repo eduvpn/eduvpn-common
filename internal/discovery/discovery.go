@@ -25,7 +25,7 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	_, fileBody, fileErr := http.HTTPGet(fileURL)
 
 	if fileErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: fileErr}
+		return types.NewWrappedError(errorMessage, fileErr)
 	}
 
 	// Get signature
@@ -34,7 +34,7 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	_, sigBody, sigFileErr := http.HTTPGet(sigURL)
 
 	if sigFileErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: sigFileErr}
+		return types.NewWrappedError(errorMessage, sigFileErr)
 	}
 
 	// Verify signature
@@ -49,14 +49,14 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	)
 
 	if !verifySuccess || verifyErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: verifyErr}
+		return types.NewWrappedError(errorMessage, verifyErr)
 	}
 
 	// Parse JSON to extract version and list
 	jsonErr := json.Unmarshal(fileBody, structure)
 
 	if jsonErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: jsonErr}
+		return types.NewWrappedError(errorMessage, jsonErr)
 	}
 
 	return nil
@@ -91,10 +91,10 @@ func (discovery *Discovery) GetServerByURL(
 			return &server, nil
 		}
 	}
-	return nil, &types.WrappedErrorMessage{
-		Message: "failed getting server by URL from discovery",
-		Err:     &GetServerByURLNotFoundError{URL: url, Type: _type},
-	}
+	return nil, types.NewWrappedError(
+		"failed getting server by URL from discovery",
+		&GetServerByURLNotFoundError{URL: url, Type: _type},
+	)
 }
 
 func (discovery *Discovery) GetServerByCountryCode(
@@ -106,10 +106,10 @@ func (discovery *Discovery) GetServerByCountryCode(
 			return &server, nil
 		}
 	}
-	return nil, &types.WrappedErrorMessage{
-		Message: "failed getting server by country code from discovery",
-		Err:     &GetServerByCountryCodeNotFoundError{CountryCode: code, Type: _type},
-	}
+	return nil, types.NewWrappedError(
+		"failed getting server by country code from discovery",
+		&GetServerByCountryCodeNotFoundError{CountryCode: code, Type: _type},
+	)
 }
 
 func (discovery *Discovery) getOrgByID(orgID string) (*types.DiscoveryOrganization, error) {
@@ -118,10 +118,10 @@ func (discovery *Discovery) getOrgByID(orgID string) (*types.DiscoveryOrganizati
 			return &organization, nil
 		}
 	}
-	return nil, &types.WrappedErrorMessage{
-		Message: "failed getting Secure Internet Home URL from discovery",
-		Err:     &GetOrgByIDNotFoundError{ID: orgID},
-	}
+	return nil, types.NewWrappedError(
+		"failed getting Secure Internet Home URL from discovery",
+		&GetOrgByIDNotFoundError{ID: orgID},
+	)
 }
 
 func (discovery *Discovery) GetSecureHomeArgs(
@@ -131,7 +131,7 @@ func (discovery *Discovery) GetSecureHomeArgs(
 	org, orgErr := discovery.getOrgByID(orgID)
 
 	if orgErr != nil {
-		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: orgErr}
+		return nil, nil, types.NewWrappedError(errorMessage, orgErr)
 	}
 
 	// Get a server with the base url
@@ -140,7 +140,7 @@ func (discovery *Discovery) GetSecureHomeArgs(
 	server, serverErr := discovery.GetServerByURL(url, "secure_internet")
 
 	if serverErr != nil {
-		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+		return nil, nil, types.NewWrappedError(errorMessage, serverErr)
 	}
 	return org, server, nil
 }
@@ -168,10 +168,10 @@ func (discovery *Discovery) GetOrganizationsList() (*types.DiscoveryOrganization
 	bodyErr := getDiscoFile(file, discovery.Organizations.Version, &discovery.Organizations)
 	if bodyErr != nil {
 		// Return previous with an error
-		return &discovery.Organizations, &types.WrappedErrorMessage{
-			Message: "failed getting organizations in Discovery",
-			Err:     bodyErr,
-		}
+		return &discovery.Organizations, types.NewWrappedError(
+			"failed getting organizations in Discovery",
+			bodyErr,
+		)
 	}
 	discovery.Organizations.Timestamp = util.GetCurrentTime()
 	return &discovery.Organizations, nil
@@ -186,10 +186,10 @@ func (discovery *Discovery) GetServersList() (*types.DiscoveryServers, error) {
 	bodyErr := getDiscoFile(file, discovery.Servers.Version, &discovery.Servers)
 	if bodyErr != nil {
 		// Return previous with an error
-		return &discovery.Servers, &types.WrappedErrorMessage{
-			Message: "failed getting servers in Discovery",
-			Err:     bodyErr,
-		}
+		return &discovery.Servers, types.NewWrappedError(
+			"failed getting servers in Discovery",
+			bodyErr,
+		)
 	}
 	// Update servers timestamp
 	discovery.Servers.Timestamp = util.GetCurrentTime()

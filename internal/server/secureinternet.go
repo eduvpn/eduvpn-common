@@ -35,11 +35,11 @@ func (servers *Servers) SetSecureInternet(server Server) error {
 	errorMessage := "failed setting secure internet server"
 	base, baseErr := server.GetBase()
 	if baseErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		return types.NewWrappedError(errorMessage, baseErr)
 	}
 
 	if base.Type != "secure_internet" {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: errors.New("Not a secure internet server")}
+		return types.NewWrappedError(errorMessage, errors.New("Not a secure internet server"))
 	}
 
 	// The location should already be configured
@@ -71,19 +71,19 @@ func (secure *SecureInternetHomeServer) GetTemplateAuth() func(string) string {
 func (server *SecureInternetHomeServer) GetBase() (*ServerBase, error) {
 	errorMessage := "failed getting current secure internet home base"
 	if server.BaseMap == nil {
-		return nil, &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     &ServerSecureInternetMapNotFoundError{},
-		}
+		return nil, types.NewWrappedError(
+			errorMessage,
+			&ServerSecureInternetMapNotFoundError{},
+		)
 	}
 
 	base, exists := server.BaseMap[server.CurrentLocation]
 
 	if !exists {
-		return nil, &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     &ServerSecureInternetBaseNotFoundError{Current: server.CurrentLocation},
-		}
+		return nil, types.NewWrappedError(
+			errorMessage,
+			&ServerSecureInternetBaseNotFoundError{Current: server.CurrentLocation},
+		)
 	}
 	return base, nil
 }
@@ -113,7 +113,7 @@ func (secure *SecureInternetHomeServer) addLocation(
 		base.Type = "secure_internet"
 		endpoints, endpointsErr := APIGetEndpoints(locationServer.BaseURL)
 		if endpointsErr != nil {
-			return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: endpointsErr}
+			return nil, types.NewWrappedError(errorMessage, endpointsErr)
 		}
 		base.Endpoints = *endpoints
 	}
@@ -145,7 +145,7 @@ func (secure *SecureInternetHomeServer) init(
 	base, baseErr := secure.addLocation(homeLocation)
 
 	if baseErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		return types.NewWrappedError(errorMessage, baseErr)
 	}
 
 	// Make sure oauth contains our endpoints

@@ -52,7 +52,7 @@ func (logger *FileLogger) Init(level LogLevel, name string, directory string) er
 
 	configDirErr := util.EnsureDirectory(directory)
 	if configDirErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: configDirErr}
+		return types.NewWrappedError(errorMessage, configDirErr)
 	}
 	logFile, logOpenErr := os.OpenFile(
 		logger.getFilename(directory, name),
@@ -60,7 +60,7 @@ func (logger *FileLogger) Init(level LogLevel, name string, directory string) er
 		0o666,
 	)
 	if logOpenErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: logOpenErr}
+		return types.NewWrappedError(errorMessage, logOpenErr)
 	}
 	log.SetOutput(logFile)
 	logger.File = logFile
@@ -68,9 +68,10 @@ func (logger *FileLogger) Init(level LogLevel, name string, directory string) er
 	return nil
 }
 
-func (logger *FileLogger) Inherit(err error, msg string) {
+func (logger *FileLogger) Inherit(label string, err error) {
 	level := types.GetErrorLevel(err)
 
+	msg := fmt.Sprintf("%s with err: %s", label, types.GetErrorTraceback(err))
 	switch level {
 	case types.ERR_INFO:
 		logger.Info(msg)

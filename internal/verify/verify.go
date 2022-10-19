@@ -39,7 +39,7 @@ func Verify(
 		forcePrehash,
 	)
 	if err != nil {
-		return valid, &types.WrappedErrorMessage{Message: "failed signature verify", Err: err}
+		return valid, types.NewWrappedError("failed signature verify", err)
 	}
 	return valid, nil
 }

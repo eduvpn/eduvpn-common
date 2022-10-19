@@ -19,6 +19,16 @@ type (
 	ServerBase = server.ServerBase
 )
 
+// This wraps the error, logs it and then returns the wrapped error
+func (client *Client) handleError(message string, err error) error {
+	if err != nil {
+		// Logs the error with the same level/verbosity as the error
+		client.Logger.Inherit(message, err)
+		return types.NewWrappedError(message, err)
+	}
+	return nil
+}
+
 func (client Client) isLetsConnect() bool {
 	// see https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/ClientDb.php
 	return strings.HasPrefix(client.Name, "org.letsconnect-vpn.app")
@@ -66,10 +76,10 @@ func (client *Client) Register(
 ) error {
 	errorMessage := "failed to register with the GO library"
 	if !client.InFSMState(STATE_DEREGISTERED) {
-		return &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     FSMDeregisteredError{}.CustomError(),
-		}
+		return client.handleError(
+			errorMessage,
+			FSMDeregisteredError{}.CustomError(),
+		)
 	}
 	client.Name = name
 
@@ -84,7 +94,7 @@ func (client *Client) Register(
 
 	loggerErr := client.Logger.Init(logLevel, name, directory)
 	if loggerErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: loggerErr}
+		return client.handleError(errorMessage, loggerErr)
 	}
 
 	// Initialize the FSM
@@ -129,12 +139,7 @@ func (client *Client) Deregister() {
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		client.Logger.Info(
-			fmt.Sprintf(
-				"Failed saving configuration, error: %s",
-				types.GetErrorTraceback(saveErr),
-			),
-		)
+		client.Logger.Info(fmt.Sprintf("failed saving configuration, error: %s", types.GetErrorTraceback(saveErr)))
 	}
 
 	// Empty out the state
@@ -145,7 +150,7 @@ func (client *Client) Deregister() {
 func (client *Client) askProfile(chosenServer server.Server) error {
 	base, baseErr := chosenServer.GetBase()
 	if baseErr != nil {
-		return &types.WrappedErrorMessage{Message: "failed asking for profiles", Err: baseErr}
+		return types.NewWrappedError("failed asking for profiles", baseErr)
 	}
 	client.FSM.GoTransitionWithData(STATE_ASK_PROFILE, &base.Profiles, false)
 	return nil
@@ -159,21 +164,15 @@ func (client *Client) GetDiscoOrganizations() (*types.DiscoveryOrganizations, er
 	errorMessage := "failed getting discovery organizations list"
 	// Not supported with Let's Connect!
 	if client.isLetsConnect() {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+		return nil, client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
 	orgs, orgsErr := client.Discovery.GetOrganizationsList()
 	if orgsErr != nil {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed getting discovery organizations, Err: %s",
-				types.GetErrorTraceback(orgsErr),
-			),
+		return nil, client.handleError(
+			errorMessage,
+			orgsErr,
 		)
-		return nil, &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     orgsErr,
-		}
 	}
 	return orgs, nil
 }
@@ -187,18 +186,15 @@ func (client *Client) GetDiscoServers() (*types.DiscoveryServers, error) {
 
 	// Not supported with Let's Connect!
 	if client.isLetsConnect() {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+		return nil, client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
 	servers, serversErr := client.Discovery.GetServersList()
 	if serversErr != nil {
-		client.Logger.Warning(
-			fmt.Sprintf("Failed getting discovery servers, Err: %s", types.GetErrorTraceback(serversErr)),
+		return nil, client.handleError(
+			errorMessage,
+			serversErr,
 		)
-		return nil, &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     serversErr,
-		}
 	}
 	return servers, nil
 }

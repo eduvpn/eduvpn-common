@@ -27,6 +27,16 @@ type WrappedErrorMessage struct {
 	Err     error
 }
 
+// NewWrappedError returns a WrappedErrorMessage and uses the error level from the parent
+func NewWrappedError(message string, err error) *WrappedErrorMessage {
+	return &WrappedErrorMessage{Level: GetErrorLevel(err), Message: message, Err: err}
+}
+
+// NewWrappedError returns a WrappedErrorMessage and uses the given error level from the parent
+func NewWrappedErrorLevel(level ErrorLevel, message string, err error) *WrappedErrorMessage {
+	return &WrappedErrorMessage{Level: level, Message: message, Err: err}
+}
+
 func (e *WrappedErrorMessage) Unwrap() error {
 	return e.Err
 }

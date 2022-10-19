@@ -25,14 +25,14 @@ type HTTPOptionalParams struct {
 func HTTPConstructURL(baseURL string, parameters URLParameters) (string, error) {
 	url, parseErr := url.Parse(baseURL)
 	if parseErr != nil {
-		return "", &types.WrappedErrorMessage{
-			Message: fmt.Sprintf(
+		return "", types.NewWrappedError(
+			fmt.Sprintf(
 				"failed to construct url: %s including parameters: %v",
 				url,
 				parameters,
 			),
-			Err: parseErr,
-		}
+			parseErr,
+		)
 	}
 
 	q := url.Query()
@@ -66,10 +66,10 @@ func httpOptionalURL(url string, opts *HTTPOptionalParams) (string, error) {
 		url, urlErr := HTTPConstructURL(url, opts.URLParameters)
 
 		if urlErr != nil {
-			return url, &types.WrappedErrorMessage{
-				Message: fmt.Sprintf("failed to create HTTP request with url: %s", url),
-				Err:     urlErr,
-			}
+			return url, types.NewWrappedError(
+				fmt.Sprintf("failed to create HTTP request with url: %s", url),
+				urlErr,
+			)
 		}
 		return url, nil
 	}
@@ -121,7 +121,7 @@ func HTTPMethodWithOpts(
 	// Create request object with the body reader generated from the optional arguments
 	req, reqErr := http.NewRequest(method, url, httpOptionalBodyReader(opts))
 	if reqErr != nil {
-		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: reqErr}
+		return nil, nil, types.NewWrappedError(errorMessage, reqErr)
 	}
 
 	// See https://stackoverflow.com/questions/17714494/golang-http-request-results-in-eof-errors-when-making-multiple-requests-successi
@@ -133,7 +133,7 @@ func HTTPMethodWithOpts(
 	// Do request
 	resp, respErr := client.Do(req)
 	if respErr != nil {
-		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: respErr}
+		return nil, nil, types.NewWrappedError(errorMessage, respErr)
 	}
 
 	// Request successful, make sure body is closed at the end
@@ -142,13 +142,13 @@ func HTTPMethodWithOpts(
 	// Return a string
 	body, readErr := ioutil.ReadAll(resp.Body)
 	if readErr != nil {
-		return resp.Header, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: readErr}
+		return resp.Header, nil, types.NewWrappedError(errorMessage, readErr)
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		// We make this a custom error because we want to extract the status code later
 		statusErr := &HTTPStatusError{URL: url, Body: string(body), Status: resp.StatusCode}
-		return resp.Header, body, &types.WrappedErrorMessage{Message: errorMessage, Err: statusErr}
+		return resp.Header, body, types.NewWrappedError(errorMessage, statusErr)
 	}
 
 	// Return the body in bytes and signal the status error if there was one

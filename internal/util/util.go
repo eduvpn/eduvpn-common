@@ -15,10 +15,10 @@ import (
 func EnsureValidURL(s string) (string, error) {
 	parsedURL, parseErr := url.Parse(s)
 	if parseErr != nil {
-		return "", &types.WrappedErrorMessage{
-			Message: fmt.Sprintf("failed parsing url: %s", s),
-			Err:     parseErr,
-		}
+		return "", types.NewWrappedError(
+			fmt.Sprintf("failed parsing url: %s", s),
+			parseErr,
+		)
 	}
 
 	if parsedURL.Scheme == "" {
@@ -44,7 +44,7 @@ func MakeRandomByteSlice(size int) ([]byte, error) {
 	byteSlice := make([]byte, size)
 	_, err := rand.Read(byteSlice)
 	if err != nil {
-		return nil, &types.WrappedErrorMessage{Message: "failed reading random", Err: err}
+		return nil, types.NewWrappedError("failed reading random", err)
 	}
 	return byteSlice, nil
 }
@@ -57,10 +57,10 @@ func EnsureDirectory(directory string) error {
 	// Create with 700 permissions, read, write, execute only for the owner
 	mkdirErr := os.MkdirAll(directory, 0o700)
 	if mkdirErr != nil {
-		return &types.WrappedErrorMessage{
-			Message: fmt.Sprintf("failed to create directory %s", directory),
-			Err:     mkdirErr,
-		}
+		return types.NewWrappedError(
+			fmt.Sprintf("failed to create directory %s", directory),
+			mkdirErr,
+		)
 	}
 	return nil
 }

@@ -17,21 +17,21 @@ func APIGetEndpoints(baseURL string) (*ServerEndpoints, error) {
 	errorMessage := "failed getting server endpoints"
 	url, urlErr := url.Parse(baseURL)
 	if urlErr != nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
+		return nil, types.NewWrappedError(errorMessage, urlErr)
 	}
 
 	url.Path = path.Join(url.Path, WellKnownPath)
 	_, body, bodyErr := httpw.HTTPGet(url.String())
 
 	if bodyErr != nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: bodyErr}
+		return nil, types.NewWrappedError(errorMessage, bodyErr)
 	}
 
 	endpoints := &ServerEndpoints{}
 	jsonErr := json.Unmarshal(body, endpoints)
 
 	if jsonErr != nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: jsonErr}
+		return nil, types.NewWrappedError(errorMessage, jsonErr)
 	}
 
 	return endpoints, nil
@@ -51,20 +51,20 @@ func apiAuthorized(
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		return nil, nil, types.NewWrappedError(errorMessage, baseErr)
 	}
 
 	// Join the paths
 	url, urlErr := url.Parse(base.Endpoints.API.V3.API)
 	if urlErr != nil {
-		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
+		return nil, nil, types.NewWrappedError(errorMessage, urlErr)
 	}
 	url.Path = path.Join(url.Path, endpoint)
 
 	// Make sure the tokens are valid, this will return an error if re-login is needed
 	oauthErr := EnsureTokens(server)
 	if oauthErr != nil {
-		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: oauthErr}
+		return nil, nil, types.NewWrappedError(errorMessage, oauthErr)
 	}
 
 	headerKey := "Authorization"
@@ -95,11 +95,11 @@ func apiAuthorizedRetry(
 			MarkTokenExpired(server)
 			retryHeader, retryBody, retryErr := apiAuthorized(server, method, endpoint, opts)
 			if retryErr != nil {
-				return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: retryErr}
+				return nil, nil, types.NewWrappedError(errorMessage, retryErr)
 			}
 			return retryHeader, retryBody, nil
 		}
-		return nil, nil, &types.WrappedErrorMessage{Message: errorMessage, Err: bodyErr}
+		return nil, nil, types.NewWrappedError(errorMessage, bodyErr)
 	}
 	return header, body, nil
 }
@@ -108,19 +108,19 @@ func APIInfo(server Server) error {
 	errorMessage := "failed API /info"
 	_, body, bodyErr := apiAuthorizedRetry(server, http.MethodGet, "/info", nil)
 	if bodyErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: bodyErr}
+		return types.NewWrappedError(errorMessage, bodyErr)
 	}
 	structure := ServerProfileInfo{}
 	jsonErr := json.Unmarshal(body, &structure)
 
 	if jsonErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: jsonErr}
+		return types.NewWrappedError(errorMessage, jsonErr)
 	}
 
 	base, baseErr := server.GetBase()
 
 	if baseErr != nil {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		return types.NewWrappedError(errorMessage, baseErr)
 	}
 
 	// Store the profiles and make sure that the current profile is not overwritten
@@ -169,17 +169,17 @@ func APIConnectWireguard(
 		&httpw.HTTPOptionalParams{Headers: headers, Body: urlForm},
 	)
 	if connectErr != nil {
-		return "", "", time.Time{}, &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     connectErr,
-		}
+		return "", "", time.Time{}, types.NewWrappedError(
+			errorMessage,
+			connectErr,
+		)
 	}
 
 	expires := header.Get("expires")
 
 	pTime, pTimeErr := http.ParseTime(expires)
 	if pTimeErr != nil {
-		return "", "", time.Time{}, &types.WrappedErrorMessage{Message: errorMessage, Err: pTimeErr}
+		return "", "", time.Time{}, types.NewWrappedError(errorMessage, pTimeErr)
 	}
 
 	contentType := header.Get("content-type")
@@ -210,13 +210,13 @@ func APIConnectOpenVPN(server Server, profile_id string, preferTCP bool) (string
 		&httpw.HTTPOptionalParams{Headers: headers, Body: urlForm},
 	)
 	if connectErr != nil {
-		return "", time.Time{}, &types.WrappedErrorMessage{Message: errorMessage, Err: connectErr}
+		return "", time.Time{}, types.NewWrappedError(errorMessage, connectErr)
 	}
 
 	expires := header.Get("expires")
 	pTime, pTimeErr := http.ParseTime(expires)
 	if pTimeErr != nil {
-		return "", time.Time{}, &types.WrappedErrorMessage{Message: errorMessage, Err: pTimeErr}
+		return "", time.Time{}, types.NewWrappedError(errorMessage, pTimeErr)
 	}
 	return string(connectBody), pTime, nil
 }

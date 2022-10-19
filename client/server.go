@@ -48,9 +48,7 @@ func (client *Client) retryConfigAuth(
 	errorMessage := "failed authorized config retry"
 	config, configType, configErr := client.getConfigAuth(chosenServer, preferTCP)
 	if configErr != nil {
-		level := types.ERR_OTHER
 		var error *oauth.OAuthTokensInvalidError
-		var oauthCancelledError *oauth.OAuthCancelledCallbackError
 
 		// Only retry if the error is that the tokens are invalid
 		if errors.As(configErr, &error) {
@@ -62,11 +60,8 @@ func (client *Client) retryConfigAuth(
 				return config, configType, nil
 			}
 		}
-		if errors.As(configErr, &oauthCancelledError) {
-			level = types.ERR_INFO
-		}
 		client.goBackInternal()
-		return "", "", &types.WrappedErrorMessage{Level: level, Message: errorMessage, Err: configErr}
+		return "", "", types.NewWrappedError(errorMessage, configErr)
 	}
 	return config, configType, nil
 }
@@ -78,21 +73,20 @@ func (client *Client) getConfig(
 ) (string, string, error) {
 	errorMessage := "failed to get a configuration for OpenVPN/Wireguard"
 	if client.InFSMState(STATE_DEREGISTERED) {
-		return "", "", &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err:     FSMDeregisteredError{}.CustomError(),
-		}
+		return "", "", types.NewWrappedError(
+			errorMessage,
+			FSMDeregisteredError{}.CustomError(),
+		)
 	}
 
 	config, configType, configErr := client.retryConfigAuth(chosenServer, preferTCP)
-
 	if configErr != nil {
-		return "", "", &types.WrappedErrorMessage{Level: types.GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
+		return "", "", types.NewWrappedError(errorMessage, configErr)
 	}
 
 	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+		return "", "", types.NewWrappedError(errorMessage, currentServerErr)
 	}
 
 	// Signal the server display info
@@ -119,32 +113,19 @@ func (client *Client) SetSecureLocation(countryCode string) error {
 
 	// Not supported with Let's Connect!
 	if client.isLetsConnect() {
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+		return client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
 	server, serverErr := client.Discovery.GetServerByCountryCode(countryCode, "secure_internet")
 	if serverErr != nil {
-		client.Logger.Error(
-			fmt.Sprintf(
-				"Failed getting secure internet server by country code: %s with error: %s",
-				countryCode,
-				types.GetErrorTraceback(serverErr),
-			),
-		)
 		client.goBackInternal()
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+		return client.handleError(errorMessage, serverErr)
 	}
 
 	setLocationErr := client.Servers.SetSecureLocation(server)
 	if setLocationErr != nil {
-		client.Logger.Error(
-			fmt.Sprintf(
-				"Failed setting secure internet server with error: %s",
-				types.GetErrorTraceback(setLocationErr),
-			),
-		)
 		client.goBackInternal()
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: setLocationErr}
+		return client.handleError(errorMessage, setLocationErr)
 	}
 	return nil
 }
@@ -154,11 +135,10 @@ func (client *Client) SetSecureLocation(countryCode string) error {
 // Note that if the server does not exist, it returns nil as an error.
 func (client *Client) RemoveSecureInternet() error {
 	if client.InFSMState(STATE_DEREGISTERED) {
-		client.Logger.Error("Failed removing secure internet server due to deregistered")
-		return &types.WrappedErrorMessage{
-			Message: "failed to remove Secure Internet",
-			Err:     FSMDeregisteredError{}.CustomError(),
-		}
+		return client.handleError(
+			"failed to remove Secure Internet",
+			FSMDeregisteredError{}.CustomError(),
+		)
 	}
 	// No error because we can only have one secure internet server and if there are no secure internet servers, this is a NO-OP
 	client.Servers.RemoveSecureInternet()
@@ -181,10 +161,10 @@ func (client *Client) RemoveSecureInternet() error {
 // Note that if the server does not exist, it returns nil as an error.
 func (client *Client) RemoveInstituteAccess(url string) error {
 	if client.InFSMState(STATE_DEREGISTERED) {
-		return &types.WrappedErrorMessage{
-			Message: "failed to remove Institute Access",
-			Err:     FSMDeregisteredError{}.CustomError(),
-		}
+		return client.handleError(
+			"failed to remove Institute Access",
+			FSMDeregisteredError{}.CustomError(),
+		)
 	}
 	// No error because this is a NO-OP if the server doesn't exist
 	client.Servers.RemoveInstituteAccess(url)
@@ -207,10 +187,10 @@ func (client *Client) RemoveInstituteAccess(url string) error {
 // Note that if the server does not exist, it returns nil as an error.
 func (client *Client) RemoveCustomServer(url string) error {
 	if client.InFSMState(STATE_DEREGISTERED) {
-		return &types.WrappedErrorMessage{
-			Message: "failed to remove Custom Server",
-			Err:     FSMDeregisteredError{}.CustomError(),
-		}
+		return client.handleError(
+			"failed to remove Custom Server",
+			FSMDeregisteredError{}.CustomError(),
+		)
 	}
 	// No error because this is a NO-OP if the server doesn't exist
 	client.Servers.RemoveCustomServer(url)
@@ -234,7 +214,7 @@ func (client *Client) AddInstituteServer(url string) (server.Server, error) {
 
 	// Not supported with Let's Connect!
 	if client.isLetsConnect() {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+		return nil, client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
 	// Indicate that we're loading the server
@@ -245,21 +225,21 @@ func (client *Client) AddInstituteServer(url string) (server.Server, error) {
 	instituteServer, discoErr := client.Discovery.GetServerByURL(url, "institute_access")
 	if discoErr != nil {
 		client.goBackInternal()
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: discoErr}
+		return nil, client.handleError(errorMessage, discoErr)
 	}
 
 	// Add the secure internet server
 	server, serverErr := client.Servers.AddInstituteAccessServer(instituteServer)
 	if serverErr != nil {
 		client.goBackInternal()
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+		return nil, client.handleError(errorMessage, serverErr)
 	}
 
 	// Set the server as the current so OAuth can be cancelled
 	currentErr := client.Servers.SetInstituteAccess(server)
 	if currentErr != nil {
 		client.goBackInternal()
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
+		return nil, client.handleError(errorMessage, currentErr)
 	}
 
 	// Indicate that we want to authorize this server
@@ -270,7 +250,7 @@ func (client *Client) AddInstituteServer(url string) (server.Server, error) {
 	if loginErr != nil {
 		// Removing is best effort
 		_ = client.RemoveInstituteAccess(url)
-		return nil, &types.WrappedErrorMessage{Level: types.GetErrorLevel(loginErr), Message: errorMessage, Err: loginErr}
+		return nil, client.handleError(errorMessage, loginErr)
 	}
 
 	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
@@ -287,7 +267,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 
 	// Not supported with Let's Connect!
 	if client.isLetsConnect() {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+		return nil, client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
 	// Indicate that we're loading the server
@@ -297,14 +277,14 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 	secureOrg, secureServer, discoErr := client.Discovery.GetSecureHomeArgs(orgID)
 	if discoErr != nil {
 		client.goBackInternal()
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: discoErr}
+		return nil, client.handleError(errorMessage, discoErr)
 	}
 
 	// Add the secure internet server
 	server, serverErr := client.Servers.AddSecureInternet(secureOrg, secureServer)
 	if serverErr != nil {
 		client.goBackInternal()
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+		return nil, client.handleError(errorMessage, serverErr)
 	}
 
 	locationErr := client.askSecureLocation()
@@ -312,14 +292,14 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 		// Removing is best effort
 		// This already goes back to the main screen
 		_ = client.RemoveSecureInternet()
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: locationErr}
+		return nil, client.handleError(errorMessage, locationErr)
 	}
 
 	// Set the server as the current so OAuth can be cancelled
 	currentErr := client.Servers.SetSecureInternet(server)
 	if currentErr != nil {
 		client.goBackInternal()
-		return nil,  &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
+		return nil,  client.handleError(errorMessage, currentErr)
 	}
 
 	// Server has been chosen for authentication
@@ -330,7 +310,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 	if loginErr != nil {
 		// Removing is best effort
 		_ = client.RemoveSecureInternet()
-		return nil, &types.WrappedErrorMessage{Level: types.GetErrorLevel(loginErr), Message: errorMessage, Err: loginErr}
+		return nil, client.handleError(errorMessage, loginErr)
 	}
 	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
 	return server, nil
@@ -342,7 +322,7 @@ func (client *Client) AddCustomServer(url string) (server.Server, error) {
 
 	url, urlErr := util.EnsureValidURL(url)
 	if urlErr != nil {
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
+		return nil, client.handleError(errorMessage, urlErr)
 	}
 
 	// Indicate that we're loading the server
@@ -358,14 +338,14 @@ func (client *Client) AddCustomServer(url string) (server.Server, error) {
 	server, serverErr := client.Servers.AddCustomServer(customServer)
 	if serverErr != nil {
 		client.goBackInternal()
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+		return nil, client.handleError(errorMessage, serverErr)
 	}
 
 	// Set the server as the current so OAuth can be cancelled
 	currentErr := client.Servers.SetCustomServer(server)
 	if currentErr != nil {
 		client.goBackInternal()
-		return nil, &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
+		return nil, client.handleError(errorMessage, currentErr)
 	}
 
 	// Server has been chosen for authentication
@@ -376,7 +356,7 @@ func (client *Client) AddCustomServer(url string) (server.Server, error) {
 	if loginErr != nil {
 		// removing is best effort
 		_ = client.RemoveCustomServer(url)
-		return nil, &types.WrappedErrorMessage{Level: types.GetErrorLevel(loginErr), Message: errorMessage, Err: loginErr}
+		return nil, client.handleError(errorMessage, loginErr)
 	}
 
 	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
@@ -391,7 +371,7 @@ func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (stri
 
 	// Not supported with Let's Connect!
 	if client.isLetsConnect() {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+		return "", "", client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
 	client.FSM.GoTransition(STATE_LOADING_SERVER)
@@ -399,20 +379,14 @@ func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (stri
 	// Get the server if it exists
 	server, serverErr := client.Servers.GetInstituteAccess(url)
 	if serverErr != nil {
-		client.Logger.Error(
-			fmt.Sprintf(
-				"Failed getting an institute access server configuration with error: %s",
-				types.GetErrorTraceback(serverErr),
-			),
-		)
 		client.goBackInternal()
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+		return "", "", client.handleError(errorMessage, serverErr)
 	}
 
 	// Set the server as the current
 	currentErr := client.Servers.SetInstituteAccess(server)
 	if currentErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
+		return "", "", client.handleError(errorMessage, currentErr)
 	}
 
 	// The server has now been chosen
@@ -420,14 +394,8 @@ func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (stri
 
 	config, configType, configErr := client.getConfig(server, preferTCP)
 	if configErr != nil {
-		client.Logger.Inherit(configErr,
-			fmt.Sprintf(
-				"Failed getting an institute access server configuration with error: %s",
-				types.GetErrorTraceback(configErr),
-			),
-		)
 		client.goBackInternal()
-		return "", "", &types.WrappedErrorMessage{Level: types.GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
+		return "", "", client.handleError(errorMessage, configErr)
 	}
 	return config, configType, nil
 }
@@ -446,7 +414,7 @@ func (client *Client) GetConfigSecureInternet(
 
 	// Not supported with Let's Connect!
 	if client.isLetsConnect() {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: LetsConnectNotSupportedError{}}
+		return "", "", client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
 	client.FSM.GoTransition(STATE_LOADING_SERVER)
@@ -454,35 +422,22 @@ func (client *Client) GetConfigSecureInternet(
 	// Get the server if it exists
 	server, serverErr := client.Servers.GetSecureInternetHomeServer()
 	if serverErr != nil {
-		client.Logger.Error(
-			fmt.Sprintf(
-				"Failed getting a custom server configuration with error: %s",
-				types.GetErrorTraceback(serverErr),
-			),
-		)
 		client.goBackInternal()
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+		return "", "", client.handleError(errorMessage, serverErr)
 	}
 
 	// Set the server as the current
 	currentErr := client.Servers.SetSecureInternet(server)
 	if currentErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
+		return "", "", client.handleError(errorMessage, currentErr)
 	}
 
 	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
 	config, configType, configErr := client.getConfig(server, preferTCP)
 	if configErr != nil {
-		client.Logger.Inherit(
-			configErr,
-			fmt.Sprintf(
-				"Failed getting a secure internet configuration with error: %s",
-				types.GetErrorTraceback(configErr),
-			),
-		)
 		client.goBackInternal()
-		return "", "", &types.WrappedErrorMessage{Level: types.GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
+		return "", "", client.handleError(errorMessage, configErr)
 	}
 	return config, configType, nil
 }
@@ -495,7 +450,7 @@ func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string,
 
 	url, urlErr := util.EnsureValidURL(url)
 	if urlErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
+		return "", "", client.handleError(errorMessage, urlErr)
 	}
 
 	client.FSM.GoTransition(STATE_LOADING_SERVER)
@@ -503,35 +458,22 @@ func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string,
 	// Get the server if it exists
 	server, serverErr := client.Servers.GetCustomServer(url)
 	if serverErr != nil {
-		client.Logger.Error(
-			fmt.Sprintf(
-				"Failed getting a custom server configuration with error: %s",
-				types.GetErrorTraceback(serverErr),
-			),
-		)
 		client.goBackInternal()
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+		return "", "", client.handleError(errorMessage, serverErr)
 	}
 
 	// Set the server as the current
 	currentErr := client.Servers.SetCustomServer(server)
 	if currentErr != nil {
-		return "", "", &types.WrappedErrorMessage{Message: errorMessage, Err: currentErr}
+		return "", "", client.handleError(errorMessage, currentErr)
 	}
 
 	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
 
 	config, configType, configErr := client.getConfig(server, preferTCP)
 	if configErr != nil {
-		client.Logger.Inherit(
-			configErr,
-			fmt.Sprintf(
-				"Failed getting a custom server with error: %s",
-				types.GetErrorTraceback(configErr),
-			),
-		)
 		client.goBackInternal()
-		return "", "", &types.WrappedErrorMessage{Level: types.GetErrorLevel(configErr), Message: errorMessage, Err: configErr}
+		return "", "", client.handleError(errorMessage, configErr)
 	}
 	return config, configType, nil
 }
@@ -546,10 +488,10 @@ func (client *Client) askSecureLocation() error {
 	// The state has changed, meaning setting the secure location was not successful
 	if client.FSM.Current != STATE_ASK_LOCATION {
 		// TODO: maybe a custom type for this errors.new?
-		return &types.WrappedErrorMessage{
-			Message: "failed setting secure location",
-			Err:     errors.New("failed loading secure location"),
-		}
+		return types.NewWrappedError(
+			"failed setting secure location",
+			errors.New("failed loading secure location"),
+		)
 	}
 	return nil
 }
@@ -561,25 +503,18 @@ func (client *Client) ChangeSecureLocation() error {
 	errorMessage := "failed to change location from the main screen"
 
 	if !client.InFSMState(STATE_NO_SERVER) {
-		client.Logger.Error("Failed changing secure internet location, not in the right state")
-		return &types.WrappedErrorMessage{
-			Message: errorMessage,
-			Err: FSMWrongStateError{
+		return client.handleError(
+			errorMessage,
+			FSMWrongStateError{
 				Got:  client.FSM.Current,
 				Want: STATE_NO_SERVER,
 			}.CustomError(),
-		}
+		)
 	}
 
 	askLocationErr := client.askSecureLocation()
 	if askLocationErr != nil {
-		client.Logger.Error(
-			fmt.Sprintf(
-				"Failed changing secure internet location, err: %s",
-				types.GetErrorTraceback(askLocationErr),
-			),
-		)
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: askLocationErr}
+		return client.handleError(errorMessage, askLocationErr)
 	}
 
 	// Go back to the main screen
@@ -596,25 +531,13 @@ func (client *Client) RenewSession() error {
 
 	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 	if currentServerErr != nil {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed getting current server to renew, error: %s",
-				types.GetErrorTraceback(currentServerErr),
-			),
-		)
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: currentServerErr}
+		return client.handleError(errorMessage, currentServerErr)
 	}
 
 	server.MarkTokensForRenew(currentServer)
 	loginErr := client.ensureLogin(currentServer)
 	if loginErr != nil {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed logging in server for renew, error: %s",
-				types.GetErrorTraceback(loginErr),
-			),
-		)
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: loginErr}
+		return client.handleError(errorMessage, loginErr)
 	}
 
 	return nil
@@ -658,14 +581,14 @@ func (client *Client) ensureLogin(chosenServer server.Server) error {
 
 		if urlErr != nil {
 			client.goBackInternal()
-			return &types.WrappedErrorMessage{Message: errorMessage, Err: urlErr}
+			return types.NewWrappedError(errorMessage, urlErr)
 		}
 
 		exchangeErr := server.OAuthExchange(chosenServer)
 
 		if exchangeErr != nil {
 			client.goBackInternal()
-			return &types.WrappedErrorMessage{Message: errorMessage, Err: exchangeErr}
+			return types.NewWrappedError(errorMessage, exchangeErr)
 		}
 	}
 	// OAuth was valid, ensure we are in the authorized state
@@ -679,23 +602,14 @@ func (client *Client) SetProfileID(profileID string) error {
 	errorMessage := "failed to set the profile ID for the current server"
 	server, serverErr := client.Servers.GetCurrentServer()
 	if serverErr != nil {
-		client.Logger.Warning(
-			fmt.Sprintf(
-				"Failed setting a profile ID because no server configured, Err: %s",
-				types.GetErrorTraceback(serverErr),
-			),
-		)
 		client.goBackInternal()
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: serverErr}
+		return client.handleError(errorMessage, serverErr)
 	}
 
 	base, baseErr := server.GetBase()
 	if baseErr != nil {
-		client.Logger.Error(
-			fmt.Sprintf("Failed setting a profile ID, Err: %s", types.GetErrorTraceback(serverErr)),
-		)
 		client.goBackInternal()
-		return &types.WrappedErrorMessage{Message: errorMessage, Err: baseErr}
+		return client.handleError(errorMessage, baseErr)
 	}
 	base.Profiles.Current = profileID
 	return nil
