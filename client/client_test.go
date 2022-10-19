@@ -45,14 +45,14 @@ func loginOAuthSelenium(t *testing.T, url string, state *Client) {
 	// We could use the go selenium library
 	// But it does not support the latest selenium v4 just yet
 	var errBuffer strings.Builder
-	err := runCommand(t, &errBuffer, "python3", "selenium_eduvpn.py", url)
+	err := runCommand(t, &errBuffer, "python3", "../selenium_eduvpn.py", url)
 	if err != nil {
-		t.Fatalf(
+		_ = state.CancelOAuth()
+		panic(fmt.Sprintf(
 			"Login OAuth with selenium script failed with error %v and stderr %s",
 			err,
 			errBuffer.String(),
-		)
-		_ = state.CancelOAuth()
+		))
 	}
 }
 
@@ -67,7 +67,7 @@ func stateCallback(
 		url, ok := data.(string)
 
 		if !ok {
-			t.Fatalf("data  is not a string for OAuth URL")
+			t.Fatalf("data is not a string for OAuth URL")
 		}
 		loginOAuthSelenium(t, url, state)
 	}
