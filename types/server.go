@@ -13,7 +13,6 @@ type DiscoveryOrganizations struct {
 	Version   uint64                  `json:"v"`
 	List      []DiscoveryOrganization `json:"organization_list"`
 	Timestamp time.Time               `json:"go_timestamp"`
-	RawString string                  `json:"go_raw_string"`
 }
 
 type DiscoveryOrganization struct {
@@ -29,7 +28,6 @@ type DiscoveryServers struct {
 	Version   uint64            `json:"v"`
 	List      []DiscoveryServer `json:"server_list"`
 	Timestamp time.Time         `json:"go_timestamp"`
-	RawString string            `json:"go_raw_string"`
 }
 
 type DiscoMapOrString map[string]string

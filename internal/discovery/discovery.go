@@ -16,8 +16,8 @@ type Discovery struct {
 	Servers       types.DiscoveryServers
 }
 
-// Helper function that gets a disco json
-func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}) (string, error) {
+// Helper function that gets a disco json and fills the structure with it
+func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}) error {
 	errorMessage := fmt.Sprintf("failed getting file: %s from the Discovery server", jsonFile)
 	// Get json data
 	discoURL := "https://disco.eduvpn.org/v2/"
@@ -25,7 +25,7 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	_, fileBody, fileErr := http.HTTPGet(fileURL)
 
 	if fileErr != nil {
-		return "", &types.WrappedErrorMessage{Message: errorMessage, Err: fileErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: fileErr}
 	}
 
 	// Get signature
@@ -34,7 +34,7 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	_, sigBody, sigFileErr := http.HTTPGet(sigURL)
 
 	if sigFileErr != nil {
-		return "", &types.WrappedErrorMessage{Message: errorMessage, Err: sigFileErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: sigFileErr}
 	}
 
 	// Verify signature
@@ -49,17 +49,17 @@ func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}
 	)
 
 	if !verifySuccess || verifyErr != nil {
-		return "", &types.WrappedErrorMessage{Message: errorMessage, Err: verifyErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: verifyErr}
 	}
 
 	// Parse JSON to extract version and list
 	jsonErr := json.Unmarshal(fileBody, structure)
 
 	if jsonErr != nil {
-		return "", &types.WrappedErrorMessage{Message: errorMessage, Err: jsonErr}
+		return &types.WrappedErrorMessage{Message: errorMessage, Err: jsonErr}
 	}
 
-	return string(fileBody), nil
+	return nil
 }
 
 // FIXME: Implement based on
@@ -165,7 +165,7 @@ func (discovery *Discovery) GetOrganizationsList() (*types.DiscoveryOrganization
 		return &discovery.Organizations, nil
 	}
 	file := "organization_list.json"
-	body, bodyErr := getDiscoFile(file, discovery.Organizations.Version, &discovery.Organizations)
+	bodyErr := getDiscoFile(file, discovery.Organizations.Version, &discovery.Organizations)
 	if bodyErr != nil {
 		// Return previous with an error
 		return &discovery.Organizations, &types.WrappedErrorMessage{
@@ -173,7 +173,6 @@ func (discovery *Discovery) GetOrganizationsList() (*types.DiscoveryOrganization
 			Err:     bodyErr,
 		}
 	}
-	discovery.Organizations.RawString = body
 	discovery.Organizations.Timestamp = util.GetCurrentTime()
 	return &discovery.Organizations, nil
 }
@@ -184,7 +183,7 @@ func (discovery *Discovery) GetServersList() (*types.DiscoveryServers, error) {
 		return &discovery.Servers, nil
 	}
 	file := "server_list.json"
-	body, bodyErr := getDiscoFile(file, discovery.Servers.Version, &discovery.Servers)
+	bodyErr := getDiscoFile(file, discovery.Servers.Version, &discovery.Servers)
 	if bodyErr != nil {
 		// Return previous with an error
 		return &discovery.Servers, &types.WrappedErrorMessage{
@@ -193,7 +192,6 @@ func (discovery *Discovery) GetServersList() (*types.DiscoveryServers, error) {
 		}
 	}
 	// Update servers timestamp
-	discovery.Servers.RawString = body
 	discovery.Servers.Timestamp = util.GetCurrentTime()
 	return &discovery.Servers, nil
 }

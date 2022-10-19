@@ -127,7 +127,6 @@ func APIInfo(server Server) error {
 	previousProfile := base.Profiles.Current
 	base.Profiles = structure
 	base.Profiles.Current = previousProfile
-	base.ProfilesRaw = string(body)
 	return nil
 }
 

@@ -17,7 +17,6 @@ type ServerBase struct {
 	SupportContact []string          `json:"support_contact"`
 	Endpoints      ServerEndpoints   `json:"endpoints"`
 	Profiles       ServerProfileInfo `json:"profiles"`
-	ProfilesRaw    string            `json:"profiles_raw"`
 	StartTime      time.Time         `json:"start_time"`
 	EndTime        time.Time         `json:"expire_time"`
 	Type           string            `json:"server_type"`
