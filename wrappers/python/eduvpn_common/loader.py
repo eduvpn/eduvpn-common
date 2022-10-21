@@ -21,6 +21,8 @@ from eduvpn_common.types import (
 def load_lib() -> CDLL:
     """The function that loads the Go shared library
 
+    :meta private:
+
     :return: The Go shared library loaded with cdll.LoadLibrary from ctypes
     :rtype: CDLL
     """
@@ -61,6 +63,7 @@ def initialize_functions(lib: CDLL) -> None:
 
     :param lib: CDLL: The Go shared library
 
+    :meta private:
     """
     # Exposed functions
     # We have to use c_void_p instead of c_char_p to free it properly

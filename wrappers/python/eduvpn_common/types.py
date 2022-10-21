@@ -37,7 +37,10 @@ class cServerLocations(Structure):
 
 
 class cDiscoveryOrganization(Structure):
-    """The C type that represents a Discovery Organization as returned by the Go library"""
+    """The C type that represents a Discovery Organization as returned by the Go library
+
+    :meta private:
+    """
     _fields_ = [
         ("display_name", c_char_p),
         ("org_id", c_char_p),
