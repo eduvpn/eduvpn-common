@@ -21,7 +21,7 @@ def class_state_transition(state: int, state_type: StateType) -> Callable:
     :param state: int: The state of the transition
     :param state_type: StateType: The type of transition
 
-    :meta: private:
+    :meta private:
     """
     def wrapper(func):
         """
@@ -42,7 +42,7 @@ def convert_data(lib: CDLL, state: int, data: Any) -> None:
     :param state: int: The state to convert the data for
     :param data: Any: The data itself that has to be converted
 
-    :meta: private:
+    :meta private:
     """
     if not data:
         return None
@@ -75,7 +75,7 @@ class EventHandler(object):
         :param cls: Any: The class to change the callbacks for
         :param add: bool:  (Default value = True): Whether or not to add or remove the event. If true the event gets added
 
-        :meta: private:
+        :meta private:
         """
         # Loop over method names
         for method_name in dir(cls):
@@ -103,7 +103,7 @@ class EventHandler(object):
         :param state_type: StateType: The state type to remove the event for
         :param func: Callable: The function that needs to be removed from the event
 
-        :meta: private:
+        :meta private:
         """
         for key, values in self.handlers.copy().items():
             if key == (state, state_type):
@@ -120,7 +120,7 @@ class EventHandler(object):
         :param state_type: StateType: The state type to add the event for
         :param func: Callable: The function that needs to be added to the event
 
-        :meta: private:
+        :meta private:
         """
         if (state, state_type) not in self.handlers:
             self.handlers[(state, state_type)] = []
@@ -132,7 +132,7 @@ class EventHandler(object):
         :param state: int: The state of the event
         :param state_type: StateType: The state type of the event
 
-        :meta: private:
+        :meta private:
         """
         def wrapped_f(func):
             """
@@ -155,7 +155,7 @@ class EventHandler(object):
         :param state_type: StateType: The state type of the event
         :param data: str: The data that gets passed to the function callback when the event is ran
 
-        :meta: private:
+        :meta private:
         """
         if (state, state_type) not in self.handlers:
             return

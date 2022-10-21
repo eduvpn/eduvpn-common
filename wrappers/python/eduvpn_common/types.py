@@ -19,7 +19,7 @@ from eduvpn_common.error import ErrorLevel, WrappedError
 class cError(Structure):
     """The C type that represents the Error as returned by the Go library
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [
         ("level", c_int),
@@ -31,7 +31,7 @@ class cError(Structure):
 class cServerLocations(Structure):
     """The C type that represents the Server Locations as returned by the Go library
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [("locations", POINTER(c_char_p)), ("total_locations", c_size_t)]
 
@@ -49,7 +49,7 @@ class cDiscoveryOrganization(Structure):
 class cDiscoveryOrganizations(Structure):
     """The C type that represents Discovery Organizations as returned by the Go library
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [
         ("version", c_ulonglong),
@@ -61,7 +61,7 @@ class cDiscoveryOrganizations(Structure):
 class cDiscoveryServer(Structure):
     """The C type that represents a Discovery Server as returned by the Go library
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [
         ("authentication_url_template", c_char_p),
@@ -80,7 +80,7 @@ class cDiscoveryServer(Structure):
 class cDiscoveryServers(Structure):
     """The C type that represents Discovery Servers as returned by the Go library
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [
         ("version", c_ulonglong),
@@ -92,7 +92,7 @@ class cDiscoveryServers(Structure):
 class cServerProfile(Structure):
     """The C type that represents a Server Profile as returned by the Go library
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [
         ("identifier", c_char_p),
@@ -104,7 +104,7 @@ class cServerProfile(Structure):
 class cServerProfiles(Structure):
     """The C type that represents Server Profiles as returned by the Go library
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [
         ("current", c_int),
@@ -116,7 +116,7 @@ class cServerProfiles(Structure):
 class cServer(Structure):
     """The C type that represents a Server as returned by the Go library
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [
         ("identifier", c_char_p),
@@ -133,7 +133,7 @@ class cServer(Structure):
 class cServers(Structure):
     """The C type that represents Servers as returned by the Go library
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [
         ("custom_servers", POINTER(POINTER(cServer))),
@@ -147,7 +147,7 @@ class cServers(Structure):
 class DataError(Structure):
     """The C type that represents a tuple of data and error as returned by the Go library
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [("data", c_void_p), ("error", c_void_p)]
 
@@ -155,7 +155,7 @@ class DataError(Structure):
 class ConfigError(Structure):
     """The C type that represents the data that gets by the Go library returned when a config is obtained
 
-    :meta: private:
+    :meta private:
     """
     _fields_ = [("config", c_void_p), ("config_type", c_void_p), ("error", c_void_p)]
 
@@ -170,7 +170,7 @@ def encode_args(args: List[Any], types: List[Any]) -> Iterator[Any]:
     :param args: List[Any]: The list of arguments
     :param types: List[Any]: The list of the types of the arguments
 
-    :meta: private:
+    :meta private:
 
     :return: The arg generator
     :rtype: Iterator[Any]
@@ -187,7 +187,7 @@ def decode_res(res: Any) -> Any:
 
     :param res: Any: The result
 
-    :meta: private:
+    :meta private:
 
     :return: The argument decoded
     :rtype: Any
@@ -208,7 +208,7 @@ def get_ptr_string(lib: CDLL, ptr: c_void_p) -> str:
     :param lib: CDLL: The Go shared library
     :param ptr: c_void_p: The pointer to the C string
 
-    :meta: private:
+    :meta private:
 
     :return: The string converted to Python
     :rtype: str
@@ -229,7 +229,7 @@ def get_ptr_list_strings(lib: CDLL, strings: pointer, total_strings: int) -> Lis
     :param strings: pointer: The C pointer to the strings list
     :param total_strings: int: The total strings in the list
 
-    :meta: private:
+    :meta private:
 
     :return: The list of strings converted to Python
     :rtype: List[str]
@@ -248,7 +248,7 @@ def get_error(lib: CDLL, ptr: c_void_p) -> Optional[WrappedError]:
     :param lib: CDLL: The Go shared library
     :param ptr: c_void_p: The pointer to the C error struct
 
-    :meta: private:
+    :meta private:
 
     :return: The error if there is one
     :rtype: Optional[WrappedError]
@@ -271,7 +271,7 @@ def get_config_error(
     :param lib: CDLL: The Go shared library
     :param config_error: ConfigError: The config error structure
 
-    :meta: private:
+    :meta private:
 
     :return: The configuration, configuration type ('openvpn'/'wireguard') and an optional error
     :rtype: Tuple[str, str, Optional[WrappedError]]
@@ -291,7 +291,7 @@ def get_data_error(
     :param data_error: DataError: The data error C structure
     :param data_conv: Callable:  (Default value = get_ptr_string): The function that converts the data part
 
-    :meta: private:
+    :meta private:
 
     :return: The data and optional error
     :rtype: Tuple[Any, Optional[WrappedError]]
@@ -307,7 +307,7 @@ def get_bool(lib: CDLL, boolInt: c_int) -> bool:
     :param lib: CDLL: The Go shared library
     :param boolInt: c_int: The C integer that needs to be converted to the Python bool
 
-    :meta: private:
+    :meta private:
 
     :return: The boolean converted to Python
     :rtype: bool

@@ -160,7 +160,7 @@ def get_profiles(ptr) -> Optional[Profiles]:
 
     :param ptr: The pointer to the Profiles as returned by the Go library
 
-    :meta: private:
+    :meta private:
 
     :return: Profiles if there are any
     :rtype: Optional[Profiles]
@@ -192,7 +192,7 @@ def get_server(ptr, _type: Optional[str] = None) -> Optional[Server]:
     :param ptr: The pointer as returned by the Go library
     :param _type:  (Default value = None): The optional parameter that represents whether or not the type is enforced to the input. If None it is automatically determined
 
-    :meta: private:
+    :meta private:
 
     :return: Server if there is any
     :rtype: Optional[Server]
@@ -240,7 +240,7 @@ def get_transition_server(lib: CDLL, ptr: c_void_p) -> Optional[Server]:
     :param lib: CDLL: The Go shared library
     :param ptr: c_void_p: The Go's returned C pointer that represents the Server
 
-    :meta: private:
+    :meta private:
 
     :return: The server if there is any
     :rtype: Optional[Server]
@@ -256,7 +256,7 @@ def get_transition_profiles(lib: CDLL, ptr: c_void_p) -> Optional[Profiles]:
     :param lib: CDLL: The Go shared library
     :param ptr: c_void_p: The Go's returned C pointer that represents the profiles
 
-    :meta: private:
+    :meta private:
 
     :return: The profiles if there is any
     :rtype: Optional[Profiles]
@@ -272,7 +272,7 @@ def get_servers(lib: CDLL, ptr: c_void_p) -> Optional[List[Server]]:
     :param lib: CDLL: The Go shared library
     :param ptr: c_void_p: The C pointer to the servers structure
 
-    :meta: private:
+    :meta private:
 
     :return: The list of Servers if there is any
     :rtype: Optional[List[Server]]
@@ -309,7 +309,7 @@ def get_locations(lib: CDLL, ptr: c_void_p) -> Optional[List[str]]:
     :param lib: CDLL: The Go shared library
     :param ptr: c_void_p: The C pointer to the locations structure
 
-    :meta: private:
+    :meta private:
 
     :return: The list of servers if there are any
     :rtype: Optional[List[str]]

@@ -226,7 +226,7 @@ class EduVPN(object):
         :param func: Any: The Go function to call
         :param prefer_tcp: bool:  (Default value = False): Whether or not to prefer TCP
 
-        :meta: private:
+        :meta private:
 
         :raises WrappedError: An error by the Go library
 
@@ -487,7 +487,7 @@ def state_callback(name: bytes, old_state: int, new_state: int, data: Any) -> No
     :param new_state: int: The new state
     :param data: Any: The data that still needs to be converted
 
-    :meta: private:
+    :meta private:
     """
     name_decoded = name.decode()
     if name_decoded not in eduvpn_objects:
@@ -500,7 +500,7 @@ def add_as_global_object(eduvpn: EduVPN) -> bool:
 
     :param eduvpn: EduVPN: The class to add
 
-    :meta: private:
+    :meta private:
 
     :return: Whether or not the object was added
     :rtype: bool
@@ -517,7 +517,7 @@ def remove_as_global_object(eduvpn: EduVPN) -> None:
 
     :param eduvpn: EduVPN: The class to remove
 
-    :meta: private:
+    :meta private:
     """
     global eduvpn_objects
     eduvpn_objects.pop(eduvpn.name, None)

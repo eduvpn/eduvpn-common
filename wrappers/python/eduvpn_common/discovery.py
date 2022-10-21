@@ -93,7 +93,7 @@ def get_disco_organization(ptr) -> Optional[DiscoOrganization]:
 
     :param ptr: The pointer returned by the go library that contains a discovery organization
 
-    :meta: private:
+    :meta private:
 
     :return: The Discovery Organization if there is one
     :rtype: Optional[DiscoOrganization]
@@ -115,7 +115,7 @@ def get_disco_server(lib: CDLL, ptr) -> Optional[DiscoServer]:
     :param lib: CDLL: The Go shared library
     :param ptr: The pointer to a discovery server returned by the Go library
 
-    :meta: private:
+    :meta private:
 
     :return: The Discovery Server if there is one
     :rtype: Optional[DiscoServer]
@@ -156,7 +156,7 @@ def get_disco_servers(lib: CDLL, ptr: c_void_p) -> Optional[DiscoServers]:
     :param lib: CDLL: The Go shared library
     :param ptr: c_void_p: The pointer returned by the Go library for the discovery servers
 
-    :meta: private:
+    :meta private:
 
     :return: The Discovery Servers if there are any
     :rtype: Optional[DiscoServers]
@@ -184,7 +184,7 @@ def get_disco_organizations(lib: CDLL, ptr: c_void_p) -> Optional[DiscoOrganizat
     :param lib: CDLL: The Go shared library
     :param ptr: c_void_p: The pointer returned by the Go library for the discovery organizations
 
-    :meta: private:
+    :meta private:
 
     :return: The Discovery Organizations if there are any
     :rtype: Optional[DiscoOrganizations]
