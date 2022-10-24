@@ -95,7 +95,7 @@ func (client *Client) Register(
 		logLevel = log.LOG_INFO
 	}
 
-	loggerErr := client.Logger.Init(logLevel, name, directory)
+	loggerErr := client.Logger.Init(logLevel, directory)
 	if loggerErr != nil {
 		return client.handleError(errorMessage, loggerErr)
 	}

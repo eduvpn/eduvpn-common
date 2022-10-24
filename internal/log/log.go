@@ -48,7 +48,7 @@ func (e LogLevel) String() string {
 	}
 }
 
-func (logger *FileLogger) Init(level LogLevel, name string, directory string) error {
+func (logger *FileLogger) Init(level LogLevel, directory string) error {
 	errorMessage := "failed creating log"
 
 	configDirErr := util.EnsureDirectory(directory)
@@ -56,7 +56,7 @@ func (logger *FileLogger) Init(level LogLevel, name string, directory string) er
 		return types.NewWrappedError(errorMessage, configDirErr)
 	}
 	logFile, logOpenErr := os.OpenFile(
-		logger.getFilename(directory, name),
+		logger.getFilename(directory),
 		os.O_RDWR|os.O_CREATE|os.O_APPEND,
 		0o666,
 	)
@@ -106,8 +106,8 @@ func (logger *FileLogger) Close() {
 	logger.File.Close()
 }
 
-func (logger *FileLogger) getFilename(directory string, name string) string {
-	pathString := path.Join(directory, name)
+func (logger *FileLogger) getFilename(directory string) string {
+	pathString := path.Join(directory, "go")
 	return fmt.Sprintf("%s.log", pathString)
 }
 
