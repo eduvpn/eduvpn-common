@@ -122,7 +122,7 @@ func printConfig(url string, serverType ServerTypes) {
 	state := &client.Client{}
 
 	registerErr := state.Register(
-		"org.client.app.linux",
+		"org.eduvpn.app.linux",
 		"configs",
 		"en",
 		func(old client.FSMStateID, new client.FSMStateID, data interface{}) {
