@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -62,7 +63,8 @@ func (logger *FileLogger) Init(level LogLevel, name string, directory string) er
 	if logOpenErr != nil {
 		return types.NewWrappedError(errorMessage, logOpenErr)
 	}
-	log.SetOutput(logFile)
+	multi := io.MultiWriter(os.Stdout, logFile)
+	log.SetOutput(multi)
 	logger.File = logFile
 	logger.Level = level
 	return nil
@@ -111,11 +113,8 @@ func (logger *FileLogger) getFilename(directory string, name string) string {
 
 func (logger *FileLogger) log(level LogLevel, str string) {
 	if level >= logger.Level && logger.Level != LOG_NOTSET {
-		msg := fmt.Sprintf("[%s]: %s", level.String(), str)
+		msg := fmt.Sprintf("- Go - %s - %s", level.String(), str)
 		// To log file
 		log.Println(msg)
-
-		// To output
-		fmt.Println(msg)
 	}
 }
