@@ -57,6 +57,9 @@ type Client struct {
 	// The config
 	Config config.Config `json:"-"`
 
+	// Whether or not this client supports WireGuard
+	SupportsWireguard bool `json:"-"`
+
 	// Whether to enable debugging
 	Debug bool `json:"-"`
 }
@@ -99,6 +102,11 @@ func (client *Client) Register(
 
 	// Initialize the FSM
 	client.FSM = newFSM(stateCallback, directory, debug)
+
+	// By default we support wireguard
+	client.SupportsWireguard = true
+
+	// Debug only if given
 	client.Debug = debug
 
 	// Initialize the Config
@@ -148,11 +156,11 @@ func (client *Client) Deregister() {
 
 // askProfile asks the user for a profile by moving the FSM to the ASK_PROFILE state.
 func (client *Client) askProfile(chosenServer server.Server) error {
-	base, baseErr := chosenServer.GetBase()
-	if baseErr != nil {
-		return types.NewWrappedError("failed asking for profiles", baseErr)
+	profiles, profilesErr := server.GetValidProfiles(chosenServer, client.SupportsWireguard)
+	if profilesErr != nil {
+		return types.NewWrappedError("failed asking for profiles", profilesErr)
 	}
-	client.FSM.GoTransitionWithData(STATE_ASK_PROFILE, &base.Profiles, false)
+	client.FSM.GoTransitionWithData(STATE_ASK_PROFILE, profiles, false)
 	return nil
 }
 
@@ -209,3 +217,4 @@ type LetsConnectNotSupportedError struct{}
 func (e LetsConnectNotSupportedError) Error() string {
 	return "Any operation that involves discovery is not allowed with the Let's Connect! client"
 }
+

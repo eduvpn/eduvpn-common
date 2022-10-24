@@ -407,6 +407,17 @@ func InFSMState(name *C.char, checkState C.int) C.int {
 	return C.int(0)
 }
 
+//export SetSupportWireguard
+func SetSupportWireguard(name *C.char, support C.int) *C.error {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return getError(stateErr)
+	}
+	state.SupportsWireguard = support == 1
+	return nil
+}
+
 //export FreeString
 func FreeString(addr *C.char) {
 	C.free(unsafe.Pointer(addr))

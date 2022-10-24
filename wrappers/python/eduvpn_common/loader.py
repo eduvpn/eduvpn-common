@@ -152,4 +152,8 @@ def initialize_functions(lib: CDLL) -> None:
         c_char_p,
         c_char_p,
     ], c_void_p
+    lib.SetSupportWireguard.argtypes, lib.SetSupportWireguard.restype = [
+        c_char_p,
+        c_int,
+    ], c_void_p
     lib.ShouldRenewButton.argtypes, lib.ShouldRenewButton.restype = [], int

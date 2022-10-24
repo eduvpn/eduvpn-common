@@ -440,6 +440,18 @@ class EduVPN(object):
         if renew_err:
             raise renew_err
 
+    def set_support_wireguard(self, support: bool) -> None:
+        """Indicates whether or not the OS supports WireGuard connections.
+
+        :param support: bool: whether or not wireguard is supported
+
+        :raises WrappedError: An error by the Go library
+        """
+        support_err = self.go_function(self.lib.SetSupportWireguard, support)
+
+        if support_err:
+            raise support_err
+
     def should_renew_button(self) -> bool:
         """Whether or not the UI should show the renew button
 

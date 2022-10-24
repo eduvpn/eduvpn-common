@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -56,11 +57,13 @@ type ServerProfile struct {
 	DefaultGateway bool     `json:"default_gateway"`
 }
 
+type ServerProfileListInfo struct {
+	ProfileList []ServerProfile `json:"profile_list"`
+}
+
 type ServerProfileInfo struct {
 	Current string `json:"current_profile"`
-	Info    struct {
-		ProfileList []ServerProfile `json:"profile_list"`
-	} `json:"info"`
+	Info    ServerProfileListInfo `json:"info"`
 }
 
 func (info ServerProfileInfo) GetCurrentProfileIndex() int {
@@ -325,6 +328,33 @@ func getCurrentProfile(server Server) (*ServerProfile, error) {
 	)
 }
 
+func (base *ServerBase) GetValidProfiles(clientSupportsWireguard bool) ServerProfileInfo {
+	var validProfiles []ServerProfile
+	for _, profile := range base.Profiles.Info.ProfileList {
+		// Not a valid profile because it does not support openvpn
+		// Also the client does not support wireguard
+		if !profile.supportsOpenVPN() && !clientSupportsWireguard {
+			continue
+		}
+		validProfiles = append(validProfiles, profile)
+	}
+	return ServerProfileInfo{Current: base.Profiles.Current, Info: ServerProfileListInfo{ProfileList: validProfiles}}
+}
+
+func GetValidProfiles(server Server, clientSupportsWireguard bool) (*ServerProfileInfo, error) {
+	errorMessage := "failed to get valid profiles"
+	// No error wrapping here otherwise we wrap it too much
+	base, baseErr := server.GetBase()
+	if baseErr != nil {
+		return nil, types.NewWrappedError(errorMessage, baseErr)
+	}
+	profiles := base.GetValidProfiles(clientSupportsWireguard)
+	if len(profiles.Info.ProfileList) == 0 {
+		return nil, types.NewWrappedError(errorMessage, errors.New("no profiles found with supported protocols"))
+	}
+	return &profiles, nil
+}
+
 func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (string, string, error) {
 	errorMessage := "failed getting server WireGuard configuration"
 	base, baseErr := server.GetBase()
@@ -389,7 +419,7 @@ func openVPNGetConfig(server Server, preferTCP bool) (string, string, error) {
 	return configOpenVPN, "openvpn", nil
 }
 
-func HasValidProfile(server Server) (bool, error) {
+func HasValidProfile(server Server, clientSupportsWireguard bool) (bool, error) {
 	errorMessage := "failed has valid profile check"
 
 	// Get new profiles using the info call
@@ -418,13 +448,22 @@ func HasValidProfile(server Server) (bool, error) {
 		if base.Profiles.Current == "" {
 			base.Profiles.Current = base.Profiles.Info.ProfileList[0].ID
 		}
+		profile, profileErr := getCurrentProfile(server)
+		// shouldn't happen
+		if profileErr != nil {
+			return false, types.NewWrappedError(errorMessage, profileErr)
+		}
+		// Profile does not support OpenVPN but the client also doesn't support WireGuard
+		if !profile.supportsOpenVPN() && !clientSupportsWireguard {
+			return false, nil
+		}
 		return true, nil
 	}
 
 	return false, nil
 }
 
-func GetConfig(server Server, preferTCP bool) (string, string, error) {
+func GetConfig(server Server, clientSupportsWireguard bool, preferTCP bool) (string, string, error) {
 	errorMessage := "failed getting an OpenVPN/WireGuard configuration"
 
 	profile, profileErr := getCurrentProfile(server)
@@ -433,18 +472,23 @@ func GetConfig(server Server, preferTCP bool) (string, string, error) {
 	}
 
 	supportsOpenVPN := profile.supportsOpenVPN()
-	supportsWireguard := profile.supportsWireguard()
+	supportsWireguard := profile.supportsWireguard() && clientSupportsWireguard
 
 	var config string
 	var configType string
 	var configErr error
 
+	// The config supports wireguard, do a specialized request with a public key
 	if supportsWireguard {
 		// A wireguard connect call needs to generate a wireguard key and add it to the config
 		// Also the server could send back an OpenVPN config if it supports OpenVPN
 		config, configType, configErr = wireguardGetConfig(server, preferTCP, supportsOpenVPN)
-	} else {
+	//  The config only supports OpenVPN
+	} else if supportsOpenVPN {
 		config, configType, configErr = openVPNGetConfig(server, preferTCP)
+	// The config supports no available protocol because the profile only supports WireGuard but the client doesn't
+	} else {
+		return "", "", types.NewWrappedError(errorMessage, errors.New("No supported protocol found"))
 	}
 
 	if configErr != nil {

@@ -181,7 +181,8 @@ func getCPtrServer(state *client.Client, base *client.ServerBase) *C.server {
 	server.total_support_contact, server.support_contact = getCPtrListStrings(
 		base.SupportContact,
 	)
-	server.profiles = getCPtrProfiles(&base.Profiles)
+	profiles := base.GetValidProfiles(state.SupportsWireguard)
+	server.profiles = getCPtrProfiles(&profiles)
 	// No endtime is given if we get servers when it has been partially initialised
 	if base.EndTime.IsZero() {
 		server.expire_time = C.ulonglong(0)

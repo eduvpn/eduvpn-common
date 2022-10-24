@@ -22,7 +22,7 @@ func (client *Client) getConfigAuth(
 	}
 	client.FSM.GoTransition(STATE_REQUEST_CONFIG)
 
-	validProfile, profileErr := server.HasValidProfile(chosenServer)
+	validProfile, profileErr := server.HasValidProfile(chosenServer, client.SupportsWireguard)
 	if profileErr != nil {
 		return "", "", profileErr
 	}
@@ -36,7 +36,7 @@ func (client *Client) getConfigAuth(
 	}
 
 	// We return the error otherwise we wrap it too much
-	return server.GetConfig(chosenServer, preferTCP)
+	return server.GetConfig(chosenServer, client.SupportsWireguard, preferTCP)
 }
 
 // retryConfigAuth retries the getConfigAuth function if the tokens are invalid.
