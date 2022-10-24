@@ -22,5 +22,4 @@
   - [Go](./api/go/README.md)
 	- [Example](./api/go/example.md)
   - [Python](./api/python/README.md)
-	- [Functions](./api/python/functions.md)
 	- [Example](./api/python/example.md)
