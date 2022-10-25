@@ -114,7 +114,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifySigTimeEarlierError,
+			&verifyInvalidTrustedCommentError,
 			"TC no file",
 			"server_list.json.tc_nofile.minisig",
 			"server_list.json",
@@ -123,7 +123,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifySigTimeEarlierError,
+			&verifyInvalidTrustedCommentError,
 			"TC no time",
 			"server_list.json.tc_notime.minisig",
 			"server_list.json",
@@ -132,7 +132,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifySigTimeEarlierError,
+			&verifyInvalidTrustedCommentError,
 			"TC empty time",
 			"server_list.json.tc_emptytime.minisig",
 			"server_list.json",
@@ -141,7 +141,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyInvalidSignatureFormatError,
+			&verifyWrongSigFilenameError,
 			"TC empty file",
 			"server_list.json.tc_emptyfile.minisig",
 			"server_list.json",
@@ -343,7 +343,6 @@ func Test_verifyWithKeys(t *testing.T) {
 	forcePrehash := true
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			t.Parallel()
 			valid, err := verifyWithKeys(string(files[tt.signatureFile]), files[tt.jsonFile],
 				tt.expectedFileName, tt.minSignTime, tt.allowedPks, forcePrehash)
 			compareResults(t, valid, err, tt.expectedErr, func() string {
