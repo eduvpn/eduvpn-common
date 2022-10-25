@@ -119,7 +119,7 @@ func (client *Client) Register(
 	}
 
 	// Go to the No Server state with the saved servers after we're done
-	defer client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, true)
+	defer client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
 
 	// Let's Connect! doesn't care about discovery
 	if client.isLetsConnect() {
@@ -160,7 +160,7 @@ func (client *Client) askProfile(chosenServer server.Server) error {
 	if profilesErr != nil {
 		return types.NewWrappedError("failed asking for profiles", profilesErr)
 	}
-	client.FSM.GoTransitionWithData(STATE_ASK_PROFILE, profiles, false)
+	client.FSM.GoTransitionWithData(STATE_ASK_PROFILE, profiles)
 	return nil
 }
 

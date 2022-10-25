@@ -292,7 +292,7 @@ func (client *Client) SetConnected() error {
 		return client.handleError(errorMessage, currentServerErr)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_CONNECTED, currentServer, false)
+	client.FSM.GoTransitionWithData(STATE_CONNECTED, currentServer)
 	return nil
 }
 
@@ -321,7 +321,7 @@ func (client *Client) SetConnecting() error {
 		return client.handleError(errorMessage, currentServerErr)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_CONNECTING, currentServer, false)
+	client.FSM.GoTransitionWithData(STATE_CONNECTING, currentServer)
 	return nil
 }
 
@@ -350,7 +350,7 @@ func (client *Client) SetDisconnecting() error {
 		return client.handleError(errorMessage, currentServerErr)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_DISCONNECTING, currentServer, false)
+	client.FSM.GoTransitionWithData(STATE_DISCONNECTING, currentServer)
 	return nil
 }
 
@@ -385,7 +385,7 @@ func (client *Client) SetDisconnected(cleanup bool) error {
 		server.Disconnect(currentServer)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer, false)
+	client.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer)
 
 	return nil
 }
@@ -414,7 +414,7 @@ func (client *Client) GoBack() error {
 	}
 
 	// FIXME: Abitrary back transitions don't work because we need the approriate data
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
 	return nil
 }
 

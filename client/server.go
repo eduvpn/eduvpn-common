@@ -90,7 +90,7 @@ func (client *Client) getConfig(
 	}
 
 	// Signal the server display info
-	client.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer, false)
+	client.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer)
 
 	// Save the config
 	saveErr := client.Config.Save(&client)
@@ -142,7 +142,7 @@ func (client *Client) RemoveSecureInternet() error {
 	}
 	// No error because we can only have one secure internet server and if there are no secure internet servers, this is a NO-OP
 	client.Servers.RemoveSecureInternet()
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
@@ -168,7 +168,7 @@ func (client *Client) RemoveInstituteAccess(url string) error {
 	}
 	// No error because this is a NO-OP if the server doesn't exist
 	client.Servers.RemoveInstituteAccess(url)
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
@@ -194,7 +194,7 @@ func (client *Client) RemoveCustomServer(url string) error {
 	}
 	// No error because this is a NO-OP if the server doesn't exist
 	client.Servers.RemoveCustomServer(url)
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
@@ -253,7 +253,7 @@ func (client *Client) AddInstituteServer(url string) (server.Server, error) {
 		return nil, client.handleError(errorMessage, loginErr)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
 	return server, nil
 }
 
@@ -312,7 +312,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 		_ = client.RemoveSecureInternet()
 		return nil, client.handleError(errorMessage, loginErr)
 	}
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
 	return server, nil
 }
 
@@ -359,7 +359,7 @@ func (client *Client) AddCustomServer(url string) (server.Server, error) {
 		return nil, client.handleError(errorMessage, loginErr)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
 	return server, nil
 }
 
@@ -483,7 +483,7 @@ func (client *Client) askSecureLocation() error {
 	locations := client.Discovery.GetSecureLocationList()
 
 	// Ask for the location in the callback
-	client.FSM.GoTransitionWithData(STATE_ASK_LOCATION, locations, false)
+	client.FSM.GoTransitionWithData(STATE_ASK_LOCATION, locations)
 
 	// The state has changed, meaning setting the secure location was not successful
 	if client.FSM.Current != STATE_ASK_LOCATION {
@@ -518,7 +518,7 @@ func (client *Client) ChangeSecureLocation() error {
 	}
 
 	// Go back to the main screen
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers, false)
+	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
 
 	return nil
 }
@@ -577,7 +577,7 @@ func (client *Client) ensureLogin(chosenServer server.Server) error {
 	if server.NeedsRelogin(chosenServer) {
 		url, urlErr := server.GetOAuthURL(chosenServer, client.Name)
 
-		client.FSM.GoTransitionWithData(STATE_OAUTH_STARTED, url, true)
+		client.FSM.GoTransitionWithData(STATE_OAUTH_STARTED, url)
 
 		if urlErr != nil {
 			client.goBackInternal()

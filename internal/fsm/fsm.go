@@ -110,7 +110,7 @@ func (fsm *FSM) GoBack() {
 	fsm.GoTransition(fsm.States[fsm.Current].BackState)
 }
 
-func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data interface{}, background bool) bool {
+func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data interface{}) bool {
 	ok := fsm.HasTransition(newState)
 
 	if ok {
@@ -120,18 +120,14 @@ func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data interface{}, back
 			fsm.writeGraph()
 		}
 
-		if background {
-			go fsm.StateCallback(oldState, newState, data)
-		} else {
-			fsm.StateCallback(oldState, newState, data)
-		}
+		fsm.StateCallback(oldState, newState, data)
 	}
 
 	return ok
 }
 
 func (fsm *FSM) GoTransition(newState FSMStateID) bool {
-	return fsm.GoTransitionWithData(newState, "{}", false)
+	return fsm.GoTransitionWithData(newState, "{}")
 }
 
 func (fsm *FSM) generateMermaidGraph() string {
