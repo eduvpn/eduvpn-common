@@ -1,10 +1,8 @@
-from ctypes import CDLL, POINTER, c_void_p, cast, pointer
+from ctypes import CDLL, POINTER, c_void_p, cast
 from typing import List, Optional
 
 from eduvpn_common.types import (
-    cDiscoveryOrganization,
     cDiscoveryOrganizations,
-    cDiscoveryServer,
     cDiscoveryServers,
     get_ptr_list_strings,
 )

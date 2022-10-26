@@ -1,5 +1,4 @@
 import threading
-from ctypes import c_char_p, c_int, c_void_p
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 from eduvpn_common.discovery import DiscoOrganizations, DiscoServers, get_disco_organizations, get_disco_servers

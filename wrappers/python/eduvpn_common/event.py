@@ -1,4 +1,4 @@
-from ctypes import CDLL, c_void_p
+from ctypes import CDLL
 from typing import Any, Callable, Dict, List, Tuple
 
 from eduvpn_common.server import (

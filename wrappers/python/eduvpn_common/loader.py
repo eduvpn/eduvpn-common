@@ -8,13 +8,6 @@ from eduvpn_common.types import (
     ConfigError,
     DataError,
     VPNStateChange,
-    cDiscoveryServer,
-    cDiscoveryServers,
-    cError,
-    cServer,
-    cServerLocations,
-    cServerProfiles,
-    cServers,
 )
 
 
