@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 from eduvpn_common.discovery import DiscoOrganizations, DiscoServers, get_disco_organizations, get_disco_servers
 from eduvpn_common.event import EventHandler
 from eduvpn_common.loader import initialize_functions, load_lib
-from eduvpn_common.server import Profiles, Server, get_servers
+from eduvpn_common.server import Profiles, Server, get_transition_server, get_servers
 from eduvpn_common.state import State, StateType
 from eduvpn_common.types import VPNStateChange, decode_res, encode_args, get_data_error
 
@@ -469,6 +469,22 @@ class EduVPN(object):
         :rtype: bool
         """
         return self.go_function(self.lib.InFSMState, state_id)
+
+    def get_current_server(self) -> Optional[Server]:
+        """Get the current server
+
+        :return: The current servers if there is any
+        :rtype: Optional[List[Servers]]
+        """
+        server, server_err = self.go_function(
+            self.lib.GetCurrentServer,
+            decode_func=lambda lib, x: get_data_error(lib, x, get_transition_server),
+        )
+
+        if server_err:
+            raise server_err
+
+        return server
 
     def get_saved_servers(self) -> Optional[List[Server]]:
         """Get a list of saved servers

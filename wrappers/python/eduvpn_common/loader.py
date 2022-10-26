@@ -102,6 +102,7 @@ def initialize_functions(lib: CDLL) -> None:
         c_char_p
     ], DataError
     lib.GetDiscoServers.argtypes, lib.GetDiscoServers.restype = [c_char_p], DataError
+    lib.GetCurrentServer.argtypes, lib.GetCurrentServer.restype = [c_char_p], DataError
     lib.GetSavedServers.argtypes, lib.GetSavedServers.restype = [c_char_p], DataError
     lib.GoBack.argtypes, lib.GoBack.restype = [c_char_p], None
     lib.InFSMState.argtypes, lib.InFSMState.restype = [c_void_p, c_int], int

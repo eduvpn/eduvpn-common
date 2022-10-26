@@ -305,6 +305,28 @@ func GetSavedServers(name *C.char) (*C.servers, *C.error) {
 	return servers, nil
 }
 
+
+//export GetCurrentServer
+// This function takes the name as input which is the name of the client
+// It gets the state by name and then returns the current server as a c struct belonging to it
+func GetCurrentServer(name *C.char) (*C.server, *C.error) {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return nil, getError(stateErr)
+	}
+	server, serverErr := state.Servers.GetCurrentServer()
+	if serverErr != nil {
+		return nil, getError(serverErr)
+	}
+	base, baseErr := server.GetBase()
+	if baseErr != nil {
+		return nil, getError(baseErr)
+	}
+	cServer := getCPtrServer(state, base)
+	return cServer, nil
+}
+
 // This function takes the state as input which is the main state
 // It also takes the data as an interface and if it has the servers type gets the data as a c struct otherwise nil
 func getTransitionDataServers(state *client.Client, data interface{}) *C.servers {

@@ -245,9 +245,11 @@ def get_transition_server(lib: CDLL, ptr: c_void_p) -> Optional[Server]:
     :return: The server if there is any
     :rtype: Optional[Server]
     """
-    server = get_server(cast(ptr, POINTER(cServer)))
-    lib.FreeServer(ptr)
-    return server
+    if ptr:
+        server = get_server(cast(ptr, POINTER(cServer)))
+        lib.FreeServer(ptr)
+        return server
+    return None
 
 
 def get_transition_profiles(lib: CDLL, ptr: c_void_p) -> Optional[Profiles]:
@@ -261,9 +263,11 @@ def get_transition_profiles(lib: CDLL, ptr: c_void_p) -> Optional[Profiles]:
     :return: The profiles if there is any
     :rtype: Optional[Profiles]
     """
-    profiles = get_profiles(cast(ptr, POINTER(cServerProfiles)))
-    lib.FreeProfiles(ptr)
-    return profiles
+    if ptr:
+        profiles = get_profiles(cast(ptr, POINTER(cServerProfiles)))
+        lib.FreeProfiles(ptr)
+        return profiles
+    return None
 
 
 def get_servers(lib: CDLL, ptr: c_void_p) -> Optional[List[Server]]:
