@@ -31,7 +31,7 @@ class DiscoOrganizations:
     Additionally it has provided a version which indicates which exact 'version' was used from discovery
 
     :param: version: int: The version of the list as returned by Discovery
-    :param: organizations: List[DiscoOrganizations]: The actual list of discovery organizations
+    :param: organizations: List[DiscoOrganization]: The actual list of discovery organizations
     """
     def __init__(self, version: int, organizations: List[DiscoOrganization]):
         self.version = version
