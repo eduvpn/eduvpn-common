@@ -1,4 +1,4 @@
-FROM golang:1.18
+FROM golang:1.19
 
 # This docker image is for testing the go code with go test and the needed dependencies for selenium
 
