@@ -1,14 +1,12 @@
-FROM golang:1.19
+FROM debian:bullseye
 
 # This docker image is for testing the go code with go test and the needed dependencies for selenium
 
 WORKDIR /eduvpn
 
-# Selenium dependencies
-# Firefox
-RUN echo "deb http://deb.debian.org/debian/ unstable main contrib non-free" >> /etc/apt/sources.list.d/debian.list
+# Dependencies
 RUN apt-get update
-RUN apt-get -y install openjdk-11-jre xvfb python3-selenium firefox python3-pip
+RUN apt-get -y install openjdk-11-jre xvfb python3-selenium firefox-esr python3-pip golang wget
 
 # Install geckodriver and add to path
 WORKDIR /eduvpn/vendor
@@ -29,8 +27,8 @@ WORKDIR /home/test
 # Copy sources with correct permissions
 COPY --chown=test:test . ./
 
-# Download and verify go dependencies
-RUN go mod download && go mod verify
+# Vendor go dependencies
+RUN go mod vendor
 
 # Clean because there might be previous builds copied over
 RUN make clean
