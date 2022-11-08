@@ -534,6 +534,11 @@ func (client *Client) RenewSession() error {
 		return client.handleError(errorMessage, currentServerErr)
 	}
 
+	// The server has not been chosen yet, this means that we want to manually renew
+	if client.FSM.InState(STATE_NO_SERVER) {
+	    client.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	}
+
 	server.MarkTokensForRenew(currentServer)
 	loginErr := client.ensureLogin(currentServer)
 	if loginErr != nil {
