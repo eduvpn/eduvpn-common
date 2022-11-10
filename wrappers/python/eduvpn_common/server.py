@@ -46,7 +46,7 @@ class Profiles:
 class Server:
     """The class that represents a server. Use this for a custom server
 
-    :param: url: str: The base URL of the server
+    :param: url: str: The base URL of the server. In case of secure internet (supertype) this is the organisation ID URL
     :param: display_name: str: The display name of the server
     :param: profiles: Optional[Profiles]: The profiles if there are any already obtained, defaults to None
     :param: expire_time: int: The expiry time in a Unix timestamp, defaults to 0
