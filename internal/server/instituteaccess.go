@@ -89,11 +89,11 @@ func (institute *InstituteAccessServer) init(
 	institute.Base.DisplayName = displayName
 	institute.Base.SupportContact = supportContact
 	institute.Base.Type = serverType
-	endpoints, endpointsErr := APIGetEndpoints(url)
+	endpointsErr := institute.Base.InitializeEndpoints()
 	if endpointsErr != nil {
 		return types.NewWrappedError(errorMessage, endpointsErr)
 	}
-	institute.OAuth.Init(url, endpoints.API.V3.Authorization, endpoints.API.V3.Token)
-	institute.Base.Endpoints = *endpoints
+	API := institute.Base.Endpoints.API.V3
+	institute.OAuth.Init(url, API.Authorization, API.Token)
 	return nil
 }

@@ -111,11 +111,10 @@ func (secure *SecureInternetHomeServer) addLocation(
 		base.DisplayName = secure.DisplayName
 		base.SupportContact = locationServer.SupportContact
 		base.Type = "secure_internet"
-		endpoints, endpointsErr := APIGetEndpoints(locationServer.BaseURL)
+		endpointsErr := base.InitializeEndpoints()
 		if endpointsErr != nil {
 			return nil, types.NewWrappedError(errorMessage, endpointsErr)
 		}
-		base.Endpoints = *endpoints
 	}
 
 	// Ensure it is in the map

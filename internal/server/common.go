@@ -328,6 +328,16 @@ func getCurrentProfile(server Server) (*ServerProfile, error) {
 	)
 }
 
+func (base *ServerBase) InitializeEndpoints() error {
+	errorMessage := "failed initializing endpoints"
+	endpoints, endpointsErr := APIGetEndpoints(base.URL)
+	if endpointsErr != nil {
+		return types.NewWrappedError(errorMessage, endpointsErr)
+	}
+	base.Endpoints = *endpoints
+	return nil
+}
+
 func (base *ServerBase) GetValidProfiles(clientSupportsWireguard bool) ServerProfileInfo {
 	var validProfiles []ServerProfile
 	for _, profile := range base.Profiles.Info.ProfileList {
@@ -465,6 +475,18 @@ func HasValidProfile(server Server, clientSupportsWireguard bool) (bool, error) 
 
 func GetConfig(server Server, clientSupportsWireguard bool, preferTCP bool) (string, string, error) {
 	errorMessage := "failed getting an OpenVPN/WireGuard configuration"
+
+	// Re-initialize the endpoints
+	// TODO: Make this a warning instead?
+	base, baseErr := server.GetBase()
+	if baseErr != nil {
+		return "", "", types.NewWrappedError(errorMessage, baseErr)
+	}
+
+	endpointsErr := base.InitializeEndpoints()
+	if endpointsErr != nil {
+		return "", "", types.NewWrappedError(errorMessage, endpointsErr)
+	}
 
 	profile, profileErr := getCurrentProfile(server)
 	if profileErr != nil {
