@@ -112,6 +112,7 @@ class SecureInternetServer(Server):
     :param: org_id: str: The organization ID of the Secure Internet Server as returned by Discovery
     :param: display_name: str: The display name of the server
     :param: support_contact: List[str]: The list of support contacts of the server
+    :param: locations: List[str]: The list of secure internet locations
     :param: profiles: Profiles: The list of profiles that the server has
     :param: expire_time: int: The expiry time in a Unix timestamp
     :param: country_code: str: The country code of the server
@@ -121,6 +122,7 @@ class SecureInternetServer(Server):
         org_id: str,
         display_name: str,
         support_contact: List[str],
+        locations: List[str],
         profiles: Profiles,
         expire_time: int,
         country_code: str,
@@ -128,6 +130,7 @@ class SecureInternetServer(Server):
         super().__init__(org_id, display_name, profiles, expire_time)
         self.org_id = org_id
         self.support_contact = support_contact
+        self.locations = locations
         self.country_code = country_code
 
     @property
@@ -153,6 +156,25 @@ def get_type_for_str(type_str: str) -> Type[Server]:
     if type_str == "custom_server":
         return Server
     return InstituteServer
+
+
+def get_locations_from_ptr(ptr) -> List[str]:
+    """Get the locations from the Go shared library and convert it to a Python usable structure
+
+    :param ptr: The pointer to the List[str] locations as returned by the Go library
+
+    :meta private:
+
+    :return: Locations if there are any
+    :rtype: List[str]
+    """
+    if not ptr:
+        return []
+    locations = cast(ptr, POINTER(cServerLocations)).contents
+    location_list = []
+    for i in range(locations.total_locations):
+        location_list.append(locations.locations[i].decode("utf-8"))
+    return location_list
 
 
 def get_profiles(ptr) -> Optional[Profiles]:
@@ -211,6 +233,7 @@ def get_server(ptr, _type: Optional[str] = None) -> Optional[Server]:
         support_contact = []
         for i in range(current_server.total_support_contact):
             support_contact.append(current_server.support_contact[i].decode("utf-8"))
+    locations = get_locations_from_ptr(current_server.locations)
     profiles = get_profiles(current_server.profiles)
     if profiles is None:
         profiles = Profiles([], 0)
@@ -219,6 +242,7 @@ def get_server(ptr, _type: Optional[str] = None) -> Optional[Server]:
             identifier,
             display_name,
             support_contact,
+            locations,
             profiles,
             current_server.expire_time,
             current_server.country_code.decode("utf-8"),
@@ -319,10 +343,7 @@ def get_locations(lib: CDLL, ptr: c_void_p) -> Optional[List[str]]:
     :rtype: Optional[List[str]]
     """
     if ptr:
-        locations = cast(ptr, POINTER(cServerLocations)).contents
-        location_list = []
-        for i in range(locations.total_locations):
-            location_list.append(locations.locations[i].decode("utf-8"))
+        location_list = get_locations_from_ptr(ptr)
         lib.FreeSecureLocations(ptr)
         return location_list
     return None

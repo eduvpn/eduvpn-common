@@ -34,6 +34,7 @@ typedef struct server {
   const char* country_code;
   const char** support_contact;
   size_t total_support_contact;
+  serverLocations* locations;
   serverProfiles* profiles;
   unsigned long long int expire_time;
 } server;
@@ -168,9 +169,12 @@ func getCPtrServer(state *client.Client, base *client.ServerBase) *C.server {
 	// String allocation and translate the display name
 	identifier := base.URL
 	countryCode := ""
+	// A secure internet server has multiple locations
+	locations := []string{}
 	if base.Type == "secure_internet" {
 		identifier = state.Servers.SecureInternetHomeServer.HomeOrganizationID
 		countryCode = state.Servers.SecureInternetHomeServer.CurrentLocation
+		locations = state.Discovery.GetSecureLocationList()
 	}
 
 	server.identifier = C.CString(identifier)
@@ -181,6 +185,10 @@ func getCPtrServer(state *client.Client, base *client.ServerBase) *C.server {
 	server.total_support_contact, server.support_contact = getCPtrListStrings(
 		base.SupportContact,
 	)
+	locationsStruct := (*C.serverLocations)(C.malloc(C.size_t(unsafe.Sizeof(C.servers{}))))
+	locationsStruct.total_locations, locationsStruct.locations = getCPtrListStrings(locations)
+	server.locations = locationsStruct
+
 	profiles := base.GetValidProfiles(state.SupportsWireguard)
 	server.profiles = getCPtrProfiles(&profiles)
 	// No endtime is given if we get servers when it has been partially initialised
@@ -205,6 +213,7 @@ func FreeServer(info *C.server) {
 
 	// Free arrays
 	freeCListStrings(info.support_contact, info.total_support_contact)
+	FreeSecureLocations(info.locations)
 	FreeProfiles(info.profiles)
 
 	// Free the struct itself

@@ -128,6 +128,7 @@ class cServer(Structure):
         ("country_code", c_char_p),
         ("support_contact", POINTER(c_char_p)),
         ("total_support_contact", c_size_t),
+        ("locations", POINTER(cServerLocations)),
         ("profiles", POINTER(cServerProfiles)),
         ("expire_time", c_ulonglong),
     ]
