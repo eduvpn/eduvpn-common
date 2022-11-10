@@ -163,7 +163,7 @@ type HTTPStatusError struct {
 
 func (e *HTTPStatusError) Error() string {
 	return fmt.Sprintf(
-		"failed obtaining HTTP resource: %s as it gave an unsuccesful status code: %d. Body: %s",
+		"failed obtaining HTTP resource: %s as it gave an unsuccessful status code: %d. Body: %s",
 		e.URL,
 		e.Status,
 		e.Body,
