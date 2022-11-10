@@ -92,7 +92,7 @@ func (client *Client) Register(
 	// Initialize the logger
 	logLevel := log.LOG_WARNING
 	if debug {
-		logLevel = log.LOG_INFO
+		logLevel = log.LOG_DEBUG
 	}
 
 	loggerErr := client.Logger.Init(logLevel, directory)

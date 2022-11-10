@@ -21,7 +21,9 @@ type LogLevel int8
 const (
 	// No level set, not allowed
 	LOG_NOTSET LogLevel = iota
-	// Log info, this message is not an error
+	// Log debug, this message is not an error but is there for debugging
+	LOG_DEBUG
+	// Log info, this message is not an error but is there for additional information
 	LOG_INFO
 	// Log only to provide a warning, the app still functions
 	LOG_WARNING
@@ -35,6 +37,8 @@ func (e LogLevel) String() string {
 	switch e {
 	case LOG_NOTSET:
 		return "NOTSET"
+	case LOG_DEBUG:
+		return "DEBUG"
 	case LOG_INFO:
 		return "INFO"
 	case LOG_WARNING:
@@ -84,6 +88,10 @@ func (logger *FileLogger) Inherit(label string, err error) {
 	case types.ERR_FATAL:
 		logger.Fatal(msg)
 	}
+}
+
+func (logger *FileLogger) Debug(msg string) {
+	logger.log(LOG_DEBUG, msg)
 }
 
 func (logger *FileLogger) Info(msg string) {
