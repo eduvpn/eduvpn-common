@@ -79,6 +79,13 @@ func (client *Client) getConfig(
 		)
 	}
 
+	// Refresh the server endpoints
+	// This is best effort
+	endpointErr := server.RefreshEndpoints(chosenServer)
+	if endpointErr != nil {
+		client.Logger.Warning(fmt.Sprintf("failed to refresh server endpoints: %v", endpointErr))
+	}
+
 	config, configType, configErr := client.retryConfigAuth(chosenServer, preferTCP)
 	if configErr != nil {
 		return "", "", types.NewWrappedError(errorMessage, configErr)

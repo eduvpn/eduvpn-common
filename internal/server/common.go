@@ -473,20 +473,26 @@ func HasValidProfile(server Server, clientSupportsWireguard bool) (bool, error) 
 	return false, nil
 }
 
-func GetConfig(server Server, clientSupportsWireguard bool, preferTCP bool) (string, string, error) {
-	errorMessage := "failed getting an OpenVPN/WireGuard configuration"
+func RefreshEndpoints(server Server) error {
+	errorMessage := "failed to refresh server endpoints"
 
 	// Re-initialize the endpoints
 	// TODO: Make this a warning instead?
 	base, baseErr := server.GetBase()
 	if baseErr != nil {
-		return "", "", types.NewWrappedError(errorMessage, baseErr)
+		return types.NewWrappedError(errorMessage, baseErr)
 	}
 
 	endpointsErr := base.InitializeEndpoints()
 	if endpointsErr != nil {
-		return "", "", types.NewWrappedError(errorMessage, endpointsErr)
+		return types.NewWrappedError(errorMessage, endpointsErr)
 	}
+
+	return nil
+}
+
+func GetConfig(server Server, clientSupportsWireguard bool, preferTCP bool) (string, string, error) {
+	errorMessage := "failed getting an OpenVPN/WireGuard configuration"
 
 	profile, profileErr := getCurrentProfile(server)
 	if profileErr != nil {
