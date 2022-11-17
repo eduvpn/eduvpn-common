@@ -115,8 +115,7 @@ func (logger *FileLogger) Close() {
 }
 
 func (logger *FileLogger) getFilename(directory string) string {
-	pathString := path.Join(directory, "go")
-	return fmt.Sprintf("%s.log", pathString)
+	return path.Join(directory, "log")
 }
 
 func (logger *FileLogger) log(level LogLevel, msg string, params ...interface{}) {
