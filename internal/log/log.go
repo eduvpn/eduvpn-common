@@ -90,24 +90,24 @@ func (logger *FileLogger) Inherit(label string, err error) {
 	}
 }
 
-func (logger *FileLogger) Debug(msg string) {
-	logger.log(LOG_DEBUG, msg)
+func (logger *FileLogger) Debug(msg string, params ...interface{}) {
+	logger.log(LOG_DEBUG, msg, params...)
 }
 
-func (logger *FileLogger) Info(msg string) {
-	logger.log(LOG_INFO, msg)
+func (logger *FileLogger) Info(msg string, params ...interface{}) {
+	logger.log(LOG_INFO, msg, params...)
 }
 
-func (logger *FileLogger) Warning(msg string) {
-	logger.log(LOG_WARNING, msg)
+func (logger *FileLogger) Warning(msg string, params ...interface{}) {
+	logger.log(LOG_WARNING, msg, params...)
 }
 
-func (logger *FileLogger) Error(msg string) {
-	logger.log(LOG_ERROR, msg)
+func (logger *FileLogger) Error(msg string, params ...interface{}) {
+	logger.log(LOG_ERROR, msg, params...)
 }
 
-func (logger *FileLogger) Fatal(msg string) {
-	logger.log(LOG_FATAL, msg)
+func (logger *FileLogger) Fatal(msg string, params ...interface{}) {
+	logger.log(LOG_FATAL, msg, params...)
 }
 
 func (logger *FileLogger) Close() {
@@ -119,10 +119,11 @@ func (logger *FileLogger) getFilename(directory string) string {
 	return fmt.Sprintf("%s.log", pathString)
 }
 
-func (logger *FileLogger) log(level LogLevel, str string) {
+func (logger *FileLogger) log(level LogLevel, msg string, params ...interface{}) {
 	if level >= logger.Level && logger.Level != LOG_NOTSET {
-		msg := fmt.Sprintf("- Go - %s - %s", level.String(), str)
+		formatted_msg := fmt.Sprintf(msg, params...)
+		format := fmt.Sprintf("- Go - %s - %s", level.String(), formatted_msg)
 		// To log file
-		log.Println(msg)
+		log.Println(format)
 	}
 }

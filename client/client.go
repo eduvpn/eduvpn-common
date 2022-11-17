@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/eduvpn/eduvpn-common/internal/config"
@@ -129,11 +128,11 @@ func (client *Client) Register(
 	// Check if we are able to fetch discovery, and log if something went wrong
 	_, discoServersErr := client.GetDiscoServers()
 	if discoServersErr != nil {
-		client.Logger.Warning(fmt.Sprintf("Failed to get discovery servers: %v", discoServersErr))
+		client.Logger.Warning("Failed to get discovery servers: %v", discoServersErr)
 	}
 	_, discoOrgsErr := client.GetDiscoOrganizations()
 	if discoOrgsErr != nil {
-		client.Logger.Warning(fmt.Sprintf("Failed to get discovery organizations: %v", discoOrgsErr))
+		client.Logger.Warning("Failed to get discovery organizations: %v", discoOrgsErr)
 	}
 
 	return nil
@@ -147,7 +146,7 @@ func (client *Client) Deregister() {
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		client.Logger.Info(fmt.Sprintf("failed saving configuration, error: %s", types.GetErrorTraceback(saveErr)))
+		client.Logger.Info("failed saving configuration, error: %s", types.GetErrorTraceback(saveErr))
 	}
 
 	// Empty out the state

@@ -83,7 +83,7 @@ func (client *Client) getConfig(
 	// This is best effort
 	endpointErr := server.RefreshEndpoints(chosenServer)
 	if endpointErr != nil {
-		client.Logger.Warning(fmt.Sprintf("failed to refresh server endpoints: %v", endpointErr))
+		client.Logger.Warning("failed to refresh server endpoints: %v", endpointErr)
 	}
 
 	config, configType, configErr := client.retryConfigAuth(chosenServer, preferTCP)
@@ -103,10 +103,8 @@ func (client *Client) getConfig(
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
 		client.Logger.Info(
-			fmt.Sprintf(
-				"Failed saving configuration after getting a server: %s",
-				types.GetErrorTraceback(saveErr),
-			),
+			"Failed saving configuration after getting a server: %s",
+			types.GetErrorTraceback(saveErr),
 		)
 	}
 
@@ -154,10 +152,8 @@ func (client *Client) RemoveSecureInternet() error {
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
 		client.Logger.Info(
-			fmt.Sprintf(
-				"Failed saving configuration after removing a secure internet server: %s",
-				types.GetErrorTraceback(saveErr),
-			),
+			"Failed saving configuration after removing a secure internet server: %s",
+			types.GetErrorTraceback(saveErr),
 		)
 	}
 	return nil
@@ -180,10 +176,8 @@ func (client *Client) RemoveInstituteAccess(url string) error {
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
 		client.Logger.Info(
-			fmt.Sprintf(
-				"Failed saving configuration after removing an institute access server: %s",
-				types.GetErrorTraceback(saveErr),
-			),
+			"Failed saving configuration after removing an institute access server: %s",
+			types.GetErrorTraceback(saveErr),
 		)
 	}
 	return nil
@@ -206,10 +200,8 @@ func (client *Client) RemoveCustomServer(url string) error {
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
 		client.Logger.Info(
-			fmt.Sprintf(
-				"Failed saving configuration after removing a custom server: %s",
-				types.GetErrorTraceback(saveErr),
-			),
+			"Failed saving configuration after removing a custom server: %s",
+			types.GetErrorTraceback(saveErr),
 		)
 	}
 	return nil
@@ -569,10 +561,8 @@ func (client *Client) ShouldRenewButton() bool {
 
 	if currentServerErr != nil {
 		client.Logger.Info(
-			fmt.Sprintf(
-				"No server found to renew with err: %s",
-				types.GetErrorTraceback(currentServerErr),
-			),
+			"No server found to renew with err: %s",
+			types.GetErrorTraceback(currentServerErr),
 		)
 		return false
 	}
