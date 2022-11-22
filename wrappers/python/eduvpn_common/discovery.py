@@ -171,8 +171,9 @@ def get_disco_servers(lib: CDLL, ptr: c_void_p) -> Optional[DiscoServers]:
                 if current is None:
                     continue
                 servers.append(current)
+        disco_version = svrs.version
         lib.FreeDiscoServers(ptr)
-        return DiscoServers(svrs.version, servers)
+        return DiscoServers(disco_version, servers)
     return None
 
 
@@ -196,6 +197,7 @@ def get_disco_organizations(lib: CDLL, ptr: c_void_p) -> Optional[DiscoOrganizat
                 if current is None:
                     continue
                 organizations.append(current)
+        disco_version = orgs.version
         lib.FreeDiscoOrganizations(ptr)
-        return DiscoOrganizations(orgs.version, organizations)
+        return DiscoOrganizations(disco_version, organizations)
     return None
