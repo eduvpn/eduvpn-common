@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path"
 	"sort"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 type (
@@ -47,7 +48,7 @@ type FSM struct {
 
 	// Info to be passed from the parent state
 	Name          string
-	StateCallback func(FSMStateID, FSMStateID, interface{})
+	StateCallback func(FSMStateID, FSMStateID, interface{}) bool
 	Directory     string
 	Debug         bool
 	GetName       func(FSMStateID) string
@@ -56,7 +57,7 @@ type FSM struct {
 func (fsm *FSM) Init(
 	current FSMStateID,
 	states map[FSMStateID]FSMState,
-	callback func(FSMStateID, FSMStateID, interface{}),
+	callback func(FSMStateID, FSMStateID, interface{}) bool,
 	directory string,
 	nameGen func(FSMStateID) string,
 	debug bool,
@@ -110,9 +111,18 @@ func (fsm *FSM) GoBack() {
 	fsm.GoTransition(fsm.States[fsm.Current].BackState)
 }
 
+func (fsm *FSM) GoTransitionRequired(newState FSMStateID, data interface{}) error {
+	oldState := fsm.Current
+	if !fsm.GoTransitionWithData(newState, data) {
+		return types.NewWrappedError("failed required transition", fmt.Errorf("required transition not handled, from: %s -> to: %s", fsm.GetName(oldState), fsm.GetName(newState)))
+	}
+	return nil
+}
+
 func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data interface{}) bool {
 	ok := fsm.HasTransition(newState)
 
+	handled := false
 	if ok {
 		oldState := fsm.Current
 		fsm.Current = newState
@@ -120,14 +130,15 @@ func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data interface{}) bool
 			fsm.writeGraph()
 		}
 
-		fsm.StateCallback(oldState, newState, data)
+		handled = fsm.StateCallback(oldState, newState, data)
 	}
 
-	return ok
+	return handled
 }
 
 func (fsm *FSM) GoTransition(newState FSMStateID) bool {
-	return fsm.GoTransitionWithData(newState, "{}")
+	// No data means the callback is never required
+	return fsm.GoTransitionWithData(newState, "")
 }
 
 func (fsm *FSM) generateMermaidGraph() string {

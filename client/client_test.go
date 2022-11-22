@@ -81,8 +81,9 @@ func Test_server(t *testing.T) {
 		"org.letsconnect-vpn.app.linux",
 		"configstest",
 		"en",
-		func(old FSMStateID, new FSMStateID, data interface{}) {
+		func(old FSMStateID, new FSMStateID, data interface{}) bool {
 			stateCallback(t, old, new, data, state)
+			return true
 		},
 		false,
 	)
@@ -113,7 +114,7 @@ func test_connect_oauth_parameter(
 		"org.letsconnect-vpn.app.linux",
 		configDirectory,
 		"en",
-		func(oldState FSMStateID, newState FSMStateID, data interface{}) {
+		func(oldState FSMStateID, newState FSMStateID, data interface{}) bool {
 			if newState == STATE_OAUTH_STARTED {
 				server, serverErr := state.Servers.GetCustomServer(serverURI)
 				if serverErr != nil {
@@ -142,6 +143,7 @@ func test_connect_oauth_parameter(
 					}
 				}()
 			}
+			return true
 		},
 		false,
 	)
@@ -219,8 +221,9 @@ func Test_token_expired(t *testing.T) {
 		"org.letsconnect-vpn.app.linux",
 		"configsexpired",
 		"en",
-		func(old FSMStateID, new FSMStateID, data interface{}) {
+		func(old FSMStateID, new FSMStateID, data interface{}) bool {
 			stateCallback(t, old, new, data, state)
+			return true
 		},
 		false,
 	)
@@ -279,8 +282,9 @@ func Test_token_invalid(t *testing.T) {
 		"org.letsconnect-vpn.app.linux",
 		"configsinvalid",
 		"en",
-		func(old FSMStateID, new FSMStateID, data interface{}) {
+		func(old FSMStateID, new FSMStateID, data interface{}) bool {
 			stateCallback(t, old, new, data, state)
+			return true
 		},
 		false,
 	)
@@ -336,8 +340,9 @@ func Test_invalid_profile_corrected(t *testing.T) {
 		"org.letsconnect-vpn.app.linux",
 		"configscancelprofile",
 		"en",
-		func(old FSMStateID, new FSMStateID, data interface{}) {
+		func(old FSMStateID, new FSMStateID, data interface{}) bool {
 			stateCallback(t, old, new, data, state)
+			return true
 		},
 		false,
 	)
@@ -393,8 +398,9 @@ func Test_prefer_tcp(t *testing.T) {
 		"org.letsconnect-vpn.app.linux",
 		"configsprefertcp",
 		"en",
-		func(old FSMStateID, new FSMStateID, data interface{}) {
+		func(old FSMStateID, new FSMStateID, data interface{}) bool {
 			stateCallback(t, old, new, data, state)
+			return true
 		},
 		false,
 	)

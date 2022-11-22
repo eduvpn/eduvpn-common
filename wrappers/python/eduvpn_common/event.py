@@ -147,7 +147,7 @@ class EventHandler(object):
 
     def run_state(
         self, state: int, other_state: int, state_type: StateType, data: str
-    ) -> None:
+    ) -> bool:
         """The function that runs the callback for a specific event
 
         :param state: int: The state of the event
@@ -158,13 +158,14 @@ class EventHandler(object):
         :meta private:
         """
         if (state, state_type) not in self.handlers:
-            return
+            return False
         for func in self.handlers[(state, state_type)]:
             func(other_state, data)
+        return True
 
     def run(
         self, old_state: int, new_state: int, data: Any, convert: bool = True
-    ) -> None:
+    ) -> bool:
         """Run a specific event.
         It converts the data and then runs the event for all state types
 
@@ -180,5 +181,9 @@ class EventHandler(object):
         if convert:
             converted = convert_data(self.lib, new_state, data)
         self.run_state(old_state, new_state, StateType.LEAVE, converted)
-        self.run_state(new_state, old_state, StateType.ENTER, converted)
-        self.run_state(new_state, old_state, StateType.WAIT, converted)
+        # We decide handled based on enter transitions
+        handled = self.run_state(new_state, old_state, StateType.ENTER, converted)
+        # Only run wait transitions if the enter transition is handled
+        if handled:
+            self.run_state(new_state, old_state, StateType.WAIT, converted)
+        return handled

@@ -1,4 +1,5 @@
 import threading
+from ctypes import c_int
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 from eduvpn_common.discovery import DiscoOrganizations, DiscoServers, get_disco_organizations, get_disco_servers
@@ -371,7 +372,7 @@ class EduVPN(object):
         """
         return self.event_handler
 
-    def callback(self, old_state: State, new_state: State, data: Any) -> None:
+    def callback(self, old_state: State, new_state: State, data: Any) -> bool:
         """Run an event callback
 
         :param old_state: State: The previous state
@@ -379,7 +380,7 @@ class EduVPN(object):
         :param data: Any: The data to pass to the event
 
         """
-        self.event.run(old_state, new_state, data)
+        return self.event.run(old_state, new_state, data)
 
     def set_profile(self, profile_id: str) -> None:
         """Set the profile of the current server
@@ -506,7 +507,7 @@ eduvpn_objects: Dict[str, EduVPN] = {}
 
 
 @VPNStateChange
-def state_callback(name: bytes, old_state: int, new_state: int, data: Any) -> None:
+def state_callback(name: bytes, old_state: int, new_state: int, data: Any) -> int:
     """The internal callback that is passed to the Go library
 
     :param name: bytes: The name of the client
@@ -518,8 +519,11 @@ def state_callback(name: bytes, old_state: int, new_state: int, data: Any) -> No
     """
     name_decoded = name.decode()
     if name_decoded not in eduvpn_objects:
-        return
-    eduvpn_objects[name_decoded].callback(State(old_state), State(new_state), data)
+        return 0
+    handled = eduvpn_objects[name_decoded].callback(State(old_state), State(new_state), data)
+    if handled:
+        return 1
+    return 0
 
 
 def add_as_global_object(eduvpn: EduVPN) -> bool:

@@ -4,11 +4,11 @@ package main
 #include <stdlib.h>
 #include "error.h"
 
-typedef void (*PythonCB)(const char* name, int oldstate, int newstate, void* data);
+typedef int (*PythonCB)(const char* name, int oldstate, int newstate, void* data);
 
-static void call_callback(PythonCB callback, const char *name, int oldstate, int newstate, void* data)
+static int call_callback(PythonCB callback, const char *name, int oldstate, int newstate, void* data)
 {
-    callback(name, oldstate, newstate, data);
+    return callback(name, oldstate, newstate, data);
 }
 */
 import "C"
@@ -61,18 +61,19 @@ func StateCallback(
 	old_state client.FSMStateID,
 	new_state client.FSMStateID,
 	data interface{},
-) {
+) bool {
 	P_StateCallback, exists := P_StateCallbacks[name]
 	if !exists || P_StateCallback == nil {
-		return
+		return false
 	}
 	name_c := C.CString(name)
 	oldState_c := C.int(old_state)
 	newState_c := C.int(new_state)
 	data_c := GetStateData(state, new_state, data)
-	C.call_callback(P_StateCallback, name_c, oldState_c, newState_c, data_c)
+	handled := C.call_callback(P_StateCallback, name_c, oldState_c, newState_c, data_c)
 	C.free(unsafe.Pointer(name_c))
 	// data_c gets freed by the wrapper
+	return handled == C.int(1)
 }
 
 func GetVPNState(name string) (*client.Client, error) {
@@ -110,8 +111,8 @@ func Register(
 		nameStr,
 		C.GoString(config_directory),
 		C.GoString(language),
-		func(old client.FSMStateID, new client.FSMStateID, data interface{}) {
-			StateCallback(state, nameStr, old, new, data)
+		func(old client.FSMStateID, new client.FSMStateID, data interface{}) bool {
+			return StateCallback(state, nameStr, old, new, data)
 		},
 		debug != 0,
 	)

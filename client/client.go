@@ -73,7 +73,7 @@ func (client *Client) Register(
 	name string,
 	directory string,
 	language string,
-	stateCallback func(FSMStateID, FSMStateID, interface{}),
+	stateCallback func(FSMStateID, FSMStateID, interface{}) bool,
 	debug bool,
 ) error {
 	errorMessage := "failed to register with the GO library"
@@ -155,11 +155,15 @@ func (client *Client) Deregister() {
 
 // askProfile asks the user for a profile by moving the FSM to the ASK_PROFILE state.
 func (client *Client) askProfile(chosenServer server.Server) error {
+	errorMessage := "failed asking for profiles"
 	profiles, profilesErr := server.GetValidProfiles(chosenServer, client.SupportsWireguard)
 	if profilesErr != nil {
-		return types.NewWrappedError("failed asking for profiles", profilesErr)
+		return types.NewWrappedError(errorMessage, profilesErr)
 	}
-	client.FSM.GoTransitionWithData(STATE_ASK_PROFILE, profiles)
+	goTransitionErr := client.FSM.GoTransitionRequired(STATE_ASK_PROFILE, profiles)
+	if goTransitionErr != nil {
+		return types.NewWrappedError(errorMessage, goTransitionErr)
+	}
 	return nil
 }
 

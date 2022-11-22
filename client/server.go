@@ -479,16 +479,20 @@ func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string,
 
 // askSecureLocation asks the user to choose a Secure Internet location by moving the FSM to the STATE_ASK_LOCATION state.
 func (client *Client) askSecureLocation() error {
+	errorMessage := "failed settings secure location"
 	locations := client.Discovery.GetSecureLocationList()
 
 	// Ask for the location in the callback
-	client.FSM.GoTransitionWithData(STATE_ASK_LOCATION, locations)
+	goTransitionErr := client.FSM.GoTransitionRequired(STATE_ASK_LOCATION, locations)
+	if goTransitionErr != nil {
+		return types.NewWrappedError(errorMessage, goTransitionErr)
+	}
 
 	// The state has changed, meaning setting the secure location was not successful
 	if client.FSM.Current != STATE_ASK_LOCATION {
 		// TODO: maybe a custom type for this errors.new?
 		return types.NewWrappedError(
-			"failed setting secure location",
+			errorMessage,
 			errors.New("failed loading secure location"),
 		)
 	}
@@ -579,7 +583,10 @@ func (client *Client) ensureLogin(chosenServer server.Server) error {
 	if server.NeedsRelogin(chosenServer) {
 		url, urlErr := server.GetOAuthURL(chosenServer, client.Name)
 
-		client.FSM.GoTransitionWithData(STATE_OAUTH_STARTED, url)
+		goTransitionErr := client.FSM.GoTransitionRequired(STATE_OAUTH_STARTED, url)
+		if goTransitionErr != nil {
+			return types.NewWrappedError(errorMessage, goTransitionErr)
+		}
 
 		if urlErr != nil {
 			client.goBackInternal()

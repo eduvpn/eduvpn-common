@@ -125,8 +125,9 @@ func printConfig(url string, serverType ServerTypes) {
 		"org.eduvpn.app.linux",
 		"configs",
 		"en",
-		func(old client.FSMStateID, new client.FSMStateID, data interface{}) {
+		func(old client.FSMStateID, new client.FSMStateID, data interface{}) bool {
 			stateCallback(state, old, new, data)
+			return true
 		},
 		true,
 	)

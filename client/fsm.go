@@ -96,7 +96,7 @@ func GetStateName(s FSMStateID) string {
 }
 
 func newFSM(
-	callback func(FSMStateID, FSMStateID, interface{}),
+	callback func(FSMStateID, FSMStateID, interface{}) bool,
 	directory string,
 	debug bool,
 ) fsm.FSM {
