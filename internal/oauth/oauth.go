@@ -161,7 +161,7 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
 	opts := &httpw.HTTPOptionalParams{Headers: headers, Body: data}
-	current_time := util.GetCurrentTime()
+	current_time := time.Now()
 	_, body, bodyErr := httpw.HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return types.NewWrappedError(errorMessage, bodyErr)
@@ -187,7 +187,7 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 
 func (oauth *OAuth) isTokensExpired() bool {
 	expired_time := oauth.Token.ExpiredTimestamp
-	current_time := util.GetCurrentTime()
+	current_time := time.Now()
 	return !current_time.Before(expired_time)
 }
 
@@ -205,7 +205,7 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
 	opts := &httpw.HTTPOptionalParams{Headers: headers, Body: data}
-	current_time := util.GetCurrentTime()
+	current_time := time.Now()
 	_, body, bodyErr := httpw.HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return types.NewWrappedError(errorMessage, bodyErr)

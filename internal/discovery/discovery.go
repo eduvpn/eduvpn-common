@@ -155,7 +155,7 @@ func (discovery *Discovery) DetermineServersUpdate() bool {
 	}
 	// 1 hour from the last update
 	should_update_time := discovery.Servers.Timestamp.Add(1 * time.Hour)
-	now := util.GetCurrentTime()
+	now := time.Now()
 	return !now.Before(should_update_time)
 }
 
@@ -173,7 +173,7 @@ func (discovery *Discovery) GetOrganizationsList() (*types.DiscoveryOrganization
 			bodyErr,
 		)
 	}
-	discovery.Organizations.Timestamp = util.GetCurrentTime()
+	discovery.Organizations.Timestamp = time.Now()
 	return &discovery.Organizations, nil
 }
 
@@ -192,7 +192,7 @@ func (discovery *Discovery) GetServersList() (*types.DiscoveryServers, error) {
 		)
 	}
 	// Update servers timestamp
-	discovery.Servers.Timestamp = util.GetCurrentTime()
+	discovery.Servers.Timestamp = time.Now()
 	return &discovery.Servers, nil
 }
 

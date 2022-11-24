@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/eduvpn/eduvpn-common/types"
 )
@@ -47,10 +46,6 @@ func MakeRandomByteSlice(size int) ([]byte, error) {
 		return nil, types.NewWrappedError("failed reading random", err)
 	}
 	return byteSlice, nil
-}
-
-func GetCurrentTime() time.Time {
-	return time.Now()
 }
 
 func EnsureDirectory(directory string) error {

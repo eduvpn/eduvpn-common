@@ -58,18 +58,6 @@ func Test_MakeRandomByteSlice(t *testing.T) {
 	}
 }
 
-func Test_GetCurrentTime(t *testing.T) {
-	time_now := GetCurrentTime()
-
-	time.Sleep(1 * time.Second)
-
-	time_after_1_second := GetCurrentTime()
-
-	if !time_after_1_second.After(time_now) {
-		t.Fatal("Time is not after previous time")
-	}
-}
-
 func Test_WAYFEncode(t *testing.T) {
 	// AuthTemplate
 	returnTo := "127.0.0.1:8000/test123bla/#wow   "

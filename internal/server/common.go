@@ -228,7 +228,7 @@ func ShouldRenewButton(server Server) bool {
 	}
 
 	// Get current time
-	current := util.GetCurrentTime()
+	current := time.Now()
 
 	// Session is expired
 	if !current.Before(base.EndTime) {
@@ -268,7 +268,7 @@ func GetHeaderToken(server Server) string {
 }
 
 func MarkTokenExpired(server Server) {
-	server.GetOAuth().Token.ExpiredTimestamp = util.GetCurrentTime()
+	server.GetOAuth().Token.ExpiredTimestamp = time.Now()
 }
 
 func MarkTokensForRenew(server Server) {
@@ -394,7 +394,7 @@ func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (st
 	}
 
 	// Store start and end time
-	base.StartTime = util.GetCurrentTime()
+	base.StartTime = time.Now()
 	base.EndTime = expires
 
 	if content == "wireguard" {
@@ -419,7 +419,7 @@ func openVPNGetConfig(server Server, preferTCP bool) (string, string, error) {
 	configOpenVPN, expires, configErr := APIConnectOpenVPN(server, profile_id, preferTCP)
 
 	// Store start and end time
-	base.StartTime = util.GetCurrentTime()
+	base.StartTime = time.Now()
 	base.EndTime = expires
 
 	if configErr != nil {
