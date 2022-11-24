@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
-	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/eduvpn/eduvpn-common/internal/wireguard"
 	"github.com/eduvpn/eduvpn-common/types"
 )
