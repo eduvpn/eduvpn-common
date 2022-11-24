@@ -17,78 +17,78 @@ type (
 )
 
 const (
-	// Deregistered means the app is not registered with the wrapper
-	STATE_DEREGISTERED FSMStateID = iota
+	// StateDeregistered means the app is not registered with the wrapper
+	StateDeregistered FSMStateID = iota
 
-	// No Server means the user has not chosen a server yet
-	STATE_NO_SERVER
+	// StateNoServer means the user has not chosen a server yet
+	StateNoServer
 
-	// The user selected a Secure Internet server but needs to choose a location
-	STATE_ASK_LOCATION
+	// StateAskLocation means the user selected a Secure Internet server but needs to choose a location
+	StateAskLocation
 
-	// The user is currently selecting a server in the UI
-	STATE_SEARCH_SERVER
+	// StateSearchServer means the user is currently selecting a server in the UI
+	StateSearchServer
 
-	// We are loading the server details
-	STATE_LOADING_SERVER
+	// StateLoadingServer means we are loading the server details
+	StateLoadingServer
 
-	// Chosen Server means the user has chosen a server to connect to
-	STATE_CHOSEN_SERVER
+	// StateChosenServer means the user has chosen a server to connect to
+	StateChosenServer
 
-	// OAuth Started means the OAuth process has started
-	STATE_OAUTH_STARTED
+	// StateOAuthStarted means the OAuth process has started
+	StateOAuthStarted
 
-	// Authorized means the OAuth process has finished and the user is now authorized with the server
-	STATE_AUTHORIZED
+	// StateAuthorized means the OAuth process has finished and the user is now authorized with the server
+	StateAuthorized
 
-	// Requested config means the user has requested a config for connecting
-	STATE_REQUEST_CONFIG
+	// StateRequestConfig means the user has requested a config for connecting
+	StateRequestConfig
 
-	// Ask profile means the go code is asking for a profile selection from the UI
-	STATE_ASK_PROFILE
+	// StateAskProfile means the go code is asking for a profile selection from the UI
+	StateAskProfile
 
-	// Disconnected means the user has gotten a config for a server but is not connected yet
-	STATE_DISCONNECTED
+	// StateDisconnected means the user has gotten a config for a server but is not connected yet
+	StateDisconnected
 
-	// Disconnecting means the OS is disconnecting and the Go code is doing the /disconnect
-	STATE_DISCONNECTING
+	// StateDisconnecting means the OS is disconnecting and the Go code is doing the /disconnect
+	StateDisconnecting
 
-	// Connecting means the OS is establishing a connection to the server
-	STATE_CONNECTING
+	// StateConnecting means the OS is establishing a connection to the server
+	StateConnecting
 
-	// Connected means the user has been connected to the server
-	STATE_CONNECTED
+	// StateConnected means the user has been connected to the server
+	StateConnected
 )
 
 func GetStateName(s FSMStateID) string {
 	switch s {
-	case STATE_DEREGISTERED:
+	case StateDeregistered:
 		return "Deregistered"
-	case STATE_NO_SERVER:
+	case StateNoServer:
 		return "No_Server"
-	case STATE_ASK_LOCATION:
+	case StateAskLocation:
 		return "Ask_Location"
-	case STATE_SEARCH_SERVER:
+	case StateSearchServer:
 		return "Search_Server"
-	case STATE_LOADING_SERVER:
+	case StateLoadingServer:
 		return "Loading_Server"
-	case STATE_CHOSEN_SERVER:
+	case StateChosenServer:
 		return "Chosen_Server"
-	case STATE_OAUTH_STARTED:
+	case StateOAuthStarted:
 		return "OAuth_Started"
-	case STATE_DISCONNECTED:
+	case StateDisconnected:
 		return "Disconnected"
-	case STATE_REQUEST_CONFIG:
+	case StateRequestConfig:
 		return "Request_Config"
-	case STATE_ASK_PROFILE:
+	case StateAskProfile:
 		return "Ask_Profile"
-	case STATE_AUTHORIZED:
+	case StateAuthorized:
 		return "Authorized"
-	case STATE_DISCONNECTING:
+	case StateDisconnecting:
 		return "Disconnecting"
-	case STATE_CONNECTING:
+	case StateConnecting:
 		return "Connecting"
-	case STATE_CONNECTED:
+	case StateConnected:
 		return "Connected"
 	default:
 		panic("unknown conversion of state to string")
@@ -101,107 +101,107 @@ func newFSM(
 	debug bool,
 ) fsm.FSM {
 	states := FSMStates{
-		STATE_DEREGISTERED: FSMState{
-			Transitions: []FSMTransition{{To: STATE_NO_SERVER, Description: "Client registers"}},
+		StateDeregistered: FSMState{
+			Transitions: []FSMTransition{{To: StateNoServer, Description: "Client registers"}},
 		},
-		STATE_NO_SERVER: FSMState{
+		StateNoServer: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_NO_SERVER, Description: "Reload list"},
-				{To: STATE_LOADING_SERVER, Description: "User clicks a server in the UI"},
-				{To: STATE_CHOSEN_SERVER, Description: "The server has been chosen"},
-				{To: STATE_SEARCH_SERVER, Description: "The user is trying to choose a new server in the UI"},
-				{To: STATE_CONNECTED, Description: "The user is already connected"},
-				{To: STATE_ASK_LOCATION, Description: "Change the location in the main screen"},
+				{To: StateNoServer, Description: "Reload list"},
+				{To: StateLoadingServer, Description: "User clicks a server in the UI"},
+				{To: StateChosenServer, Description: "The server has been chosen"},
+				{To: StateSearchServer, Description: "The user is trying to choose a new server in the UI"},
+				{To: StateConnected, Description: "The user is already connected"},
+				{To: StateAskLocation, Description: "Change the location in the main screen"},
 			},
 		},
-		STATE_SEARCH_SERVER: FSMState{
+		StateSearchServer: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_LOADING_SERVER, Description: "User clicks a server in the UI"},
-				{To: STATE_NO_SERVER, Description: "Cancel or Error"},
+				{To: StateLoadingServer, Description: "User clicks a server in the UI"},
+				{To: StateNoServer, Description: "Cancel or Error"},
 			},
-			BackState: STATE_NO_SERVER,
+			BackState: StateNoServer,
 		},
-		STATE_ASK_LOCATION: FSMState{
+		StateAskLocation: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_CHOSEN_SERVER, Description: "Location chosen"},
-				{To: STATE_NO_SERVER, Description: "Go back or Error"},
-				{To: STATE_SEARCH_SERVER, Description: "Cancel or Error"},
+				{To: StateChosenServer, Description: "Location chosen"},
+				{To: StateNoServer, Description: "Go back or Error"},
+				{To: StateSearchServer, Description: "Cancel or Error"},
 			},
 		},
-		STATE_LOADING_SERVER: FSMState{
+		StateLoadingServer: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_CHOSEN_SERVER, Description: "Server info loaded"},
+				{To: StateChosenServer, Description: "Server info loaded"},
 				{
-					To:          STATE_ASK_LOCATION,
+					To:          StateAskLocation,
 					Description: "User chooses a Secure Internet server but no location is configured",
 				},
-				{To: STATE_NO_SERVER, Description: "Go back or Error"},
+				{To: StateNoServer, Description: "Go back or Error"},
 			},
-			BackState: STATE_NO_SERVER,
+			BackState: StateNoServer,
 		},
-		STATE_CHOSEN_SERVER: FSMState{
+		StateChosenServer: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_AUTHORIZED, Description: "Found tokens in config"},
-				{To: STATE_OAUTH_STARTED, Description: "No tokens found in config"},
+				{To: StateAuthorized, Description: "Found tokens in config"},
+				{To: StateOAuthStarted, Description: "No tokens found in config"},
 			},
 		},
-		STATE_OAUTH_STARTED: FSMState{
+		StateOAuthStarted: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_AUTHORIZED, Description: "User authorizes with browser"},
-				{To: STATE_NO_SERVER, Description: "Go back or Error"},
-				{To: STATE_SEARCH_SERVER, Description: "Cancel or Error"},
+				{To: StateAuthorized, Description: "User authorizes with browser"},
+				{To: StateNoServer, Description: "Go back or Error"},
+				{To: StateSearchServer, Description: "Cancel or Error"},
 			},
-			BackState: STATE_NO_SERVER,
+			BackState: StateNoServer,
 		},
-		STATE_AUTHORIZED: FSMState{
+		StateAuthorized: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_OAUTH_STARTED, Description: "Re-authorize with OAuth"},
-				{To: STATE_REQUEST_CONFIG, Description: "Client requests a config"},
-				{To: STATE_NO_SERVER, Description: "Client wants to go back to the main screen"},
+				{To: StateOAuthStarted, Description: "Re-authorize with OAuth"},
+				{To: StateRequestConfig, Description: "Client requests a config"},
+				{To: StateNoServer, Description: "Client wants to go back to the main screen"},
 			},
 		},
-		STATE_REQUEST_CONFIG: FSMState{
+		StateRequestConfig: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_ASK_PROFILE, Description: "Multiple profiles found and no profile chosen"},
-				{To: STATE_DISCONNECTED, Description: "Only one profile or profile already chosen"},
-				{To: STATE_NO_SERVER, Description: "Cancel or Error"},
-				{To: STATE_OAUTH_STARTED, Description: "Re-authorize"},
+				{To: StateAskProfile, Description: "Multiple profiles found and no profile chosen"},
+				{To: StateDisconnected, Description: "Only one profile or profile already chosen"},
+				{To: StateNoServer, Description: "Cancel or Error"},
+				{To: StateOAuthStarted, Description: "Re-authorize"},
 			},
 		},
-		STATE_ASK_PROFILE: FSMState{
+		StateAskProfile: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_DISCONNECTED, Description: "User chooses profile"},
-				{To: STATE_NO_SERVER, Description: "Cancel or Error"},
-				{To: STATE_SEARCH_SERVER, Description: "Cancel or Error"},
+				{To: StateDisconnected, Description: "User chooses profile"},
+				{To: StateNoServer, Description: "Cancel or Error"},
+				{To: StateSearchServer, Description: "Cancel or Error"},
 			},
 		},
-		STATE_DISCONNECTED: FSMState{
+		StateDisconnected: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_CONNECTING, Description: "OS reports it is trying to connect"},
-				{To: STATE_REQUEST_CONFIG, Description: "User reconnects"},
-				{To: STATE_NO_SERVER, Description: "User wants to choose a new server"},
-				{To: STATE_OAUTH_STARTED, Description: "Re-authorize with OAuth"},
+				{To: StateConnecting, Description: "OS reports it is trying to connect"},
+				{To: StateRequestConfig, Description: "User reconnects"},
+				{To: StateNoServer, Description: "User wants to choose a new server"},
+				{To: StateOAuthStarted, Description: "Re-authorize with OAuth"},
 			},
-			BackState: STATE_NO_SERVER,
+			BackState: StateNoServer,
 		},
-		STATE_DISCONNECTING: FSMState{
+		StateDisconnecting: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_DISCONNECTED, Description: "Cancel or Error"},
-				{To: STATE_DISCONNECTED, Description: "Done disconnecting"},
+				{To: StateDisconnected, Description: "Cancel or Error"},
+				{To: StateDisconnected, Description: "Done disconnecting"},
 			},
 		},
-		STATE_CONNECTING: FSMState{
+		StateConnecting: FSMState{
 			Transitions: []FSMTransition{
-				{To: STATE_DISCONNECTED, Description: "Cancel or Error"},
-				{To: STATE_CONNECTED, Description: "Done connecting"},
+				{To: StateDisconnected, Description: "Cancel or Error"},
+				{To: StateConnected, Description: "Done connecting"},
 			},
 		},
-		STATE_CONNECTED: FSMState{
-			Transitions: []FSMTransition{{To: STATE_DISCONNECTING, Description: "App wants to disconnect"}},
+		StateConnected: FSMState{
+			Transitions: []FSMTransition{{To: StateDisconnecting, Description: "App wants to disconnect"}},
 		},
 	}
 	returnedFSM := fsm.FSM{}
-	returnedFSM.Init(STATE_DEREGISTERED, states, callback, directory, GetStateName, debug)
+	returnedFSM.Init(StateDeregistered, states, callback, directory, GetStateName, debug)
 	return returnedFSM
 }
 
@@ -253,17 +253,17 @@ func (e FSMWrongStateError) CustomError() *types.WrappedErrorMessage {
 // This indicates that the user wants to search for a new server.
 // Returns an error if this state transition is not possible.
 func (client *Client) SetSearchServer() error {
-	if !client.FSM.HasTransition(STATE_SEARCH_SERVER) {
+	if !client.FSM.HasTransition(StateSearchServer) {
 		return client.handleError(
 			"failed to set search server",
 			FSMWrongStateTransitionError{
 				Got:  client.FSM.Current,
-				Want: STATE_SEARCH_SERVER,
+				Want: StateSearchServer,
 			}.CustomError(),
 		)
 	}
 
-	client.FSM.GoTransition(STATE_SEARCH_SERVER)
+	client.FSM.GoTransition(StateSearchServer)
 	return nil
 }
 
@@ -272,17 +272,17 @@ func (client *Client) SetSearchServer() error {
 // Returns an error if this state transition is not possible.
 func (client *Client) SetConnected() error {
 	errorMessage := "failed to set connected"
-	if client.InFSMState(STATE_CONNECTED) {
+	if client.InFSMState(StateConnected) {
 		// already connected, show no error
 		client.Logger.Warning("Already connected")
 		return nil
 	}
-	if !client.FSM.HasTransition(STATE_CONNECTED) {
+	if !client.FSM.HasTransition(StateConnected) {
 		return client.handleError(
 			errorMessage,
 			FSMWrongStateTransitionError{
 				Got:  client.FSM.Current,
-				Want: STATE_CONNECTED,
+				Want: StateConnected,
 			}.CustomError(),
 		)
 	}
@@ -292,7 +292,7 @@ func (client *Client) SetConnected() error {
 		return client.handleError(errorMessage, currentServerErr)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_CONNECTED, currentServer)
+	client.FSM.GoTransitionWithData(StateConnected, currentServer)
 	return nil
 }
 
@@ -301,17 +301,17 @@ func (client *Client) SetConnected() error {
 // Returns an error if this state transition is not possible.
 func (client *Client) SetConnecting() error {
 	errorMessage := "failed to set connecting"
-	if client.InFSMState(STATE_CONNECTING) {
+	if client.InFSMState(StateConnecting) {
 		// already loading connection, show no error
 		client.Logger.Warning("Already connecting")
 		return nil
 	}
-	if !client.FSM.HasTransition(STATE_CONNECTING) {
+	if !client.FSM.HasTransition(StateConnecting) {
 		return client.handleError(
 			errorMessage,
 			FSMWrongStateTransitionError{
 				Got:  client.FSM.Current,
-				Want: STATE_CONNECTING,
+				Want: StateConnecting,
 			}.CustomError(),
 		)
 	}
@@ -321,7 +321,7 @@ func (client *Client) SetConnecting() error {
 		return client.handleError(errorMessage, currentServerErr)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_CONNECTING, currentServer)
+	client.FSM.GoTransitionWithData(StateConnecting, currentServer)
 	return nil
 }
 
@@ -330,17 +330,17 @@ func (client *Client) SetConnecting() error {
 // Returns an error if this state transition is not possible.
 func (client *Client) SetDisconnecting() error {
 	errorMessage := "failed to set disconnecting"
-	if client.InFSMState(STATE_DISCONNECTING) {
+	if client.InFSMState(StateDisconnecting) {
 		// already disconnecting, show no error
 		client.Logger.Warning("Already disconnecting")
 		return nil
 	}
-	if !client.FSM.HasTransition(STATE_DISCONNECTING) {
+	if !client.FSM.HasTransition(StateDisconnecting) {
 		return client.handleError(
 			errorMessage,
 			FSMWrongStateTransitionError{
 				Got:  client.FSM.Current,
-				Want: STATE_DISCONNECTING,
+				Want: StateDisconnecting,
 			}.CustomError(),
 		)
 	}
@@ -350,7 +350,7 @@ func (client *Client) SetDisconnecting() error {
 		return client.handleError(errorMessage, currentServerErr)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_DISCONNECTING, currentServer)
+	client.FSM.GoTransitionWithData(StateDisconnecting, currentServer)
 	return nil
 }
 
@@ -360,17 +360,17 @@ func (client *Client) SetDisconnecting() error {
 // Returns an error if this state transition is not possible.
 func (client *Client) SetDisconnected(cleanup bool) error {
 	errorMessage := "failed to set disconnected"
-	if client.InFSMState(STATE_DISCONNECTED) {
+	if client.InFSMState(StateDisconnected) {
 		// already disconnected, show no error
 		client.Logger.Warning("Already disconnected")
 		return nil
 	}
-	if !client.FSM.HasTransition(STATE_DISCONNECTED) {
+	if !client.FSM.HasTransition(StateDisconnected) {
 		return client.handleError(
 			errorMessage,
 			FSMWrongStateTransitionError{
 				Got:  client.FSM.Current,
-				Want: STATE_DISCONNECTED,
+				Want: StateDisconnected,
 			}.CustomError(),
 		)
 	}
@@ -385,7 +385,7 @@ func (client *Client) SetDisconnected(cleanup bool) error {
 		server.Disconnect(currentServer)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer)
+	client.FSM.GoTransitionWithData(StateDisconnected, currentServer)
 
 	return nil
 }
@@ -406,7 +406,7 @@ func (client *Client) goBackInternal() {
 // GoBack transitions the FSM back to the previous UI state, for now this is always the NO_SERVER state.
 func (client *Client) GoBack() error {
 	errorMessage := "failed to go back"
-	if client.InFSMState(STATE_DEREGISTERED) {
+	if client.InFSMState(StateDeregistered) {
 		return client.handleError(
 			errorMessage,
 			FSMDeregisteredError{}.CustomError(),
@@ -414,7 +414,7 @@ func (client *Client) GoBack() error {
 	}
 
 	// FIXME: Abitrary back transitions don't work because we need the approriate data
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
+	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
 	return nil
 }
 
@@ -423,12 +423,12 @@ func (client *Client) GoBack() error {
 // An error is also returned if OAuth is in progress but it fails to cancel it.
 func (client *Client) CancelOAuth() error {
 	errorMessage := "failed to cancel OAuth"
-	if !client.InFSMState(STATE_OAUTH_STARTED) {
+	if !client.InFSMState(StateOAuthStarted) {
 		return client.handleError(
 			errorMessage,
 			FSMWrongStateError{
 				Got:  client.FSM.Current,
-				Want: STATE_OAUTH_STARTED,
+				Want: StateOAuthStarted,
 			}.CustomError(),
 		)
 	}

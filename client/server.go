@@ -20,7 +20,7 @@ func (client *Client) getConfigAuth(
 	if loginErr != nil {
 		return "", "", loginErr
 	}
-	client.FSM.GoTransition(STATE_REQUEST_CONFIG)
+	client.FSM.GoTransition(StateRequestConfig)
 
 	validProfile, profileErr := server.HasValidProfile(chosenServer, client.SupportsWireguard)
 	if profileErr != nil {
@@ -72,7 +72,7 @@ func (client *Client) getConfig(
 	preferTCP bool,
 ) (string, string, error) {
 	errorMessage := "failed to get a configuration for OpenVPN/Wireguard"
-	if client.InFSMState(STATE_DEREGISTERED) {
+	if client.InFSMState(StateDeregistered) {
 		return "", "", types.NewWrappedError(
 			errorMessage,
 			FSMDeregisteredError{}.CustomError(),
@@ -97,7 +97,7 @@ func (client *Client) getConfig(
 	}
 
 	// Signal the server display info
-	client.FSM.GoTransitionWithData(STATE_DISCONNECTED, currentServer)
+	client.FSM.GoTransitionWithData(StateDisconnected, currentServer)
 
 	// Save the config
 	saveErr := client.Config.Save(&client)
@@ -139,7 +139,7 @@ func (client *Client) SetSecureLocation(countryCode string) error {
 // It returns an error if the server cannot be removed due to the state being DEREGISTERED.
 // Note that if the server does not exist, it returns nil as an error.
 func (client *Client) RemoveSecureInternet() error {
-	if client.InFSMState(STATE_DEREGISTERED) {
+	if client.InFSMState(StateDeregistered) {
 		return client.handleError(
 			"failed to remove Secure Internet",
 			FSMDeregisteredError{}.CustomError(),
@@ -147,7 +147,7 @@ func (client *Client) RemoveSecureInternet() error {
 	}
 	// No error because we can only have one secure internet server and if there are no secure internet servers, this is a NO-OP
 	client.Servers.RemoveSecureInternet()
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
+	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
@@ -163,7 +163,7 @@ func (client *Client) RemoveSecureInternet() error {
 // It returns an error if the server cannot be removed due to the state being DEREGISTERED.
 // Note that if the server does not exist, it returns nil as an error.
 func (client *Client) RemoveInstituteAccess(url string) error {
-	if client.InFSMState(STATE_DEREGISTERED) {
+	if client.InFSMState(StateDeregistered) {
 		return client.handleError(
 			"failed to remove Institute Access",
 			FSMDeregisteredError{}.CustomError(),
@@ -171,7 +171,7 @@ func (client *Client) RemoveInstituteAccess(url string) error {
 	}
 	// No error because this is a NO-OP if the server doesn't exist
 	client.Servers.RemoveInstituteAccess(url)
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
+	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
@@ -187,7 +187,7 @@ func (client *Client) RemoveInstituteAccess(url string) error {
 // It returns an error if the server cannot be removed due to the state being DEREGISTERED.
 // Note that if the server does not exist, it returns nil as an error.
 func (client *Client) RemoveCustomServer(url string) error {
-	if client.InFSMState(STATE_DEREGISTERED) {
+	if client.InFSMState(StateDeregistered) {
 		return client.handleError(
 			"failed to remove Custom Server",
 			FSMDeregisteredError{}.CustomError(),
@@ -195,7 +195,7 @@ func (client *Client) RemoveCustomServer(url string) error {
 	}
 	// No error because this is a NO-OP if the server doesn't exist
 	client.Servers.RemoveCustomServer(url)
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
+	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
@@ -217,7 +217,7 @@ func (client *Client) AddInstituteServer(url string) (server.Server, error) {
 	}
 
 	// Indicate that we're loading the server
-	client.FSM.GoTransition(STATE_LOADING_SERVER)
+	client.FSM.GoTransition(StateLoadingServer)
 
 	// FIXME: Do nothing with discovery here as the client already has it
 	// So pass a server as the parameter
@@ -242,7 +242,7 @@ func (client *Client) AddInstituteServer(url string) (server.Server, error) {
 	}
 
 	// Indicate that we want to authorize this server
-	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	client.FSM.GoTransition(StateChosenServer)
 
 	// Authorize it
 	loginErr := client.ensureLogin(server)
@@ -252,7 +252,7 @@ func (client *Client) AddInstituteServer(url string) (server.Server, error) {
 		return nil, client.handleError(errorMessage, loginErr)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
+	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
 	return server, nil
 }
 
@@ -270,7 +270,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 	}
 
 	// Indicate that we're loading the server
-	client.FSM.GoTransition(STATE_LOADING_SERVER)
+	client.FSM.GoTransition(StateLoadingServer)
 
 	// Get the secure internet URL from discovery
 	secureOrg, secureServer, discoErr := client.Discovery.GetSecureHomeArgs(orgID)
@@ -302,7 +302,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 	}
 
 	// Server has been chosen for authentication
-	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	client.FSM.GoTransition(StateChosenServer)
 
 	// Authorize it
 	loginErr := client.ensureLogin(server)
@@ -311,7 +311,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 		_ = client.RemoveSecureInternet()
 		return nil, client.handleError(errorMessage, loginErr)
 	}
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
+	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
 	return server, nil
 }
 
@@ -325,7 +325,7 @@ func (client *Client) AddCustomServer(url string) (server.Server, error) {
 	}
 
 	// Indicate that we're loading the server
-	client.FSM.GoTransition(STATE_LOADING_SERVER)
+	client.FSM.GoTransition(StateLoadingServer)
 
 	customServer := &types.DiscoveryServer{
 		BaseURL:     url,
@@ -348,7 +348,7 @@ func (client *Client) AddCustomServer(url string) (server.Server, error) {
 	}
 
 	// Server has been chosen for authentication
-	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	client.FSM.GoTransition(StateChosenServer)
 
 	// Authorize it
 	loginErr := client.ensureLogin(server)
@@ -358,7 +358,7 @@ func (client *Client) AddCustomServer(url string) (server.Server, error) {
 		return nil, client.handleError(errorMessage, loginErr)
 	}
 
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
+	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
 	return server, nil
 }
 
@@ -373,7 +373,7 @@ func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (stri
 		return "", "", client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
-	client.FSM.GoTransition(STATE_LOADING_SERVER)
+	client.FSM.GoTransition(StateLoadingServer)
 
 	// Get the server if it exists
 	server, serverErr := client.Servers.GetInstituteAccess(url)
@@ -389,7 +389,7 @@ func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (stri
 	}
 
 	// The server has now been chosen
-	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	client.FSM.GoTransition(StateChosenServer)
 
 	config, configType, configErr := client.getConfig(server, preferTCP)
 	if configErr != nil {
@@ -416,7 +416,7 @@ func (client *Client) GetConfigSecureInternet(
 		return "", "", client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
-	client.FSM.GoTransition(STATE_LOADING_SERVER)
+	client.FSM.GoTransition(StateLoadingServer)
 
 	// Get the server if it exists
 	server, serverErr := client.Servers.GetSecureInternetHomeServer()
@@ -431,7 +431,7 @@ func (client *Client) GetConfigSecureInternet(
 		return "", "", client.handleError(errorMessage, currentErr)
 	}
 
-	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	client.FSM.GoTransition(StateChosenServer)
 
 	config, configType, configErr := client.getConfig(server, preferTCP)
 	if configErr != nil {
@@ -452,7 +452,7 @@ func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string,
 		return "", "", client.handleError(errorMessage, urlErr)
 	}
 
-	client.FSM.GoTransition(STATE_LOADING_SERVER)
+	client.FSM.GoTransition(StateLoadingServer)
 
 	// Get the server if it exists
 	server, serverErr := client.Servers.GetCustomServer(url)
@@ -467,7 +467,7 @@ func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string,
 		return "", "", client.handleError(errorMessage, currentErr)
 	}
 
-	client.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	client.FSM.GoTransition(StateChosenServer)
 
 	config, configType, configErr := client.getConfig(server, preferTCP)
 	if configErr != nil {
@@ -483,13 +483,13 @@ func (client *Client) askSecureLocation() error {
 	locations := client.Discovery.GetSecureLocationList()
 
 	// Ask for the location in the callback
-	goTransitionErr := client.FSM.GoTransitionRequired(STATE_ASK_LOCATION, locations)
+	goTransitionErr := client.FSM.GoTransitionRequired(StateAskLocation, locations)
 	if goTransitionErr != nil {
 		return types.NewWrappedError(errorMessage, goTransitionErr)
 	}
 
 	// The state has changed, meaning setting the secure location was not successful
-	if client.FSM.Current != STATE_ASK_LOCATION {
+	if client.FSM.Current != StateAskLocation {
 		// TODO: maybe a custom type for this errors.new?
 		return types.NewWrappedError(
 			errorMessage,
@@ -505,12 +505,12 @@ func (client *Client) askSecureLocation() error {
 func (client *Client) ChangeSecureLocation() error {
 	errorMessage := "failed to change location from the main screen"
 
-	if !client.InFSMState(STATE_NO_SERVER) {
+	if !client.InFSMState(StateNoServer) {
 		return client.handleError(
 			errorMessage,
 			FSMWrongStateError{
 				Got:  client.FSM.Current,
-				Want: STATE_NO_SERVER,
+				Want: StateNoServer,
 			}.CustomError(),
 		)
 	}
@@ -521,7 +521,7 @@ func (client *Client) ChangeSecureLocation() error {
 	}
 
 	// Go back to the main screen
-	client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
+	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
 
 	return nil
 }
@@ -538,8 +538,8 @@ func (client *Client) RenewSession() error {
 	}
 
 	// The server has not been chosen yet, this means that we want to manually renew
-	if client.FSM.InState(STATE_NO_SERVER) {
-	    client.FSM.GoTransition(STATE_CHOSEN_SERVER)
+	if client.FSM.InState(StateNoServer) {
+	    client.FSM.GoTransition(StateChosenServer)
 	}
 
 	server.MarkTokensForRenew(currentServer)
@@ -555,9 +555,9 @@ func (client *Client) RenewSession() error {
 // If there is no server then this returns false and logs with INFO if so
 // In other cases it simply checks the expiry time and calculates according to: https://github.com/eduvpn/documentation/blob/b93854dcdd22050d5f23e401619e0165cb8bc591/API.md#session-expiry.
 func (client *Client) ShouldRenewButton() bool {
-	if !client.InFSMState(STATE_CONNECTED) && !client.InFSMState(STATE_CONNECTING) &&
-		!client.InFSMState(STATE_DISCONNECTED) &&
-		!client.InFSMState(STATE_DISCONNECTING) {
+	if !client.InFSMState(StateConnected) && !client.InFSMState(StateConnecting) &&
+		!client.InFSMState(StateDisconnected) &&
+		!client.InFSMState(StateDisconnecting) {
 		return false
 	}
 
@@ -583,7 +583,7 @@ func (client *Client) ensureLogin(chosenServer server.Server) error {
 	if server.NeedsRelogin(chosenServer) {
 		url, urlErr := server.GetOAuthURL(chosenServer, client.Name)
 
-		goTransitionErr := client.FSM.GoTransitionRequired(STATE_OAUTH_STARTED, url)
+		goTransitionErr := client.FSM.GoTransitionRequired(StateOAuthStarted, url)
 		if goTransitionErr != nil {
 			return types.NewWrappedError(errorMessage, goTransitionErr)
 		}
@@ -601,7 +601,7 @@ func (client *Client) ensureLogin(chosenServer server.Server) error {
 		}
 	}
 	// OAuth was valid, ensure we are in the authorized state
-	client.FSM.GoTransition(STATE_AUTHORIZED)
+	client.FSM.GoTransition(StateAuthorized)
 	return nil
 }
 

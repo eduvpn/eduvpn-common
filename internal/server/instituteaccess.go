@@ -30,14 +30,14 @@ func (servers *Servers) SetInstituteAccess(server Server) error {
 	}
 
 	if base.Type != "institute_access" {
-		return types.NewWrappedError(errorMessage, errors.New("Not an institute access server"))
+		return types.NewWrappedError(errorMessage, errors.New("not an institute access server"))
 	}
 
 	if _, ok := servers.InstituteServers.Map[base.URL]; ok {
 		servers.InstituteServers.CurrentURL = base.URL
 		servers.IsType = InstituteAccessServerType
 	} else {
-		return types.NewWrappedError(errorMessage, errors.New("No such institute access server"))
+		return types.NewWrappedError(errorMessage, errors.New("no such institute access server"))
 	}
 	return nil
 }
@@ -46,7 +46,7 @@ func (servers *Servers) GetInstituteAccess(url string) (*InstituteAccessServer, 
 	if server, ok := servers.InstituteServers.Map[url]; ok {
 		return server, nil
 	}
-	return nil, types.NewWrappedError("failed to get institute access server", fmt.Errorf("No institute access server with URL: %s", url))
+	return nil, types.NewWrappedError("failed to get institute access server", fmt.Errorf("no institute access server with URL: %s", url))
 }
 
 func (servers *Servers) RemoveInstituteAccess(url string) {

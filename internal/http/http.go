@@ -170,13 +170,13 @@ func (e *HTTPStatusError) Error() string {
 	)
 }
 
-type HTTPParseJsonError struct {
+type HTTPParseJSONError struct {
 	URL  string
 	Body string
 	Err  error
 }
 
-func (e *HTTPParseJsonError) Error() string {
+func (e *HTTPParseJSONError) Error() string {
 	return fmt.Sprintf(
 		"failed parsing json %s for HTTP resource: %s with error: %v",
 		e.Body,

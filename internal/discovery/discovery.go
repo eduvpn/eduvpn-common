@@ -113,7 +113,7 @@ func (discovery *Discovery) GetServerByCountryCode(
 
 func (discovery *Discovery) getOrgByID(orgID string) (*types.DiscoveryOrganization, error) {
 	for _, organization := range discovery.Organizations.List {
-		if organization.OrgId == orgID {
+		if organization.OrgID == orgID {
 			return &organization, nil
 		}
 	}
@@ -153,9 +153,9 @@ func (discovery *Discovery) DetermineServersUpdate() bool {
 		return true
 	}
 	// 1 hour from the last update
-	should_update_time := discovery.Servers.Timestamp.Add(1 * time.Hour)
+	shouldUpdateTime := discovery.Servers.Timestamp.Add(1 * time.Hour)
 	now := time.Now()
-	return !now.Before(should_update_time)
+	return !now.Before(shouldUpdateTime)
 }
 
 // Get the organization list

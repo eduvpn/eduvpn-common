@@ -9,16 +9,16 @@ type ErrorLevel int8
 
 const (
 	// All other errors, default
-	ERR_OTHER ErrorLevel = iota
+	ErrOther ErrorLevel = iota
 
 	// The erorr is just here as additional info
-	ERR_INFO
+	ErrInfo
 
 	// The error is just here as a warning
-	ERR_WARNING
+	ErrWarning
 
 	// The error is fatal, the app cannot function
-	ERR_FATAL
+	ErrFatal
 )
 
 type WrappedErrorMessage struct {
@@ -94,5 +94,5 @@ func GetErrorLevel(err error) ErrorLevel {
 	if errors.As(err, &wrappedErr) {
 		return wrappedErr.Level
 	}
-	return ERR_OTHER
+	return ErrOther
 }

@@ -26,7 +26,7 @@ type SecureInternetHomeServer struct {
 
 func (servers *Servers) GetSecureInternetHomeServer() (*SecureInternetHomeServer, error) {
 	if !servers.HasSecureLocation() {
-		return nil, errors.New("No secure internet home server")
+		return nil, errors.New("no secure internet home server")
 	}
 	return &servers.SecureInternetHomeServer, nil
 }
@@ -39,7 +39,7 @@ func (servers *Servers) SetSecureInternet(server Server) error {
 	}
 
 	if base.Type != "secure_internet" {
-		return types.NewWrappedError(errorMessage, errors.New("Not a secure internet server"))
+		return types.NewWrappedError(errorMessage, errors.New("not a secure internet server"))
 	}
 
 	// The location should already be configured
@@ -58,13 +58,13 @@ func (servers *Servers) RemoveSecureInternet() {
 	}
 }
 
-func (secure *SecureInternetHomeServer) GetOAuth() *oauth.OAuth {
-	return &secure.OAuth
+func (server *SecureInternetHomeServer) GetOAuth() *oauth.OAuth {
+	return &server.OAuth
 }
 
-func (secure *SecureInternetHomeServer) GetTemplateAuth() func(string) string {
+func (server *SecureInternetHomeServer) GetTemplateAuth() func(string) string {
 	return func(authURL string) string {
-		return util.ReplaceWAYF(secure.AuthorizationTemplate, authURL, secure.HomeOrganizationID)
+		return util.ReplaceWAYF(server.AuthorizationTemplate, authURL, server.HomeOrganizationID)
 	}
 }
 
@@ -92,23 +92,23 @@ func (servers *Servers) HasSecureLocation() bool {
 	return servers.SecureInternetHomeServer.CurrentLocation != ""
 }
 
-func (secure *SecureInternetHomeServer) addLocation(
+func (server *SecureInternetHomeServer) addLocation(
 	locationServer *types.DiscoveryServer,
 ) (*ServerBase, error) {
 	errorMessage := "failed adding a location"
 	// Initialize the base map if it is non-nil
-	if secure.BaseMap == nil {
-		secure.BaseMap = make(map[string]*ServerBase)
+	if server.BaseMap == nil {
+		server.BaseMap = make(map[string]*ServerBase)
 	}
 
 	// Add the location to the base map
-	base, exists := secure.BaseMap[locationServer.CountryCode]
+	base, exists := server.BaseMap[locationServer.CountryCode]
 
 	if !exists || base == nil {
 		// Create the base to be added to the map
 		base = &ServerBase{}
 		base.URL = locationServer.BaseURL
-		base.DisplayName = secure.DisplayName
+		base.DisplayName = server.DisplayName
 		base.SupportContact = locationServer.SupportContact
 		base.Type = "secure_internet"
 		endpointsErr := base.InitializeEndpoints()
@@ -118,37 +118,37 @@ func (secure *SecureInternetHomeServer) addLocation(
 	}
 
 	// Ensure it is in the map
-	secure.BaseMap[locationServer.CountryCode] = base
+	server.BaseMap[locationServer.CountryCode] = base
 	return base, nil
 }
 
 // Initializes the home server and adds its own location
-func (secure *SecureInternetHomeServer) init(
+func (server *SecureInternetHomeServer) init(
 	homeOrg *types.DiscoveryOrganization,
 	homeLocation *types.DiscoveryServer,
 ) error {
 	errorMessage := "failed initializing secure internet home server"
 
-	if secure.HomeOrganizationID != homeOrg.OrgId {
+	if server.HomeOrganizationID != homeOrg.OrgID {
 		// New home organisation, clear everything
-		*secure = SecureInternetHomeServer{}
+		*server = SecureInternetHomeServer{}
 	}
 
 	// Make sure to set the organization ID
-	secure.HomeOrganizationID = homeOrg.OrgId
-	secure.DisplayName = homeOrg.DisplayName
+	server.HomeOrganizationID = homeOrg.OrgID
+	server.DisplayName = homeOrg.DisplayName
 
 	// Make sure to set the authorization URL template
-	secure.AuthorizationTemplate = homeLocation.AuthenticationURLTemplate
+	server.AuthorizationTemplate = homeLocation.AuthenticationURLTemplate
 
-	base, baseErr := secure.addLocation(homeLocation)
+	base, baseErr := server.addLocation(homeLocation)
 
 	if baseErr != nil {
 		return types.NewWrappedError(errorMessage, baseErr)
 	}
 
 	// Make sure oauth contains our endpoints
-	secure.OAuth.Init(base.URL, base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token)
+	server.OAuth.Init(base.URL, base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token)
 	return nil
 }
 

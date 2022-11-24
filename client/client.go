@@ -77,7 +77,7 @@ func (client *Client) Register(
 	debug bool,
 ) error {
 	errorMessage := "failed to register with the GO library"
-	if !client.InFSMState(STATE_DEREGISTERED) {
+	if !client.InFSMState(StateDeregistered) {
 		return client.handleError(
 			errorMessage,
 			FSMDeregisteredError{}.CustomError(),
@@ -89,9 +89,9 @@ func (client *Client) Register(
 	client.Language = language
 
 	// Initialize the logger
-	logLevel := log.LOG_WARNING
+	logLevel := log.LogWarning
 	if debug {
-		logLevel = log.LOG_DEBUG
+		logLevel = log.LogDebug
 	}
 
 	loggerErr := client.Logger.Init(logLevel, directory)
@@ -118,7 +118,7 @@ func (client *Client) Register(
 	}
 
 	// Go to the No Server state with the saved servers after we're done
-	defer client.FSM.GoTransitionWithData(STATE_NO_SERVER, client.Servers)
+	defer client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
 
 	// Let's Connect! doesn't care about discovery
 	if client.isLetsConnect() {
@@ -160,7 +160,7 @@ func (client *Client) askProfile(chosenServer server.Server) error {
 	if profilesErr != nil {
 		return types.NewWrappedError(errorMessage, profilesErr)
 	}
-	goTransitionErr := client.FSM.GoTransitionRequired(STATE_ASK_PROFILE, profiles)
+	goTransitionErr := client.FSM.GoTransitionRequired(StateAskProfile, profiles)
 	if goTransitionErr != nil {
 		return types.NewWrappedError(errorMessage, goTransitionErr)
 	}

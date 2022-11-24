@@ -17,7 +17,7 @@ type DiscoveryOrganizations struct {
 
 type DiscoveryOrganization struct {
 	DisplayName        DiscoMapOrString `json:"display_name"`
-	OrgId              string           `json:"org_id"`
+	OrgID              string           `json:"org_id"`
 	SecureInternetHome string           `json:"secure_internet_home"`
 	KeywordList        DiscoMapOrString `json:"keyword_list"`
 }

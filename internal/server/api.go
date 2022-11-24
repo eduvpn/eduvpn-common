@@ -20,7 +20,9 @@ func APIGetEndpoints(baseURL string) (*ServerEndpoints, error) {
 		return nil, types.NewWrappedError(errorMessage, urlErr)
 	}
 
-	url.Path = path.Join(url.Path, WellKnownPath)
+	wellKnownPath := "/.well-known/vpn-user-portal"
+
+	url.Path = path.Join(url.Path, wellKnownPath)
 	_, body, bodyErr := httpw.HTTPGet(url.String())
 
 	if bodyErr != nil {
@@ -140,7 +142,7 @@ func GetPreferTCPString(preferTCP bool) string {
 
 func APIConnectWireguard(
 	server Server,
-	profile_id string,
+	profileID string,
 	pubkey string,
 	preferTCP bool,
 	supportsOpenVPN bool,
@@ -158,7 +160,7 @@ func APIConnectWireguard(
 	}
 
 	urlForm := url.Values{
-		"profile_id": {profile_id},
+		"profile_id": {profileID},
 		"public_key": {pubkey},
 		"prefer_tcp": {GetPreferTCPString(preferTCP)},
 	}
@@ -191,7 +193,7 @@ func APIConnectWireguard(
 	return string(connectBody), content, pTime, nil
 }
 
-func APIConnectOpenVPN(server Server, profile_id string, preferTCP bool) (string, time.Time, error) {
+func APIConnectOpenVPN(server Server, profileID string, preferTCP bool) (string, time.Time, error) {
 	errorMessage := "failed obtaining an OpenVPN configuration"
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
@@ -199,7 +201,7 @@ func APIConnectOpenVPN(server Server, profile_id string, preferTCP bool) (string
 	}
 
 	urlForm := url.Values{
-		"profile_id": {profile_id},
+		"profile_id": {profileID},
 		"prefer_tcp": {GetPreferTCPString(preferTCP)},
 	}
 

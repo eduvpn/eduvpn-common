@@ -121,7 +121,7 @@ func (oauth *OAuth) setupListener() error {
 func (oauth *OAuth) getTokensWithCallback() error {
 	errorMessage := "failed getting tokens with callback"
 	if oauth.Session.Listener == nil {
-		return types.NewWrappedError(errorMessage, errors.New("No listener"))
+		return types.NewWrappedError(errorMessage, errors.New("no listener"))
 	}
 	mux := http.NewServeMux()
 	// server /callback over the listener address
@@ -161,7 +161,7 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
 	opts := &httpw.HTTPOptionalParams{Headers: headers, Body: data}
-	current_time := time.Now()
+	currentTime := time.Now()
 	_, body, bodyErr := httpw.HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return types.NewWrappedError(errorMessage, bodyErr)
@@ -174,11 +174,11 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 	if jsonErr != nil {
 		return types.NewWrappedError(
 			errorMessage,
-			&httpw.HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr},
+			&httpw.HTTPParseJSONError{URL: reqURL, Body: string(body), Err: jsonErr},
 		)
 	}
 
-	tokenStructure.ExpiredTimestamp = current_time.Add(
+	tokenStructure.ExpiredTimestamp = currentTime.Add(
 		time.Second * time.Duration(tokenStructure.Expires),
 	)
 	oauth.Token = tokenStructure
@@ -186,9 +186,9 @@ func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
 }
 
 func (oauth *OAuth) isTokensExpired() bool {
-	expired_time := oauth.Token.ExpiredTimestamp
-	current_time := time.Now()
-	return !current_time.Before(expired_time)
+	expiredTime := oauth.Token.ExpiredTimestamp
+	currentTime := time.Now()
+	return !currentTime.Before(expiredTime)
 }
 
 // Get the access and refresh tokens with a previously received refresh token
@@ -205,7 +205,7 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
 	opts := &httpw.HTTPOptionalParams{Headers: headers, Body: data}
-	current_time := time.Now()
+	currentTime := time.Now()
 	_, body, bodyErr := httpw.HTTPPostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return types.NewWrappedError(errorMessage, bodyErr)
@@ -217,11 +217,11 @@ func (oauth *OAuth) getTokensWithRefresh() error {
 	if jsonErr != nil {
 		return types.NewWrappedError(
 			errorMessage,
-			&httpw.HTTPParseJsonError{URL: reqURL, Body: string(body), Err: jsonErr},
+			&httpw.HTTPParseJSONError{URL: reqURL, Body: string(body), Err: jsonErr},
 		)
 	}
 
-	tokenStructure.ExpiredTimestamp = current_time.Add(
+	tokenStructure.ExpiredTimestamp = currentTime.Add(
 		time.Second * time.Duration(tokenStructure.Expires),
 	)
 	oauth.Token = tokenStructure
@@ -374,7 +374,7 @@ func (oauth OAuth) GetListenerPort() (int, error) {
 	errorMessage := "failed to get listener port"
 
 	if oauth.Session.Listener == nil {
-		return 0, types.NewWrappedError(errorMessage, errors.New("No OAuth listener"))
+		return 0, types.NewWrappedError(errorMessage, errors.New("no OAuth listener"))
 	}
 	return oauth.Session.Listener.Addr().(*net.TCPAddr).Port, nil
 }
@@ -444,7 +444,7 @@ func (oauth *OAuth) Exchange() error {
 
 func (oauth *OAuth) Cancel() {
 	oauth.Session.CallbackError = types.NewWrappedErrorLevel(
-		types.ERR_INFO,
+		types.ErrInfo,
 		"cancelled OAuth",
 		&OAuthCancelledCallbackError{},
 	)

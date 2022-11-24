@@ -92,9 +92,6 @@ type ServerEndpoints struct {
 	V string `json:"v"`
 }
 
-// Make this a var which we can overwrite in the tests
-var WellKnownPath string = "/.well-known/vpn-user-portal"
-
 func (servers *Servers) GetCurrentServer() (Server, error) {
 	errorMessage := "failed getting current server"
 	if servers.IsType == SecureInternetServerType {
@@ -372,7 +369,7 @@ func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (st
 		return "", "", types.NewWrappedError(errorMessage, baseErr)
 	}
 
-	profile_id := base.Profiles.Current
+	profileID := base.Profiles.Current
 	wireguardKey, wireguardErr := wireguard.GenerateKey()
 
 	if wireguardErr != nil {
@@ -382,7 +379,7 @@ func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (st
 	wireguardPublicKey := wireguardKey.PublicKey().String()
 	config, content, expires, configErr := APIConnectWireguard(
 		server,
-		profile_id,
+		profileID,
 		wireguardPublicKey,
 		preferTCP,
 		supportsOpenVPN,
@@ -414,8 +411,8 @@ func openVPNGetConfig(server Server, preferTCP bool) (string, string, error) {
 	if baseErr != nil {
 		return "", "", types.NewWrappedError(errorMessage, baseErr)
 	}
-	profile_id := base.Profiles.Current
-	configOpenVPN, expires, configErr := APIConnectOpenVPN(server, profile_id, preferTCP)
+	profileID := base.Profiles.Current
+	configOpenVPN, expires, configErr := APIConnectOpenVPN(server, profileID, preferTCP)
 
 	// Store start and end time
 	base.StartTime = time.Now()
@@ -515,7 +512,7 @@ func GetConfig(server Server, clientSupportsWireguard bool, preferTCP bool) (str
 		config, configType, configErr = openVPNGetConfig(server, preferTCP)
 	// The config supports no available protocol because the profile only supports WireGuard but the client doesn't
 	} else {
-		return "", "", types.NewWrappedError(errorMessage, errors.New("No supported protocol found"))
+		return "", "", types.NewWrappedError(errorMessage, errors.New("no supported protocol found"))
 	}
 
 	if configErr != nil {

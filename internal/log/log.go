@@ -20,32 +20,32 @@ type LogLevel int8
 
 const (
 	// No level set, not allowed
-	LOG_NOTSET LogLevel = iota
+	LogNotSet LogLevel = iota
 	// Log debug, this message is not an error but is there for debugging
-	LOG_DEBUG
+	LogDebug
 	// Log info, this message is not an error but is there for additional information
-	LOG_INFO
+	LogInfo
 	// Log only to provide a warning, the app still functions
-	LOG_WARNING
+	LogWarning
 	// Log to provide a generic error, the app still functions but some functionality might not work
-	LOG_ERROR
+	LogError
 	// Log to provide a fatal error, the app cannot function correctly when such an error occurs
-	LOG_FATAL
+	LogFatal
 )
 
 func (e LogLevel) String() string {
 	switch e {
-	case LOG_NOTSET:
+	case LogNotSet:
 		return "NOTSET"
-	case LOG_DEBUG:
+	case LogDebug:
 		return "DEBUG"
-	case LOG_INFO:
+	case LogInfo:
 		return "INFO"
-	case LOG_WARNING:
+	case LogWarning:
 		return "WARNING"
-	case LOG_ERROR:
+	case LogError:
 		return "ERROR"
-	case LOG_FATAL:
+	case LogFatal:
 		return "FATAL"
 	default:
 		return "UNKNOWN"
@@ -79,35 +79,35 @@ func (logger *FileLogger) Inherit(label string, err error) {
 
 	msg := fmt.Sprintf("%s with err: %s", label, types.GetErrorTraceback(err))
 	switch level {
-	case types.ERR_INFO:
+	case types.ErrInfo:
 		logger.Info(msg)
-	case types.ERR_WARNING:
+	case types.ErrWarning:
 		logger.Warning(msg)
-	case types.ERR_OTHER:
+	case types.ErrOther:
 		logger.Error(msg)
-	case types.ERR_FATAL:
+	case types.ErrFatal:
 		logger.Fatal(msg)
 	}
 }
 
 func (logger *FileLogger) Debug(msg string, params ...interface{}) {
-	logger.log(LOG_DEBUG, msg, params...)
+	logger.log(LogDebug, msg, params...)
 }
 
 func (logger *FileLogger) Info(msg string, params ...interface{}) {
-	logger.log(LOG_INFO, msg, params...)
+	logger.log(LogInfo, msg, params...)
 }
 
 func (logger *FileLogger) Warning(msg string, params ...interface{}) {
-	logger.log(LOG_WARNING, msg, params...)
+	logger.log(LogWarning, msg, params...)
 }
 
 func (logger *FileLogger) Error(msg string, params ...interface{}) {
-	logger.log(LOG_ERROR, msg, params...)
+	logger.log(LogError, msg, params...)
 }
 
 func (logger *FileLogger) Fatal(msg string, params ...interface{}) {
-	logger.log(LOG_FATAL, msg, params...)
+	logger.log(LogFatal, msg, params...)
 }
 
 func (logger *FileLogger) Close() {
@@ -119,9 +119,9 @@ func (logger *FileLogger) getFilename(directory string) string {
 }
 
 func (logger *FileLogger) log(level LogLevel, msg string, params ...interface{}) {
-	if level >= logger.Level && logger.Level != LOG_NOTSET {
-		formatted_msg := fmt.Sprintf(msg, params...)
-		format := fmt.Sprintf("- Go - %s - %s", level.String(), formatted_msg)
+	if level >= logger.Level && logger.Level != LogNotSet {
+		formattedMsg := fmt.Sprintf(msg, params...)
+		format := fmt.Sprintf("- Go - %s - %s", level.String(), formattedMsg)
 		// To log file
 		log.Println(format)
 	}

@@ -54,7 +54,7 @@ func getCPtrDiscoOrganization(
 		C.malloc(C.size_t(unsafe.Sizeof(C.discoveryOrganization{}))),
 	)
 	returnedStruct.display_name = C.CString(state.GetTranslated(organization.DisplayName))
-	returnedStruct.org_id = C.CString(organization.OrgId)
+	returnedStruct.org_id = C.CString(organization.OrgID)
 	returnedStruct.secure_internet_home = C.CString(organization.SecureInternetHome)
 	returnedStruct.keyword_list = C.CString(state.GetTranslated(organization.KeywordList))
 	return returnedStruct

@@ -82,11 +82,11 @@ func stateCallback(
 	newState client.FSMStateID,
 	data interface{},
 ) {
-	if newState == client.STATE_OAUTH_STARTED {
+	if newState == client.StateOAuthStarted {
 		openBrowser(data)
 	}
 
-	if newState == client.STATE_ASK_PROFILE {
+	if newState == client.StateAskProfile {
 		sendProfile(state, data)
 	}
 }
@@ -153,17 +153,17 @@ func printConfig(url string, serverType ServerTypes) {
 // The main function
 // It parses the arguments and executes the correct functions
 func main() {
-	customUrlArg := flag.String("get-custom", "", "The url of a custom server to connect to")
+	customURLArg := flag.String("get-custom", "", "The url of a custom server to connect to")
 	urlArg := flag.String("get-institute", "", "The url of an institute to connect to")
 	secureInternet := flag.String("get-secure", "", "Gets secure internet servers")
 	flag.Parse()
 
 	// Connect to a VPN by getting an Institute Access config
-	customUrlString := *customUrlArg
+	customURLString := *customURLArg
 	urlString := *urlArg
 	secureInternetString := *secureInternet
-	if customUrlString != "" {
-		printConfig(customUrlString, ServerTypeCustom)
+	if customURLString != "" {
+		printConfig(customURLString, ServerTypeCustom)
 		return
 	} else if urlString != "" {
 		printConfig(urlString, ServerTypeInstituteAccess)

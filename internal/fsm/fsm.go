@@ -75,8 +75,8 @@ func (fsm *FSM) InState(check FSMStateID) bool {
 }
 
 func (fsm *FSM) HasTransition(check FSMStateID) bool {
-	for _, transition_state := range fsm.States[fsm.Current].Transitions {
-		if transition_state.To == check {
+	for _, transitionState := range fsm.States[fsm.Current].Transitions {
+		if transitionState.To == check {
 			return true
 		}
 	}
@@ -143,12 +143,12 @@ func (fsm *FSM) GoTransition(newState FSMStateID) bool {
 
 func (fsm *FSM) generateMermaidGraph() string {
 	graph := "graph TD\n"
-	sorted_fsm := make(FSMStateIDSlice, 0, len(fsm.States))
-	for state_id := range fsm.States {
-		sorted_fsm = append(sorted_fsm, state_id)
+	sortedFSM := make(FSMStateIDSlice, 0, len(fsm.States))
+	for stateID := range fsm.States {
+		sortedFSM = append(sortedFSM, stateID)
 	}
-	sort.Sort(sorted_fsm)
-	for _, state := range sorted_fsm {
+	sort.Sort(sortedFSM)
+	for _, state := range sortedFSM {
 		transitions := fsm.States[state].Transitions
 		for _, transition := range transitions {
 			if state == fsm.Current {

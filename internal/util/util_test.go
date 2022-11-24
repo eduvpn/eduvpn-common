@@ -3,10 +3,9 @@ package util
 import (
 	"bytes"
 	"testing"
-	"time"
 )
 
-func Test_EnsureValidURL(t *testing.T) {
+func TestEnsureValidURL(t *testing.T) {
 	_, validErr := EnsureValidURL("%notvalid%")
 
 	if validErr == nil {
@@ -39,7 +38,7 @@ func Test_EnsureValidURL(t *testing.T) {
 	}
 }
 
-func Test_MakeRandomByteSlice(t *testing.T) {
+func TestMakeRandomByteSlice(t *testing.T) {
 	random, randomErr := MakeRandomByteSlice(32)
 	if randomErr != nil {
 		t.Fatalf("Got: %v, want: nil", randomErr)
@@ -58,7 +57,7 @@ func Test_MakeRandomByteSlice(t *testing.T) {
 	}
 }
 
-func Test_WAYFEncode(t *testing.T) {
+func TestWAYFEncode(t *testing.T) {
 	// AuthTemplate
 	returnTo := "127.0.0.1:8000/test123bla/#wow   "
 
@@ -70,7 +69,7 @@ func Test_WAYFEncode(t *testing.T) {
 	}
 }
 
-func Test_ReplaceWAYF(t *testing.T) {
+func TestReplaceWAYF(t *testing.T) {
 	// We expect url encoding but the spaces to be correctly replace with a + instead of a %20
 	// And we expect that the return to and org_id are correctly replaced
 	replaced := ReplaceWAYF(
@@ -112,7 +111,7 @@ func Test_ReplaceWAYF(t *testing.T) {
 	}
 }
 
-func Test_GetLanguageMatched(t *testing.T) {
+func TestGetLanguageMatched(t *testing.T) {
 	// exact match
 	returned := GetLanguageMatched(map[string]string{"en": "test", "de": "test2"}, "en")
 	if returned != "test" {

@@ -7,7 +7,7 @@ import (
 	"github.com/jedisct1/go-minisign"
 )
 
-// Verify verifies the signature (.minisig file format) on signedJson.
+// Verify verifies the signature (.minisig file format) on signedJSON.
 //
 // expectedFileName must be set to the file type to be verified, either "server_list.json" or "organization_list.json".
 // minSign must be set to the minimum UNIX timestamp (without milliseconds) for the file version.
@@ -20,7 +20,7 @@ import (
 // Verify is a wrapper around verifyWithKeys where allowedPublicKeys is set to the list from https://git.sr.ht/~eduvpn/disco.eduvpn.org#public-keys.
 func Verify(
 	signatureFileContent string,
-	signedJson []byte,
+	signedJSON []byte,
 	expectedFileName string,
 	minSignTime uint64,
 	forcePrehash bool,
@@ -32,7 +32,7 @@ func Verify(
 	}
 	valid, err := verifyWithKeys(
 		signatureFileContent,
-		signedJson,
+		signedJSON,
 		expectedFileName,
 		minSignTime,
 		keyStrs,
@@ -44,7 +44,7 @@ func Verify(
 	return valid, nil
 }
 
-// verifyWithKeys verifies the Minisign signature in signatureFileContent (minisig file format) over the server_list/organization_list JSON in signedJson.
+// verifyWithKeys verifies the Minisign signature in signatureFileContent (minisig file format) over the server_list/organization_list JSON in signedJSON.
 //
 // Verification is performed using a matching key in allowedPublicKeys.
 // The signature is checked to be a Ed25519 Minisign (optionally Ed25519 Blake2b-512 prehashed, see forcePrehash) signature with a valid trusted comment.
@@ -56,7 +56,7 @@ func Verify(
 // Note that every error path is wrapped in a custom type here because minisign does not return custom error types, they use errors.New
 func verifyWithKeys(
 	signatureFileContent string,
-	signedJson []byte,
+	signedJSON []byte,
 	filename string,
 	minSignTime uint64,
 	allowedPublicKeys []string,
@@ -97,7 +97,7 @@ func verifyWithKeys(
 			continue // Wrong key
 		}
 
-		valid, err := key.Verify(signedJson, sig)
+		valid, err := key.Verify(signedJSON, sig)
 		if !valid {
 			return false, &VerifyInvalidSignatureError{Err: err}
 		}

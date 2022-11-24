@@ -22,14 +22,14 @@ func GenerateKey() (wgtypes.Key, error) {
 
 // FIXME: Instead of doing a regex replace, decide if we should use a parser
 func ConfigAddKey(config string, key wgtypes.Key) string {
-	interface_section := "[Interface]"
-	interface_section_escaped := regexp.QuoteMeta(interface_section)
+	interfaceSection := "[Interface]"
+	InterfaceSectionEscaped := regexp.QuoteMeta(interfaceSection)
 
 	// (?m) enables multi line mode
 	// ^ match from beginning of line
 	// $ match till end of line
 	// So it matches [Interface] section exactly
-	interface_re := regexp.MustCompile(fmt.Sprintf("(?m)^%s$", interface_section_escaped))
-	to_replace := fmt.Sprintf("%s\nPrivateKey = %s", interface_section, key.String())
-	return interface_re.ReplaceAllString(config, to_replace)
+	InterfaceRe := regexp.MustCompile(fmt.Sprintf("(?m)^%s$", InterfaceSectionEscaped))
+	toReplace := fmt.Sprintf("%s\nPrivateKey = %s", interfaceSection, key.String())
+	return InterfaceRe.ReplaceAllString(config, toReplace)
 }

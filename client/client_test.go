@@ -63,7 +63,7 @@ func stateCallback(
 	data interface{},
 	state *Client,
 ) {
-	if newState == STATE_OAUTH_STARTED {
+	if newState == StateOAuthStarted {
 		url, ok := data.(string)
 
 		if !ok {
@@ -73,7 +73,7 @@ func stateCallback(
 	}
 }
 
-func Test_server(t *testing.T) {
+func TestServer(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &Client{}
 
@@ -101,7 +101,7 @@ func Test_server(t *testing.T) {
 	}
 }
 
-func test_connect_oauth_parameter(
+func testConnectOAuthParameter(
 	t *testing.T,
 	parameters httpw.URLParameters,
 	expectedErr interface{},
@@ -115,7 +115,7 @@ func test_connect_oauth_parameter(
 		configDirectory,
 		"en",
 		func(oldState FSMStateID, newState FSMStateID, data interface{}) bool {
-			if newState == STATE_OAUTH_STARTED {
+			if newState == StateOAuthStarted {
 				server, serverErr := state.Servers.GetCustomServer(serverURI)
 				if serverErr != nil {
 					t.Fatalf("No server with error: %v", serverErr)
@@ -168,7 +168,7 @@ func test_connect_oauth_parameter(
 	}
 }
 
-func Test_connect_oauth_parameters(t *testing.T) {
+func TestConnectOAuthParameters(t *testing.T) {
 	var (
 		failedCallbackParameterError  *oauth.OAuthCallbackParameterError
 		failedCallbackStateMatchError *oauth.OAuthCallbackStateMatchError
@@ -194,11 +194,11 @@ func Test_connect_oauth_parameters(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test_connect_oauth_parameter(t, test.parameters, test.expectedErr)
+		testConnectOAuthParameter(t, test.parameters, test.expectedErr)
 	}
 }
 
-func Test_token_expired(t *testing.T) {
+func TestTokenExpired(t *testing.T) {
 	serverURI := getServerURI(t)
 	expiredTTL := os.Getenv("OAUTH_EXPIRED_TTL")
 	if expiredTTL == "" {
@@ -274,7 +274,7 @@ func Test_token_expired(t *testing.T) {
 	}
 }
 
-func Test_token_invalid(t *testing.T) {
+func TestTokenInvalid(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &Client{}
 
@@ -303,7 +303,7 @@ func Test_token_invalid(t *testing.T) {
 		t.Fatalf("Connect error before invalid: %v", configErr)
 	}
 
-	dummy_value := "37"
+	dummyValue := "37"
 
 	currentServer, serverErr := state.Servers.GetCurrentServer()
 	if serverErr != nil {
@@ -313,8 +313,8 @@ func Test_token_invalid(t *testing.T) {
 	oauth := currentServer.GetOAuth()
 
 	// Override tokens with invalid values
-	oauth.Token.Access = dummy_value
-	oauth.Token.Refresh = dummy_value
+	oauth.Token.Access = dummyValue
+	oauth.Token.Refresh = dummyValue
 
 	_, _, configErr = state.GetConfigCustomServer(serverURI, false)
 
@@ -322,17 +322,17 @@ func Test_token_invalid(t *testing.T) {
 		t.Fatalf("Connect error after invalid: %v", configErr)
 	}
 
-	if oauth.Token.Access == dummy_value {
-		t.Errorf("Access token is equal to dummy value: %s", dummy_value)
+	if oauth.Token.Access == dummyValue {
+		t.Errorf("Access token is equal to dummy value: %s", dummyValue)
 	}
 
-	if oauth.Token.Refresh == dummy_value {
-		t.Errorf("Refresh token is equal to dummy value: %s", dummy_value)
+	if oauth.Token.Refresh == dummyValue {
+		t.Errorf("Refresh token is equal to dummy value: %s", dummyValue)
 	}
 }
 
 // Test if an invalid profile will be corrected
-func Test_invalid_profile_corrected(t *testing.T) {
+func TestInvalidProfileCorrected(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &Client{}
 
@@ -390,7 +390,7 @@ func Test_invalid_profile_corrected(t *testing.T) {
 }
 
 // Test if prefer tcp is handled correctly by checking the returned config and config type
-func Test_prefer_tcp(t *testing.T) {
+func TestPreferTCP(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &Client{}
 
