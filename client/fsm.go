@@ -148,7 +148,7 @@ func newFSM(
 		STATE_OAUTH_STARTED: FSMState{
 			Transitions: []FSMTransition{
 				{To: STATE_AUTHORIZED, Description: "User authorizes with browser"},
-				{To: STATE_NO_SERVER, Description: "Cancel or Error"},
+				{To: STATE_NO_SERVER, Description: "Go back or Error"},
 				{To: STATE_SEARCH_SERVER, Description: "Cancel or Error"},
 			},
 			BackState: STATE_NO_SERVER,
