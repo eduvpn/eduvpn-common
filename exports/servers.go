@@ -165,7 +165,7 @@ func freeCListStrings(allStrings **C.char, totalStrings C.size_t) {
 // It gets the base information for a server as well
 func getCPtrServer(state *client.Client, base *client.ServerBase) *C.server {
 	// Allocation using malloc and the size of the struct
-	server := (*C.server)(C.malloc(C.size_t(unsafe.Sizeof(C.server{}))))
+	cServer := (*C.server)(C.malloc(C.size_t(unsafe.Sizeof(C.server{}))))
 	// String allocation and translate the display name
 	identifier := base.URL
 	countryCode := ""
@@ -177,28 +177,28 @@ func getCPtrServer(state *client.Client, base *client.ServerBase) *C.server {
 		locations = state.Discovery.GetSecureLocationList()
 	}
 
-	server.identifier = C.CString(identifier)
-	server.display_name = C.CString(state.GetTranslated(base.DisplayName))
-	server.country_code = C.CString(countryCode)
-	server.server_type = C.CString(base.Type)
+	cServer.identifier = C.CString(identifier)
+	cServer.display_name = C.CString(state.GetTranslated(base.DisplayName))
+	cServer.country_code = C.CString(countryCode)
+	cServer.server_type = C.CString(base.Type)
 	// Call the helper to get the list of support contacts
-	server.total_support_contact, server.support_contact = getCPtrListStrings(
+	cServer.total_support_contact, cServer.support_contact = getCPtrListStrings(
 		base.SupportContact,
 	)
 	locationsStruct := (*C.serverLocations)(C.malloc(C.size_t(unsafe.Sizeof(C.servers{}))))
 	locationsStruct.total_locations, locationsStruct.locations = getCPtrListStrings(locations)
-	server.locations = locationsStruct
+	cServer.locations = locationsStruct
 
 	profiles := base.GetValidProfiles(state.SupportsWireguard)
-	server.profiles = getCPtrProfiles(&profiles)
+	cServer.profiles = getCPtrProfiles(&profiles)
 	// No endtime is given if we get servers when it has been partially initialised
 	if base.EndTime.IsZero() {
-		server.expire_time = C.ulonglong(0)
+		cServer.expire_time = C.ulonglong(0)
 	} else {
 		// The expire time should be stored as an unsigned long long in unix itme
-		server.expire_time = C.ulonglong(base.EndTime.Unix())
+		cServer.expire_time = C.ulonglong(base.EndTime.Unix())
 	}
-	return server
+	return cServer
 }
 
 // Function for freeing a single server
@@ -231,8 +231,8 @@ func getCPtrServers(
 		serversPtr := (**C.server)(C.malloc(totalServers * C.size_t(unsafe.Sizeof(uintptr(0)))))
 		servers := (*[1<<30 - 1]*C.server)(unsafe.Pointer(serversPtr))[:totalServers:totalServers]
 		index := 0
-		for _, server := range serverMap {
-			cServer := getCPtrServer(state, &server.Base)
+		for _, currentServer := range serverMap {
+			cServer := getCPtrServer(state, &currentServer.Base)
 			servers[index] = cServer
 			index += 1
 		}

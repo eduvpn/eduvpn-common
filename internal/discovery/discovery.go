@@ -73,9 +73,9 @@ func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
 
 func (discovery *Discovery) GetSecureLocationList() []string {
 	var locations []string
-	for _, server := range discovery.Servers.List {
-		if server.Type == "secure_internet" {
-			locations = append(locations, server.CountryCode)
+	for _, currentServer := range discovery.Servers.List {
+		if currentServer.Type == "secure_internet" {
+			locations = append(locations, currentServer.CountryCode)
 		}
 	}
 	return locations
@@ -85,9 +85,9 @@ func (discovery *Discovery) GetServerByURL(
 	url string,
 	_type string,
 ) (*types.DiscoveryServer, error) {
-	for _, server := range discovery.Servers.List {
-		if server.BaseURL == url && server.Type == _type {
-			return &server, nil
+	for _, currentServer := range discovery.Servers.List {
+		if currentServer.BaseURL == url && currentServer.Type == _type {
+			return &currentServer, nil
 		}
 	}
 	return nil, types.NewWrappedError(
@@ -100,9 +100,9 @@ func (discovery *Discovery) GetServerByCountryCode(
 	code string,
 	_type string,
 ) (*types.DiscoveryServer, error) {
-	for _, server := range discovery.Servers.List {
-		if server.CountryCode == code && server.Type == _type {
-			return &server, nil
+	for _, currentServer := range discovery.Servers.List {
+		if currentServer.CountryCode == code && currentServer.Type == _type {
+			return &currentServer, nil
 		}
 	}
 	return nil, types.NewWrappedError(
@@ -136,12 +136,12 @@ func (discovery *Discovery) GetSecureHomeArgs(
 	// Get a server with the base url
 	url := org.SecureInternetHome
 
-	server, serverErr := discovery.GetServerByURL(url, "secure_internet")
+	currentServer, serverErr := discovery.GetServerByURL(url, "secure_internet")
 
 	if serverErr != nil {
 		return nil, nil, types.NewWrappedError(errorMessage, serverErr)
 	}
-	return org, server, nil
+	return org, currentServer, nil
 }
 
 // https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md
