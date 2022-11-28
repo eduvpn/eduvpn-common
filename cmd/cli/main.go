@@ -162,15 +162,14 @@ func main() {
 	customURLString := *customURLArg
 	urlString := *urlArg
 	secureInternetString := *secureInternet
-	if customURLString != "" {
+	switch {
+	case customURLString != "":
 		printConfig(customURLString, ServerTypeCustom)
-		return
-	} else if urlString != "" {
+	case urlString != "":
 		printConfig(urlString, ServerTypeInstituteAccess)
-		return
-	} else if secureInternetString != "" {
+	case secureInternetString != "":
 		printConfig(secureInternetString, ServerTypeSecureInternet)
-		return
+	default:
+		flag.PrintDefaults()
 	}
-	flag.PrintDefaults()
 }

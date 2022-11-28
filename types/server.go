@@ -34,13 +34,13 @@ type DiscoMapOrString map[string]string
 
 // The display name can either be a map or a string in the server list
 // Unmarshal it by first trying a string and then the map.
-func (DN *DiscoMapOrString) UnmarshalJSON(data []byte) error {
+func (displayName *DiscoMapOrString) UnmarshalJSON(data []byte) error {
 	var displayNameString string
 
 	err := json.Unmarshal(data, &displayNameString)
 
 	if err == nil {
-		*DN = map[string]string{"en": displayNameString}
+		*displayName = map[string]string{"en": displayNameString}
 		return nil
 	}
 
@@ -49,7 +49,7 @@ func (DN *DiscoMapOrString) UnmarshalJSON(data []byte) error {
 	err = json.Unmarshal(data, &resultingMap)
 
 	if err == nil {
-		*DN = resultingMap
+		*displayName = resultingMap
 		return nil
 	}
 	return err

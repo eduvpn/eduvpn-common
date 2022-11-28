@@ -16,7 +16,7 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
-          args: -E stylecheck,revive
+          args: -E stylecheck,revive,gocritic
 
   test-go:
     name: Test Go

@@ -508,16 +508,17 @@ func Config(server Server, clientSupportsWireguard bool, preferTCP bool) (string
 	var configType string
 	var configErr error
 
-	// The config supports wireguard, do a specialized request with a public key
-	if supportsWireguard {
+	switch {
+	// The config supports wireguard and optionally openvpn
+	case supportsWireguard:
 		// A wireguard connect call needs to generate a wireguard key and add it to the config
 		// Also the server could send back an OpenVPN config if it supports OpenVPN
 		config, configType, configErr = wireguardGetConfig(server, preferTCP, supportsOpenVPN)
-		//  The config only supports OpenVPN
-	} else if supportsOpenVPN {
+	//  The config only supports OpenVPN
+	case supportsOpenVPN:
 		config, configType, configErr = openVPNGetConfig(server, preferTCP)
 		// The config supports no available protocol because the profile only supports WireGuard but the client doesn't
-	} else {
+	default:
 		return "", "", types.NewWrappedError(errorMessage, errors.New("no supported protocol found"))
 	}
 

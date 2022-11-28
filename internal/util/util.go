@@ -40,7 +40,7 @@ func EnsureValidURL(s string) (string, error) {
 
 	// Make sure the URL ends with a /
 	if returnedURL[len(returnedURL)-1:] != "/" {
-		returnedURL = returnedURL + "/"
+		returnedURL += "/"
 	}
 	return returnedURL, nil
 }
