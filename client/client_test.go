@@ -249,8 +249,10 @@ func TestTokenExpired(t *testing.T) {
 
 	serverOAuth := currentServer.OAuth()
 
-	accessToken := serverOAuth.Token.Access
-	refreshToken := serverOAuth.Token.Refresh
+	accessToken, accessTokenErr := serverOAuth.AccessToken()
+	if accessTokenErr != nil {
+		t.Fatalf("Failed to get token: %v", accessTokenErr)
+	}
 
 	// Wait for TTL so that the tokens expire
 	time.Sleep(time.Duration(expiredInt) * time.Second)
@@ -262,72 +264,13 @@ func TestTokenExpired(t *testing.T) {
 	}
 
 	// Check if tokens have changed
-	accessTokenAfter := serverOAuth.Token.Access
-	refreshTokenAfter := serverOAuth.Token.Refresh
+	accessTokenAfter, accessTokenAfterErr := serverOAuth.AccessToken()
+	if accessTokenAfterErr != nil {
+		t.Fatalf("Failed to get token: %v", accessTokenAfterErr)
+	}
 
 	if accessToken == accessTokenAfter {
 		t.Errorf("Access token is the same after refresh")
-	}
-
-	if refreshToken == refreshTokenAfter {
-		t.Errorf("Refresh token is the same after refresh")
-	}
-}
-
-func TestTokenInvalid(t *testing.T) {
-	serverURI := getServerURI(t)
-	state := &Client{}
-
-	registerErr := state.Register(
-		"org.letsconnect-vpn.app.linux",
-		"configsinvalid",
-		"en",
-		func(old FSMStateID, new FSMStateID, data interface{}) bool {
-			stateCallback(t, old, new, data, state)
-			return true
-		},
-		false,
-	)
-	if registerErr != nil {
-		t.Fatalf("Register error: %v", registerErr)
-	}
-
-	_, addErr := state.AddCustomServer(serverURI)
-	if addErr != nil {
-		t.Fatalf("Add error: %v", addErr)
-	}
-
-	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
-
-	if configErr != nil {
-		t.Fatalf("Connect error before invalid: %v", configErr)
-	}
-
-	dummyValue := "37"
-
-	currentServer, serverErr := state.Servers.GetCurrentServer()
-	if serverErr != nil {
-		t.Fatalf("No server found")
-	}
-
-	serverOAuth := currentServer.OAuth()
-
-	// Override tokens with invalid values
-	serverOAuth.Token.Access = dummyValue
-	serverOAuth.Token.Refresh = dummyValue
-
-	_, _, configErr = state.GetConfigCustomServer(serverURI, false)
-
-	if configErr != nil {
-		t.Fatalf("Connect error after invalid: %v", configErr)
-	}
-
-	if serverOAuth.Token.Access == dummyValue {
-		t.Errorf("Access token is equal to dummy value: %s", dummyValue)
-	}
-
-	if serverOAuth.Token.Refresh == dummyValue {
-		t.Errorf("Refresh token is equal to dummy value: %s", dummyValue)
 	}
 }
 

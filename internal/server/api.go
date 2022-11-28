@@ -64,13 +64,13 @@ func apiAuthorized(
 	url.Path = path.Join(url.Path, endpoint)
 
 	// Make sure the tokens are valid, this will return an error if re-login is needed
-	oauthErr := EnsureTokens(server)
-	if oauthErr != nil {
-		return nil, nil, types.NewWrappedError(errorMessage, oauthErr)
+	token, tokenErr := HeaderToken(server)
+	if tokenErr != nil {
+		return nil, nil, types.NewWrappedError(errorMessage, tokenErr)
 	}
 
 	headerKey := "Authorization"
-	headerValue := fmt.Sprintf("Bearer %s", HeaderToken(server))
+	headerValue := fmt.Sprintf("Bearer %s", token)
 	if opts.Headers != nil {
 		opts.Headers.Add(headerKey, headerValue)
 	} else {

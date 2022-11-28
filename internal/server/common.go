@@ -258,28 +258,25 @@ func OAuthExchange(server Server) error {
 	return server.OAuth().Exchange()
 }
 
-func HeaderToken(server Server) string {
-	return server.OAuth().Token.Access
+func HeaderToken(server Server) (string, error) {
+	token, tokenErr := server.OAuth().AccessToken()
+	if tokenErr != nil {
+		return "", types.NewWrappedError("failed getting server token for HTTP Header", tokenErr)
+	}
+	return token, nil
 }
 
 func MarkTokenExpired(server Server) {
-	server.OAuth().Token.ExpiredTimestamp = time.Now()
+	server.OAuth().SetTokenExpired()
 }
 
 func MarkTokensForRenew(server Server) {
-	server.OAuth().Token = oauth.OAuthToken{}
-}
-
-func EnsureTokens(server Server) error {
-	ensureErr := server.OAuth().EnsureTokens()
-	if ensureErr != nil {
-		return types.NewWrappedError("failed ensuring server tokens", ensureErr)
-	}
-	return nil
+	server.OAuth().SetTokenRenew()
 }
 
 func NeedsRelogin(server Server) bool {
-	return EnsureTokens(server) != nil
+	_, tokenErr := HeaderToken(server)
+	return tokenErr != nil
 }
 
 func CancelOAuth(server Server) {
