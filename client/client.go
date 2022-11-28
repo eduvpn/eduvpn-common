@@ -116,7 +116,7 @@ func (client *Client) Register(
 	// Try to load the previous configuration
 	if client.Config.Load(&client) != nil {
 		// This error can be safely ignored, as when the config does not load, the struct will not be filled
-		client.Logger.Info("Previous configuration not found")
+		client.Logger.Infof("Previous configuration not found")
 	}
 
 	// Go to the No Server state with the saved servers after we're done
@@ -130,11 +130,11 @@ func (client *Client) Register(
 	// Check if we are able to fetch discovery, and log if something went wrong
 	_, discoServersErr := client.DiscoServers()
 	if discoServersErr != nil {
-		client.Logger.Warning("Failed to get discovery servers: %v", discoServersErr)
+		client.Logger.Warningf("Failed to get discovery servers: %v", discoServersErr)
 	}
 	_, discoOrgsErr := client.DiscoOrganizations()
 	if discoOrgsErr != nil {
-		client.Logger.Warning("Failed to get discovery organizations: %v", discoOrgsErr)
+		client.Logger.Warningf("Failed to get discovery organizations: %v", discoOrgsErr)
 	}
 
 	return nil
@@ -148,7 +148,7 @@ func (client *Client) Deregister() {
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		client.Logger.Info("failed saving configuration, error: %s", types.ErrorTraceback(saveErr))
+		client.Logger.Infof("failed saving configuration, error: %s", types.ErrorTraceback(saveErr))
 	}
 
 	// Empty out the state

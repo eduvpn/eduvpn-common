@@ -83,7 +83,7 @@ func (client *Client) getConfig(
 	// This is best effort
 	endpointErr := server.RefreshEndpoints(chosenServer)
 	if endpointErr != nil {
-		client.Logger.Warning("failed to refresh server endpoints: %v", endpointErr)
+		client.Logger.Warningf("failed to refresh server endpoints: %v", endpointErr)
 	}
 
 	config, configType, configErr := client.retryConfigAuth(chosenServer, preferTCP)
@@ -102,7 +102,7 @@ func (client *Client) getConfig(
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		client.Logger.Info(
+		client.Logger.Infof(
 			"Failed saving configuration after getting a server: %s",
 			types.ErrorTraceback(saveErr),
 		)
@@ -151,7 +151,7 @@ func (client *Client) RemoveSecureInternet() error {
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		client.Logger.Info(
+		client.Logger.Infof(
 			"Failed saving configuration after removing a secure internet server: %s",
 			types.ErrorTraceback(saveErr),
 		)
@@ -175,7 +175,7 @@ func (client *Client) RemoveInstituteAccess(url string) error {
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		client.Logger.Info(
+		client.Logger.Infof(
 			"Failed saving configuration after removing an institute access server: %s",
 			types.ErrorTraceback(saveErr),
 		)
@@ -199,7 +199,7 @@ func (client *Client) RemoveCustomServer(url string) error {
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		client.Logger.Info(
+		client.Logger.Infof(
 			"Failed saving configuration after removing a custom server: %s",
 			types.ErrorTraceback(saveErr),
 		)
@@ -563,7 +563,7 @@ func (client *Client) ShouldRenewButton() bool {
 	currentServer, currentServerErr := client.Servers.GetCurrentServer()
 
 	if currentServerErr != nil {
-		client.Logger.Info(
+		client.Logger.Infof(
 			"No server found to renew with err: %s",
 			types.ErrorTraceback(currentServerErr),
 		)

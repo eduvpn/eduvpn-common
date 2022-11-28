@@ -274,7 +274,7 @@ func (client *Client) SetConnected() error {
 	errorMessage := "failed to set connected"
 	if client.InFSMState(StateConnected) {
 		// already connected, show no error
-		client.Logger.Warning("Already connected")
+		client.Logger.Warningf("Already connected")
 		return nil
 	}
 	if !client.FSM.HasTransition(StateConnected) {
@@ -303,7 +303,7 @@ func (client *Client) SetConnecting() error {
 	errorMessage := "failed to set connecting"
 	if client.InFSMState(StateConnecting) {
 		// already loading connection, show no error
-		client.Logger.Warning("Already connecting")
+		client.Logger.Warningf("Already connecting")
 		return nil
 	}
 	if !client.FSM.HasTransition(StateConnecting) {
@@ -332,7 +332,7 @@ func (client *Client) SetDisconnecting() error {
 	errorMessage := "failed to set disconnecting"
 	if client.InFSMState(StateDisconnecting) {
 		// already disconnecting, show no error
-		client.Logger.Warning("Already disconnecting")
+		client.Logger.Warningf("Already disconnecting")
 		return nil
 	}
 	if !client.FSM.HasTransition(StateDisconnecting) {
@@ -362,7 +362,7 @@ func (client *Client) SetDisconnected(cleanup bool) error {
 	errorMessage := "failed to set disconnected"
 	if client.InFSMState(StateDisconnected) {
 		// already disconnected, show no error
-		client.Logger.Warning("Already disconnected")
+		client.Logger.Warningf("Already disconnected")
 		return nil
 	}
 	if !client.FSM.HasTransition(StateDisconnected) {
@@ -394,7 +394,7 @@ func (client *Client) SetDisconnected(cleanup bool) error {
 func (client *Client) goBackInternal() {
 	goBackErr := client.GoBack()
 	if goBackErr != nil {
-		client.Logger.Info(
+		client.Logger.Infof(
 			fmt.Sprintf(
 				"Failed going back, error: %s",
 				types.ErrorTraceback(goBackErr),

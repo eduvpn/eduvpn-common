@@ -95,38 +95,38 @@ func (logger *FileLogger) Inherit(label string, err error) {
 	msg := fmt.Sprintf("%s with err: %s", label, types.ErrorTraceback(err))
 	switch level {
 	case types.ErrInfo:
-		logger.Info(msg)
+		logger.Infof(msg)
 	case types.ErrWarning:
-		logger.Warning(msg)
+		logger.Warningf(msg)
 	case types.ErrOther:
-		logger.Error(msg)
+		logger.Errorf(msg)
 	case types.ErrFatal:
-		logger.Fatal(msg)
+		logger.Fatalf(msg)
 	}
 }
 
-// Debug logs a message with parameters as level LevelDebug.
-func (logger *FileLogger) Debug(msg string, params ...interface{}) {
+// Debugf logs a message with parameters as level LevelDebug.
+func (logger *FileLogger) Debugf(msg string, params ...interface{}) {
 	logger.log(LevelDebug, msg, params...)
 }
 
 // Debug logs a message with parameters as level LevelInfo.
-func (logger *FileLogger) Info(msg string, params ...interface{}) {
+func (logger *FileLogger) Infof(msg string, params ...interface{}) {
 	logger.log(LevelInfo, msg, params...)
 }
 
 // Debug logs a message with parameters as level LevelWarning.
-func (logger *FileLogger) Warning(msg string, params ...interface{}) {
+func (logger *FileLogger) Warningf(msg string, params ...interface{}) {
 	logger.log(LevelWarning, msg, params...)
 }
 
 // Debug logs a message with parameters as level LevelError.
-func (logger *FileLogger) Error(msg string, params ...interface{}) {
+func (logger *FileLogger) Errorf(msg string, params ...interface{}) {
 	logger.log(LevelError, msg, params...)
 }
 
 // Debug logs a message with parameters as level LevelFatal.
-func (logger *FileLogger) Fatal(msg string, params ...interface{}) {
+func (logger *FileLogger) Fatalf(msg string, params ...interface{}) {
 	logger.log(LevelFatal, msg, params...)
 }
 
