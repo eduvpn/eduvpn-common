@@ -139,7 +139,10 @@ func (oauth *OAuth) AccessToken() (string, error) {
 	// Check if refresh is even possible by doing a simple check if the refresh token is empty
 	// This is not needed but reduces API calls to the server
 	if tokens.refresh == "" {
-		return "", types.NewWrappedError(errorMessage, &TokensInvalidError{Cause: "no refresh token is present"})
+		return "", types.NewWrappedError(
+			errorMessage,
+			&TokensInvalidError{Cause: "no refresh token is present"},
+		)
 	}
 
 	// Otherwise refresh and then later return the access token if we are successful
@@ -366,7 +369,11 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	defer func() {
 		// writing the html is best effort
 		if oauth.session.CallbackError != nil {
-			_ = writeResponseHTML(w, "Authorization Failed", "The authorization has failed. See the log file for more information.")
+			_ = writeResponseHTML(
+				w,
+				"Authorization Failed",
+				"The authorization has failed. See the log file for more information.",
+			)
 		} else {
 			_ = writeResponseHTML(w, "Authorized", "The client has been successfully authorized. You can close this browser window.")
 		}
@@ -472,7 +479,12 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 	}
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
-	oauthSession := ExchangeSession{ClientID: name, ISS: oauth.ISS, State: state, Verifier: verifier}
+	oauthSession := ExchangeSession{
+		ClientID: name,
+		ISS:      oauth.ISS,
+		State:    state,
+		Verifier: verifier,
+	}
 	oauth.session = oauthSession
 
 	// set up the listener to get the redirect URI

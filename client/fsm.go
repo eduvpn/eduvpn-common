@@ -109,7 +109,10 @@ func newFSM(
 				{To: StateNoServer, Description: "Reload list"},
 				{To: StateLoadingServer, Description: "User clicks a server in the UI"},
 				{To: StateChosenServer, Description: "The server has been chosen"},
-				{To: StateSearchServer, Description: "The user is trying to choose a new server in the UI"},
+				{
+					To:          StateSearchServer,
+					Description: "The user is trying to choose a new server in the UI",
+				},
 				{To: StateConnected, Description: "The user is already connected"},
 				{To: StateAskLocation, Description: "Change the location in the main screen"},
 			},
@@ -193,7 +196,9 @@ func newFSM(
 			},
 		},
 		StateConnected: FSMState{
-			Transitions: []FSMTransition{{To: StateDisconnecting, Description: "App wants to disconnect"}},
+			Transitions: []FSMTransition{
+				{To: StateDisconnecting, Description: "App wants to disconnect"},
+			},
 		},
 	}
 	returnedFSM := fsm.FSM{}

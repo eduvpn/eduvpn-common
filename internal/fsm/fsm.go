@@ -137,7 +137,14 @@ func (fsm *FSM) writeGraph() {
 func (fsm *FSM) GoTransitionRequired(newState StateID, data interface{}) error {
 	oldState := fsm.Current
 	if !fsm.GoTransitionWithData(newState, data) {
-		return types.NewWrappedError("failed required transition", fmt.Errorf("required transition not handled, from: %s -> to: %s", fsm.GetStateName(oldState), fsm.GetStateName(newState)))
+		return types.NewWrappedError(
+			"failed required transition",
+			fmt.Errorf(
+				"required transition not handled, from: %s -> to: %s",
+				fsm.GetStateName(oldState),
+				fsm.GetStateName(newState),
+			),
+		)
 	}
 	return nil
 }

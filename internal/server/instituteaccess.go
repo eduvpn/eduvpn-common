@@ -46,7 +46,10 @@ func (servers *Servers) GetInstituteAccess(url string) (*InstituteAccessServer, 
 	if server, ok := servers.InstituteServers.Map[url]; ok {
 		return server, nil
 	}
-	return nil, types.NewWrappedError("failed to get institute access server", fmt.Errorf("no institute access server with URL: %s", url))
+	return nil, types.NewWrappedError(
+		"failed to get institute access server",
+		fmt.Errorf("no institute access server with URL: %s", url),
+	)
 }
 
 func (servers *Servers) RemoveInstituteAccess(url string) {

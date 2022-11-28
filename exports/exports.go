@@ -235,7 +235,11 @@ func RemoveCustomServer(name *C.char, url *C.char) *C.error {
 }
 
 //export GetConfigSecureInternet
-func GetConfigSecureInternet(name *C.char, orgID *C.char, preferTCP C.int) (*C.char, *C.char, *C.error) {
+func GetConfigSecureInternet(
+	name *C.char,
+	orgID *C.char,
+	preferTCP C.int,
+) (*C.char, *C.char, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
@@ -247,7 +251,11 @@ func GetConfigSecureInternet(name *C.char, orgID *C.char, preferTCP C.int) (*C.c
 }
 
 //export GetConfigInstituteAccess
-func GetConfigInstituteAccess(name *C.char, url *C.char, preferTCP C.int) (*C.char, *C.char, *C.error) {
+func GetConfigInstituteAccess(
+	name *C.char,
+	url *C.char,
+	preferTCP C.int,
+) (*C.char, *C.char, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
@@ -259,7 +267,11 @@ func GetConfigInstituteAccess(name *C.char, url *C.char, preferTCP C.int) (*C.ch
 }
 
 //export GetConfigCustomServer
-func GetConfigCustomServer(name *C.char, url *C.char, preferTCP C.int) (*C.char, *C.char, *C.error) {
+func GetConfigCustomServer(
+	name *C.char,
+	url *C.char,
+	preferTCP C.int,
+) (*C.char, *C.char, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {

@@ -187,9 +187,15 @@ func TestConnectOAuthParameters(t *testing.T) {
 		// missing state
 		{&failedCallbackParameterError, httpw.URLParameters{"iss": iss, "code": "42"}},
 		// invalid state
-		{&failedCallbackStateMatchError, httpw.URLParameters{"iss": iss, "code": "42", "state": "21"}},
+		{
+			&failedCallbackStateMatchError,
+			httpw.URLParameters{"iss": iss, "code": "42", "state": "21"},
+		},
 		// invalid iss
-		{&failedCallbackISSMatchError, httpw.URLParameters{"iss": "37", "code": "42", "state": "21"}},
+		{
+			&failedCallbackISSMatchError,
+			httpw.URLParameters{"iss": "37", "code": "42", "state": "21"},
+		},
 	}
 
 	for _, test := range tests {
@@ -377,7 +383,8 @@ func TestPreferTCP(t *testing.T) {
 		t.Fatalf("Config error: %v", configErr)
 	}
 
-	if configType == "openvpn" && !strings.HasSuffix(config, "remote eduvpnserver 1194 udp\nremote eduvpnserver 1194 tcp") {
+	if configType == "openvpn" &&
+		!strings.HasSuffix(config, "remote eduvpnserver 1194 udp\nremote eduvpnserver 1194 tcp") {
 		t.Fatalf("Suffix for disable prefer TCP is not in the right order for config: %s", config)
 	}
 }

@@ -31,7 +31,10 @@ func (servers *Servers) GetCustomServer(url string) (*InstituteAccessServer, err
 	if server, ok := servers.CustomServers.Map[url]; ok {
 		return server, nil
 	}
-	return nil, types.NewWrappedError("failed to get institute access server", fmt.Errorf("no custom server with URL: %s", url))
+	return nil, types.NewWrappedError(
+		"failed to get institute access server",
+		fmt.Errorf("no custom server with URL: %s", url),
+	)
 }
 
 func (servers *Servers) RemoveCustomServer(url string) {

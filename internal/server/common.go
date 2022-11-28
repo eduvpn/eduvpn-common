@@ -340,7 +340,10 @@ func (base *Base) ValidProfiles(clientSupportsWireguard bool) ProfileInfo {
 		}
 		validProfiles = append(validProfiles, profile)
 	}
-	return ProfileInfo{Current: base.Profiles.Current, Info: ProfileListInfo{ProfileList: validProfiles}}
+	return ProfileInfo{
+		Current: base.Profiles.Current,
+		Info:    ProfileListInfo{ProfileList: validProfiles},
+	}
 }
 
 func ValidProfiles(server Server, clientSupportsWireguard bool) (*ProfileInfo, error) {
@@ -352,12 +355,19 @@ func ValidProfiles(server Server, clientSupportsWireguard bool) (*ProfileInfo, e
 	}
 	profiles := base.ValidProfiles(clientSupportsWireguard)
 	if len(profiles.Info.ProfileList) == 0 {
-		return nil, types.NewWrappedError(errorMessage, errors.New("no profiles found with supported protocols"))
+		return nil, types.NewWrappedError(
+			errorMessage,
+			errors.New("no profiles found with supported protocols"),
+		)
 	}
 	return &profiles, nil
 }
 
-func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (string, string, error) {
+func wireguardGetConfig(
+	server Server,
+	preferTCP bool,
+	supportsOpenVPN bool,
+) (string, string, error) {
 	errorMessage := "failed getting server WireGuard configuration"
 	base, baseErr := server.Base()
 
