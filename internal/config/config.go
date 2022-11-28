@@ -34,7 +34,7 @@ func (config *Config) filename() string {
 }
 
 // Save saves a structure 'readStruct' to the configuration
-// If it was unusuccessful, an an error is returned.
+// If it was unusuccessful, an error is returned.
 func (config *Config) Save(readStruct interface{}) error {
 	errorMessage := "failed saving configuration"
 	configDirErr := util.EnsureDirectory(config.Directory)

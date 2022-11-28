@@ -196,7 +196,7 @@ func getCPtrServer(state *client.Client, base *client.ServerBase) *C.server {
 	if base.EndTime.IsZero() {
 		cServer.expire_time = C.ulonglong(0)
 	} else {
-		// The expire time should be stored as an unsigned long long in unix itme
+		// The expire time should be stored as an unsigned long long in unix time
 		cServer.expire_time = C.ulonglong(base.EndTime.Unix())
 	}
 	return cServer

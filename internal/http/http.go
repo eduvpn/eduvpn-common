@@ -111,7 +111,7 @@ func MethodWithOpts(
 ) (http.Header, []byte, error) {
 	// Make sure the url contains all the parameters
 	// This can return an error,
-	// it already has the right error so so we don't wrap it further
+	// it already has the right error so we don't wrap it further
 	url, urlErr := optionalURL(url, opts)
 	if urlErr != nil {
 		// No further type wrapping is needed here
