@@ -13,7 +13,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
-func APIGetEndpoints(baseURL string) (*ServerEndpoints, error) {
+func APIGetEndpoints(baseURL string) (*Endpoints, error) {
 	errorMessage := "failed getting server endpoints"
 	url, urlErr := url.Parse(baseURL)
 	if urlErr != nil {
@@ -23,13 +23,13 @@ func APIGetEndpoints(baseURL string) (*ServerEndpoints, error) {
 	wellKnownPath := "/.well-known/vpn-user-portal"
 
 	url.Path = path.Join(url.Path, wellKnownPath)
-	_, body, bodyErr := httpw.HTTPGet(url.String())
+	_, body, bodyErr := httpw.Get(url.String())
 
 	if bodyErr != nil {
 		return nil, types.NewWrappedError(errorMessage, bodyErr)
 	}
 
-	endpoints := &ServerEndpoints{}
+	endpoints := &Endpoints{}
 	jsonErr := json.Unmarshal(body, endpoints)
 
 	if jsonErr != nil {
@@ -43,12 +43,12 @@ func apiAuthorized(
 	server Server,
 	method string,
 	endpoint string,
-	opts *httpw.HTTPOptionalParams,
+	opts *httpw.OptionalParams,
 ) (http.Header, []byte, error) {
 	errorMessage := "failed API authorized"
 	// Ensure optional is not nil as we will fill it with headers
 	if opts == nil {
-		opts = &httpw.HTTPOptionalParams{}
+		opts = &httpw.OptionalParams{}
 	}
 	base, baseErr := server.Base()
 
@@ -76,20 +76,20 @@ func apiAuthorized(
 	} else {
 		opts.Headers = http.Header{headerKey: {headerValue}}
 	}
-	return httpw.HTTPMethodWithOpts(method, url.String(), opts)
+	return httpw.MethodWithOpts(method, url.String(), opts)
 }
 
 func apiAuthorizedRetry(
 	server Server,
 	method string,
 	endpoint string,
-	opts *httpw.HTTPOptionalParams,
+	opts *httpw.OptionalParams,
 ) (http.Header, []byte, error) {
 	errorMessage := "failed authorized API retry"
 	header, body, bodyErr := apiAuthorized(server, method, endpoint, opts)
 
 	if bodyErr != nil {
-		var error *httpw.HTTPStatusError
+		var error *httpw.StatusError
 
 		// Only retry authorized if we get a HTTP 401
 		if errors.As(bodyErr, &error) && error.Status == 401 {
@@ -112,7 +112,7 @@ func APIInfo(server Server) error {
 	if bodyErr != nil {
 		return types.NewWrappedError(errorMessage, bodyErr)
 	}
-	structure := ServerProfileInfo{}
+	structure := ProfileInfo{}
 	jsonErr := json.Unmarshal(body, &structure)
 
 	if jsonErr != nil {
@@ -168,7 +168,7 @@ func APIConnectWireguard(
 		server,
 		http.MethodPost,
 		"/connect",
-		&httpw.HTTPOptionalParams{Headers: headers, Body: urlForm},
+		&httpw.OptionalParams{Headers: headers, Body: urlForm},
 	)
 	if connectErr != nil {
 		return "", "", time.Time{}, types.NewWrappedError(
@@ -209,7 +209,7 @@ func APIConnectOpenVPN(server Server, profileID string, preferTCP bool) (string,
 		server,
 		http.MethodPost,
 		"/connect",
-		&httpw.HTTPOptionalParams{Headers: headers, Body: urlForm},
+		&httpw.OptionalParams{Headers: headers, Body: urlForm},
 	)
 	if connectErr != nil {
 		return "", time.Time{}, types.NewWrappedError(errorMessage, connectErr)

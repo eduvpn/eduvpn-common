@@ -12,56 +12,56 @@ import (
 )
 
 type (
-	//StateID represents the Identifier of the state.
-	FSMStateID      int8
-	//StateIDSlice represents the list of state identifiers.
-	FSMStateIDSlice []FSMStateID
+	// StateID represents the Identifier of the state.
+	StateID      int8
+	// StateIDSlice represents the list of state identifiers.
+	StateIDSlice []StateID
 )
 
-func (v FSMStateIDSlice) Len() int {
+func (v StateIDSlice) Len() int {
 	return len(v)
 }
 
-func (v FSMStateIDSlice) Less(i, j int) bool {
+func (v StateIDSlice) Less(i, j int) bool {
 	return v[i] < v[j]
 }
 
-func (v FSMStateIDSlice) Swap(i, j int) {
+func (v StateIDSlice) Swap(i, j int) {
 	v[i], v[j] = v[j], v[i]
 }
 
 // Transition indicates an arrow in the state graph.
-type FSMTransition struct {
+type Transition struct {
 	// To represents the to-be-new state
-	To          FSMStateID
+	To          StateID
 	// Description is what type of message the arrow gets in the graph
 	Description string
 }
 
 type (
-	FSMStates map[FSMStateID]FSMState
+	States map[StateID]State
 )
 
 // State represents a single node in the graph.
-type FSMState struct {
+type State struct {
 	// Transitions indicates which out arrows this node has
-	Transitions []FSMTransition
+	Transitions []Transition
 }
 
 // FSM represents the total graph.
 type FSM struct {
 	// States is the map from state ID to states
-	States  FSMStates
+	States  States
 
 	// Current is the current state represented by the identifier
-	Current FSMStateID
+	Current StateID
 
 	// Name represents the descriptive name of this state machine
 	Name          string
 
 	// StateCallback is the function ran when a transition occurs
 	// It takes the old state, the new state and the data and returns if this is handled by the client
-	StateCallback func(FSMStateID, FSMStateID, interface{}) bool
+	StateCallback func(StateID, StateID, interface{}) bool
 
 	// Directory represents the path where the state graph is stored
 	Directory     string
@@ -70,16 +70,16 @@ type FSM struct {
 	Generate         bool
 
 	// GetStateName gets the name of a state as a string
-	GetStateName       func(FSMStateID) string
+	GetStateName       func(StateID) string
 }
 
 // Init initializes the state machine and sets it to the given current state.
 func (fsm *FSM) Init(
-	current FSMStateID,
-	states map[FSMStateID]FSMState,
-	callback func(FSMStateID, FSMStateID, interface{}) bool,
+	current StateID,
+	states States,
+	callback func(StateID, StateID, interface{}) bool,
 	directory string,
-	nameGen func(FSMStateID) string,
+	nameGen func(StateID) string,
 	generate bool,
 ) {
 	fsm.States = states
@@ -91,12 +91,12 @@ func (fsm *FSM) Init(
 }
 
 // InState returns whether or not the state machine is in the given 'check' state.
-func (fsm *FSM) InState(check FSMStateID) bool {
+func (fsm *FSM) InState(check StateID) bool {
 	return check == fsm.Current
 }
 
 // HasTransition checks whether or not the state machine has a transition to the given 'check' state.
-func (fsm *FSM) HasTransition(check FSMStateID) bool {
+func (fsm *FSM) HasTransition(check StateID) bool {
 	for _, transitionState := range fsm.States[fsm.Current].Transitions {
 		if transitionState.To == check {
 			return true
@@ -133,7 +133,7 @@ func (fsm *FSM) writeGraph() {
 
 // GoTransitionRequired transitions the state machine to a new state with associated state data 'data'
 // If this transition is not handled by the client, it returns an error.
-func (fsm *FSM) GoTransitionRequired(newState FSMStateID, data interface{}) error {
+func (fsm *FSM) GoTransitionRequired(newState StateID, data interface{}) error {
 	oldState := fsm.Current
 	if !fsm.GoTransitionWithData(newState, data) {
 		return types.NewWrappedError("failed required transition", fmt.Errorf("required transition not handled, from: %s -> to: %s", fsm.GetStateName(oldState), fsm.GetStateName(newState)))
@@ -143,7 +143,7 @@ func (fsm *FSM) GoTransitionRequired(newState FSMStateID, data interface{}) erro
 
 // GoTransitionWithData is a helper that transitions the state machine toward the 'newState' with associated state data 'data'
 // It returns whether or not the transition is handled by the client.
-func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data interface{}) bool {
+func (fsm *FSM) GoTransitionWithData(newState StateID, data interface{}) bool {
 	ok := fsm.HasTransition(newState)
 
 	handled := false
@@ -161,7 +161,7 @@ func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data interface{}) bool
 }
 
 // GoTransition is an alias to call GoTransitionWithData but have an empty string as data.
-func (fsm *FSM) GoTransition(newState FSMStateID) bool {
+func (fsm *FSM) GoTransition(newState StateID) bool {
 	// No data means the callback is never required
 	return fsm.GoTransitionWithData(newState, "")
 }
@@ -170,7 +170,7 @@ func (fsm *FSM) GoTransition(newState FSMStateID) bool {
 // it returns the graph as a string.
 func (fsm *FSM) generateMermaidGraph() string {
 	graph := "graph TD\n"
-	sortedFSM := make(FSMStateIDSlice, 0, len(fsm.States))
+	sortedFSM := make(StateIDSlice, 0, len(fsm.States))
 	for stateID := range fsm.States {
 		sortedFSM = append(sortedFSM, stateID)
 	}

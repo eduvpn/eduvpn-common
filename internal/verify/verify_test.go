@@ -29,15 +29,15 @@ func Test_verifyWithKeys(t *testing.T) {
 	}
 
 	var (
-		verifyCreatePublicKeyError           *VerifyCreatePublicKeyError
-		verifyInvalidSignatureAlgorithmError *VerifyInvalidSignatureAlgorithmError
-		verifyWrongSigFilenameError          *VerifyWrongSigFilenameError
-		verifyInvalidTrustedCommentError     *VerifyInvalidTrustedCommentError
-		verifyInvalidSignatureFormatError    *VerifyInvalidSignatureFormatError
-		verifyInvalidSignatureError          *VerifyInvalidSignatureError
-		verifySigTimeEarlierError            *VerifySigTimeEarlierError
-		verifyUnknownExpectedFilenameError   *VerifyUnknownExpectedFilenameError
-		verifyUnknownKeyError                *VerifyUnknownKeyError
+		verifyCreatePublicKeyError           *CreatePublicKeyError
+		verifyInvalidSignatureAlgorithmError *InvalidSignatureAlgorithmError
+		verifyWrongSigFilenameError          *WrongSigFilenameError
+		verifyInvalidTrustedCommentError     *InvalidTrustedCommentError
+		verifyInvalidSignatureFormatError    *InvalidSignatureFormatError
+		verifyInvalidSignatureError          *InvalidSignatureError
+		verifySigTimeEarlierError            *SigTimeEarlierError
+		verifyUnknownExpectedFilenameError   *UnknownExpectedFilenameError
+		verifyUnknownKeyError                *UnknownKeyError
 	)
 
 	tests := []struct {

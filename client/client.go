@@ -16,7 +16,7 @@ import (
 type (
 	// ServerBase is an alias to the internal ServerBase
 	// This contains the details for each server.
-	ServerBase = server.ServerBase
+	ServerBase = server.Base
 )
 
 // This wraps the error, logs it and then returns the wrapped error.

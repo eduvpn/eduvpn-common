@@ -28,7 +28,7 @@ func discoFile(jsonFile string, previousVersion uint64, structure interface{}) e
 	// Get json data
 	discoURL := "https://disco.eduvpn.org/v2/"
 	fileURL := discoURL + jsonFile
-	_, fileBody, fileErr := http.HTTPGet(fileURL)
+	_, fileBody, fileErr := http.Get(fileURL)
 
 	if fileErr != nil {
 		return types.NewWrappedError(errorMessage, fileErr)
@@ -37,7 +37,7 @@ func discoFile(jsonFile string, previousVersion uint64, structure interface{}) e
 	// Get signature
 	sigFile := jsonFile + ".minisig"
 	sigURL := discoURL + sigFile
-	_, sigBody, sigFileErr := http.HTTPGet(sigURL)
+	_, sigBody, sigFileErr := http.Get(sigURL)
 
 	if sigFileErr != nil {
 		return types.NewWrappedError(errorMessage, sigFileErr)

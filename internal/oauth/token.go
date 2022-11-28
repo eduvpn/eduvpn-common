@@ -2,8 +2,8 @@ package oauth
 
 import "time"
 
-// OAuthTokenResponse defines the OAuth response from the server that includes the tokens.
-type OAuthTokenResponse struct {
+// TokenResponse defines the OAuth response from the server that includes the tokens.
+type TokenResponse struct {
 	// Access is the access token returned by the server
 	Access           string    `json:"access_token"`
 
@@ -18,8 +18,8 @@ type OAuthTokenResponse struct {
 
 }
 
-// OAuthToken is a structure that contains our access and refresh tokens and a timestamp when they expire.
-type OAuthToken struct {
+// Token is a structure that contains our access and refresh tokens and a timestamp when they expire.
+type Token struct {
 	// Access is the access token returned by the server
 	access           string
 
@@ -31,7 +31,7 @@ type OAuthToken struct {
 }
 
 // Expired checks if the access token is expired.
-func (tokens *OAuthToken) Expired() bool {
+func (tokens *Token) Expired() bool {
 	currentTime := time.Now()
 	return !currentTime.Before(tokens.expiredTimestamp)
 }

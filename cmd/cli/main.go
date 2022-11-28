@@ -37,7 +37,7 @@ func openBrowser(url interface{}) {
 // Ask for a profile in the command line.
 func sendProfile(state *client.Client, data interface{}) {
 	fmt.Printf("Multiple VPN profiles found. Please select a profile by entering e.g. 1")
-	serverProfiles, ok := data.(*server.ServerProfileInfo)
+	serverProfiles, ok := data.(*server.ProfileInfo)
 
 	if !ok {
 		fmt.Println("Invalid data type")

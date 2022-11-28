@@ -126,7 +126,7 @@ func testConnectOAuthParameter(
 					t.Fatalf("No port with error: %v", portErr)
 				}
 				baseURL := fmt.Sprintf("http://127.0.0.1:%d/callback", port)
-				url, err := httpw.HTTPConstructURL(baseURL, parameters)
+				url, err := httpw.ConstructURL(baseURL, parameters)
 				if err != nil {
 					_ = state.CancelOAuth()
 					t.Fatalf(
@@ -170,9 +170,9 @@ func testConnectOAuthParameter(
 
 func TestConnectOAuthParameters(t *testing.T) {
 	var (
-		failedCallbackParameterError  *oauth.OAuthCallbackParameterError
-		failedCallbackStateMatchError *oauth.OAuthCallbackStateMatchError
-		failedCallbackISSMatchError *oauth.OAuthCallbackISSMatchError
+		failedCallbackParameterError  *oauth.CallbackParameterError
+		failedCallbackStateMatchError *oauth.CallbackStateMatchError
+		failedCallbackISSMatchError *oauth.CallbackISSMatchError
 	)
 
 

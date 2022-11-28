@@ -59,7 +59,7 @@ import (
 
 // Get the pointer to the C struct for the profile
 // We allocate the struct, the profile ID and the display name
-func getCPtrProfile(profile *server.ServerProfile) *C.serverProfile {
+func getCPtrProfile(profile *server.Profile) *C.serverProfile {
 	// Allocate the struct using malloc and the size of the struct
 	cProfile := (*C.serverProfile)(C.malloc(C.size_t(unsafe.Sizeof(C.serverProfile{}))))
 	cProfile.id = C.CString(profile.ID)
@@ -75,7 +75,7 @@ func getCPtrProfile(profile *server.ServerProfile) *C.serverProfile {
 
 // Get the pointer to the C struct for the profiles
 // We allocate the struct and the struct inside it for the profiles
-func getCPtrProfiles(serverProfiles *server.ServerProfileInfo) *C.serverProfiles {
+func getCPtrProfiles(serverProfiles *server.ProfileInfo) *C.serverProfiles {
 	goProfiles := serverProfiles.Info.ProfileList
 	// Allocate the profles struct using malloc and the size of a pointer
 	cProfiles := (*C.serverProfiles)(C.malloc(C.size_t(uintptr(0))))
@@ -92,7 +92,7 @@ func getCPtrProfiles(serverProfiles *server.ServerProfileInfo) *C.serverProfiles
 		index := 0
 		for _, profile := range goProfiles {
 			profiles[index] = getCPtrProfile(&profile)
-			index += 1
+			index++
 		}
 		cProfiles.current = C.int(serverProfiles.GetCurrentProfileIndex())
 		cProfiles.profiles = (**C.serverProfile)(profilesPtr)
@@ -234,7 +234,7 @@ func getCPtrServers(
 		for _, currentServer := range serverMap {
 			cServer := getCPtrServer(state, &currentServer.Basic)
 			servers[index] = cServer
-			index += 1
+			index++
 		}
 		return totalServers, serversPtr
 	}
@@ -281,7 +281,7 @@ func getSavedServersWithOptions(state *client.Client, servers *server.Servers) *
 	// Get the different categories of servers
 	totalCustom, customPtr := getCPtrServers(state, servers.CustomServers.Map)
 	totalInstitute, institutePtr := getCPtrServers(state, servers.InstituteServers.Map)
-	var secureServerPtr *C.server = nil
+	var secureServerPtr *C.server
 	secureInternetBase, secureInternetBaseErr := servers.SecureInternetHomeServer.Base()
 	if secureInternetBaseErr == nil && secureInternetBase != nil {
 		// FIXME: log error?
@@ -361,7 +361,7 @@ func getTransitionSecureLocations(data interface{}) *C.serverLocations {
 }
 
 func getTransitionProfiles(data interface{}) *C.serverProfiles {
-	if profiles, ok := data.(*server.ServerProfileInfo); ok {
+	if profiles, ok := data.(*server.ProfileInfo); ok {
 		return getCPtrProfiles(profiles)
 	}
 	return nil

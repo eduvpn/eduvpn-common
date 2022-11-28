@@ -11,21 +11,21 @@ import (
 )
 
 // The base type for servers.
-type ServerBase struct {
+type Base struct {
 	URL            string            `json:"base_url"`
 	DisplayName    map[string]string `json:"display_name"`
 	SupportContact []string          `json:"support_contact"`
-	Endpoints      ServerEndpoints   `json:"endpoints"`
-	Profiles       ServerProfileInfo `json:"profiles"`
+	Endpoints      Endpoints   `json:"endpoints"`
+	Profiles       ProfileInfo `json:"profiles"`
 	StartTime      time.Time         `json:"start_time"`
 	EndTime        time.Time         `json:"expire_time"`
 	Type           string            `json:"server_type"`
 }
 
-type ServerType int8
+type Type int8
 
 const (
-	CustomServerType ServerType = iota
+	CustomServerType Type = iota
 	InstituteAccessServerType
 	SecureInternetServerType
 )
@@ -35,7 +35,7 @@ type Servers struct {
 	CustomServers            InstituteAccessServers   `json:"custom_servers"`
 	InstituteServers         InstituteAccessServers   `json:"institute_servers"`
 	SecureInternetHomeServer SecureInternetHomeServer `json:"secure_internet_home"`
-	IsType                   ServerType               `json:"is_secure_internet"`
+	IsType                   Type               `json:"is_secure_internet"`
 }
 
 type Server interface {
@@ -45,48 +45,48 @@ type Server interface {
 	TemplateAuth() func(string) string
 
 	// Gets the server base
-	Base() (*ServerBase, error)
+	Base() (*Base, error)
 }
 
-type ServerProfile struct {
+type Profile struct {
 	ID             string   `json:"profile_id"`
 	DisplayName    string   `json:"display_name"`
 	VPNProtoList   []string `json:"vpn_proto_list"`
 	DefaultGateway bool     `json:"default_gateway"`
 }
 
-type ServerProfileListInfo struct {
-	ProfileList []ServerProfile `json:"profile_list"`
+type ProfileListInfo struct {
+	ProfileList []Profile `json:"profile_list"`
 }
 
-type ServerProfileInfo struct {
+type ProfileInfo struct {
 	Current string `json:"current_profile"`
-	Info    ServerProfileListInfo `json:"info"`
+	Info    ProfileListInfo `json:"info"`
 }
 
-func (info ServerProfileInfo) GetCurrentProfileIndex() int {
+func (info ProfileInfo) GetCurrentProfileIndex() int {
 	index := 0
 	for _, profile := range info.Info.ProfileList {
 		if profile.ID == info.Current {
 			return index
 		}
-		index += 1
+		index++
 	}
 	// Default is 'first' profile
 	return 0
 }
 
-type ServerEndpointList struct {
+type EndpointList struct {
 	API           string `json:"api_endpoint"`
 	Authorization string `json:"authorization_endpoint"`
 	Token         string `json:"token_endpoint"`
 }
 
 // Struct that defines the json format for /.well-known/vpn-user-portal".
-type ServerEndpoints struct {
+type Endpoints struct {
 	API struct {
-		V2 ServerEndpointList `json:"http://eduvpn.org/api#2"`
-		V3 ServerEndpointList `json:"http://eduvpn.org/api#3"`
+		V2 EndpointList `json:"http://eduvpn.org/api#2"`
+		V3 EndpointList `json:"http://eduvpn.org/api#3"`
 	} `json:"api"`
 	V string `json:"v"`
 }
@@ -97,7 +97,7 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 		if !servers.HasSecureLocation() {
 			return nil, types.NewWrappedError(
 				errorMessage,
-				&ServerGetCurrentNotFoundError{},
+				&CurrentNotFoundError{},
 			)
 		}
 		return &servers.SecureInternetHomeServer, nil
@@ -113,7 +113,7 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 	if bases == nil {
 		return nil, types.NewWrappedError(
 			errorMessage,
-			&ServerGetCurrentNoMapError{},
+			&CurrentNoMapError{},
 		)
 	}
 	server, exists := bases[currentServerURL]
@@ -121,7 +121,7 @@ func (servers *Servers) GetCurrentServer() (Server, error) {
 	if !exists || server == nil {
 		return nil, types.NewWrappedError(
 			errorMessage,
-			&ServerGetCurrentNotFoundError{},
+			&CurrentNotFoundError{},
 		)
 	}
 	return server, nil
@@ -283,7 +283,7 @@ func CancelOAuth(server Server) {
 	server.OAuth().Cancel()
 }
 
-func (profile *ServerProfile) supportsProtocol(protocol string) bool {
+func (profile *Profile) supportsProtocol(protocol string) bool {
 	for _, proto := range profile.VPNProtoList {
 		if proto == protocol {
 			return true
@@ -292,15 +292,15 @@ func (profile *ServerProfile) supportsProtocol(protocol string) bool {
 	return false
 }
 
-func (profile *ServerProfile) supportsWireguard() bool {
+func (profile *Profile) supportsWireguard() bool {
 	return profile.supportsProtocol("wireguard")
 }
 
-func (profile *ServerProfile) supportsOpenVPN() bool {
+func (profile *Profile) supportsOpenVPN() bool {
 	return profile.supportsProtocol("openvpn")
 }
 
-func Profile(server Server) (*ServerProfile, error) {
+func CurrentProfile(server Server) (*Profile, error) {
 	errorMessage := "failed getting current profile"
 	base, baseErr := server.Base()
 
@@ -316,11 +316,11 @@ func Profile(server Server) (*ServerProfile, error) {
 
 	return nil, types.NewWrappedError(
 		errorMessage,
-		&ServerGetCurrentProfileNotFoundError{ProfileID: profileID},
+		&CurrentProfileNotFoundError{ProfileID: profileID},
 	)
 }
 
-func (base *ServerBase) InitializeEndpoints() error {
+func (base *Base) InitializeEndpoints() error {
 	errorMessage := "failed initializing endpoints"
 	endpoints, endpointsErr := APIGetEndpoints(base.URL)
 	if endpointsErr != nil {
@@ -330,8 +330,8 @@ func (base *ServerBase) InitializeEndpoints() error {
 	return nil
 }
 
-func (base *ServerBase) ValidProfiles(clientSupportsWireguard bool) ServerProfileInfo {
-	var validProfiles []ServerProfile
+func (base *Base) ValidProfiles(clientSupportsWireguard bool) ProfileInfo {
+	var validProfiles []Profile
 	for _, profile := range base.Profiles.Info.ProfileList {
 		// Not a valid profile because it does not support openvpn
 		// Also the client does not support wireguard
@@ -340,10 +340,10 @@ func (base *ServerBase) ValidProfiles(clientSupportsWireguard bool) ServerProfil
 		}
 		validProfiles = append(validProfiles, profile)
 	}
-	return ServerProfileInfo{Current: base.Profiles.Current, Info: ServerProfileListInfo{ProfileList: validProfiles}}
+	return ProfileInfo{Current: base.Profiles.Current, Info: ProfileListInfo{ProfileList: validProfiles}}
 }
 
-func ValidProfiles(server Server, clientSupportsWireguard bool) (*ServerProfileInfo, error) {
+func ValidProfiles(server Server, clientSupportsWireguard bool) (*ProfileInfo, error) {
 	errorMessage := "failed to get valid profiles"
 	// No error wrapping here otherwise we wrap it too much
 	base, baseErr := server.Base()
@@ -438,7 +438,7 @@ func HasValidProfile(server Server, clientSupportsWireguard bool) (bool, error) 
 
 	// If there was a profile chosen and it doesn't exist anymore, reset it
 	if base.Profiles.Current != "" {
-		_, existsProfileErr := Profile(server)
+		_, existsProfileErr := CurrentProfile(server)
 		if existsProfileErr != nil {
 			base.Profiles.Current = ""
 		}
@@ -450,7 +450,7 @@ func HasValidProfile(server Server, clientSupportsWireguard bool) (bool, error) 
 		if base.Profiles.Current == "" {
 			base.Profiles.Current = base.Profiles.Info.ProfileList[0].ID
 		}
-		profile, profileErr := Profile(server)
+		profile, profileErr := CurrentProfile(server)
 		// shouldn't happen
 		if profileErr != nil {
 			return false, types.NewWrappedError(errorMessage, profileErr)
@@ -486,7 +486,7 @@ func RefreshEndpoints(server Server) error {
 func Config(server Server, clientSupportsWireguard bool, preferTCP bool) (string, string, error) {
 	errorMessage := "failed getting an OpenVPN/WireGuard configuration"
 
-	profile, profileErr := Profile(server)
+	profile, profileErr := CurrentProfile(server)
 	if profileErr != nil {
 		return "", "", types.NewWrappedError(errorMessage, profileErr)
 	}
@@ -522,34 +522,34 @@ func Disconnect(server Server) {
 	APIDisconnect(server)
 }
 
-type ServerGetCurrentProfileNotFoundError struct {
+type CurrentProfileNotFoundError struct {
 	ProfileID string
 }
 
-func (e *ServerGetCurrentProfileNotFoundError) Error() string {
+func (e *CurrentProfileNotFoundError) Error() string {
 	return fmt.Sprintf("failed to get current profile, profile with ID: %s not found", e.ProfileID)
 }
 
-type ServerGetConfigForceTCPError struct{}
+type ConfigPreferTCPError struct{}
 
-func (e *ServerGetConfigForceTCPError) Error() string {
+func (e *ConfigPreferTCPError) Error() string {
 	return "failed to get config, prefer TCP is on but the server does not support OpenVPN"
 }
 
-type ServerEnsureServerEmptyURLError struct{}
+type EmptyURLError struct{}
 
-func (e *ServerEnsureServerEmptyURLError) Error() string {
+func (e *EmptyURLError) Error() string {
 	return "failed ensuring server, empty url provided"
 }
 
-type ServerGetCurrentNoMapError struct{}
+type CurrentNoMapError struct{}
 
-func (e *ServerGetCurrentNoMapError) Error() string {
+func (e *CurrentNoMapError) Error() string {
 	return "failed getting current server, no servers available"
 }
 
-type ServerGetCurrentNotFoundError struct{}
+type CurrentNotFoundError struct{}
 
-func (e *ServerGetCurrentNotFoundError) Error() string {
+func (e *CurrentNotFoundError) Error() string {
 	return "failed getting current server, not found"
 }

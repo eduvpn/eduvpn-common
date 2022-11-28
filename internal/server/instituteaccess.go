@@ -14,7 +14,7 @@ type InstituteAccessServer struct {
 	Auth oauth.OAuth `json:"oauth"`
 
 	// Embed the server base
-	Basic ServerBase `json:"base"`
+	Basic Base `json:"base"`
 }
 
 type InstituteAccessServers struct {
@@ -69,7 +69,7 @@ func (institute *InstituteAccessServer) TemplateAuth() func(string) string {
 	}
 }
 
-func (institute *InstituteAccessServer) Base() (*ServerBase, error) {
+func (institute *InstituteAccessServer) Base() (*Base, error) {
 	return &institute.Basic, nil
 }
 

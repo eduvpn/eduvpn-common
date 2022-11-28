@@ -10,10 +10,10 @@ import (
 )
 
 type (
-	FSMStateID    = fsm.FSMStateID
-	FSMStates     = fsm.FSMStates
-	FSMState      = fsm.FSMState
-	FSMTransition = fsm.FSMTransition
+	FSMStateID    = fsm.StateID
+	FSMStates     = fsm.States
+	FSMState      = fsm.State
+	FSMTransition = fsm.Transition
 )
 
 const (

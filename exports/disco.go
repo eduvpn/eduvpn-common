@@ -74,7 +74,7 @@ func getCPtrDiscoOrganizations(
 		for _, organization := range organizations.List {
 			cOrganization := getCPtrDiscoOrganization(state, &organization)
 			cOrganizations[index] = cOrganization
-			index += 1
+			index++
 		}
 		return totalOrganizations, organizationsPtr
 	}
@@ -117,7 +117,7 @@ func getCPtrDiscoServers(
 		for _, server := range servers.List {
 			cServer := getCPtrDiscoServer(state, &server)
 			cServers[index] = cServer
-			index += 1
+			index++
 		}
 		return totalServers, serversPtr
 	}

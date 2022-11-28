@@ -87,14 +87,14 @@ type OAuth struct {
 	TokenURL             string               `json:"token_url"`
 
 	// session is the internal in progress OAuth session
-	session              OAuthExchangeSession `json:"-"`
+	session              ExchangeSession `json:"-"`
 
 	// Token is where the access and refresh tokens are stored along with the timestamps
-	token                OAuthToken           `json:"-"`
+	token                Token           `json:"-"`
 }
 
-// OAuthExchangeSession is a structure that gets passed to the callback for easy access to the current state.
-type OAuthExchangeSession struct {
+// ExchangeSession is a structure that gets passed to the callback for easy access to the current state.
+type ExchangeSession struct {
 	// CallbackError indicates an error returned by the server
 	CallbackError error
 
@@ -137,7 +137,7 @@ func (oauth *OAuth) AccessToken() (string, error) {
 	// Check if refresh is even possible by doing a simple check if the refresh token is empty
 	// This is not needed but reduces API calls to the server
 	if tokens.refresh == "" {
-		return "", types.NewWrappedError(errorMessage, &OAuthTokensInvalidError{Cause: "no refresh token is present"})
+		return "", types.NewWrappedError(errorMessage, &TokensInvalidError{Cause: "no refresh token is present"})
 	}
 
 	// Otherwise refresh and then later return the access token if we are successful
@@ -146,7 +146,7 @@ func (oauth *OAuth) AccessToken() (string, error) {
 		// We have failed to ensure the tokens due to refresh not working
 		return "", types.NewWrappedError(
 			errorMessage,
-			&OAuthTokensInvalidError{
+			&TokensInvalidError{
 				Cause: fmt.Sprintf("tokens failed refresh with error: %v", refreshErr),
 			},
 		)
@@ -195,17 +195,17 @@ func (oauth *OAuth) tokensWithCallback() error {
 // It calculates the expired timestamp by having a 'startTime' passed to it
 // The URL that is input here is used for additional context.
 func (oauth *OAuth) fillToken(response []byte, startTime time.Time, url string) error {
-	responseStructure := OAuthTokenResponse{}
+	responseStructure := TokenResponse{}
 
 	jsonErr := json.Unmarshal(response, &responseStructure)
 	if jsonErr != nil {
 		return types.NewWrappedError(
 			"failed filling OAuth tokens",
-			&httpw.HTTPParseJSONError{URL: url, Body: string(response), Err: jsonErr},
+			&httpw.ParseJSONError{URL: url, Body: string(response), Err: jsonErr},
 		)
 	}
 
-	internalStructure := OAuthToken{}
+	internalStructure := Token{}
 	internalStructure.expiredTimestamp = startTime.Add(
 		time.Second * time.Duration(responseStructure.Expires),
 	)
@@ -222,7 +222,7 @@ func (oauth *OAuth) SetTokenExpired() {
 
 // SetTokenRenew sets the tokens for renewal by completely clearing the structure.
 func (oauth *OAuth) SetTokenRenew() {
-	oauth.token = OAuthToken{}
+	oauth.token = Token{}
 }
 
 // tokensWithAuthCode gets the access and refresh tokens using the authorization code
@@ -250,9 +250,9 @@ func (oauth *OAuth) tokensWithAuthCode(authCode string) error {
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
-	opts := &httpw.HTTPOptionalParams{Headers: headers, Body: data}
+	opts := &httpw.OptionalParams{Headers: headers, Body: data}
 	currentTime := time.Now()
-	_, body, bodyErr := httpw.HTTPPostWithOpts(reqURL, opts)
+	_, body, bodyErr := httpw.PostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return types.NewWrappedError(errorMessage, bodyErr)
 	}
@@ -278,9 +278,9 @@ func (oauth *OAuth) tokensWithRefresh() error {
 	headers := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 	}
-	opts := &httpw.HTTPOptionalParams{Headers: headers, Body: data}
+	opts := &httpw.OptionalParams{Headers: headers, Body: data}
 	currentTime := time.Now()
-	_, body, bodyErr := httpw.HTTPPostWithOpts(reqURL, opts)
+	_, body, bodyErr := httpw.PostWithOpts(reqURL, opts)
 	if bodyErr != nil {
 		return types.NewWrappedError(errorMessage, bodyErr)
 	}
@@ -381,7 +381,7 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 		if oauth.session.ISS != extractedISS {
 			oauth.session.CallbackError = types.NewWrappedError(
 				errorMessage,
-				&OAuthCallbackISSMatchError{ISS: extractedISS, ExpectedISS: oauth.session.ISS},
+				&CallbackISSMatchError{ISS: extractedISS, ExpectedISS: oauth.session.ISS},
 			)
 			return
 		}
@@ -394,7 +394,7 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	if extractedState == "" {
 		oauth.session.CallbackError = types.NewWrappedError(
 			errorMessage,
-			&OAuthCallbackParameterError{Parameter: "state", URL: req.URL.String()},
+			&CallbackParameterError{Parameter: "state", URL: req.URL.String()},
 		)
 		return
 	}
@@ -402,7 +402,7 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	if extractedState != oauth.session.State {
 		oauth.session.CallbackError = types.NewWrappedError(
 			errorMessage,
-			&OAuthCallbackStateMatchError{
+			&CallbackStateMatchError{
 				State:         extractedState,
 				ExpectedState: oauth.session.State,
 			},
@@ -415,7 +415,7 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 	if extractedCode == "" {
 		oauth.session.CallbackError = types.NewWrappedError(
 			errorMessage,
-			&OAuthCallbackParameterError{Parameter: "code", URL: req.URL.String()},
+			&CallbackParameterError{Parameter: "code", URL: req.URL.String()},
 		)
 		return
 	}
@@ -471,7 +471,7 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 	}
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
-	oauthSession := OAuthExchangeSession{ClientID: name, ISS: oauth.ISS, State: state, Verifier: verifier}
+	oauthSession := ExchangeSession{ClientID: name, ISS: oauth.ISS, State: state, Verifier: verifier}
 	oauth.session = oauthSession
 
 	// set up the listener to get the redirect URI
@@ -496,7 +496,7 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 		"redirect_uri":          fmt.Sprintf("http://127.0.0.1:%d/callback", port),
 	}
 
-	authURL, urlErr := httpw.HTTPConstructURL(oauth.BaseAuthorizationURL, parameters)
+	authURL, urlErr := httpw.ConstructURL(oauth.BaseAuthorizationURL, parameters)
 
 	if urlErr != nil {
 		return "", types.NewWrappedError(errorMessage, urlErr)
@@ -523,50 +523,50 @@ func (oauth *OAuth) Cancel() {
 	oauth.session.CallbackError = types.NewWrappedErrorLevel(
 		types.ErrInfo,
 		"cancelled OAuth",
-		&OAuthCancelledCallbackError{},
+		&CancelledCallbackError{},
 	)
 	if oauth.session.Server != nil {
 		oauth.session.Server.Shutdown(oauth.session.Context) //nolint:errcheck
 	}
 }
 
-type OAuthCancelledCallbackError struct{}
+type CancelledCallbackError struct{}
 
-func (e *OAuthCancelledCallbackError) Error() string {
+func (e *CancelledCallbackError) Error() string {
 	return "client cancelled OAuth"
 }
 
-type OAuthCallbackParameterError struct {
+type CallbackParameterError struct {
 	Parameter string
 	URL       string
 }
 
-func (e *OAuthCallbackParameterError) Error() string {
+func (e *CallbackParameterError) Error() string {
 	return fmt.Sprintf("failed retrieving parameter: %s in url: %s", e.Parameter, e.URL)
 }
 
-type OAuthCallbackStateMatchError struct {
+type CallbackStateMatchError struct {
 	State         string
 	ExpectedState string
 }
 
-func (e *OAuthCallbackStateMatchError) Error() string {
+func (e *CallbackStateMatchError) Error() string {
 	return fmt.Sprintf("failed matching state, got: %s, want: %s", e.State, e.ExpectedState)
 }
 
-type OAuthCallbackISSMatchError struct {
+type CallbackISSMatchError struct {
 	ISS         string
 	ExpectedISS string
 }
 
-func (e *OAuthCallbackISSMatchError) Error() string {
+func (e *CallbackISSMatchError) Error() string {
 	return fmt.Sprintf("failed matching ISS, got: %s, want: %s", e.ISS, e.ExpectedISS)
 }
 
-type OAuthTokensInvalidError struct {
+type TokensInvalidError struct {
 	Cause string
 }
 
-func (e *OAuthTokensInvalidError) Error() string {
+func (e *TokensInvalidError) Error() string {
 	return fmt.Sprintf("tokens are invalid due to: %s", e.Cause)
 }

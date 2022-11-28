@@ -48,7 +48,7 @@ func (client *Client) retryConfigAuth(
 	errorMessage := "failed authorized config retry"
 	config, configType, configErr := client.getConfigAuth(chosenServer, preferTCP)
 	if configErr != nil {
-		var error *oauth.OAuthTokensInvalidError
+		var error *oauth.TokensInvalidError
 
 		// Only retry if the error is that the tokens are invalid
 		if errors.As(configErr, &error) {

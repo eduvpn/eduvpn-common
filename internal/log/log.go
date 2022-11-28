@@ -16,17 +16,17 @@ import (
 // As the name suggests, it saves the log to a file.
 type FileLogger struct {
 	// Level indicates which maximum level this logger actually forwards to the file
-	Level LogLevel
+	Level Level
 
 	// file represents a pointer to the open log file
 	file  *os.File
 }
 
-type LogLevel int8
+type Level int8
 
 const (
 	// LevelNotSet indicates level not set, not allowed.
-	LevelNotSet LogLevel = iota
+	LevelNotSet Level = iota
 
 	// LevelDebug indicates that the message is not an error but is there for debugging.
 	LevelDebug
@@ -45,7 +45,7 @@ const (
 )
 
 // String returns the string of each level.
-func (e LogLevel) String() string {
+func (e Level) String() string {
 	switch e {
 	case LevelNotSet:
 		return "NOTSET"
@@ -66,7 +66,7 @@ func (e LogLevel) String() string {
 
 // Init initializes the logger by forwarding a max level 'level' and a directory 'directory' where the log should be stored
 // If the logger cannot be initialized, for example an error in opening the log file, an error is returned.
-func (logger *FileLogger) Init(level LogLevel, directory string) error {
+func (logger *FileLogger) Init(level Level, directory string) error {
 	errorMessage := "failed creating log"
 
 	configDirErr := util.EnsureDirectory(directory)
@@ -141,7 +141,7 @@ func (logger *FileLogger) filename(directory string) string {
 }
 
 // log logs as level 'level' a message 'msg' with parameters 'params'.
-func (logger *FileLogger) log(level LogLevel, msg string, params ...interface{}) {
+func (logger *FileLogger) log(level Level, msg string, params ...interface{}) {
 	if level >= logger.Level && logger.Level != LevelNotSet {
 		formattedMsg := fmt.Sprintf(msg, params...)
 		format := fmt.Sprintf("- Go - %s - %s", level.String(), formattedMsg)
