@@ -1,3 +1,4 @@
+// package verify implement signature verification using minisign
 package verify
 
 import (

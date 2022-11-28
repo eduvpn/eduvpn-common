@@ -57,18 +57,6 @@ func TestMakeRandomByteSlice(t *testing.T) {
 	}
 }
 
-func TestWAYFEncode(t *testing.T) {
-	// AuthTemplate
-	returnTo := "127.0.0.1:8000/test123bla/#wow   "
-
-	// URL encoding but with spaces replace as + instead of %20
-	wantReturnTo := "127.0.0.1%3A8000%2Ftest123bla%2F%23wow+++"
-	encode := WAYFEncode(returnTo)
-	if encode != wantReturnTo {
-		t.Fatalf("Got: %s, want: %s", encode, wantReturnTo)
-	}
-}
-
 func TestReplaceWAYF(t *testing.T) {
 	// We expect url encoding but the spaces to be correctly replace with a + instead of a %20
 	// And we expect that the return to and org_id are correctly replaced

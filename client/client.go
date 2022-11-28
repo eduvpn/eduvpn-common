@@ -1,3 +1,4 @@
+// package client implements the public interface for creating eduVPN/Let's Connect! clients
 package client
 
 import (
@@ -89,9 +90,9 @@ func (client *Client) Register(
 	client.Language = language
 
 	// Initialize the logger
-	logLevel := log.LogWarning
+	logLevel := log.LevelWarning
 	if debug {
-		logLevel = log.LogDebug
+		logLevel = log.LevelDebug
 	}
 
 	loggerErr := client.Logger.Init(logLevel, directory)
@@ -126,11 +127,11 @@ func (client *Client) Register(
 	}
 
 	// Check if we are able to fetch discovery, and log if something went wrong
-	_, discoServersErr := client.GetDiscoServers()
+	_, discoServersErr := client.DiscoServers()
 	if discoServersErr != nil {
 		client.Logger.Warning("Failed to get discovery servers: %v", discoServersErr)
 	}
-	_, discoOrgsErr := client.GetDiscoOrganizations()
+	_, discoOrgsErr := client.DiscoOrganizations()
 	if discoOrgsErr != nil {
 		client.Logger.Warning("Failed to get discovery organizations: %v", discoOrgsErr)
 	}
@@ -167,18 +168,18 @@ func (client *Client) askProfile(chosenServer server.Server) error {
 	return nil
 }
 
-// GetDiscoOrganizations gets the organizations list from the discovery server
+// DiscoOrganizations gets the organizations list from the discovery server
 // If the list cannot be retrieved an error is returned.
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#organization-list.
-func (client *Client) GetDiscoOrganizations() (*types.DiscoveryOrganizations, error) {
+func (client *Client) DiscoOrganizations() (*types.DiscoveryOrganizations, error) {
 	errorMessage := "failed getting discovery organizations list"
 	// Not supported with Let's Connect!
 	if client.isLetsConnect() {
 		return nil, client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
-	orgs, orgsErr := client.Discovery.GetOrganizationsList()
+	orgs, orgsErr := client.Discovery.Organizations()
 	if orgsErr != nil {
 		return nil, client.handleError(
 			errorMessage,
@@ -188,11 +189,11 @@ func (client *Client) GetDiscoOrganizations() (*types.DiscoveryOrganizations, er
 	return orgs, nil
 }
 
-// GetDiscoServers gets the servers list from the discovery server
+// DiscoServers gets the servers list from the discovery server
 // If the list cannot be retrieved an error is returned.
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#server-list.
-func (client *Client) GetDiscoServers() (*types.DiscoveryServers, error) {
+func (client *Client) DiscoServers() (*types.DiscoveryServers, error) {
 	errorMessage := "failed getting discovery servers list"
 
 	// Not supported with Let's Connect!
@@ -200,7 +201,7 @@ func (client *Client) GetDiscoServers() (*types.DiscoveryServers, error) {
 		return nil, client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
-	servers, serversErr := client.Discovery.GetServersList()
+	servers, serversErr := client.Discovery.Servers()
 	if serversErr != nil {
 		return nil, client.handleError(
 			errorMessage,

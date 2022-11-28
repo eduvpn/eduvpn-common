@@ -121,7 +121,7 @@ func (client *Client) SetSecureLocation(countryCode string) error {
 		return client.handleError(errorMessage, LetsConnectNotSupportedError{})
 	}
 
-	server, serverErr := client.Discovery.GetServerByCountryCode(countryCode, "secure_internet")
+	server, serverErr := client.Discovery.ServerByCountryCode(countryCode, "secure_internet")
 	if serverErr != nil {
 		client.goBackInternal()
 		return client.handleError(errorMessage, serverErr)
@@ -221,7 +221,7 @@ func (client *Client) AddInstituteServer(url string) (server.Server, error) {
 
 	// FIXME: Do nothing with discovery here as the client already has it
 	// So pass a server as the parameter
-	instituteServer, discoErr := client.Discovery.GetServerByURL(url, "institute_access")
+	instituteServer, discoErr := client.Discovery.ServerByURL(url, "institute_access")
 	if discoErr != nil {
 		client.goBackInternal()
 		return nil, client.handleError(errorMessage, discoErr)
@@ -273,7 +273,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 	client.FSM.GoTransition(StateLoadingServer)
 
 	// Get the secure internet URL from discovery
-	secureOrg, secureServer, discoErr := client.Discovery.GetSecureHomeArgs(orgID)
+	secureOrg, secureServer, discoErr := client.Discovery.SecureHomeArgs(orgID)
 	if discoErr != nil {
 		client.goBackInternal()
 		return nil, client.handleError(errorMessage, discoErr)
@@ -480,7 +480,7 @@ func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string,
 // askSecureLocation asks the user to choose a Secure Internet location by moving the FSM to the STATE_ASK_LOCATION state.
 func (client *Client) askSecureLocation() error {
 	errorMessage := "failed settings secure location"
-	locations := client.Discovery.GetSecureLocationList()
+	locations := client.Discovery.SecureLocationList()
 
 	// Ask for the location in the callback
 	goTransitionErr := client.FSM.GoTransitionRequired(StateAskLocation, locations)

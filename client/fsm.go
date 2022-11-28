@@ -119,7 +119,6 @@ func newFSM(
 				{To: StateLoadingServer, Description: "User clicks a server in the UI"},
 				{To: StateNoServer, Description: "Cancel or Error"},
 			},
-			BackState: StateNoServer,
 		},
 		StateAskLocation: FSMState{
 			Transitions: []FSMTransition{
@@ -137,7 +136,6 @@ func newFSM(
 				},
 				{To: StateNoServer, Description: "Go back or Error"},
 			},
-			BackState: StateNoServer,
 		},
 		StateChosenServer: FSMState{
 			Transitions: []FSMTransition{
@@ -151,7 +149,6 @@ func newFSM(
 				{To: StateNoServer, Description: "Go back or Error"},
 				{To: StateSearchServer, Description: "Cancel or Error"},
 			},
-			BackState: StateNoServer,
 		},
 		StateAuthorized: FSMState{
 			Transitions: []FSMTransition{
@@ -182,7 +179,6 @@ func newFSM(
 				{To: StateNoServer, Description: "User wants to choose a new server"},
 				{To: StateOAuthStarted, Description: "Re-authorize with OAuth"},
 			},
-			BackState: StateNoServer,
 		},
 		StateDisconnecting: FSMState{
 			Transitions: []FSMTransition{

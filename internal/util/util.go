@@ -1,3 +1,4 @@
+// package util implements several utility functions that are used across the codebase
 package util
 
 import (
@@ -11,6 +12,12 @@ import (
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
+// EnsureValidURL ensures that the input URL is valid to be used internally
+// It does the following
+// - Sets the scheme to https if none is given
+// - It 'cleans' up the path using path.Clean
+// - It makes sure that the URL ends with a /
+// It returns an error if the URL cannot be parsed
 func EnsureValidURL(s string) (string, error) {
 	parsedURL, parseErr := url.Parse(s)
 	if parseErr != nil {
@@ -38,7 +45,8 @@ func EnsureValidURL(s string) (string, error) {
 	return returnedURL, nil
 }
 
-// Creates a random byteslice of `size`
+// MakeRandomByteSlice creates a cryptographically random byteslice of `size`
+// It returns the byte slice (or nil if error) and an error if it could not be generated.
 func MakeRandomByteSlice(size int) ([]byte, error) {
 	byteSlice := make([]byte, size)
 	_, err := rand.Read(byteSlice)
@@ -48,6 +56,7 @@ func MakeRandomByteSlice(size int) ([]byte, error) {
 	return byteSlice, nil
 }
 
+// EnsureDirectory creates a directory with permission 700
 func EnsureDirectory(directory string) error {
 	// Create with 700 permissions, read, write, execute only for the owner
 	mkdirErr := os.MkdirAll(directory, 0o700)
@@ -60,6 +69,7 @@ func EnsureDirectory(directory string) error {
 	return nil
 }
 
+// WAYFEncode an input URL using 'skip Where Are You From' encoding
 // See https://github.com/eduvpn/documentation/blob/dc4d53c47dd7a69e95d6650eec408e16eaa814a2/SERVER_DISCOVERY_SKIP_WAYF.md
 // URL encode for skipping where are you from (WAYF). Note that this right now is basically an alias to QueryEscape
 func WAYFEncode(input string) string {
@@ -68,6 +78,7 @@ func WAYFEncode(input string) string {
 	return url.QueryEscape(input)
 }
 
+// ReplaceWAYF replaces an authorization template containing of @RETURN_TO@ and @ORG_ID@ with the authorization URL and the organization ID
 // See https://github.com/eduvpn/documentation/blob/dc4d53c47dd7a69e95d6650eec408e16eaa814a2/SERVER_DISCOVERY_SKIP_WAYF.md
 func ReplaceWAYF(authTemplate string, authURL string, orgID string) string {
 	// We just return the authURL in the cases where the template is not given or is invalid
@@ -81,18 +92,19 @@ func ReplaceWAYF(authTemplate string, authURL string, orgID string) string {
 		return authURL
 	}
 	// Replace authURL
-	authTemplate = strings.Replace(authTemplate, "@RETURN_TO@", WAYFEncode(authURL), 1)
+	authTemplate = strings.Replace(authTemplate, "@RETURN_TO@", url.QueryEscape(authURL), 1)
 
 	// If now there is no more ORG_ID, return as there weren't enough @ symbols
 	if !strings.Contains(authTemplate, "@ORG_ID@") {
 		return authURL
 	}
 	// Replace ORG ID
-	authTemplate = strings.Replace(authTemplate, "@ORG_ID@", WAYFEncode(orgID), 1)
+	authTemplate = strings.Replace(authTemplate, "@ORG_ID@", url.QueryEscape(orgID), 1)
 	return authTemplate
 }
 
-// https://github.com/eduvpn/documentation/blob/dc4d53c47dd7a69e95d6650eec408e16eaa814a2/SERVER_DISCOVERY.md#language-matching
+// GetLanguageMatched uses a map from language tags to strings to extract the right language given the tag
+// It implements it according to https://github.com/eduvpn/documentation/blob/dc4d53c47dd7a69e95d6650eec408e16eaa814a2/SERVER_DISCOVERY.md#language-matching
 func GetLanguageMatched(languageMap map[string]string, languageTag string) string {
 	// If no map is given, return the empty string
 	if len(languageMap) == 0 {

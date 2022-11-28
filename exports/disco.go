@@ -175,7 +175,7 @@ func GetDiscoServers(name *C.char) (*C.discoveryServers, *C.error) {
 	if stateErr != nil {
 		return nil, getError(stateErr)
 	}
-	servers, serversErr := state.GetDiscoServers()
+	servers, serversErr := state.DiscoServers()
 	if serversErr != nil {
 		return nil, getError(serversErr)
 	}
@@ -198,7 +198,7 @@ func GetDiscoOrganizations(name *C.char) (*C.discoveryOrganizations, *C.error) {
 	if stateErr != nil {
 		return nil, getError(stateErr)
 	}
-	organizations, organizationsErr := state.GetDiscoOrganizations()
+	organizations, organizationsErr := state.DiscoOrganizations()
 	if organizationsErr != nil {
 		return nil, getError(organizationsErr)
 	}

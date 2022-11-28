@@ -174,7 +174,7 @@ func getCPtrServer(state *client.Client, base *client.ServerBase) *C.server {
 	if base.Type == "secure_internet" {
 		identifier = state.Servers.SecureInternetHomeServer.HomeOrganizationID
 		countryCode = state.Servers.SecureInternetHomeServer.CurrentLocation
-		locations = state.Discovery.GetSecureLocationList()
+		locations = state.Discovery.SecureLocationList()
 	}
 
 	cServer.identifier = C.CString(identifier)

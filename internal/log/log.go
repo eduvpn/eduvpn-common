@@ -1,3 +1,4 @@
+// Package log implements a basic level based logger
 package log
 
 import (
@@ -11,47 +12,60 @@ import (
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
+// FileLogger defines the type of logger that this package implements
+// As the name suggests, it saves the log to a file
 type FileLogger struct {
+	// Level indicates which maximum level this logger actually forwards to the file
 	Level LogLevel
-	File  *os.File
+
+	// file represents a pointer to the open log file
+	file  *os.File
 }
 
 type LogLevel int8
 
 const (
-	// No level set, not allowed
-	LogNotSet LogLevel = iota
-	// Log debug, this message is not an error but is there for debugging
-	LogDebug
-	// Log info, this message is not an error but is there for additional information
-	LogInfo
-	// Log only to provide a warning, the app still functions
-	LogWarning
-	// Log to provide a generic error, the app still functions but some functionality might not work
-	LogError
-	// Log to provide a fatal error, the app cannot function correctly when such an error occurs
-	LogFatal
+	// LevelNotSet indicates level not set, not allowed
+	LevelNotSet LogLevel = iota
+
+	// LevelDebug indicates that the message is not an error but is there for debugging
+	LevelDebug
+
+	// LevelInfo indicates that the message is not an error but is there for additional information
+	LevelInfo
+
+	// LevelWarning indicates only a warning, the app still functions
+	LevelWarning
+
+	// LevelError indicates a generic error, the app still functions but some functionality might not work
+	LevelError
+
+	// LevelFatal indicates a fatal error, the app cannot function correctly when such an error occurs
+	LevelFatal
 )
 
+// String returns the string of each level
 func (e LogLevel) String() string {
 	switch e {
-	case LogNotSet:
+	case LevelNotSet:
 		return "NOTSET"
-	case LogDebug:
+	case LevelDebug:
 		return "DEBUG"
-	case LogInfo:
+	case LevelInfo:
 		return "INFO"
-	case LogWarning:
+	case LevelWarning:
 		return "WARNING"
-	case LogError:
+	case LevelError:
 		return "ERROR"
-	case LogFatal:
+	case LevelFatal:
 		return "FATAL"
 	default:
 		return "UNKNOWN"
 	}
 }
 
+// Init initializes the logger by forwarding a max level 'level' and a directory 'directory' where the log should be stored
+// If the logger cannot be initialized, for example an error in opening the log file, an error is returned
 func (logger *FileLogger) Init(level LogLevel, directory string) error {
 	errorMessage := "failed creating log"
 
@@ -60,7 +74,7 @@ func (logger *FileLogger) Init(level LogLevel, directory string) error {
 		return types.NewWrappedError(errorMessage, configDirErr)
 	}
 	logFile, logOpenErr := os.OpenFile(
-		logger.getFilename(directory),
+		logger.filename(directory),
 		os.O_RDWR|os.O_CREATE|os.O_APPEND,
 		0o666,
 	)
@@ -69,11 +83,12 @@ func (logger *FileLogger) Init(level LogLevel, directory string) error {
 	}
 	multi := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(multi)
-	logger.File = logFile
+	logger.file = logFile
 	logger.Level = level
 	return nil
 }
 
+// Inherit logs an error with a label using the error level of the error
 func (logger *FileLogger) Inherit(label string, err error) {
 	level := types.GetErrorLevel(err)
 
@@ -90,36 +105,44 @@ func (logger *FileLogger) Inherit(label string, err error) {
 	}
 }
 
+// Debug logs a message with parameters as level LevelDebug
 func (logger *FileLogger) Debug(msg string, params ...interface{}) {
-	logger.log(LogDebug, msg, params...)
+	logger.log(LevelDebug, msg, params...)
 }
 
+// Debug logs a message with parameters as level LevelInfo
 func (logger *FileLogger) Info(msg string, params ...interface{}) {
-	logger.log(LogInfo, msg, params...)
+	logger.log(LevelInfo, msg, params...)
 }
 
+// Debug logs a message with parameters as level LevelWarning
 func (logger *FileLogger) Warning(msg string, params ...interface{}) {
-	logger.log(LogWarning, msg, params...)
+	logger.log(LevelWarning, msg, params...)
 }
 
+// Debug logs a message with parameters as level LevelError
 func (logger *FileLogger) Error(msg string, params ...interface{}) {
-	logger.log(LogError, msg, params...)
+	logger.log(LevelError, msg, params...)
 }
 
+// Debug logs a message with parameters as level LevelFatal
 func (logger *FileLogger) Fatal(msg string, params ...interface{}) {
-	logger.log(LogFatal, msg, params...)
+	logger.log(LevelFatal, msg, params...)
 }
 
+// Close closes the logger by closing the internal file
 func (logger *FileLogger) Close() {
-	logger.File.Close()
+	logger.file.Close()
 }
 
-func (logger *FileLogger) getFilename(directory string) string {
+// filename returns the filename of the logger by returning the full path as a string
+func (logger *FileLogger) filename(directory string) string {
 	return path.Join(directory, "log")
 }
 
+// log logs as level 'level' a message 'msg' with parameters 'params'
 func (logger *FileLogger) log(level LogLevel, msg string, params ...interface{}) {
-	if level >= logger.Level && logger.Level != LogNotSet {
+	if level >= logger.Level && logger.Level != LevelNotSet {
 		formattedMsg := fmt.Sprintf(msg, params...)
 		format := fmt.Sprintf("- Go - %s - %s", level.String(), formattedMsg)
 		// To log file
