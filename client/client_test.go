@@ -172,9 +172,8 @@ func TestConnectOAuthParameters(t *testing.T) {
 	var (
 		failedCallbackParameterError  *oauth.CallbackParameterError
 		failedCallbackStateMatchError *oauth.CallbackStateMatchError
-		failedCallbackISSMatchError *oauth.CallbackISSMatchError
+		failedCallbackISSMatchError   *oauth.CallbackISSMatchError
 	)
-
 
 	serverURI := getServerURI(t)
 	// serverURI already ends with a / due to using the util EnsureValidURL function

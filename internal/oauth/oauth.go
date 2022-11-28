@@ -57,11 +57,13 @@ func genChallengeS256(verifier string) string {
 // minimum length of 43 characters and a maximum length of 128
 // characters.
 // We implement it according to the note:
-//   NOTE: The code verifier SHOULD have enough entropy to make it
-//   impractical to guess the value.  It is RECOMMENDED that the output of
-//   a suitable random number generator be used to create a 32-octet
-//   sequence.  The octet sequence is then base64url-encoded to produce a
-//   43-octet URL safe string to use as the code verifier.
+//
+//	NOTE: The code verifier SHOULD have enough entropy to make it
+//	impractical to guess the value.  It is RECOMMENDED that the output of
+//	a suitable random number generator be used to create a 32-octet
+//	sequence.  The octet sequence is then base64url-encoded to produce a
+//	43-octet URL safe string to use as the code verifier.
+//
 // See: https://datatracker.ietf.org/doc/html/rfc7636#section-4.1
 func genVerifier() (string, error) {
 	randomBytes, err := util.MakeRandomByteSlice(32)
@@ -78,19 +80,19 @@ func genVerifier() (string, error) {
 // OAuth defines the main structure for this package.
 type OAuth struct {
 	// ISS indicates the issuer indentifier of the authorization server as defined in RFC 9207
-	ISS                  string               `json:"iss"`
+	ISS string `json:"iss"`
 
 	// BaseAuthorizationURL is the URL where authorization should take place
-	BaseAuthorizationURL string               `json:"base_authorization_url"`
+	BaseAuthorizationURL string `json:"base_authorization_url"`
 
 	// TokenURL is the URL where tokens should be obtained
-	TokenURL             string               `json:"token_url"`
+	TokenURL string `json:"token_url"`
 
 	// session is the internal in progress OAuth session
-	session              ExchangeSession `json:"-"`
+	session ExchangeSession `json:"-"`
 
 	// Token is where the access and refresh tokens are stored along with the timestamps
-	token                Token           `json:"-"`
+	token Token `json:"-"`
 }
 
 // ExchangeSession is a structure that gets passed to the callback for easy access to the current state.
@@ -102,19 +104,19 @@ type ExchangeSession struct {
 	ClientID string
 
 	// ISS indicates the issuer inditifer
-	ISS      string
+	ISS string
 
 	// State is the expected URL state paremeter
-	State    string
+	State string
 
 	// Verifier is the preimage of the challenge
 	Verifier string
 
 	// Context is the context used for cancellation
-	Context  context.Context
+	Context context.Context
 
 	// Server is the server of the session
-	Server   *http.Server
+	Server *http.Server
 
 	// Listener is the listener where the servers 'listens' on
 	Listener net.Listener
@@ -332,7 +334,7 @@ main {
 
 // oauthResponseHTML is a structure that is used to give back the OAuth response.
 type oauthResponseHTML struct {
-	Title string
+	Title   string
 	Message string
 }
 
@@ -385,7 +387,6 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 			)
 			return
 		}
-
 	}
 
 	// Make sure the state is present and matches to protect against cross-site request forgeries

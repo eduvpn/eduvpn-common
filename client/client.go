@@ -65,10 +65,11 @@ type Client struct {
 }
 
 // Register initializes the clientwith the following parameters:
-//  - name: the name of the client
-//  - directory: the directory where the config files are stored. Absolute or relative
-//  - stateCallback: the callback function for the FSM that takes two states (old and new) and the data as an interface
-//  - debug: whether or not we want to enable debugging
+//   - name: the name of the client
+//   - directory: the directory where the config files are stored. Absolute or relative
+//   - stateCallback: the callback function for the FSM that takes two states (old and new) and the data as an interface
+//   - debug: whether or not we want to enable debugging
+//
 // It returns an error if initialization failed, for example when discovery cannot be obtained and when there are no servers.
 func (client *Client) Register(
 	name string,
@@ -221,4 +222,3 @@ type LetsConnectNotSupportedError struct{}
 func (e LetsConnectNotSupportedError) Error() string {
 	return "Any operation that involves discovery is not allowed with the Let's Connect! client"
 }
-

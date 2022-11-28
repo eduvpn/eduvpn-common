@@ -244,7 +244,6 @@ func (e FSMWrongStateError) CustomError() *types.WrappedErrorMessage {
 	)
 }
 
-
 // SetSearchServer sets the FSM to the SEARCH_SERVER state.
 // This indicates that the user wants to search for a new server.
 // Returns an error if this state transition is not possible.
@@ -436,7 +435,6 @@ func (client *Client) CancelOAuth() error {
 	server.CancelOAuth(currentServer)
 	return nil
 }
-
 
 // InFSMState is a helper to check if the FSM is in state `checkState`.
 func (client *Client) InFSMState(checkState FSMStateID) bool {

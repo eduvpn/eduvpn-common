@@ -8,12 +8,13 @@ import (
 	"os/exec"
 	"path"
 	"sort"
+
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
 type (
 	// StateID represents the Identifier of the state.
-	StateID      int8
+	StateID int8
 	// StateIDSlice represents the list of state identifiers.
 	StateIDSlice []StateID
 )
@@ -33,7 +34,7 @@ func (v StateIDSlice) Swap(i, j int) {
 // Transition indicates an arrow in the state graph.
 type Transition struct {
 	// To represents the to-be-new state
-	To          StateID
+	To StateID
 	// Description is what type of message the arrow gets in the graph
 	Description string
 }
@@ -51,26 +52,26 @@ type State struct {
 // FSM represents the total graph.
 type FSM struct {
 	// States is the map from state ID to states
-	States  States
+	States States
 
 	// Current is the current state represented by the identifier
 	Current StateID
 
 	// Name represents the descriptive name of this state machine
-	Name          string
+	Name string
 
 	// StateCallback is the function ran when a transition occurs
 	// It takes the old state, the new state and the data and returns if this is handled by the client
 	StateCallback func(StateID, StateID, interface{}) bool
 
 	// Directory represents the path where the state graph is stored
-	Directory     string
+	Directory string
 
 	// Generate represents whether we want to generate the graph
-	Generate         bool
+	Generate bool
 
 	// GetStateName gets the name of a state as a string
-	GetStateName       func(StateID) string
+	GetStateName func(StateID) string
 }
 
 // Init initializes the state machine and sets it to the given current state.

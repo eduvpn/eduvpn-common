@@ -11,14 +11,13 @@ import (
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
-
 // Discovery is the main structure used for this package.
 type Discovery struct {
 	// organizations represents the organizations that are returned by the discovery server
 	organizations types.DiscoveryOrganizations
 
 	// servers represents the servers that are returned by the discovery server
-	servers       types.DiscoveryServers
+	servers types.DiscoveryServers
 }
 
 // discoFile is a helper function that gets a disco JSON and fills the structure with it
@@ -79,7 +78,7 @@ func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
 	return discovery.organizations.Timestamp.IsZero()
 }
 
-// SecureLocationList returns a slice of all the available locations. 
+// SecureLocationList returns a slice of all the available locations.
 func (discovery *Discovery) SecureLocationList() []string {
 	var locations []string
 	for _, currentServer := range discovery.servers.List {

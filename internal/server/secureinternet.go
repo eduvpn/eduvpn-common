@@ -12,7 +12,7 @@ import (
 // A secure internet server which has its own OAuth tokens
 // It specifies the current location url it is connected to.
 type SecureInternetHomeServer struct {
-	Auth       oauth.OAuth       `json:"oauth"`
+	Auth        oauth.OAuth       `json:"oauth"`
 	DisplayName map[string]string `json:"display_name"`
 
 	// The home server has a list of info for each configured server location

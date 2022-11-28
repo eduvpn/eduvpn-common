@@ -19,7 +19,7 @@ type FileLogger struct {
 	Level Level
 
 	// file represents a pointer to the open log file
-	file  *os.File
+	file *os.File
 }
 
 type Level int8

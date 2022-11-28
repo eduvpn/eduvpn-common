@@ -18,7 +18,7 @@ type Config struct {
 	Directory string
 
 	// Name defines the name of file excluding the .json extension
-	Name      string
+	Name string
 }
 
 // Init initializes the configuration using the provided directory and name.

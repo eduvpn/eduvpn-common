@@ -102,6 +102,7 @@ func getCPtrProfiles(serverProfiles *server.ProfileInfo) *C.serverProfiles {
 
 // Free the profiles by looping through them if there are any
 // Also free the pointer itself
+//
 //export FreeProfiles
 func FreeProfiles(profiles *C.serverProfiles) {
 	// We should only free the profiles if we have them (which we should)
@@ -203,6 +204,7 @@ func getCPtrServer(state *client.Client, base *client.ServerBase) *C.server {
 
 // Function for freeing a single server
 // Gets the pointer to C struct
+//
 //export FreeServer
 func FreeServer(info *C.server) {
 	// Free strings
@@ -241,9 +243,10 @@ func getCPtrServers(
 	return C.size_t(0), nil
 }
 
-//export FreeServers
 // This function takes the servers as a C struct pointer as input
 // It frees all allocated memory for the server
+//
+//export FreeServers
 func FreeServers(cServers *C.servers) {
 	// Free the custom servers if there are any
 	if cServers.total_custom > 0 {
@@ -301,9 +304,10 @@ func getSavedServersWithOptions(state *client.Client, servers *server.Servers) *
 	return returnedStruct
 }
 
-//export GetSavedServers
 // This function takes the name as input which is the name of the client
 // It gets the state by name and then returns the saved servers as a c struct belonging to it
+//
+//export GetSavedServers
 func GetSavedServers(name *C.char) (*C.servers, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
@@ -314,10 +318,10 @@ func GetSavedServers(name *C.char) (*C.servers, *C.error) {
 	return servers, nil
 }
 
-
-//export GetCurrentServer
 // This function takes the name as input which is the name of the client
 // It gets the state by name and then returns the current server as a c struct belonging to it
+//
+//export GetCurrentServer
 func GetCurrentServer(name *C.char) (*C.server, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)

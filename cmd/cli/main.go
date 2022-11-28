@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/eduvpn/eduvpn-common/client"
-	"github.com/eduvpn/eduvpn-common/types"
 	"github.com/eduvpn/eduvpn-common/internal/server"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 type ServerTypes int8

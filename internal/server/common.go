@@ -15,8 +15,8 @@ type Base struct {
 	URL            string            `json:"base_url"`
 	DisplayName    map[string]string `json:"display_name"`
 	SupportContact []string          `json:"support_contact"`
-	Endpoints      Endpoints   `json:"endpoints"`
-	Profiles       ProfileInfo `json:"profiles"`
+	Endpoints      Endpoints         `json:"endpoints"`
+	Profiles       ProfileInfo       `json:"profiles"`
 	StartTime      time.Time         `json:"start_time"`
 	EndTime        time.Time         `json:"expire_time"`
 	Type           string            `json:"server_type"`
@@ -35,7 +35,7 @@ type Servers struct {
 	CustomServers            InstituteAccessServers   `json:"custom_servers"`
 	InstituteServers         InstituteAccessServers   `json:"institute_servers"`
 	SecureInternetHomeServer SecureInternetHomeServer `json:"secure_internet_home"`
-	IsType                   Type               `json:"is_secure_internet"`
+	IsType                   Type                     `json:"is_secure_internet"`
 }
 
 type Server interface {
@@ -60,7 +60,7 @@ type ProfileListInfo struct {
 }
 
 type ProfileInfo struct {
-	Current string `json:"current_profile"`
+	Current string          `json:"current_profile"`
 	Info    ProfileListInfo `json:"info"`
 }
 
@@ -503,10 +503,10 @@ func Config(server Server, clientSupportsWireguard bool, preferTCP bool) (string
 		// A wireguard connect call needs to generate a wireguard key and add it to the config
 		// Also the server could send back an OpenVPN config if it supports OpenVPN
 		config, configType, configErr = wireguardGetConfig(server, preferTCP, supportsOpenVPN)
-	//  The config only supports OpenVPN
+		//  The config only supports OpenVPN
 	} else if supportsOpenVPN {
 		config, configType, configErr = openVPNGetConfig(server, preferTCP)
-	// The config supports no available protocol because the profile only supports WireGuard but the client doesn't
+		// The config supports no available protocol because the profile only supports WireGuard but the client doesn't
 	} else {
 		return "", "", types.NewWrappedError(errorMessage, errors.New("no supported protocol found"))
 	}

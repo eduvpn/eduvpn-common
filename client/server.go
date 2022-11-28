@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/eduvpn/eduvpn-common/types"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 // getConfigAuth gets a config with authorization and authentication.
@@ -298,7 +298,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 	currentErr := client.Servers.SetSecureInternet(server)
 	if currentErr != nil {
 		client.goBackInternal()
-		return nil,  client.handleError(errorMessage, currentErr)
+		return nil, client.handleError(errorMessage, currentErr)
 	}
 
 	// Server has been chosen for authentication
@@ -526,7 +526,6 @@ func (client *Client) ChangeSecureLocation() error {
 	return nil
 }
 
-
 // RenewSession renews the session for the current VPN server.
 // This logs the user back in.
 func (client *Client) RenewSession() error {
@@ -539,7 +538,7 @@ func (client *Client) RenewSession() error {
 
 	// The server has not been chosen yet, this means that we want to manually renew
 	if client.FSM.InState(StateNoServer) {
-	    client.FSM.GoTransition(StateChosenServer)
+		client.FSM.GoTransition(StateChosenServer)
 	}
 
 	server.MarkTokensForRenew(currentServer)
@@ -623,4 +622,3 @@ func (client *Client) SetProfileID(profileID string) error {
 	base.Profiles.Current = profileID
 	return nil
 }
-
