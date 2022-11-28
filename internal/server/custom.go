@@ -9,7 +9,7 @@ import (
 
 func (servers *Servers) SetCustomServer(server Server) error {
 	errorMessage := "failed setting custom server"
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 	if baseErr != nil {
 		return types.NewWrappedError(errorMessage, baseErr)
 	}

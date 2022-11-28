@@ -5,11 +5,11 @@ import (
 	"fmt"
 )
 
-type ErrorLevel int8
+type ErrLevel int8
 
 const (
 	// All other errors, default
-	ErrOther ErrorLevel = iota
+	ErrOther ErrLevel = iota
 
 	// The erorr is just here as additional info
 	ErrInfo
@@ -22,18 +22,18 @@ const (
 )
 
 type WrappedErrorMessage struct {
-	Level   ErrorLevel
+	Level   ErrLevel
 	Message string
 	Err     error
 }
 
 // NewWrappedError returns a WrappedErrorMessage and uses the error level from the parent
 func NewWrappedError(message string, err error) *WrappedErrorMessage {
-	return &WrappedErrorMessage{Level: GetErrorLevel(err), Message: message, Err: err}
+	return &WrappedErrorMessage{Level: ErrorLevel(err), Message: message, Err: err}
 }
 
 // NewWrappedError returns a WrappedErrorMessage and uses the given error level from the parent
-func NewWrappedErrorLevel(level ErrorLevel, message string, err error) *WrappedErrorMessage {
+func NewWrappedErrorLevel(level ErrLevel, message string, err error) *WrappedErrorMessage {
 	return &WrappedErrorMessage{Level: level, Message: message, Err: err}
 }
 
@@ -70,7 +70,7 @@ func (e *WrappedErrorMessage) Error() string {
 	return fmt.Sprintf("Got error: %s, with cause: %s", e.Message, e.Err)
 }
 
-func GetErrorTraceback(err error) string {
+func ErrorTraceback(err error) string {
 	var wrappedErr *WrappedErrorMessage
 
 	if errors.As(err, &wrappedErr) {
@@ -79,7 +79,7 @@ func GetErrorTraceback(err error) string {
 	return err.Error()
 }
 
-func GetErrorCause(err error) error {
+func ErrorCause(err error) error {
 	var wrappedErr *WrappedErrorMessage
 
 	if errors.As(err, &wrappedErr) {
@@ -88,7 +88,7 @@ func GetErrorCause(err error) error {
 	return err
 }
 
-func GetErrorLevel(err error) ErrorLevel {
+func ErrorLevel(err error) ErrLevel {
 	var wrappedErr *WrappedErrorMessage
 
 	if errors.As(err, &wrappedErr) {

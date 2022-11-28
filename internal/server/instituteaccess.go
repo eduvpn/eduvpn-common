@@ -11,10 +11,10 @@ import (
 // An instute access server
 type InstituteAccessServer struct {
 	// An instute access server has its own OAuth
-	OAuth oauth.OAuth `json:"oauth"`
+	Auth oauth.OAuth `json:"oauth"`
 
 	// Embed the server base
-	Base ServerBase `json:"base"`
+	Basic ServerBase `json:"base"`
 }
 
 type InstituteAccessServers struct {
@@ -24,7 +24,7 @@ type InstituteAccessServers struct {
 
 func (servers *Servers) SetInstituteAccess(server Server) error {
 	errorMessage := "failed setting institute access server"
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 	if baseErr != nil {
 		return types.NewWrappedError(errorMessage, baseErr)
 	}
@@ -63,19 +63,18 @@ func (servers *InstituteAccessServers) Remove(url string) {
 	delete(servers.Map, url)
 }
 
-// For an institute, we can simply get the OAuth
-func (institute *InstituteAccessServer) GetOAuth() *oauth.OAuth {
-	return &institute.OAuth
-}
-
-func (institute *InstituteAccessServer) GetTemplateAuth() func(string) string {
+func (institute *InstituteAccessServer) TemplateAuth() func(string) string {
 	return func(authURL string) string {
 		return authURL
 	}
 }
 
-func (institute *InstituteAccessServer) GetBase() (*ServerBase, error) {
-	return &institute.Base, nil
+func (institute *InstituteAccessServer) Base() (*ServerBase, error) {
+	return &institute.Basic, nil
+}
+
+func (institute *InstituteAccessServer) OAuth() *oauth.OAuth {
+	return &institute.Auth
 }
 
 func (institute *InstituteAccessServer) init(
@@ -85,15 +84,15 @@ func (institute *InstituteAccessServer) init(
 	supportContact []string,
 ) error {
 	errorMessage := fmt.Sprintf("failed initializing server %s", url)
-	institute.Base.URL = url
-	institute.Base.DisplayName = displayName
-	institute.Base.SupportContact = supportContact
-	institute.Base.Type = serverType
-	endpointsErr := institute.Base.InitializeEndpoints()
+	institute.Basic.URL = url
+	institute.Basic.DisplayName = displayName
+	institute.Basic.SupportContact = supportContact
+	institute.Basic.Type = serverType
+	endpointsErr := institute.Basic.InitializeEndpoints()
 	if endpointsErr != nil {
 		return types.NewWrappedError(errorMessage, endpointsErr)
 	}
-	API := institute.Base.Endpoints.API.V3
-	institute.OAuth.Init(url, API.Authorization, API.Token)
+	API := institute.Basic.Endpoints.API.V3
+	institute.Auth.Init(url, API.Authorization, API.Token)
 	return nil
 }

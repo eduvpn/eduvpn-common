@@ -147,7 +147,7 @@ func (client *Client) Deregister() {
 	// Save the config
 	saveErr := client.Config.Save(&client)
 	if saveErr != nil {
-		client.Logger.Info("failed saving configuration, error: %s", types.GetErrorTraceback(saveErr))
+		client.Logger.Info("failed saving configuration, error: %s", types.ErrorTraceback(saveErr))
 	}
 
 	// Empty out the state
@@ -157,7 +157,7 @@ func (client *Client) Deregister() {
 // askProfile asks the user for a profile by moving the FSM to the ASK_PROFILE state.
 func (client *Client) askProfile(chosenServer server.Server) error {
 	errorMessage := "failed asking for profiles"
-	profiles, profilesErr := server.GetValidProfiles(chosenServer, client.SupportsWireguard)
+	profiles, profilesErr := server.ValidProfiles(chosenServer, client.SupportsWireguard)
 	if profilesErr != nil {
 		return types.NewWrappedError(errorMessage, profilesErr)
 	}

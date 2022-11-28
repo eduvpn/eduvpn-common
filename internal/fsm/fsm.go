@@ -106,8 +106,8 @@ func (fsm *FSM) HasTransition(check FSMStateID) bool {
 	return false
 }
 
-// getGraphFilename gets the full path to the graph filename including the .graph extension
-func (fsm *FSM) getGraphFilename(extension string) string {
+// graphFilename gets the full path to the graph filename including the .graph extension
+func (fsm *FSM) graphFilename(extension string) string {
 	debugPath := path.Join(fsm.Directory, "graph")
 	return fmt.Sprintf("%s%s", debugPath, extension)
 }
@@ -115,8 +115,8 @@ func (fsm *FSM) getGraphFilename(extension string) string {
 // writeGraph writes the state machine to a .graph file
 func (fsm *FSM) writeGraph() {
 	graph := fsm.GenerateGraph()
-	graphFile := fsm.getGraphFilename(".graph")
-	graphImgFile := fsm.getGraphFilename(".png")
+	graphFile := fsm.graphFilename(".graph")
+	graphImgFile := fsm.graphFilename(".png")
 	f, err := os.Create(graphFile)
 	if err != nil {
 		return

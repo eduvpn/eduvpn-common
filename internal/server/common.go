@@ -39,14 +39,13 @@ type Servers struct {
 }
 
 type Server interface {
-	// Gets the current OAuth object
-	GetOAuth() *oauth.OAuth
+	OAuth() *oauth.OAuth
 
 	// Get the authorization URL template function
-	GetTemplateAuth() func(string) string
+	TemplateAuth() func(string) string
 
 	// Gets the server base
-	GetBase() (*ServerBase, error)
+	Base() (*ServerBase, error)
 }
 
 type ServerProfile struct {
@@ -216,7 +215,7 @@ func (servers *Servers) AddSecureInternet(
 }
 
 func ShouldRenewButton(server Server) bool {
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 
 	if baseErr != nil {
 		// FIXME: Log error here?
@@ -251,28 +250,28 @@ func ShouldRenewButton(server Server) bool {
 	return true
 }
 
-func GetOAuthURL(server Server, name string) (string, error) {
-	return server.GetOAuth().GetAuthURL(name, server.GetTemplateAuth())
+func OAuthURL(server Server, name string) (string, error) {
+	return server.OAuth().AuthURL(name, server.TemplateAuth())
 }
 
 func OAuthExchange(server Server) error {
-	return server.GetOAuth().Exchange()
+	return server.OAuth().Exchange()
 }
 
-func GetHeaderToken(server Server) string {
-	return server.GetOAuth().Token.Access
+func HeaderToken(server Server) string {
+	return server.OAuth().Token.Access
 }
 
 func MarkTokenExpired(server Server) {
-	server.GetOAuth().Token.ExpiredTimestamp = time.Now()
+	server.OAuth().Token.ExpiredTimestamp = time.Now()
 }
 
 func MarkTokensForRenew(server Server) {
-	server.GetOAuth().Token = oauth.OAuthToken{}
+	server.OAuth().Token = oauth.OAuthToken{}
 }
 
 func EnsureTokens(server Server) error {
-	ensureErr := server.GetOAuth().EnsureTokens()
+	ensureErr := server.OAuth().EnsureTokens()
 	if ensureErr != nil {
 		return types.NewWrappedError("failed ensuring server tokens", ensureErr)
 	}
@@ -284,7 +283,7 @@ func NeedsRelogin(server Server) bool {
 }
 
 func CancelOAuth(server Server) {
-	server.GetOAuth().Cancel()
+	server.OAuth().Cancel()
 }
 
 func (profile *ServerProfile) supportsProtocol(protocol string) bool {
@@ -304,9 +303,9 @@ func (profile *ServerProfile) supportsOpenVPN() bool {
 	return profile.supportsProtocol("openvpn")
 }
 
-func getCurrentProfile(server Server) (*ServerProfile, error) {
+func Profile(server Server) (*ServerProfile, error) {
 	errorMessage := "failed getting current profile"
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 
 	if baseErr != nil {
 		return nil, types.NewWrappedError(errorMessage, baseErr)
@@ -334,7 +333,7 @@ func (base *ServerBase) InitializeEndpoints() error {
 	return nil
 }
 
-func (base *ServerBase) GetValidProfiles(clientSupportsWireguard bool) ServerProfileInfo {
+func (base *ServerBase) ValidProfiles(clientSupportsWireguard bool) ServerProfileInfo {
 	var validProfiles []ServerProfile
 	for _, profile := range base.Profiles.Info.ProfileList {
 		// Not a valid profile because it does not support openvpn
@@ -347,14 +346,14 @@ func (base *ServerBase) GetValidProfiles(clientSupportsWireguard bool) ServerPro
 	return ServerProfileInfo{Current: base.Profiles.Current, Info: ServerProfileListInfo{ProfileList: validProfiles}}
 }
 
-func GetValidProfiles(server Server, clientSupportsWireguard bool) (*ServerProfileInfo, error) {
+func ValidProfiles(server Server, clientSupportsWireguard bool) (*ServerProfileInfo, error) {
 	errorMessage := "failed to get valid profiles"
 	// No error wrapping here otherwise we wrap it too much
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 	if baseErr != nil {
 		return nil, types.NewWrappedError(errorMessage, baseErr)
 	}
-	profiles := base.GetValidProfiles(clientSupportsWireguard)
+	profiles := base.ValidProfiles(clientSupportsWireguard)
 	if len(profiles.Info.ProfileList) == 0 {
 		return nil, types.NewWrappedError(errorMessage, errors.New("no profiles found with supported protocols"))
 	}
@@ -363,7 +362,7 @@ func GetValidProfiles(server Server, clientSupportsWireguard bool) (*ServerProfi
 
 func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (string, string, error) {
 	errorMessage := "failed getting server WireGuard configuration"
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 
 	if baseErr != nil {
 		return "", "", types.NewWrappedError(errorMessage, baseErr)
@@ -406,7 +405,7 @@ func wireguardGetConfig(server Server, preferTCP bool, supportsOpenVPN bool) (st
 
 func openVPNGetConfig(server Server, preferTCP bool) (string, string, error) {
 	errorMessage := "failed getting server OpenVPN configuration"
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 
 	if baseErr != nil {
 		return "", "", types.NewWrappedError(errorMessage, baseErr)
@@ -435,14 +434,14 @@ func HasValidProfile(server Server, clientSupportsWireguard bool) (bool, error) 
 		return false, types.NewWrappedError(errorMessage, infoErr)
 	}
 
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 	if baseErr != nil {
 		return false, types.NewWrappedError(errorMessage, baseErr)
 	}
 
 	// If there was a profile chosen and it doesn't exist anymore, reset it
 	if base.Profiles.Current != "" {
-		_, existsProfileErr := getCurrentProfile(server)
+		_, existsProfileErr := Profile(server)
 		if existsProfileErr != nil {
 			base.Profiles.Current = ""
 		}
@@ -454,7 +453,7 @@ func HasValidProfile(server Server, clientSupportsWireguard bool) (bool, error) 
 		if base.Profiles.Current == "" {
 			base.Profiles.Current = base.Profiles.Info.ProfileList[0].ID
 		}
-		profile, profileErr := getCurrentProfile(server)
+		profile, profileErr := Profile(server)
 		// shouldn't happen
 		if profileErr != nil {
 			return false, types.NewWrappedError(errorMessage, profileErr)
@@ -474,7 +473,7 @@ func RefreshEndpoints(server Server) error {
 
 	// Re-initialize the endpoints
 	// TODO: Make this a warning instead?
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 	if baseErr != nil {
 		return types.NewWrappedError(errorMessage, baseErr)
 	}
@@ -487,10 +486,10 @@ func RefreshEndpoints(server Server) error {
 	return nil
 }
 
-func GetConfig(server Server, clientSupportsWireguard bool, preferTCP bool) (string, string, error) {
+func Config(server Server, clientSupportsWireguard bool, preferTCP bool) (string, string, error) {
 	errorMessage := "failed getting an OpenVPN/WireGuard configuration"
 
-	profile, profileErr := getCurrentProfile(server)
+	profile, profileErr := Profile(server)
 	if profileErr != nil {
 		return "", "", types.NewWrappedError(errorMessage, profileErr)
 	}

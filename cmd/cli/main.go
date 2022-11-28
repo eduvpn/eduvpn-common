@@ -142,8 +142,8 @@ func printConfig(url string, serverType ServerTypes) {
 
 	if configErr != nil {
 		// Show the usage of tracebacks and causes
-		fmt.Println("Error getting config:", types.GetErrorTraceback(configErr))
-		fmt.Println("Error getting config, cause:", types.GetErrorCause(configErr))
+		fmt.Println("Error getting config:", types.ErrorTraceback(configErr))
+		fmt.Println("Error getting config, cause:", types.ErrorCause(configErr))
 		return
 	}
 

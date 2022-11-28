@@ -153,9 +153,9 @@ func (oauth *OAuth) setupListener() error {
 	return nil
 }
 
-// getTokensWithCallback gets the OAuth tokens using a local web server
+// tokensWithCallback gets the OAuth tokens using a local web server
 // If it was unsuccessful it returns an error
-func (oauth *OAuth) getTokensWithCallback() error {
+func (oauth *OAuth) tokensWithCallback() error {
 	errorMessage := "failed getting tokens with callback"
 	if oauth.session.Listener == nil {
 		return types.NewWrappedError(errorMessage, errors.New("no listener"))
@@ -173,17 +173,17 @@ func (oauth *OAuth) getTokensWithCallback() error {
 	return oauth.session.CallbackError
 }
 
-// getTokensWithAuthCode gets the access and refresh tokens using the authorization code
+// tokensWithAuthCode gets the access and refresh tokens using the authorization code
 // Access tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.4
 // Refresh tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.2
 // If it was unsuccessful it returns an error
-func (oauth *OAuth) getTokensWithAuthCode(authCode string) error {
+func (oauth *OAuth) tokensWithAuthCode(authCode string) error {
 	errorMessage := "failed getting tokens with the authorization code"
 	// Make sure the verifier is set as the parameter
 	// so that the server can verify that we are the actual owner of the authorization code
 	reqURL := oauth.TokenURL
 
-	port, portErr := oauth.GetListenerPort()
+	port, portErr := oauth.ListenerPort()
 	if portErr != nil {
 		return types.NewWrappedError(errorMessage, portErr)
 	}
@@ -230,11 +230,11 @@ func (oauth *OAuth) isTokensExpired() bool {
 	return !currentTime.Before(expiredTime)
 }
 
-// getTokensWithRefresh gets the access and refresh tokens with a previously received refresh token
+// tokensWithRefresh gets the access and refresh tokens with a previously received refresh token
 // Access tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.4
 // Refresh tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.2
 // If it was unsuccessful it returns an error
-func (oauth *OAuth) getTokensWithRefresh() error {
+func (oauth *OAuth) tokensWithRefresh() error {
 	errorMessage := "failed getting tokens with the refresh token"
 	reqURL := oauth.TokenURL
 	data := url.Values{
@@ -398,7 +398,7 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 
 	// Now that we have obtained the authorization code, we can move to the next step:
 	// Obtaining the access and refresh tokens
-	getTokensErr := oauth.getTokensWithAuthCode(extractedCode)
+	getTokensErr := oauth.tokensWithAuthCode(extractedCode)
 	if getTokensErr != nil {
 		oauth.session.CallbackError = types.NewWrappedError(
 			errorMessage,
@@ -418,9 +418,9 @@ func (oauth *OAuth) Init(iss string, baseAuthorizationURL string, tokenURL strin
 	oauth.TokenURL = tokenURL
 }
 
-// GetListenerPort gets the listener for the OAuth web server
+// ListenerPort gets the listener for the OAuth web server
 // It returns the port as an integer and an error if there is any
-func (oauth OAuth) GetListenerPort() (int, error) {
+func (oauth OAuth) ListenerPort() (int, error) {
 	errorMessage := "failed to get listener port"
 
 	if oauth.session.Listener == nil {
@@ -429,8 +429,8 @@ func (oauth OAuth) GetListenerPort() (int, error) {
 	return oauth.session.Listener.Addr().(*net.TCPAddr).Port, nil
 }
 
-// GetAuthURL gets the authorization url to start the OAuth procedure
-func (oauth *OAuth) GetAuthURL(name string, postProcessAuth func(string) string) (string, error) {
+// AuthURL gets the authorization url to start the OAuth procedure
+func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (string, error) {
 	errorMessage := "failed starting OAuth exchange"
 
 	// Generate the verifier and challenge
@@ -457,7 +457,7 @@ func (oauth *OAuth) GetAuthURL(name string, postProcessAuth func(string) string)
 	}
 
 	// Get the listener port
-	port, portErr := oauth.GetListenerPort()
+	port, portErr := oauth.ListenerPort()
 	if portErr != nil {
 		return "", types.NewWrappedError(errorMessage, portErr)
 	}
@@ -485,7 +485,7 @@ func (oauth *OAuth) GetAuthURL(name string, postProcessAuth func(string) string)
 // Exchange starts the OAuth exchange by getting the tokens with the redirect callback
 // If it was unsuccessful it returns an error
 func (oauth *OAuth) Exchange() error {
-	tokenErr := oauth.getTokensWithCallback()
+	tokenErr := oauth.tokensWithCallback()
 
 	if tokenErr != nil {
 		return types.NewWrappedError("failed finishing OAuth", tokenErr)
@@ -526,7 +526,7 @@ func (oauth *OAuth) EnsureTokens() error {
 	}
 
 	// Otherwise try to refresh them and return if successful
-	refreshErr := oauth.getTokensWithRefresh()
+	refreshErr := oauth.tokensWithRefresh()
 	// We have obtained new tokens with refresh
 	if refreshErr != nil {
 		// We have failed to ensure the tokens due to refresh not working

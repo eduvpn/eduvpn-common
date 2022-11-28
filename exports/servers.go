@@ -189,7 +189,7 @@ func getCPtrServer(state *client.Client, base *client.ServerBase) *C.server {
 	locationsStruct.total_locations, locationsStruct.locations = getCPtrListStrings(locations)
 	cServer.locations = locationsStruct
 
-	profiles := base.GetValidProfiles(state.SupportsWireguard)
+	profiles := base.ValidProfiles(state.SupportsWireguard)
 	cServer.profiles = getCPtrProfiles(&profiles)
 	// No endtime is given if we get servers when it has been partially initialised
 	if base.EndTime.IsZero() {
@@ -232,7 +232,7 @@ func getCPtrServers(
 		servers := (*[1<<30 - 1]*C.server)(unsafe.Pointer(serversPtr))[:totalServers:totalServers]
 		index := 0
 		for _, currentServer := range serverMap {
-			cServer := getCPtrServer(state, &currentServer.Base)
+			cServer := getCPtrServer(state, &currentServer.Basic)
 			servers[index] = cServer
 			index += 1
 		}
@@ -282,7 +282,7 @@ func getSavedServersWithOptions(state *client.Client, servers *server.Servers) *
 	totalCustom, customPtr := getCPtrServers(state, servers.CustomServers.Map)
 	totalInstitute, institutePtr := getCPtrServers(state, servers.InstituteServers.Map)
 	var secureServerPtr *C.server = nil
-	secureInternetBase, secureInternetBaseErr := servers.SecureInternetHomeServer.GetBase()
+	secureInternetBase, secureInternetBaseErr := servers.SecureInternetHomeServer.Base()
 	if secureInternetBaseErr == nil && secureInternetBase != nil {
 		// FIXME: log error?
 		secureServerPtr = getCPtrServer(state, secureInternetBase)
@@ -328,7 +328,7 @@ func GetCurrentServer(name *C.char) (*C.server, *C.error) {
 	if serverErr != nil {
 		return nil, getError(serverErr)
 	}
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 	if baseErr != nil {
 		return nil, getError(baseErr)
 	}
@@ -369,7 +369,7 @@ func getTransitionProfiles(data interface{}) *C.serverProfiles {
 
 func getTransitionServer(state *client.Client, data interface{}) *C.server {
 	if server, ok := data.(server.Server); ok {
-		base, baseErr := server.GetBase()
+		base, baseErr := server.Base()
 		if baseErr != nil {
 			// TODO: LOG
 			return nil

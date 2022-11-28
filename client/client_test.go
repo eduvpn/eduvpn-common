@@ -120,7 +120,7 @@ func testConnectOAuthParameter(
 				if serverErr != nil {
 					t.Fatalf("No server with error: %v", serverErr)
 				}
-				port, portErr := server.GetOAuth().GetListenerPort()
+				port, portErr := server.OAuth().ListenerPort()
 				if portErr != nil {
 					_ = state.CancelOAuth()
 					t.Fatalf("No port with error: %v", portErr)
@@ -247,7 +247,7 @@ func TestTokenExpired(t *testing.T) {
 		t.Fatalf("No server found")
 	}
 
-	serverOAuth := currentServer.GetOAuth()
+	serverOAuth := currentServer.OAuth()
 
 	accessToken := serverOAuth.Token.Access
 	refreshToken := serverOAuth.Token.Refresh
@@ -310,7 +310,7 @@ func TestTokenInvalid(t *testing.T) {
 		t.Fatalf("No server found")
 	}
 
-	serverOAuth := currentServer.GetOAuth()
+	serverOAuth := currentServer.OAuth()
 
 	// Override tokens with invalid values
 	serverOAuth.Token.Access = dummyValue
@@ -366,7 +366,7 @@ func TestInvalidProfileCorrected(t *testing.T) {
 		t.Fatalf("No server found")
 	}
 
-	base, baseErr := currentServer.GetBase()
+	base, baseErr := currentServer.Base()
 	if baseErr != nil {
 		t.Fatalf("No base found")
 	}

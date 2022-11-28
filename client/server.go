@@ -36,7 +36,7 @@ func (client *Client) getConfigAuth(
 	}
 
 	// We return the error otherwise we wrap it too much
-	return server.GetConfig(chosenServer, client.SupportsWireguard, preferTCP)
+	return server.Config(chosenServer, client.SupportsWireguard, preferTCP)
 }
 
 // retryConfigAuth retries the getConfigAuth function if the tokens are invalid.
@@ -104,7 +104,7 @@ func (client *Client) getConfig(
 	if saveErr != nil {
 		client.Logger.Info(
 			"Failed saving configuration after getting a server: %s",
-			types.GetErrorTraceback(saveErr),
+			types.ErrorTraceback(saveErr),
 		)
 	}
 
@@ -153,7 +153,7 @@ func (client *Client) RemoveSecureInternet() error {
 	if saveErr != nil {
 		client.Logger.Info(
 			"Failed saving configuration after removing a secure internet server: %s",
-			types.GetErrorTraceback(saveErr),
+			types.ErrorTraceback(saveErr),
 		)
 	}
 	return nil
@@ -177,7 +177,7 @@ func (client *Client) RemoveInstituteAccess(url string) error {
 	if saveErr != nil {
 		client.Logger.Info(
 			"Failed saving configuration after removing an institute access server: %s",
-			types.GetErrorTraceback(saveErr),
+			types.ErrorTraceback(saveErr),
 		)
 	}
 	return nil
@@ -201,7 +201,7 @@ func (client *Client) RemoveCustomServer(url string) error {
 	if saveErr != nil {
 		client.Logger.Info(
 			"Failed saving configuration after removing a custom server: %s",
-			types.GetErrorTraceback(saveErr),
+			types.ErrorTraceback(saveErr),
 		)
 	}
 	return nil
@@ -566,7 +566,7 @@ func (client *Client) ShouldRenewButton() bool {
 	if currentServerErr != nil {
 		client.Logger.Info(
 			"No server found to renew with err: %s",
-			types.GetErrorTraceback(currentServerErr),
+			types.ErrorTraceback(currentServerErr),
 		)
 		return false
 	}
@@ -581,7 +581,7 @@ func (client *Client) ensureLogin(chosenServer server.Server) error {
 	// Relogin with oauth
 	// This moves the state to authorized
 	if server.NeedsRelogin(chosenServer) {
-		url, urlErr := server.GetOAuthURL(chosenServer, client.Name)
+		url, urlErr := server.OAuthURL(chosenServer, client.Name)
 
 		goTransitionErr := client.FSM.GoTransitionRequired(StateOAuthStarted, url)
 		if goTransitionErr != nil {
@@ -615,7 +615,7 @@ func (client *Client) SetProfileID(profileID string) error {
 		return client.handleError(errorMessage, serverErr)
 	}
 
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 	if baseErr != nil {
 		client.goBackInternal()
 		return client.handleError(errorMessage, baseErr)

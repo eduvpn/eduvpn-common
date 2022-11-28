@@ -90,9 +90,9 @@ func (logger *FileLogger) Init(level LogLevel, directory string) error {
 
 // Inherit logs an error with a label using the error level of the error
 func (logger *FileLogger) Inherit(label string, err error) {
-	level := types.GetErrorLevel(err)
+	level := types.ErrorLevel(err)
 
-	msg := fmt.Sprintf("%s with err: %s", label, types.GetErrorTraceback(err))
+	msg := fmt.Sprintf("%s with err: %s", label, types.ErrorTraceback(err))
 	switch level {
 	case types.ErrInfo:
 		logger.Info(msg)

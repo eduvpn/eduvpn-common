@@ -141,9 +141,9 @@ func getError(err error) *C.error {
 	errorStruct := (*C.error)(
 		C.malloc(C.size_t(unsafe.Sizeof(C.error{}))),
 	)
-	errorStruct.level = C.errorLevel(types.GetErrorLevel(err))
-	errorStruct.traceback = C.CString(types.GetErrorTraceback(err))
-	errorStruct.cause = C.CString(types.GetErrorCause(err).Error())
+	errorStruct.level = C.errorLevel(types.ErrorLevel(err))
+	errorStruct.traceback = C.CString(types.ErrorTraceback(err))
+	errorStruct.cause = C.CString(types.ErrorCause(err).Error())
 	return errorStruct
 }
 

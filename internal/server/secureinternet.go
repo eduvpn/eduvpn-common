@@ -12,8 +12,8 @@ import (
 // A secure internet server which has its own OAuth tokens
 // It specifies the current location url it is connected to
 type SecureInternetHomeServer struct {
+	Auth       oauth.OAuth       `json:"oauth"`
 	DisplayName map[string]string `json:"display_name"`
-	OAuth       oauth.OAuth       `json:"oauth"`
 
 	// The home server has a list of info for each configured server location
 	BaseMap map[string]*ServerBase `json:"base_map"`
@@ -33,7 +33,7 @@ func (servers *Servers) GetSecureInternetHomeServer() (*SecureInternetHomeServer
 
 func (servers *Servers) SetSecureInternet(server Server) error {
 	errorMessage := "failed setting secure internet server"
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 	if baseErr != nil {
 		return types.NewWrappedError(errorMessage, baseErr)
 	}
@@ -58,17 +58,13 @@ func (servers *Servers) RemoveSecureInternet() {
 	}
 }
 
-func (server *SecureInternetHomeServer) GetOAuth() *oauth.OAuth {
-	return &server.OAuth
-}
-
-func (server *SecureInternetHomeServer) GetTemplateAuth() func(string) string {
+func (server *SecureInternetHomeServer) TemplateAuth() func(string) string {
 	return func(authURL string) string {
 		return util.ReplaceWAYF(server.AuthorizationTemplate, authURL, server.HomeOrganizationID)
 	}
 }
 
-func (server *SecureInternetHomeServer) GetBase() (*ServerBase, error) {
+func (server *SecureInternetHomeServer) Base() (*ServerBase, error) {
 	errorMessage := "failed getting current secure internet home base"
 	if server.BaseMap == nil {
 		return nil, types.NewWrappedError(
@@ -86,6 +82,10 @@ func (server *SecureInternetHomeServer) GetBase() (*ServerBase, error) {
 		)
 	}
 	return base, nil
+}
+
+func (server *SecureInternetHomeServer) OAuth() *oauth.OAuth {
+	return &server.Auth
 }
 
 func (servers *Servers) HasSecureLocation() bool {
@@ -148,7 +148,7 @@ func (server *SecureInternetHomeServer) init(
 	}
 
 	// Make sure oauth contains our endpoints
-	server.OAuth.Init(base.URL, base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token)
+	server.Auth.Init(base.URL, base.Endpoints.API.V3.Authorization, base.Endpoints.API.V3.Token)
 	return nil
 }
 

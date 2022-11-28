@@ -393,7 +393,7 @@ func (client *Client) goBackInternal() {
 		client.Logger.Info(
 			fmt.Sprintf(
 				"Failed going back, error: %s",
-				types.GetErrorTraceback(goBackErr),
+				types.ErrorTraceback(goBackErr),
 			),
 		)
 	}

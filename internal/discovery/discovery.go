@@ -21,9 +21,9 @@ type Discovery struct {
 	servers       types.DiscoveryServers
 }
 
-// getDiscoFile is a helper function that gets a disco json and fills the structure with it
+// discoFile is a helper function that gets a disco JSON and fills the structure with it
 // If it was unsuccessful it returns an error
-func getDiscoFile(jsonFile string, previousVersion uint64, structure interface{}) error {
+func discoFile(jsonFile string, previousVersion uint64, structure interface{}) error {
 	errorMessage := fmt.Sprintf("failed getting file: %s from the Discovery server", jsonFile)
 	// Get json data
 	discoURL := "https://disco.eduvpn.org/v2/"
@@ -185,7 +185,7 @@ func (discovery *Discovery) Organizations() (*types.DiscoveryOrganizations, erro
 		return &discovery.organizations, nil
 	}
 	file := "organization_list.json"
-	bodyErr := getDiscoFile(file, discovery.organizations.Version, &discovery.organizations)
+	bodyErr := discoFile(file, discovery.organizations.Version, &discovery.organizations)
 	if bodyErr != nil {
 		// Return previous with an error
 		return &discovery.organizations, types.NewWrappedError(
@@ -204,7 +204,7 @@ func (discovery *Discovery) Servers() (*types.DiscoveryServers, error) {
 		return &discovery.servers, nil
 	}
 	file := "server_list.json"
-	bodyErr := getDiscoFile(file, discovery.servers.Version, &discovery.servers)
+	bodyErr := discoFile(file, discovery.servers.Version, &discovery.servers)
 	if bodyErr != nil {
 		// Return previous with an error
 		return &discovery.servers, types.NewWrappedError(

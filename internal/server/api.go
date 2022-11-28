@@ -50,7 +50,7 @@ func apiAuthorized(
 	if opts == nil {
 		opts = &httpw.HTTPOptionalParams{}
 	}
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 
 	if baseErr != nil {
 		return nil, nil, types.NewWrappedError(errorMessage, baseErr)
@@ -70,7 +70,7 @@ func apiAuthorized(
 	}
 
 	headerKey := "Authorization"
-	headerValue := fmt.Sprintf("Bearer %s", GetHeaderToken(server))
+	headerValue := fmt.Sprintf("Bearer %s", HeaderToken(server))
 	if opts.Headers != nil {
 		opts.Headers.Add(headerKey, headerValue)
 	} else {
@@ -119,7 +119,7 @@ func APIInfo(server Server) error {
 		return types.NewWrappedError(errorMessage, jsonErr)
 	}
 
-	base, baseErr := server.GetBase()
+	base, baseErr := server.Base()
 
 	if baseErr != nil {
 		return types.NewWrappedError(errorMessage, baseErr)
