@@ -223,7 +223,7 @@ func APIConnectOpenVPN(server Server, profileID string, preferTCP bool) (string,
 	return string(connectBody), pTime, nil
 }
 
-// This needs no further return value as it's best effort
+// This needs no further return value as it's best effort.
 func APIDisconnect(server Server) {
 	_, _, _ = apiAuthorized(server, http.MethodPost, "/disconnect", nil)
 }

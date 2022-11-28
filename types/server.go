@@ -33,7 +33,7 @@ type DiscoveryServers struct {
 type DiscoMapOrString map[string]string
 
 // The display name can either be a map or a string in the server list
-// Unmarshal it by first trying a string and then the map
+// Unmarshal it by first trying a string and then the map.
 func (DN *DiscoMapOrString) UnmarshalJSON(data []byte) error {
 	var displayNameString string
 

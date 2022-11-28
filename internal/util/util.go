@@ -17,7 +17,7 @@ import (
 // - Sets the scheme to https if none is given
 // - It 'cleans' up the path using path.Clean
 // - It makes sure that the URL ends with a /
-// It returns an error if the URL cannot be parsed
+// It returns an error if the URL cannot be parsed.
 func EnsureValidURL(s string) (string, error) {
 	parsedURL, parseErr := url.Parse(s)
 	if parseErr != nil {
@@ -56,7 +56,7 @@ func MakeRandomByteSlice(size int) ([]byte, error) {
 	return byteSlice, nil
 }
 
-// EnsureDirectory creates a directory with permission 700
+// EnsureDirectory creates a directory with permission 700.
 func EnsureDirectory(directory string) error {
 	// Create with 700 permissions, read, write, execute only for the owner
 	mkdirErr := os.MkdirAll(directory, 0o700)
@@ -71,7 +71,7 @@ func EnsureDirectory(directory string) error {
 
 // WAYFEncode an input URL using 'skip Where Are You From' encoding
 // See https://github.com/eduvpn/documentation/blob/dc4d53c47dd7a69e95d6650eec408e16eaa814a2/SERVER_DISCOVERY_SKIP_WAYF.md
-// URL encode for skipping where are you from (WAYF). Note that this right now is basically an alias to QueryEscape
+// URL encode for skipping where are you from (WAYF). Note that this right now is basically an alias to QueryEscape.
 func WAYFEncode(input string) string {
 	// QueryReplace already replaces a space with a +
 	// see https://go.dev/play/p/pOfrn-Wsq5

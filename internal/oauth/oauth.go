@@ -29,7 +29,7 @@ import (
 // state between the request and callback.  The authorization server
 // includes this value when redirecting the user agent back to the
 // client.
-// We implement it similarly to the verifier
+// We implement it similarly to the verifier.
 func genState() (string, error) {
 	randomBytes, err := util.MakeRandomByteSlice(32)
 	if err != nil {
@@ -75,7 +75,7 @@ func genVerifier() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(randomBytes), nil
 }
 
-// OAuth defines the main structure for this package
+// OAuth defines the main structure for this package.
 type OAuth struct {
 	// ISS indicates the issuer indentifier of the authorization server as defined in RFC 9207
 	ISS                  string               `json:"iss"`
@@ -93,7 +93,7 @@ type OAuth struct {
 	session              OAuthExchangeSession `json:"-"`
 }
 
-// OAuthExchangeSession is a structure that gets passed to the callback for easy access to the current state
+// OAuthExchangeSession is a structure that gets passed to the callback for easy access to the current state.
 type OAuthExchangeSession struct {
 	// CallbackError indicates an error returned by the server
 	CallbackError error
@@ -120,7 +120,7 @@ type OAuthExchangeSession struct {
 	Listener net.Listener
 }
 
-// OAuthToken is a structure that defines the json format for /.well-known/vpn-user-portal"
+// OAuthToken is a structure that defines the json format for /.well-known/vpn-user-portal".
 type OAuthToken struct {
 	// Access is the access token returned by the server
 	Access           string    `json:"access_token"`
@@ -139,7 +139,7 @@ type OAuthToken struct {
 }
 
 // setupListener sets up an OAuth listener
-// If it was unsuccessful it returns an error
+// If it was unsuccessful it returns an error.
 func (oauth *OAuth) setupListener() error {
 	errorMessage := "failed setting up listener"
 	oauth.session.Context = context.Background()
@@ -154,7 +154,7 @@ func (oauth *OAuth) setupListener() error {
 }
 
 // tokensWithCallback gets the OAuth tokens using a local web server
-// If it was unsuccessful it returns an error
+// If it was unsuccessful it returns an error.
 func (oauth *OAuth) tokensWithCallback() error {
 	errorMessage := "failed getting tokens with callback"
 	if oauth.session.Listener == nil {
@@ -176,7 +176,7 @@ func (oauth *OAuth) tokensWithCallback() error {
 // tokensWithAuthCode gets the access and refresh tokens using the authorization code
 // Access tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.4
 // Refresh tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.2
-// If it was unsuccessful it returns an error
+// If it was unsuccessful it returns an error.
 func (oauth *OAuth) tokensWithAuthCode(authCode string) error {
 	errorMessage := "failed getting tokens with the authorization code"
 	// Make sure the verifier is set as the parameter
@@ -223,7 +223,7 @@ func (oauth *OAuth) tokensWithAuthCode(authCode string) error {
 	return nil
 }
 
-// isTokensExpired returns if the OAuth tokens are expired using the expired timestamp
+// isTokensExpired returns if the OAuth tokens are expired using the expired timestamp.
 func (oauth *OAuth) isTokensExpired() bool {
 	expiredTime := oauth.Token.ExpiredTimestamp
 	currentTime := time.Now()
@@ -233,7 +233,7 @@ func (oauth *OAuth) isTokensExpired() bool {
 // tokensWithRefresh gets the access and refresh tokens with a previously received refresh token
 // Access tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.4
 // Refresh tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.2
-// If it was unsuccessful it returns an error
+// If it was unsuccessful it returns an error.
 func (oauth *OAuth) tokensWithRefresh() error {
 	errorMessage := "failed getting tokens with the refresh token"
 	reqURL := oauth.TokenURL
@@ -306,14 +306,14 @@ main {
 </html>
 `
 
-// oauthResponseHTML is a structure that is used to give back the OAuth response
+// oauthResponseHTML is a structure that is used to give back the OAuth response.
 type oauthResponseHTML struct {
 	Title string
 	Message string
 }
 
 // writeResponseHTML writes the OAuth response using a response writer and the title + message
-// If it was unsuccessful it returns an error
+// If it was unsuccessful it returns an error.
 func writeResponseHTML(w http.ResponseWriter, title string, message string) error {
 	errorMessage := "failed writing response HTML"
 	template, templateErr := template.New("oauth-response").Parse(responseTemplate)
@@ -411,7 +411,7 @@ func (oauth *OAuth) Callback(w http.ResponseWriter, req *http.Request) {
 // Init initializes OAuth with the following parameters:
 // - OAuth server issuer identification
 // - The URL used for authorization
-// - The URL to obtain new tokens
+// - The URL to obtain new tokens.
 func (oauth *OAuth) Init(iss string, baseAuthorizationURL string, tokenURL string) {
 	oauth.ISS = iss
 	oauth.BaseAuthorizationURL = baseAuthorizationURL
@@ -419,7 +419,7 @@ func (oauth *OAuth) Init(iss string, baseAuthorizationURL string, tokenURL strin
 }
 
 // ListenerPort gets the listener for the OAuth web server
-// It returns the port as an integer and an error if there is any
+// It returns the port as an integer and an error if there is any.
 func (oauth OAuth) ListenerPort() (int, error) {
 	errorMessage := "failed to get listener port"
 
@@ -429,7 +429,7 @@ func (oauth OAuth) ListenerPort() (int, error) {
 	return oauth.session.Listener.Addr().(*net.TCPAddr).Port, nil
 }
 
-// AuthURL gets the authorization url to start the OAuth procedure
+// AuthURL gets the authorization url to start the OAuth procedure.
 func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (string, error) {
 	errorMessage := "failed starting OAuth exchange"
 
@@ -483,7 +483,7 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 }
 
 // Exchange starts the OAuth exchange by getting the tokens with the redirect callback
-// If it was unsuccessful it returns an error
+// If it was unsuccessful it returns an error.
 func (oauth *OAuth) Exchange() error {
 	tokenErr := oauth.tokensWithCallback()
 
@@ -494,7 +494,7 @@ func (oauth *OAuth) Exchange() error {
 }
 
 // Cancel cancels the existing OAuth
-// TODO: Use context for this
+// TODO: Use context for this.
 func (oauth *OAuth) Cancel() {
 	oauth.session.CallbackError = types.NewWrappedErrorLevel(
 		types.ErrInfo,
@@ -507,7 +507,7 @@ func (oauth *OAuth) Cancel() {
 }
 
 // EnsureTokens makes sure the OAuth tokens are still valid
-// if this cannot be guaranteed, it returns an error
+// if this cannot be guaranteed, it returns an error.
 func (oauth *OAuth) EnsureTokens() error {
 	errorMessage := "failed ensuring OAuth tokens"
 	// Access Token or Refresh Tokens empty, we can not ensure the tokens

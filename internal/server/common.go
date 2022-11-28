@@ -10,7 +10,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
-// The base type for servers
+// The base type for servers.
 type ServerBase struct {
 	URL            string            `json:"base_url"`
 	DisplayName    map[string]string `json:"display_name"`
@@ -82,7 +82,7 @@ type ServerEndpointList struct {
 	Token         string `json:"token_endpoint"`
 }
 
-// Struct that defines the json format for /.well-known/vpn-user-portal"
+// Struct that defines the json format for /.well-known/vpn-user-portal".
 type ServerEndpoints struct {
 	API struct {
 		V2 ServerEndpointList `json:"http://eduvpn.org/api#2"`

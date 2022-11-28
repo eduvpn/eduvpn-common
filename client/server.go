@@ -315,7 +315,7 @@ func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, 
 	return server, nil
 }
 
-// AddCustomServer adds a Custom Server by `url`
+// AddCustomServer adds a Custom Server by `url`.
 func (client *Client) AddCustomServer(url string) (server.Server, error) {
 	errorMessage := fmt.Sprintf("failed adding Custom server with url %s", url)
 
@@ -501,7 +501,7 @@ func (client *Client) askSecureLocation() error {
 
 // ChangeSecureLocation changes the location for an existing Secure Internet Server.
 // Changing a secure internet location is only possible when the user is in the main screen (STATE_NO_SERVER), otherwise it returns an error.
-// It also returns an error if something has gone wrong when selecting the new location
+// It also returns an error if something has gone wrong when selecting the new location.
 func (client *Client) ChangeSecureLocation() error {
 	errorMessage := "failed to change location from the main screen"
 

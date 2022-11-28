@@ -8,7 +8,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
-// An instute access server
+// An instute access server.
 type InstituteAccessServer struct {
 	// An instute access server has its own OAuth
 	Auth oauth.OAuth `json:"oauth"`

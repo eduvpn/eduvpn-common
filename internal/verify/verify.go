@@ -54,7 +54,7 @@ func Verify(
 // The signature is checked to have a timestamp with a value of at least minSignTime, which is a UNIX timestamp without milliseconds.
 //
 // The return value will either be (true, nil) on success or (false, detailedVerifyError) on failure.
-// Note that every error path is wrapped in a custom type here because minisign does not return custom error types, they use errors.New
+// Note that every error path is wrapped in a custom type here because minisign does not return custom error types, they use errors.New.
 func verifyWithKeys(
 	signatureFileContent string,
 	signedJSON []byte,

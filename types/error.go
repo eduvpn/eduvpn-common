@@ -8,16 +8,16 @@ import (
 type ErrLevel int8
 
 const (
-	// All other errors, default
+	// All other errors, default.
 	ErrOther ErrLevel = iota
 
-	// The erorr is just here as additional info
+	// The erorr is just here as additional info.
 	ErrInfo
 
-	// The error is just here as a warning
+	// The error is just here as a warning.
 	ErrWarning
 
-	// The error is fatal, the app cannot function
+	// The error is fatal, the app cannot function.
 	ErrFatal
 )
 
@@ -27,12 +27,12 @@ type WrappedErrorMessage struct {
 	Err     error
 }
 
-// NewWrappedError returns a WrappedErrorMessage and uses the error level from the parent
+// NewWrappedError returns a WrappedErrorMessage and uses the error level from the parent.
 func NewWrappedError(message string, err error) *WrappedErrorMessage {
 	return &WrappedErrorMessage{Level: ErrorLevel(err), Message: message, Err: err}
 }
 
-// NewWrappedError returns a WrappedErrorMessage and uses the given error level from the parent
+// NewWrappedError returns a WrappedErrorMessage and uses the given error level from the parent.
 func NewWrappedErrorLevel(level ErrLevel, message string, err error) *WrappedErrorMessage {
 	return &WrappedErrorMessage{Level: level, Message: message, Err: err}
 }

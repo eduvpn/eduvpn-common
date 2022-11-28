@@ -12,7 +12,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
-// Config represents a configuration that saves the client's struct as JSON
+// Config represents a configuration that saves the client's struct as JSON.
 type Config struct {
 	// Directory represents the path to where the data is saved
 	Directory string
@@ -21,20 +21,20 @@ type Config struct {
 	Name      string
 }
 
-// Init initializes the configuration using the provided directory and name
+// Init initializes the configuration using the provided directory and name.
 func (config *Config) Init(directory string, name string) {
 	config.Directory = directory
 	config.Name = name
 }
 
-// filename returns the filename of the configuration as a full path
+// filename returns the filename of the configuration as a full path.
 func (config *Config) filename() string {
 	pathString := path.Join(config.Directory, config.Name)
 	return fmt.Sprintf("%s.json", pathString)
 }
 
 // Save saves a structure 'readStruct' to the configuration
-// If it was unusuccessful, an an error is returned
+// If it was unusuccessful, an an error is returned.
 func (config *Config) Save(readStruct interface{}) error {
 	errorMessage := "failed saving configuration"
 	configDirErr := util.EnsureDirectory(config.Directory)

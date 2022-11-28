@@ -17,46 +17,46 @@ type (
 )
 
 const (
-	// StateDeregistered means the app is not registered with the wrapper
+	// StateDeregistered means the app is not registered with the wrapper.
 	StateDeregistered FSMStateID = iota
 
-	// StateNoServer means the user has not chosen a server yet
+	// StateNoServer means the user has not chosen a server yet.
 	StateNoServer
 
-	// StateAskLocation means the user selected a Secure Internet server but needs to choose a location
+	// StateAskLocation means the user selected a Secure Internet server but needs to choose a location.
 	StateAskLocation
 
-	// StateSearchServer means the user is currently selecting a server in the UI
+	// StateSearchServer means the user is currently selecting a server in the UI.
 	StateSearchServer
 
-	// StateLoadingServer means we are loading the server details
+	// StateLoadingServer means we are loading the server details.
 	StateLoadingServer
 
-	// StateChosenServer means the user has chosen a server to connect to
+	// StateChosenServer means the user has chosen a server to connect to.
 	StateChosenServer
 
-	// StateOAuthStarted means the OAuth process has started
+	// StateOAuthStarted means the OAuth process has started.
 	StateOAuthStarted
 
-	// StateAuthorized means the OAuth process has finished and the user is now authorized with the server
+	// StateAuthorized means the OAuth process has finished and the user is now authorized with the server.
 	StateAuthorized
 
-	// StateRequestConfig means the user has requested a config for connecting
+	// StateRequestConfig means the user has requested a config for connecting.
 	StateRequestConfig
 
-	// StateAskProfile means the go code is asking for a profile selection from the UI
+	// StateAskProfile means the go code is asking for a profile selection from the UI.
 	StateAskProfile
 
-	// StateDisconnected means the user has gotten a config for a server but is not connected yet
+	// StateDisconnected means the user has gotten a config for a server but is not connected yet.
 	StateDisconnected
 
-	// StateDisconnecting means the OS is disconnecting and the Go code is doing the /disconnect
+	// StateDisconnecting means the OS is disconnecting and the Go code is doing the /disconnect.
 	StateDisconnecting
 
-	// StateConnecting means the OS is establishing a connection to the server
+	// StateConnecting means the OS is establishing a connection to the server.
 	StateConnecting
 
-	// StateConnected means the user has been connected to the server
+	// StateConnected means the user has been connected to the server.
 	StateConnected
 )
 

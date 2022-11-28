@@ -10,7 +10,7 @@ import (
 )
 
 // GenerateKey generates a WireGuard private key using wgctrl
-// It returns an error if key generation failed
+// It returns an error if key generation failed.
 func GenerateKey() (wgtypes.Key, error) {
 	key, keyErr := wgtypes.GeneratePrivateKey()
 
@@ -24,7 +24,7 @@ func GenerateKey() (wgtypes.Key, error) {
 }
 
 // ConfigAddKey takes the WireGuard configuration and adds the PrivateKey to the right section
-// FIXME: Instead of doing a regex replace, decide if we should use a parser
+// FIXME: Instead of doing a regex replace, decide if we should use a parser.
 func ConfigAddKey(config string, key wgtypes.Key) string {
 	interfaceSection := "[Interface]"
 	InterfaceSectionEscaped := regexp.QuoteMeta(interfaceSection)

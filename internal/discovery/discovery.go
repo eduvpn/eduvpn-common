@@ -12,7 +12,7 @@ import (
 )
 
 
-// Discovery is the main structure used for this package
+// Discovery is the main structure used for this package.
 type Discovery struct {
 	// organizations represents the organizations that are returned by the discovery server
 	organizations types.DiscoveryOrganizations
@@ -22,7 +22,7 @@ type Discovery struct {
 }
 
 // discoFile is a helper function that gets a disco JSON and fills the structure with it
-// If it was unsuccessful it returns an error
+// If it was unsuccessful it returns an error.
 func discoFile(jsonFile string, previousVersion uint64, structure interface{}) error {
 	errorMessage := fmt.Sprintf("failed getting file: %s from the Discovery server", jsonFile)
 	// Get json data
@@ -79,7 +79,7 @@ func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
 	return discovery.organizations.Timestamp.IsZero()
 }
 
-// SecureLocationList returns a slice of all the available locations 
+// SecureLocationList returns a slice of all the available locations. 
 func (discovery *Discovery) SecureLocationList() []string {
 	var locations []string
 	for _, currentServer := range discovery.servers.List {
@@ -91,7 +91,7 @@ func (discovery *Discovery) SecureLocationList() []string {
 }
 
 // ServerByURL returns the discovery server by the base URL and the according type ("secure_internet", "institute_access")
-// An error is returned if and only if nil is returned for the server
+// An error is returned if and only if nil is returned for the server.
 func (discovery *Discovery) ServerByURL(
 	baseURL string,
 	serverType string,
@@ -108,7 +108,7 @@ func (discovery *Discovery) ServerByURL(
 }
 
 // ServerByCountryCode returns the discovery server by the country code and the according type ("secure_internet", "institute_access")
-// An error is returned if and only if nil is returned for the server
+// An error is returned if and only if nil is returned for the server.
 func (discovery *Discovery) ServerByCountryCode(
 	countryCode string,
 	serverType string,
@@ -125,7 +125,7 @@ func (discovery *Discovery) ServerByCountryCode(
 }
 
 // orgByID returns the discovery organization by the organization ID
-// An error is returned if and only if nil is returned for the organization
+// An error is returned if and only if nil is returned for the organization.
 func (discovery *Discovery) orgByID(orgID string) (*types.DiscoveryOrganization, error) {
 	for _, organization := range discovery.organizations.List {
 		if organization.OrgID == orgID {
@@ -141,7 +141,7 @@ func (discovery *Discovery) orgByID(orgID string) (*types.DiscoveryOrganization,
 // SecureHomeArgs returns the secure internet home server arguments:
 // - The organization it belongs to
 // - The secure internet server itself
-// An error is returned if and only if nil is returned for the organization
+// An error is returned if and only if nil is returned for the organization.
 func (discovery *Discovery) SecureHomeArgs(
 	orgID string,
 ) (*types.DiscoveryOrganization, *types.DiscoveryServer, error) {
@@ -179,7 +179,7 @@ func (discovery *Discovery) DetermineServersUpdate() bool {
 }
 
 // Organizations returns the discovery organizations
-// If there was an error, a cached copy is returned if available
+// If there was an error, a cached copy is returned if available.
 func (discovery *Discovery) Organizations() (*types.DiscoveryOrganizations, error) {
 	if !discovery.DetermineOrganizationsUpdate() {
 		return &discovery.organizations, nil
@@ -198,7 +198,7 @@ func (discovery *Discovery) Organizations() (*types.DiscoveryOrganizations, erro
 }
 
 // Servers returns the discovery servers
-// If there was an error, a cached copy is returned if available
+// If there was an error, a cached copy is returned if available.
 func (discovery *Discovery) Servers() (*types.DiscoveryServers, error) {
 	if !discovery.DetermineServersUpdate() {
 		return &discovery.servers, nil

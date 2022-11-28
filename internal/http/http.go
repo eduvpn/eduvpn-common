@@ -13,10 +13,10 @@ import (
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
-// The URLParemeters as the name suggests is a type used for the parameters in the URL
+// The URLParemeters as the name suggests is a type used for the parameters in the URL.
 type URLParameters map[string]string
 
-// OptionalParams is a structure that defines the optional parameters that are given when making a HTTP call
+// OptionalParams is a structure that defines the optional parameters that are given when making a HTTP call.
 type HTTPOptionalParams struct {
 	Headers       http.Header
 	URLParameters URLParameters
@@ -24,7 +24,7 @@ type HTTPOptionalParams struct {
 	Timeout       time.Duration
 }
 
-// ConstructURL creates a URL with the included parameters
+// ConstructURL creates a URL with the included parameters.
 func HTTPConstructURL(baseURL string, parameters URLParameters) (string, error) {
 	url, parseErr := url.Parse(baseURL)
 	if parseErr != nil {
@@ -47,28 +47,28 @@ func HTTPConstructURL(baseURL string, parameters URLParameters) (string, error) 
 	return url.String(), nil
 }
 
-// Get creates a Get request and returns the headers, body and an error
+// Get creates a Get request and returns the headers, body and an error.
 func HTTPGet(url string) (http.Header, []byte, error) {
 	return HTTPMethodWithOpts(http.MethodGet, url, nil)
 }
 
-// Post creates a Post request and returns the headers, body and an error
+// Post creates a Post request and returns the headers, body and an error.
 func HTTPPost(url string, body url.Values) (http.Header, []byte, error) {
 	return HTTPMethodWithOpts(http.MethodGet, url, &HTTPOptionalParams{Body: body})
 }
 
-// GetWithOpts creates a Get request with optional parameters and returns the headers, body and an error
+// GetWithOpts creates a Get request with optional parameters and returns the headers, body and an error.
 func HTTPGetWithOpts(url string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
 	return HTTPMethodWithOpts(http.MethodGet, url, opts)
 }
 
-// PostWithOpts creates a Post request with optional parameters and returns the headers, body and an error
+// PostWithOpts creates a Post request with optional parameters and returns the headers, body and an error.
 func HTTPPostWithOpts(url string, opts *HTTPOptionalParams) (http.Header, []byte, error) {
 	return HTTPMethodWithOpts(http.MethodPost, url, opts)
 }
 
 // optionalURL ensures that the URL contains the optional parameters
-// it returns the url (with parameters if success) and an error indicating success
+// it returns the url (with parameters if success) and an error indicating success.
 func httpOptionalURL(url string, opts *HTTPOptionalParams) (string, error) {
 	if opts != nil {
 		url, urlErr := HTTPConstructURL(url, opts.URLParameters)
@@ -84,7 +84,7 @@ func httpOptionalURL(url string, opts *HTTPOptionalParams) (string, error) {
 	return url, nil
 }
 
-// optionalHeaders ensures that the HTTP request uses the optional headers if defined
+// optionalHeaders ensures that the HTTP request uses the optional headers if defined.
 func httpOptionalHeaders(req *http.Request, opts *HTTPOptionalParams) {
 	// Add headers
 	if opts != nil && req != nil && opts.Headers != nil {
@@ -94,7 +94,7 @@ func httpOptionalHeaders(req *http.Request, opts *HTTPOptionalParams) {
 	}
 }
 
-// optionalBodyReader returns a HTTP body reader if there is a body, otherwise nil
+// optionalBodyReader returns a HTTP body reader if there is a body, otherwise nil.
 func httpOptionalBodyReader(opts *HTTPOptionalParams) io.Reader {
 	if opts != nil && opts.Body != nil {
 		return strings.NewReader(opts.Body.Encode())
@@ -103,7 +103,7 @@ func httpOptionalBodyReader(opts *HTTPOptionalParams) io.Reader {
 }
 
 // MethodWithOpts creates a HTTP request using a method (e.g. GET, POST), an url and optional parameters
-// It returns the HTTP headers, the body and an error if there is one
+// It returns the HTTP headers, the body and an error if there is one.
 func HTTPMethodWithOpts(
 	method string,
 	url string,
@@ -167,14 +167,14 @@ func HTTPMethodWithOpts(
 	return resp.Header, body, nil
 }
 
-// StatusError indicates that we have received a HTTP status error
+// StatusError indicates that we have received a HTTP status error.
 type HTTPStatusError struct {
 	URL    string
 	Body   string
 	Status int
 }
 
-// Error returns the StatusError as an error string
+// Error returns the StatusError as an error string.
 func (e *HTTPStatusError) Error() string {
 	return fmt.Sprintf(
 		"failed obtaining HTTP resource: %s as it gave an unsuccessful status code: %d. Body: %s",
@@ -193,7 +193,7 @@ type HTTPParseJSONError struct {
 	Err  error
 }
 
-// Error returns the ParseJSONError as an error string
+// Error returns the ParseJSONError as an error string.
 func (e *HTTPParseJSONError) Error() string {
 	return fmt.Sprintf(
 		"failed parsing json %s for HTTP resource: %s with error: %v",

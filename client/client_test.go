@@ -331,7 +331,7 @@ func TestTokenInvalid(t *testing.T) {
 	}
 }
 
-// Test if an invalid profile will be corrected
+// Test if an invalid profile will be corrected.
 func TestInvalidProfileCorrected(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &Client{}
@@ -389,7 +389,7 @@ func TestInvalidProfileCorrected(t *testing.T) {
 	}
 }
 
-// Test if prefer tcp is handled correctly by checking the returned config and config type
+// Test if prefer tcp is handled correctly by checking the returned config and config type.
 func TestPreferTCP(t *testing.T) {
 	serverURI := getServerURI(t)
 	state := &Client{}

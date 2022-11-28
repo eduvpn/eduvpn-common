@@ -12,9 +12,9 @@ import (
 )
 
 type (
-	//StateID represents the Identifier of the state
+	//StateID represents the Identifier of the state.
 	FSMStateID      int8
-	//StateIDSlice represents the list of state identifiers
+	//StateIDSlice represents the list of state identifiers.
 	FSMStateIDSlice []FSMStateID
 )
 
@@ -30,7 +30,7 @@ func (v FSMStateIDSlice) Swap(i, j int) {
 	v[i], v[j] = v[j], v[i]
 }
 
-// Transition indicates an arrow in the state graph
+// Transition indicates an arrow in the state graph.
 type FSMTransition struct {
 	// To represents the to-be-new state
 	To          FSMStateID
@@ -42,13 +42,13 @@ type (
 	FSMStates map[FSMStateID]FSMState
 )
 
-// State represents a single node in the graph
+// State represents a single node in the graph.
 type FSMState struct {
 	// Transitions indicates which out arrows this node has
 	Transitions []FSMTransition
 }
 
-// FSM represents the total graph
+// FSM represents the total graph.
 type FSM struct {
 	// States is the map from state ID to states
 	States  FSMStates
@@ -73,7 +73,7 @@ type FSM struct {
 	GetStateName       func(FSMStateID) string
 }
 
-// Init initializes the state machine and sets it to the given current state
+// Init initializes the state machine and sets it to the given current state.
 func (fsm *FSM) Init(
 	current FSMStateID,
 	states map[FSMStateID]FSMState,
@@ -90,12 +90,12 @@ func (fsm *FSM) Init(
 	fsm.Generate = generate
 }
 
-// InState returns whether or not the state machine is in the given 'check' state
+// InState returns whether or not the state machine is in the given 'check' state.
 func (fsm *FSM) InState(check FSMStateID) bool {
 	return check == fsm.Current
 }
 
-// HasTransition checks whether or not the state machine has a transition to the given 'check' state
+// HasTransition checks whether or not the state machine has a transition to the given 'check' state.
 func (fsm *FSM) HasTransition(check FSMStateID) bool {
 	for _, transitionState := range fsm.States[fsm.Current].Transitions {
 		if transitionState.To == check {
@@ -106,13 +106,13 @@ func (fsm *FSM) HasTransition(check FSMStateID) bool {
 	return false
 }
 
-// graphFilename gets the full path to the graph filename including the .graph extension
+// graphFilename gets the full path to the graph filename including the .graph extension.
 func (fsm *FSM) graphFilename(extension string) string {
 	debugPath := path.Join(fsm.Directory, "graph")
 	return fmt.Sprintf("%s%s", debugPath, extension)
 }
 
-// writeGraph writes the state machine to a .graph file
+// writeGraph writes the state machine to a .graph file.
 func (fsm *FSM) writeGraph() {
 	graph := fsm.GenerateGraph()
 	graphFile := fsm.graphFilename(".graph")
@@ -132,7 +132,7 @@ func (fsm *FSM) writeGraph() {
 }
 
 // GoTransitionRequired transitions the state machine to a new state with associated state data 'data'
-// If this transition is not handled by the client, it returns an error
+// If this transition is not handled by the client, it returns an error.
 func (fsm *FSM) GoTransitionRequired(newState FSMStateID, data interface{}) error {
 	oldState := fsm.Current
 	if !fsm.GoTransitionWithData(newState, data) {
@@ -142,7 +142,7 @@ func (fsm *FSM) GoTransitionRequired(newState FSMStateID, data interface{}) erro
 }
 
 // GoTransitionWithData is a helper that transitions the state machine toward the 'newState' with associated state data 'data'
-// It returns whether or not the transition is handled by the client
+// It returns whether or not the transition is handled by the client.
 func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data interface{}) bool {
 	ok := fsm.HasTransition(newState)
 
@@ -160,14 +160,14 @@ func (fsm *FSM) GoTransitionWithData(newState FSMStateID, data interface{}) bool
 	return handled
 }
 
-// GoTransition is an alias to call GoTransitionWithData but have an empty string as data
+// GoTransition is an alias to call GoTransitionWithData but have an empty string as data.
 func (fsm *FSM) GoTransition(newState FSMStateID) bool {
 	// No data means the callback is never required
 	return fsm.GoTransitionWithData(newState, "")
 }
 
 // generateMermaidGraph generates a graph suitable to be converted by the mermaid.js tool
-// it returns the graph as a string
+// it returns the graph as a string.
 func (fsm *FSM) generateMermaidGraph() string {
 	graph := "graph TD\n"
 	sortedFSM := make(FSMStateIDSlice, 0, len(fsm.States))
@@ -196,7 +196,7 @@ func (fsm *FSM) generateMermaidGraph() string {
 }
 
 // GenerateGraph generates a mermaid graph if the state machine is initialized
-// If the graph cannot be generated, it returns the empty string
+// If the graph cannot be generated, it returns the empty string.
 func (fsm *FSM) GenerateGraph() string {
 	if fsm.GetStateName != nil {
 		return fsm.generateMermaidGraph()

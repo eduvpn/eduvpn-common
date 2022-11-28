@@ -13,7 +13,7 @@ import (
 )
 
 // FileLogger defines the type of logger that this package implements
-// As the name suggests, it saves the log to a file
+// As the name suggests, it saves the log to a file.
 type FileLogger struct {
 	// Level indicates which maximum level this logger actually forwards to the file
 	Level LogLevel
@@ -25,26 +25,26 @@ type FileLogger struct {
 type LogLevel int8
 
 const (
-	// LevelNotSet indicates level not set, not allowed
+	// LevelNotSet indicates level not set, not allowed.
 	LevelNotSet LogLevel = iota
 
-	// LevelDebug indicates that the message is not an error but is there for debugging
+	// LevelDebug indicates that the message is not an error but is there for debugging.
 	LevelDebug
 
-	// LevelInfo indicates that the message is not an error but is there for additional information
+	// LevelInfo indicates that the message is not an error but is there for additional information.
 	LevelInfo
 
-	// LevelWarning indicates only a warning, the app still functions
+	// LevelWarning indicates only a warning, the app still functions.
 	LevelWarning
 
-	// LevelError indicates a generic error, the app still functions but some functionality might not work
+	// LevelError indicates a generic error, the app still functions but some functionality might not work.
 	LevelError
 
-	// LevelFatal indicates a fatal error, the app cannot function correctly when such an error occurs
+	// LevelFatal indicates a fatal error, the app cannot function correctly when such an error occurs.
 	LevelFatal
 )
 
-// String returns the string of each level
+// String returns the string of each level.
 func (e LogLevel) String() string {
 	switch e {
 	case LevelNotSet:
@@ -65,7 +65,7 @@ func (e LogLevel) String() string {
 }
 
 // Init initializes the logger by forwarding a max level 'level' and a directory 'directory' where the log should be stored
-// If the logger cannot be initialized, for example an error in opening the log file, an error is returned
+// If the logger cannot be initialized, for example an error in opening the log file, an error is returned.
 func (logger *FileLogger) Init(level LogLevel, directory string) error {
 	errorMessage := "failed creating log"
 
@@ -88,7 +88,7 @@ func (logger *FileLogger) Init(level LogLevel, directory string) error {
 	return nil
 }
 
-// Inherit logs an error with a label using the error level of the error
+// Inherit logs an error with a label using the error level of the error.
 func (logger *FileLogger) Inherit(label string, err error) {
 	level := types.ErrorLevel(err)
 
@@ -105,42 +105,42 @@ func (logger *FileLogger) Inherit(label string, err error) {
 	}
 }
 
-// Debug logs a message with parameters as level LevelDebug
+// Debug logs a message with parameters as level LevelDebug.
 func (logger *FileLogger) Debug(msg string, params ...interface{}) {
 	logger.log(LevelDebug, msg, params...)
 }
 
-// Debug logs a message with parameters as level LevelInfo
+// Debug logs a message with parameters as level LevelInfo.
 func (logger *FileLogger) Info(msg string, params ...interface{}) {
 	logger.log(LevelInfo, msg, params...)
 }
 
-// Debug logs a message with parameters as level LevelWarning
+// Debug logs a message with parameters as level LevelWarning.
 func (logger *FileLogger) Warning(msg string, params ...interface{}) {
 	logger.log(LevelWarning, msg, params...)
 }
 
-// Debug logs a message with parameters as level LevelError
+// Debug logs a message with parameters as level LevelError.
 func (logger *FileLogger) Error(msg string, params ...interface{}) {
 	logger.log(LevelError, msg, params...)
 }
 
-// Debug logs a message with parameters as level LevelFatal
+// Debug logs a message with parameters as level LevelFatal.
 func (logger *FileLogger) Fatal(msg string, params ...interface{}) {
 	logger.log(LevelFatal, msg, params...)
 }
 
-// Close closes the logger by closing the internal file
+// Close closes the logger by closing the internal file.
 func (logger *FileLogger) Close() {
 	logger.file.Close()
 }
 
-// filename returns the filename of the logger by returning the full path as a string
+// filename returns the filename of the logger by returning the full path as a string.
 func (logger *FileLogger) filename(directory string) string {
 	return path.Join(directory, "log")
 }
 
-// log logs as level 'level' a message 'msg' with parameters 'params'
+// log logs as level 'level' a message 'msg' with parameters 'params'.
 func (logger *FileLogger) log(level LogLevel, msg string, params ...interface{}) {
 	if level >= logger.Level && logger.Level != LevelNotSet {
 		formattedMsg := fmt.Sprintf(msg, params...)

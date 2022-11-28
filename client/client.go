@@ -15,11 +15,11 @@ import (
 
 type (
 	// ServerBase is an alias to the internal ServerBase
-	// This contains the details for each server
+	// This contains the details for each server.
 	ServerBase = server.ServerBase
 )
 
-// This wraps the error, logs it and then returns the wrapped error
+// This wraps the error, logs it and then returns the wrapped error.
 func (client *Client) handleError(message string, err error) error {
 	if err != nil {
 		// Logs the error with the same level/verbosity as the error
@@ -34,7 +34,7 @@ func (client Client) isLetsConnect() bool {
 	return strings.HasPrefix(client.Name, "org.letsconnect-vpn.app")
 }
 
-// Client is the main struct for the VPN client
+// Client is the main struct for the VPN client.
 type Client struct {
 	// The name of the client
 	Name string `json:"-"`

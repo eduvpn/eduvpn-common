@@ -19,7 +19,7 @@ const (
 	ServerTypeCustom
 )
 
-// Open a browser with xdg-open
+// Open a browser with xdg-open.
 func openBrowser(url interface{}) {
 	urlString, ok := url.(string)
 
@@ -34,7 +34,7 @@ func openBrowser(url interface{}) {
 	}
 }
 
-// Ask for a profile in the command line
+// Ask for a profile in the command line.
 func sendProfile(state *client.Client, data interface{}) {
 	fmt.Printf("Multiple VPN profiles found. Please select a profile by entering e.g. 1")
 	serverProfiles, ok := data.(*server.ServerProfileInfo)
@@ -75,7 +75,7 @@ func sendProfile(state *client.Client, data interface{}) {
 // The callback function
 // If OAuth is started we open the browser with the Auth URL
 // If we ask for a profile, we send the profile using command line input
-// Note that this has an additional argument, the vpn state which was wrapped into this callback function below
+// Note that this has an additional argument, the vpn state which was wrapped into this callback function below.
 func stateCallback(
 	state *client.Client,
 	oldState client.FSMStateID,
@@ -91,7 +91,7 @@ func stateCallback(
 	}
 }
 
-// Get a config for Institute Access or Secure Internet Server
+// Get a config for Institute Access or Secure Internet Server.
 func getConfig(state *client.Client, url string, serverType ServerTypes) (string, string, error) {
 	if !strings.HasPrefix(url, "http") {
 		url = "https://" + url
@@ -117,7 +117,7 @@ func getConfig(state *client.Client, url string, serverType ServerTypes) (string
 	return state.GetConfigSecureInternet(url, false)
 }
 
-// Get a config for a single server, Institute Access or Secure Internet
+// Get a config for a single server, Institute Access or Secure Internet.
 func printConfig(url string, serverType ServerTypes) {
 	state := &client.Client{}
 
@@ -151,7 +151,7 @@ func printConfig(url string, serverType ServerTypes) {
 }
 
 // The main function
-// It parses the arguments and executes the correct functions
+// It parses the arguments and executes the correct functions.
 func main() {
 	customURLArg := flag.String("get-custom", "", "The url of a custom server to connect to")
 	urlArg := flag.String("get-institute", "", "The url of an institute to connect to")

@@ -10,7 +10,7 @@ import (
 )
 
 // A secure internet server which has its own OAuth tokens
-// It specifies the current location url it is connected to
+// It specifies the current location url it is connected to.
 type SecureInternetHomeServer struct {
 	Auth       oauth.OAuth       `json:"oauth"`
 	DisplayName map[string]string `json:"display_name"`
@@ -122,7 +122,7 @@ func (server *SecureInternetHomeServer) addLocation(
 	return base, nil
 }
 
-// Initializes the home server and adds its own location
+// Initializes the home server and adds its own location.
 func (server *SecureInternetHomeServer) init(
 	homeOrg *types.DiscoveryOrganization,
 	homeLocation *types.DiscoveryServer,
