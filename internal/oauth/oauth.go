@@ -187,6 +187,9 @@ func (oauth *OAuth) tokensWithCallback() error {
 	// server /callback over the listener address
 	oauth.session.Server = &http.Server{
 		Handler: mux,
+		// Define a default 60 second header read timeout to protect against a Slowloris Attack
+		// A bit overkill maybe for a local server but good to define anyways
+		ReadHeaderTimeout: 60 * time.Second,
 	}
 	mux.HandleFunc("/callback", oauth.Callback)
 
