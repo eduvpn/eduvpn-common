@@ -168,7 +168,7 @@ func (oauth *OAuth) setupListener() error {
 	oauth.session.Context = context.Background()
 
 	// create a listener
-	listener, listenerErr := net.Listen("tcp", ":0")
+	listener, listenerErr := net.Listen("tcp", "127.0.0.1:0")
 	if listenerErr != nil {
 		return types.NewWrappedError(errorMessage, listenerErr)
 	}
