@@ -110,22 +110,22 @@ func (logger *FileLogger) Debugf(msg string, params ...interface{}) {
 	logger.log(LevelDebug, msg, params...)
 }
 
-// Debug logs a message with parameters as level LevelInfo.
+// Infof logs a message with parameters as level LevelInfo.
 func (logger *FileLogger) Infof(msg string, params ...interface{}) {
 	logger.log(LevelInfo, msg, params...)
 }
 
-// Debug logs a message with parameters as level LevelWarning.
+// Warningf logs a message with parameters as level LevelWarning.
 func (logger *FileLogger) Warningf(msg string, params ...interface{}) {
 	logger.log(LevelWarning, msg, params...)
 }
 
-// Debug logs a message with parameters as level LevelError.
+// Errorf logs a message with parameters as level LevelError.
 func (logger *FileLogger) Errorf(msg string, params ...interface{}) {
 	logger.log(LevelError, msg, params...)
 }
 
-// Debug logs a message with parameters as level LevelFatal.
+// Fatalf logs a message with parameters as level LevelFatal.
 func (logger *FileLogger) Fatalf(msg string, params ...interface{}) {
 	logger.log(LevelFatal, msg, params...)
 }
