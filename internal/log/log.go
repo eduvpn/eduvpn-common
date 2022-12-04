@@ -3,14 +3,48 @@ package log
 
 import (
 	"fmt"
+	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"io"
 	"log"
 	"os"
 	"path"
 
 	"github.com/eduvpn/eduvpn-common/internal/util"
-	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
+
+type ErrLevel int8
+
+const (
+	ErrOther ErrLevel = iota
+	ErrInfo
+	ErrWarning
+	ErrFatal
+)
+
+func GetErrorLevel(err error) ErrLevel {
+	if err == nil {
+		return ErrOther
+	}
+
+	getLevel := func(e error) ErrLevel {
+		if e == nil {
+			return ErrOther
+		}
+
+		switch e.(type) {
+		case *oauth.CancelledCallbackError:
+			return ErrInfo
+		default:
+			return ErrOther
+		}
+	}
+
+	if err1, ok := err.(*errors.Error); ok {
+		return getLevel(err1.Err)
+	}
+	return getLevel(err)
+}
 
 // FileLogger defines the type of logger that this package implements
 // As the name suggests, it saves the log to a file.
@@ -66,42 +100,40 @@ func (e Level) String() string {
 
 // Init initializes the logger by forwarding a max level 'level' and a directory 'directory' where the log should be stored
 // If the logger cannot be initialized, for example an error in opening the log file, an error is returned.
-func (logger *FileLogger) Init(level Level, directory string) error {
-	errorMessage := "failed creating log"
-
-	configDirErr := util.EnsureDirectory(directory)
-	if configDirErr != nil {
-		return types.NewWrappedError(errorMessage, configDirErr)
+func (logger *FileLogger) Init(lvl Level, dir string) error {
+	err := util.EnsureDirectory(dir)
+	if err != nil {
+		return err
 	}
-	logFile, logOpenErr := os.OpenFile(
-		logger.filename(directory),
+	f, err := os.OpenFile(
+		logger.filename(dir),
 		os.O_RDWR|os.O_CREATE|os.O_APPEND,
 		0o666,
 	)
-	if logOpenErr != nil {
-		return types.NewWrappedError(errorMessage, logOpenErr)
+	if err != nil {
+		return errors.WrapPrefix(err, "failed creating log", 0)
 	}
-	multi := io.MultiWriter(os.Stdout, logFile)
+	multi := io.MultiWriter(os.Stdout, f)
 	log.SetOutput(multi)
-	logger.file = logFile
-	logger.Level = level
+	logger.file = f
+	logger.Level = lvl
 	return nil
 }
 
 // Inherit logs an error with a label using the error level of the error.
-func (logger *FileLogger) Inherit(label string, err error) {
-	level := types.ErrorLevel(err)
-
-	msg := fmt.Sprintf("%s with err: %s", label, types.ErrorTraceback(err))
-	switch level {
-	case types.ErrInfo:
-		logger.Infof(msg)
-	case types.ErrWarning:
-		logger.Warningf(msg)
-	case types.ErrOther:
-		logger.Errorf(msg)
-	case types.ErrFatal:
-		logger.Fatalf(msg)
+func (logger *FileLogger) Inherit(err error) {
+	if err == nil {
+		return
+	}
+	switch GetErrorLevel(err) {
+	case ErrInfo:
+		logger.Infof(err.Error())
+	case ErrWarning:
+		logger.Warningf(err.Error())
+	case ErrOther:
+		logger.Errorf(err.Error())
+	case ErrFatal:
+		logger.Fatalf(err.Error())
 	}
 }
 
@@ -131,8 +163,8 @@ func (logger *FileLogger) Fatalf(msg string, params ...interface{}) {
 }
 
 // Close closes the logger by closing the internal file.
-func (logger *FileLogger) Close() {
-	logger.file.Close()
+func (logger *FileLogger) Close() error {
+	return logger.file.Close()
 }
 
 // filename returns the filename of the logger by returning the full path as a string.
@@ -141,11 +173,11 @@ func (logger *FileLogger) filename(directory string) string {
 }
 
 // log logs as level 'level' a message 'msg' with parameters 'params'.
-func (logger *FileLogger) log(level Level, msg string, params ...interface{}) {
-	if level >= logger.Level && logger.Level != LevelNotSet {
-		formattedMsg := fmt.Sprintf(msg, params...)
-		format := fmt.Sprintf("- Go - %s - %s", level.String(), formattedMsg)
+func (logger *FileLogger) log(lvl Level, msg string, params ...interface{}) {
+	if lvl >= logger.Level && logger.Level != LevelNotSet {
+		fMsg := fmt.Sprintf(msg, params...)
+		f := fmt.Sprintf("- Go - %s - %s", lvl.String(), fMsg)
 		// To log file
-		log.Println(format)
+		log.Println(f)
 	}
 }

@@ -14,11 +14,11 @@ static int call_callback(PythonCB callback, const char *name, int oldstate, int 
 import "C"
 
 import (
-	"fmt"
+	"github.com/eduvpn/eduvpn-common/internal/log"
+	"github.com/go-errors/errors"
 	"unsafe"
 
 	"github.com/eduvpn/eduvpn-common/client"
-	"github.com/eduvpn/eduvpn-common/types"
 )
 
 var PStateCallbacks map[string]C.PythonCB
@@ -80,7 +80,7 @@ func GetVPNState(name string) (*client.Client, error) {
 	state, exists := VPNStates[name]
 
 	if !exists || state == nil {
-		return nil, fmt.Errorf("state with name %s not found", name)
+		return nil, errors.Errorf("state with name %s not found", name)
 	}
 
 	return state, nil
@@ -141,9 +141,18 @@ func getError(err error) *C.error {
 	errorStruct := (*C.error)(
 		C.malloc(C.size_t(unsafe.Sizeof(C.error{}))),
 	)
-	errorStruct.level = C.errorLevel(types.ErrorLevel(err))
-	errorStruct.traceback = C.CString(types.ErrorTraceback(err))
-	errorStruct.cause = C.CString(types.ErrorCause(err).Error())
+	if err1, ok := err.(*errors.Error); ok {
+		errorStruct.traceback = C.CString(err1.ErrorStack())
+		if err1.Err == nil {
+			errorStruct.cause = C.CString(err1.Error())
+		} else {
+			errorStruct.cause = C.CString(err1.Err.Error())
+		}
+	} else {
+		errorStruct.traceback = C.CString("N/A")
+		errorStruct.cause = C.CString(err.Error())
+	}
+	errorStruct.level = C.errorLevel(log.GetErrorLevel(err))
 	return errorStruct
 }
 

@@ -1,4 +1,4 @@
-// package discovery implements the server discovery by contacting disco.eduvpn.org and returning the data as a Go structure
+// Package discovery implements the server discovery by contacting disco.eduvpn.org and returning the data as a Go structure
 package discovery
 
 import (
@@ -9,6 +9,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/verify"
 	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
 
 // Discovery is the main structure used for this package.
@@ -23,45 +24,41 @@ type Discovery struct {
 // discoFile is a helper function that gets a disco JSON and fills the structure with it
 // If it was unsuccessful it returns an error.
 func discoFile(jsonFile string, previousVersion uint64, structure interface{}) error {
-	errorMessage := fmt.Sprintf("failed getting file: %s from the Discovery server", jsonFile)
 	// Get json data
-	discoURL := "https://disco.eduvpn.org/v2/"
-	fileURL := discoURL + jsonFile
-	_, fileBody, fileErr := http.Get(fileURL)
-
-	if fileErr != nil {
-		return types.NewWrappedError(errorMessage, fileErr)
+	du := "https://disco.eduvpn.org/v2/"
+	fu := du + jsonFile
+	_, body, err := http.Get(fu)
+	if err != nil {
+		return err
 	}
 
 	// Get signature
 	sigFile := jsonFile + ".minisig"
-	sigURL := discoURL + sigFile
-	_, sigBody, sigFileErr := http.Get(sigURL)
-
-	if sigFileErr != nil {
-		return types.NewWrappedError(errorMessage, sigFileErr)
+	sigURL := du + sigFile
+	_, sigBody, err := http.Get(sigURL)
+	if err != nil {
+		return err
 	}
 
 	// Verify signature
 	// Set this to true when we want to force prehash
-	forcePrehash := false
-	verifySuccess, verifyErr := verify.Verify(
+	const forcePrehash = false
+	ok, err := verify.Verify(
 		string(sigBody),
-		fileBody,
+		body,
 		jsonFile,
 		previousVersion,
 		forcePrehash,
 	)
 
-	if !verifySuccess || verifyErr != nil {
-		return types.NewWrappedError(errorMessage, verifyErr)
+	if !ok || err != nil {
+		return err
 	}
 
 	// Parse JSON to extract version and list
-	jsonErr := json.Unmarshal(fileBody, structure)
-
-	if jsonErr != nil {
-		return types.NewWrappedError(errorMessage, jsonErr)
+	if err = json.Unmarshal(body, structure); err != nil {
+		return errors.WrapPrefix(err,
+			fmt.Sprintf("failed getting file: %s from the Discovery server", jsonFile), 0)
 	}
 
 	return nil
@@ -80,86 +77,67 @@ func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
 
 // SecureLocationList returns a slice of all the available locations.
 func (discovery *Discovery) SecureLocationList() []string {
-	var locations []string
-	for _, currentServer := range discovery.servers.List {
-		if currentServer.Type == "secure_internet" {
-			locations = append(locations, currentServer.CountryCode)
+	var loc []string
+	for _, srv := range discovery.servers.List {
+		if srv.Type == "secure_internet" {
+			loc = append(loc, srv.CountryCode)
 		}
 	}
-	return locations
+	return loc
 }
 
 // ServerByURL returns the discovery server by the base URL and the according type ("secure_internet", "institute_access")
 // An error is returned if and only if nil is returned for the server.
 func (discovery *Discovery) ServerByURL(
 	baseURL string,
-	serverType string,
+	srvType string,
 ) (*types.DiscoveryServer, error) {
 	for _, currentServer := range discovery.servers.List {
-		if currentServer.BaseURL == baseURL && currentServer.Type == serverType {
+		if currentServer.BaseURL == baseURL && currentServer.Type == srvType {
 			return &currentServer, nil
 		}
 	}
-	return nil, types.NewWrappedError(
-		"failed getting server by URL from discovery",
-		&GetServerByURLNotFoundError{URL: baseURL, Type: serverType},
-	)
+	return nil, errors.Errorf("no server of type '%s' at URL '%s'", srvType, baseURL)
 }
 
 // ServerByCountryCode returns the discovery server by the country code and the according type ("secure_internet", "institute_access")
 // An error is returned if and only if nil is returned for the server.
-func (discovery *Discovery) ServerByCountryCode(
-	countryCode string,
-	serverType string,
-) (*types.DiscoveryServer, error) {
-	for _, currentServer := range discovery.servers.List {
-		if currentServer.CountryCode == countryCode && currentServer.Type == serverType {
-			return &currentServer, nil
+func (discovery *Discovery) ServerByCountryCode(countryCode string, srvType string) (*types.DiscoveryServer, error) {
+	for _, srv := range discovery.servers.List {
+		if srv.CountryCode == countryCode && srv.Type == srvType {
+			return &srv, nil
 		}
 	}
-	return nil, types.NewWrappedError(
-		"failed getting server by country countryCode from discovery",
-		&GetServerByCountryCodeNotFoundError{CountryCode: countryCode, Type: serverType},
-	)
+	return nil, errors.Errorf("no server of type '%s' with country code '%s'", srvType, countryCode)
 }
 
 // orgByID returns the discovery organization by the organization ID
 // An error is returned if and only if nil is returned for the organization.
 func (discovery *Discovery) orgByID(orgID string) (*types.DiscoveryOrganization, error) {
-	for _, organization := range discovery.organizations.List {
-		if organization.OrgID == orgID {
-			return &organization, nil
+	for _, org := range discovery.organizations.List {
+		if org.OrgID == orgID {
+			return &org, nil
 		}
 	}
-	return nil, types.NewWrappedError(
-		"failed getting Secure Internet Home URL from discovery",
-		&GetOrgByIDNotFoundError{ID: orgID},
-	)
+	return nil, errors.Errorf("no secure internet home found in organization '%s'", orgID)
 }
 
 // SecureHomeArgs returns the secure internet home server arguments:
 // - The organization it belongs to
 // - The secure internet server itself
 // An error is returned if and only if nil is returned for the organization.
-func (discovery *Discovery) SecureHomeArgs(
-	orgID string,
-) (*types.DiscoveryOrganization, *types.DiscoveryServer, error) {
-	errorMessage := "failed getting Secure Internet Home arguments from discovery"
-	org, orgErr := discovery.orgByID(orgID)
-
-	if orgErr != nil {
-		return nil, nil, types.NewWrappedError(errorMessage, orgErr)
+func (discovery *Discovery) SecureHomeArgs(orgID string) (*types.DiscoveryOrganization, *types.DiscoveryServer, error) {
+	org, err := discovery.orgByID(orgID)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	// Get a server with the base url
-	url := org.SecureInternetHome
-
-	currentServer, serverErr := discovery.ServerByURL(url, "secure_internet")
-
-	if serverErr != nil {
-		return nil, nil, types.NewWrappedError(errorMessage, serverErr)
+	srv, err := discovery.ServerByURL(org.SecureInternetHome, "secure_internet")
+	if err != nil {
+		return nil, nil, err
 	}
-	return org, currentServer, nil
+	return org, srv, nil
 }
 
 // DetermineServersUpdate returns whether or not the discovery servers should be updated by contacting the discovery server
@@ -172,9 +150,8 @@ func (discovery *Discovery) DetermineServersUpdate() bool {
 		return true
 	}
 	// 1 hour from the last update
-	shouldUpdateTime := discovery.servers.Timestamp.Add(1 * time.Hour)
-	now := time.Now()
-	return !now.Before(shouldUpdateTime)
+	upd := discovery.servers.Timestamp.Add(1 * time.Hour)
+	return !time.Now().Before(upd)
 }
 
 // Organizations returns the discovery organizations
@@ -184,13 +161,10 @@ func (discovery *Discovery) Organizations() (*types.DiscoveryOrganizations, erro
 		return &discovery.organizations, nil
 	}
 	file := "organization_list.json"
-	bodyErr := discoFile(file, discovery.organizations.Version, &discovery.organizations)
-	if bodyErr != nil {
+	err := discoFile(file, discovery.organizations.Version, &discovery.organizations)
+	if err != nil {
 		// Return previous with an error
-		return &discovery.organizations, types.NewWrappedError(
-			"failed getting organizations in Discovery",
-			bodyErr,
-		)
+		return &discovery.organizations, err
 	}
 	discovery.organizations.Timestamp = time.Now()
 	return &discovery.organizations, nil
@@ -203,63 +177,12 @@ func (discovery *Discovery) Servers() (*types.DiscoveryServers, error) {
 		return &discovery.servers, nil
 	}
 	file := "server_list.json"
-	bodyErr := discoFile(file, discovery.servers.Version, &discovery.servers)
-	if bodyErr != nil {
+	err := discoFile(file, discovery.servers.Version, &discovery.servers)
+	if err != nil {
 		// Return previous with an error
-		return &discovery.servers, types.NewWrappedError(
-			"failed getting servers in Discovery",
-			bodyErr,
-		)
+		return &discovery.servers, err
 	}
 	// Update servers timestamp
 	discovery.servers.Timestamp = time.Now()
 	return &discovery.servers, nil
-}
-
-type GetOrgByIDNotFoundError struct {
-	ID string
-}
-
-func (e GetOrgByIDNotFoundError) Error() string {
-	return fmt.Sprintf(
-		"No Secure Internet Home found in organizations with ID %s. Please choose your server again",
-		e.ID,
-	)
-}
-
-type GetServerByURLNotFoundError struct {
-	URL  string
-	Type string
-}
-
-func (e GetServerByURLNotFoundError) Error() string {
-	return fmt.Sprintf(
-		"No institute access server found in organizations with URL %s and type %s. Please choose your server again",
-		e.URL,
-		e.Type,
-	)
-}
-
-type GetServerByCountryCodeNotFoundError struct {
-	CountryCode string
-	Type        string
-}
-
-func (e GetServerByCountryCodeNotFoundError) Error() string {
-	return fmt.Sprintf(
-		"No institute access server found in organizations with country code %s and type %s",
-		e.CountryCode,
-		e.Type,
-	)
-}
-
-type GetSecureHomeArgsNotFoundError struct {
-	URL string
-}
-
-func (e GetSecureHomeArgsNotFoundError) Error() string {
-	return fmt.Sprintf(
-		"No Secure Internet Home found with URL: %s. Please choose your server again",
-		e.URL,
-	)
 }

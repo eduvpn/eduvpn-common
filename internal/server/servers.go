@@ -1,9 +1,8 @@
 package server
 
 import (
-	"fmt"
-
 	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
 
 type Servers struct {
@@ -14,125 +13,105 @@ type Servers struct {
 	IsType                   Type                     `json:"is_secure_internet"`
 }
 
-func (servers *Servers) AddSecureInternet(
+func (ss *Servers) AddSecureInternet(
 	secureOrg *types.DiscoveryOrganization,
 	secureServer *types.DiscoveryServer,
 ) (Server, error) {
-	errorMessage := "failed adding secure internet server"
 	// If we have specified an organization ID
 	// We also need to get an authorization template
-	initErr := servers.SecureInternetHomeServer.init(secureOrg, secureServer)
+	err := ss.SecureInternetHomeServer.init(secureOrg, secureServer)
 
-	if initErr != nil {
-		return nil, types.NewWrappedError(errorMessage, initErr)
+	if err != nil {
+		return nil, err
 	}
 
-	servers.IsType = SecureInternetServerType
-	return &servers.SecureInternetHomeServer, nil
+	ss.IsType = SecureInternetServerType
+	return &ss.SecureInternetHomeServer, nil
 }
 
-func (servers *Servers) GetCurrentServer() (Server, error) {
-	errorMessage := "failed getting current server"
-	if servers.IsType == SecureInternetServerType {
-		if !servers.HasSecureLocation() {
-			return nil, types.NewWrappedError(
-				errorMessage,
-				&CurrentNotFoundError{},
-			)
+func (ss *Servers) GetCurrentServer() (Server, error) {
+	//TODO(jwijenbergh): Almost certainly the return type should be pointer (*Server)
+	if ss.IsType == SecureInternetServerType {
+		if !ss.HasSecureLocation() {
+			return nil, errors.Errorf("ss.IsType = %v; ss.HasSecureLocation() = false", ss.IsType)
 		}
-		return &servers.SecureInternetHomeServer, nil
+		return &ss.SecureInternetHomeServer, nil
 	}
 
-	serversStruct := &servers.InstituteServers
+	srvs := &ss.InstituteServers
 
-	if servers.IsType == CustomServerType {
-		serversStruct = &servers.CustomServers
+	if ss.IsType == CustomServerType {
+		srvs = &ss.CustomServers
 	}
-	currentServerURL := serversStruct.CurrentURL
-	bases := serversStruct.Map
-	if bases == nil {
-		return nil, types.NewWrappedError(
-			errorMessage,
-			&CurrentNoMapError{},
-		)
+	bs := srvs.Map
+	if bs == nil {
+		return nil, errors.Errorf("srvs.Map is nil")
 	}
-	server, exists := bases[currentServerURL]
 
-	if !exists || server == nil {
-		return nil, types.NewWrappedError(
-			errorMessage,
-			&CurrentNotFoundError{},
-		)
+	if srv, ok := bs[srvs.CurrentURL]; !ok || srv == nil {
+		return nil, errors.Errorf("server not found")
+	} else {
+		return srv, nil
 	}
-	return server, nil
 }
 
-func (servers *Servers) addInstituteAndCustom(
+func (ss *Servers) addInstituteAndCustom(
 	discoServer *types.DiscoveryServer,
 	isCustom bool,
 ) (Server, error) {
 	url := discoServer.BaseURL
-	errorMessage := fmt.Sprintf("failed adding institute access server: %s", url)
-	toAddServers := &servers.InstituteServers
-	serverType := InstituteAccessServerType
+	srvs := &ss.InstituteServers
+	srvType := InstituteAccessServerType
 
 	if isCustom {
-		toAddServers = &servers.CustomServers
-		serverType = CustomServerType
+		srvs = &ss.CustomServers
+		srvType = CustomServerType
 	}
 
-	if toAddServers.Map == nil {
-		toAddServers.Map = make(map[string]*InstituteAccessServer)
+	if srvs.Map == nil {
+		srvs.Map = make(map[string]*InstituteAccessServer)
 	}
 
-	server, exists := toAddServers.Map[url]
+	srv, ok := srvs.Map[url]
 
 	// initialize the server if it doesn't exist yet
-	if !exists {
-		server = &InstituteAccessServer{}
+	if !ok {
+		srv = &InstituteAccessServer{}
 	}
 
-	instituteInitErr := server.init(
-		url,
-		discoServer.DisplayName,
-		discoServer.Type,
-		discoServer.SupportContact,
-	)
-	if instituteInitErr != nil {
-		return nil, types.NewWrappedError(errorMessage, instituteInitErr)
+	if err := srv.init(url, discoServer.DisplayName, discoServer.Type, discoServer.SupportContact); err != nil {
+		return nil, err
 	}
-	toAddServers.Map[url] = server
-	servers.IsType = serverType
-	return server, nil
+	srvs.Map[url] = srv
+	ss.IsType = srvType
+	return srv, nil
 }
 
-func (servers *Servers) AddInstituteAccessServer(
+func (ss *Servers) AddInstituteAccessServer(
 	instituteServer *types.DiscoveryServer,
 ) (Server, error) {
-	return servers.addInstituteAndCustom(instituteServer, false)
+	return ss.addInstituteAndCustom(instituteServer, false)
 }
 
-func (servers *Servers) AddCustomServer(
+func (ss *Servers) AddCustomServer(
 	customServer *types.DiscoveryServer,
 ) (Server, error) {
-	return servers.addInstituteAndCustom(customServer, true)
+	return ss.addInstituteAndCustom(customServer, true)
 }
 
-func (servers *Servers) GetSecureLocation() string {
-	return servers.SecureInternetHomeServer.CurrentLocation
+func (ss *Servers) GetSecureLocation() string {
+	return ss.SecureInternetHomeServer.CurrentLocation
 }
 
-func (servers *Servers) SetSecureLocation(
+func (ss *Servers) SetSecureLocation(
 	chosenLocationServer *types.DiscoveryServer,
 ) error {
-	errorMessage := "failed to set secure location"
 	// Make sure to add the current location
-	_, addLocationErr := servers.SecureInternetHomeServer.addLocation(chosenLocationServer)
 
-	if addLocationErr != nil {
-		return types.NewWrappedError(errorMessage, addLocationErr)
+	if _, err := ss.SecureInternetHomeServer.addLocation(chosenLocationServer); err != nil {
+		return err
 	}
 
-	servers.SecureInternetHomeServer.CurrentLocation = chosenLocationServer.CountryCode
+	ss.SecureInternetHomeServer.CurrentLocation = chosenLocationServer.CountryCode
 	return nil
 }

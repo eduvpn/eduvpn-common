@@ -1,24 +1,21 @@
-// package wireguard implements a few helpers for the WireGuard protocol
+// Package wireguard implements a few helpers for the WireGuard protocol
 package wireguard
 
 import (
 	"fmt"
 	"regexp"
 
-	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 // GenerateKey generates a WireGuard private key using wgctrl
 // It returns an error if key generation failed.
 func GenerateKey() (wgtypes.Key, error) {
-	key, keyErr := wgtypes.GeneratePrivateKey()
+	key, err := wgtypes.GeneratePrivateKey()
 
-	if keyErr != nil {
-		return key, types.NewWrappedError(
-			"failed generating WireGuard key",
-			keyErr,
-		)
+	if err != nil {
+		return key, errors.WrapPrefix(err, "failed generating WireGuard key", 0)
 	}
 	return key, nil
 }

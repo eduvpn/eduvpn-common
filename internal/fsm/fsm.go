@@ -9,7 +9,7 @@ import (
 	"path"
 	"sort"
 
-	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
 
 type (
@@ -97,36 +97,47 @@ func (fsm *FSM) InState(check StateID) bool {
 }
 
 // HasTransition checks whether or not the state machine has a transition to the given 'check' state.
-func (fsm *FSM) HasTransition(check StateID) bool {
-	for _, transitionState := range fsm.States[fsm.Current].Transitions {
-		if transitionState.To == check {
-			return true
+//func (fsm *FSM) HasTransition(check StateID) bool {
+//	for _, transitionState := range fsm.States[fsm.Current].Transitions {
+//		if transitionState.To == check {
+//			return true
+//		}
+//	}
+//
+//	return false
+//}
+
+func (fsm *FSM) CheckTransition(desired StateID) error {
+	for _, ts := range fsm.States[fsm.Current].Transitions {
+		if ts.To == desired {
+			return nil
 		}
 	}
-
-	return false
+	return errors.Errorf("fsm invalid transition attempt from '%v' to '%v'", fsm.Current, desired)
 }
 
 // graphFilename gets the full path to the graph filename including the .graph extension.
 func (fsm *FSM) graphFilename(extension string) string {
-	debugPath := path.Join(fsm.Directory, "graph")
-	return fmt.Sprintf("%s%s", debugPath, extension)
+	pth := path.Join(fsm.Directory, "graph")
+	return fmt.Sprintf("%s%s", pth, extension)
 }
 
 // writeGraph writes the state machine to a .graph file.
 func (fsm *FSM) writeGraph() {
-	graph := fsm.GenerateGraph()
-	graphFile := fsm.graphFilename(".graph")
-	graphImgFile := fsm.graphFilename(".png")
-	f, err := os.Create(graphFile)
+	gph := fsm.GenerateGraph()
+	gf := fsm.graphFilename(".graph")
+	gif := fsm.graphFilename(".png")
+	f, err := os.Create(gf)
 	if err != nil {
 		return
 	}
+	defer func() {
+		_ = f.Close()
+	}()
 
-	_, writeErr := f.WriteString(graph)
-	f.Close()
-	if writeErr != nil {
-		cmd := exec.Command("mmdc", "-i", graphFile, "-o", graphImgFile, "--scale", "4")
+	_, err = f.WriteString(gph)
+	if err != nil {
+		cmd := exec.Command("mmdc", "-i", gf, "-o", gif, "--scale", "4")
 		// Generating is best effort
 		_ = cmd.Start()
 	}
@@ -137,14 +148,7 @@ func (fsm *FSM) writeGraph() {
 func (fsm *FSM) GoTransitionRequired(newState StateID, data interface{}) error {
 	oldState := fsm.Current
 	if !fsm.GoTransitionWithData(newState, data) {
-		return types.NewWrappedError(
-			"failed required transition",
-			fmt.Errorf(
-				"required transition not handled, from: %s -> to: %s",
-				fsm.GetStateName(oldState),
-				fsm.GetStateName(newState),
-			),
-		)
+		return errors.Errorf("fsm failed transition from '%v' to '%v'", oldState, newState)
 	}
 	return nil
 }
@@ -152,20 +156,17 @@ func (fsm *FSM) GoTransitionRequired(newState StateID, data interface{}) error {
 // GoTransitionWithData is a helper that transitions the state machine toward the 'newState' with associated state data 'data'
 // It returns whether or not the transition is handled by the client.
 func (fsm *FSM) GoTransitionWithData(newState StateID, data interface{}) bool {
-	ok := fsm.HasTransition(newState)
-
-	handled := false
-	if ok {
-		oldState := fsm.Current
-		fsm.Current = newState
-		if fsm.Generate {
-			fsm.writeGraph()
-		}
-
-		handled = fsm.StateCallback(oldState, newState, data)
+	if fsm.CheckTransition(newState) != nil {
+		return false
 	}
 
-	return handled
+	prev := fsm.Current
+	fsm.Current = newState
+	if fsm.Generate {
+		fsm.writeGraph()
+	}
+
+	return fsm.StateCallback(prev, newState, data)
 }
 
 // GoTransition is an alias to call GoTransitionWithData but have an empty string as data.
@@ -177,21 +178,21 @@ func (fsm *FSM) GoTransition(newState StateID) bool {
 // generateMermaidGraph generates a graph suitable to be converted by the mermaid.js tool
 // it returns the graph as a string.
 func (fsm *FSM) generateMermaidGraph() string {
-	graph := "graph TD\n"
-	sortedFSM := make(StateIDSlice, 0, len(fsm.States))
+	gph := "graph TD\n"
+	sf := make(StateIDSlice, 0, len(fsm.States))
 	for stateID := range fsm.States {
-		sortedFSM = append(sortedFSM, stateID)
+		sf = append(sf, stateID)
 	}
-	sort.Sort(sortedFSM)
-	for _, state := range sortedFSM {
+	sort.Sort(sf)
+	for _, state := range sf {
 		transitions := fsm.States[state].Transitions
 		for _, transition := range transitions {
 			if state == fsm.Current {
-				graph += "\nstyle " + fsm.GetStateName(state) + " fill:cyan\n"
+				gph += "\nstyle " + fsm.GetStateName(state) + " fill:cyan\n"
 			} else {
-				graph += "\nstyle " + fsm.GetStateName(state) + " fill:white\n"
+				gph += "\nstyle " + fsm.GetStateName(state) + " fill:white\n"
 			}
-			graph += fsm.GetStateName(
+			gph += fsm.GetStateName(
 				state,
 			) + "(" + fsm.GetStateName(
 				state,
@@ -200,7 +201,7 @@ func (fsm *FSM) generateMermaidGraph() string {
 			) + "\n"
 		}
 	}
-	return graph
+	return gph
 }
 
 // GenerateGraph generates a mermaid graph if the state machine is initialized

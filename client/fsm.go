@@ -1,12 +1,9 @@
 package client
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/eduvpn/eduvpn-common/internal/fsm"
 	"github.com/eduvpn/eduvpn-common/internal/server"
-	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
 
 type (
@@ -206,151 +203,90 @@ func newFSM(
 	return returnedFSM
 }
 
-type FSMDeregisteredError struct{}
-
-func (e FSMDeregisteredError) CustomError() *types.WrappedErrorMessage {
-	return types.NewWrappedError(
-		"Client not registered with the GO library",
-		errors.New(
-			"the current FSM state is deregistered, but the function needs a state that is not deregistered",
-		),
-	)
-}
-
-type FSMWrongStateTransitionError struct {
-	Got  FSMStateID
-	Want FSMStateID
-}
-
-func (e FSMWrongStateTransitionError) CustomError() *types.WrappedErrorMessage {
-	return types.NewWrappedError(
-		"Wrong FSM transition",
-		fmt.Errorf(
-			"wrong FSM state, got: %s, want: a state with a transition to: %s",
-			GetStateName(e.Got),
-			GetStateName(e.Want),
-		),
-	)
-}
-
-type FSMWrongStateError struct {
-	Got  FSMStateID
-	Want FSMStateID
-}
-
-func (e FSMWrongStateError) CustomError() *types.WrappedErrorMessage {
-	return types.NewWrappedError(
-		"Wrong FSM State",
-		fmt.Errorf(
-			"wrong FSM state, got: %s, want: %s",
-			GetStateName(e.Got),
-			GetStateName(e.Want),
-		),
-	)
-}
-
 // SetSearchServer sets the FSM to the SEARCH_SERVER state.
 // This indicates that the user wants to search for a new server.
 // Returns an error if this state transition is not possible.
-func (client *Client) SetSearchServer() error {
-	if !client.FSM.HasTransition(StateSearchServer) {
-		return client.handleError(
-			"failed to set search server",
-			FSMWrongStateTransitionError{
-				Got:  client.FSM.Current,
-				Want: StateSearchServer,
-			}.CustomError(),
-		)
+func (c *Client) SetSearchServer() error {
+	if err := c.FSM.CheckTransition(StateSearchServer); err != nil {
+		c.logError(err)
+		return err
 	}
 
-	client.FSM.GoTransition(StateSearchServer)
+	//TODO(jwijenbergh): Should we handle `false` returned value here?
+	c.FSM.GoTransition(StateSearchServer)
 	return nil
 }
 
 // SetConnected sets the FSM to the CONNECTED state.
 // This indicates that the VPN is connected to the server.
 // Returns an error if this state transition is not possible.
-func (client *Client) SetConnected() error {
-	errorMessage := "failed to set connected"
-	if client.InFSMState(StateConnected) {
+func (c *Client) SetConnected() error {
+	if c.InFSMState(StateConnected) {
 		// already connected, show no error
-		client.Logger.Warningf("Already connected")
+		c.Logger.Warningf("Already connected")
 		return nil
 	}
-	if !client.FSM.HasTransition(StateConnected) {
-		return client.handleError(
-			errorMessage,
-			FSMWrongStateTransitionError{
-				Got:  client.FSM.Current,
-				Want: StateConnected,
-			}.CustomError(),
-		)
+
+	if err := c.FSM.CheckTransition(StateConnected); err != nil {
+		c.logError(err)
+		return err
 	}
 
-	currentServer, currentServerErr := client.Servers.GetCurrentServer()
-	if currentServerErr != nil {
-		return client.handleError(errorMessage, currentServerErr)
+	srv, err := c.Servers.GetCurrentServer()
+	if err != nil {
+		c.logError(err)
+		return err
 	}
 
-	client.FSM.GoTransitionWithData(StateConnected, currentServer)
+	c.FSM.GoTransitionWithData(StateConnected, srv)
 	return nil
 }
 
 // SetConnecting sets the FSM to the CONNECTING state.
 // This indicates that the VPN is currently connecting to the server.
 // Returns an error if this state transition is not possible.
-func (client *Client) SetConnecting() error {
-	errorMessage := "failed to set connecting"
-	if client.InFSMState(StateConnecting) {
+func (c *Client) SetConnecting() error {
+	if c.InFSMState(StateConnecting) {
 		// already loading connection, show no error
-		client.Logger.Warningf("Already connecting")
+		c.Logger.Warningf("Already connecting")
 		return nil
 	}
-	if !client.FSM.HasTransition(StateConnecting) {
-		return client.handleError(
-			errorMessage,
-			FSMWrongStateTransitionError{
-				Got:  client.FSM.Current,
-				Want: StateConnecting,
-			}.CustomError(),
-		)
+	if err := c.FSM.CheckTransition(StateConnecting); err != nil {
+		c.logError(err)
+		return err
 	}
 
-	currentServer, currentServerErr := client.Servers.GetCurrentServer()
-	if currentServerErr != nil {
-		return client.handleError(errorMessage, currentServerErr)
+	srv, err := c.Servers.GetCurrentServer()
+	if err != nil {
+		c.logError(err)
+		return err
 	}
 
-	client.FSM.GoTransitionWithData(StateConnecting, currentServer)
+	c.FSM.GoTransitionWithData(StateConnecting, srv)
 	return nil
 }
 
 // SetDisconnecting sets the FSM to the DISCONNECTING state.
 // This indicates that the VPN is currently disconnecting from the server.
 // Returns an error if this state transition is not possible.
-func (client *Client) SetDisconnecting() error {
-	errorMessage := "failed to set disconnecting"
-	if client.InFSMState(StateDisconnecting) {
+func (c *Client) SetDisconnecting() error {
+	if c.InFSMState(StateDisconnecting) {
 		// already disconnecting, show no error
-		client.Logger.Warningf("Already disconnecting")
+		c.Logger.Warningf("Already disconnecting")
 		return nil
 	}
-	if !client.FSM.HasTransition(StateDisconnecting) {
-		return client.handleError(
-			errorMessage,
-			FSMWrongStateTransitionError{
-				Got:  client.FSM.Current,
-				Want: StateDisconnecting,
-			}.CustomError(),
-		)
+	if err := c.FSM.CheckTransition(StateDisconnecting); err != nil {
+		c.logError(err)
+		return err
 	}
 
-	currentServer, currentServerErr := client.Servers.GetCurrentServer()
-	if currentServerErr != nil {
-		return client.handleError(errorMessage, currentServerErr)
+	srv, err := c.Servers.GetCurrentServer()
+	if err != nil {
+		c.logError(err)
+		return err
 	}
 
-	client.FSM.GoTransitionWithData(StateDisconnecting, currentServer)
+	c.FSM.GoTransitionWithData(StateDisconnecting, srv)
 	return nil
 }
 
@@ -358,90 +294,73 @@ func (client *Client) SetDisconnecting() error {
 // This indicates that the VPN is currently disconnected from the server.
 // This also sends the /disconnect API call to the server.
 // Returns an error if this state transition is not possible.
-func (client *Client) SetDisconnected(cleanup bool) error {
-	errorMessage := "failed to set disconnected"
-	if client.InFSMState(StateDisconnected) {
+func (c *Client) SetDisconnected(cleanup bool) error {
+	if c.InFSMState(StateDisconnected) {
 		// already disconnected, show no error
-		client.Logger.Warningf("Already disconnected")
+		c.Logger.Warningf("Already disconnected")
 		return nil
 	}
-	if !client.FSM.HasTransition(StateDisconnected) {
-		return client.handleError(
-			errorMessage,
-			FSMWrongStateTransitionError{
-				Got:  client.FSM.Current,
-				Want: StateDisconnected,
-			}.CustomError(),
-		)
+	if err := c.FSM.CheckTransition(StateDisconnected); err != nil {
+		c.logError(err)
+		return err
 	}
 
-	currentServer, currentServerErr := client.Servers.GetCurrentServer()
-	if currentServerErr != nil {
-		return client.handleError(errorMessage, currentServerErr)
+	srv, err := c.Servers.GetCurrentServer()
+	if err != nil {
+		c.logError(err)
+		return err
 	}
 
 	if cleanup {
 		// Do the /disconnect API call and go to disconnected after...
-		server.Disconnect(currentServer)
+		server.Disconnect(srv)
 	}
 
-	client.FSM.GoTransitionWithData(StateDisconnected, currentServer)
+	c.FSM.GoTransitionWithData(StateDisconnected, srv)
 
 	return nil
 }
 
 // goBackInternal uses the public go back but logs an error if it happened.
-func (client *Client) goBackInternal() {
-	goBackErr := client.GoBack()
-	if goBackErr != nil {
-		client.Logger.Infof(
-			fmt.Sprintf(
-				"Failed going back, error: %s",
-				types.ErrorTraceback(goBackErr),
-			),
-		)
+func (c *Client) goBackInternal() {
+	err := c.GoBack()
+	if err != nil {
+		//TODO(jwijenbergh): Bit suspicious - logging level INFO, yet stacktrace logged.
+		c.Logger.Infof("failed going back: %s\nstacktrace:\n%s", err.Error(), err.(*errors.Error).ErrorStack())
 	}
 }
 
 // GoBack transitions the FSM back to the previous UI state, for now this is always the NO_SERVER state.
-func (client *Client) GoBack() error {
-	errorMessage := "failed to go back"
-	if client.InFSMState(StateDeregistered) {
-		return client.handleError(
-			errorMessage,
-			FSMDeregisteredError{}.CustomError(),
-		)
+func (c *Client) GoBack() error {
+	if c.InFSMState(StateDeregistered) {
+		err := errors.Errorf("fms attempt going back from 'StateDeregistered'")
+		c.logError(err)
+		return err
 	}
 
-	// FIXME: Abitrary back transitions don't work because we need the approriate data
-	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
+	// FIXME: Arbitrary back transitions don't work because we need the appropriate data
+	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
 	return nil
 }
 
 // CancelOAuth cancels OAuth if one is in progress.
 // If OAuth is not in progress, it returns an error.
-// An error is also returned if OAuth is in progress but it fails to cancel it.
-func (client *Client) CancelOAuth() error {
-	errorMessage := "failed to cancel OAuth"
-	if !client.InFSMState(StateOAuthStarted) {
-		return client.handleError(
-			errorMessage,
-			FSMWrongStateError{
-				Got:  client.FSM.Current,
-				Want: StateOAuthStarted,
-			}.CustomError(),
-		)
+// An error is also returned if OAuth is in progress, but it fails to cancel it.
+func (c *Client) CancelOAuth() error {
+	if !c.InFSMState(StateOAuthStarted) {
+		return errors.Errorf("fsm attempt cancelling OAuth while in '%v'", c.FSM.Current)
 	}
 
-	currentServer, serverErr := client.Servers.GetCurrentServer()
-	if serverErr != nil {
-		return client.handleError(errorMessage, serverErr)
+	srv, err := c.Servers.GetCurrentServer()
+	if err != nil {
+		c.logError(err)
+	} else {
+		server.CancelOAuth(srv)
 	}
-	server.CancelOAuth(currentServer)
-	return nil
+	return err
 }
 
 // InFSMState is a helper to check if the FSM is in state `checkState`.
-func (client *Client) InFSMState(checkState FSMStateID) bool {
-	return client.FSM.InState(checkState)
+func (c *Client) InFSMState(checkState FSMStateID) bool {
+	return c.FSM.InState(checkState)
 }

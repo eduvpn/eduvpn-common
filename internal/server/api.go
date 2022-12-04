@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -10,130 +9,114 @@ import (
 	"time"
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
 
 func APIGetEndpoints(baseURL string) (*Endpoints, error) {
-	errorMessage := "failed getting server endpoints"
-	url, urlErr := url.Parse(baseURL)
-	if urlErr != nil {
-		return nil, types.NewWrappedError(errorMessage, urlErr)
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return nil, errors.WrapPrefix(err, "failed getting server endpoints", 0)
 	}
 
-	wellKnownPath := "/.well-known/vpn-user-portal"
+	wk := "/.well-known/vpn-user-portal"
 
-	url.Path = path.Join(url.Path, wellKnownPath)
-	_, body, bodyErr := httpw.Get(url.String())
-
-	if bodyErr != nil {
-		return nil, types.NewWrappedError(errorMessage, bodyErr)
+	u.Path = path.Join(u.Path, wk)
+	_, body, err := httpw.Get(u.String())
+	if err != nil {
+		return nil, errors.WrapPrefix(err, "failed getting server endpoints", 0)
 	}
 
-	endpoints := &Endpoints{}
-	jsonErr := json.Unmarshal(body, endpoints)
-
-	if jsonErr != nil {
-		return nil, types.NewWrappedError(errorMessage, jsonErr)
+	ep := &Endpoints{}
+	if err = json.Unmarshal(body, ep); err != nil {
+		return nil, errors.WrapPrefix(err, "failed getting server endpoints", 0)
 	}
 
-	return endpoints, nil
+	return ep, nil
 }
 
 func apiAuthorized(
-	server Server,
+	srv Server,
 	method string,
 	endpoint string,
 	opts *httpw.OptionalParams,
 ) (http.Header, []byte, error) {
-	errorMessage := "failed API authorized"
 	// Ensure optional is not nil as we will fill it with headers
 	if opts == nil {
 		opts = &httpw.OptionalParams{}
 	}
-	base, baseErr := server.Base()
-
-	if baseErr != nil {
-		return nil, nil, types.NewWrappedError(errorMessage, baseErr)
+	b, err := srv.Base()
+	if err != nil {
+		return nil, nil, errors.WrapPrefix(err, "failed API authorized", 0)
 	}
 
 	// Join the paths
-	url, urlErr := url.Parse(base.Endpoints.API.V3.API)
-	if urlErr != nil {
-		return nil, nil, types.NewWrappedError(errorMessage, urlErr)
+	u, err := url.Parse(b.Endpoints.API.V3.API)
+	if err != nil {
+		return nil, nil, errors.WrapPrefix(err, "failed API authorized", 0)
 	}
-	url.Path = path.Join(url.Path, endpoint)
+	u.Path = path.Join(u.Path, endpoint)
 
 	// Make sure the tokens are valid, this will return an error if re-login is needed
-	token, tokenErr := HeaderToken(server)
-	if tokenErr != nil {
-		return nil, nil, types.NewWrappedError(errorMessage, tokenErr)
+	t, err := HeaderToken(srv)
+	if err != nil {
+		return nil, nil, errors.WrapPrefix(err, "failed API authorized", 0)
 	}
 
-	headerKey := "Authorization"
-	headerValue := fmt.Sprintf("Bearer %s", token)
+	key := "Authorization"
+	val := fmt.Sprintf("Bearer %s", t)
 	if opts.Headers != nil {
-		opts.Headers.Add(headerKey, headerValue)
+		opts.Headers.Add(key, val)
 	} else {
-		opts.Headers = http.Header{headerKey: {headerValue}}
+		opts.Headers = http.Header{key: {val}}
 	}
-	return httpw.MethodWithOpts(method, url.String(), opts)
+	return httpw.MethodWithOpts(method, u.String(), opts)
 }
 
 func apiAuthorizedRetry(
-	server Server,
+	srv Server,
 	method string,
 	endpoint string,
 	opts *httpw.OptionalParams,
 ) (http.Header, []byte, error) {
-	errorMessage := "failed authorized API retry"
-	header, body, bodyErr := apiAuthorized(server, method, endpoint, opts)
-
-	if bodyErr != nil {
-		var error *httpw.StatusError
-
-		// Only retry authorized if we get a HTTP 401
-		if errors.As(bodyErr, &error) && error.Status == 401 {
-			// Mark the token as expired and retry so we trigger the refresh flow
-			MarkTokenExpired(server)
-			retryHeader, retryBody, retryErr := apiAuthorized(server, method, endpoint, opts)
-			if retryErr != nil {
-				return nil, nil, types.NewWrappedError(errorMessage, retryErr)
-			}
-			return retryHeader, retryBody, nil
-		}
-		return nil, nil, types.NewWrappedError(errorMessage, bodyErr)
+	h, body, err := apiAuthorized(srv, method, endpoint, opts)
+	if err == nil {
+		return h, body, nil
 	}
-	return header, body, nil
+
+	statErr := &httpw.StatusError{}
+	// Only retry authorized if we get an HTTP 401
+	if errors.As(err, &statErr) && statErr.Status == 401 {
+		// Mark the token as expired and retry, so we trigger the refresh flow
+		MarkTokenExpired(srv)
+		h, body, err = apiAuthorized(srv, method, endpoint, opts)
+	}
+	return h, body, err
 }
 
-func APIInfo(server Server) error {
-	errorMessage := "failed API /info"
-	_, body, bodyErr := apiAuthorizedRetry(server, http.MethodGet, "/info", nil)
-	if bodyErr != nil {
-		return types.NewWrappedError(errorMessage, bodyErr)
+func APIInfo(srv Server) error {
+	_, body, err := apiAuthorizedRetry(srv, http.MethodGet, "/info", nil)
+	if err != nil {
+		return err
 	}
-	structure := ProfileInfo{}
-	jsonErr := json.Unmarshal(body, &structure)
-
-	if jsonErr != nil {
-		return types.NewWrappedError(errorMessage, jsonErr)
+	pi := ProfileInfo{}
+	if err = json.Unmarshal(body, &pi); err != nil {
+		return errors.WrapPrefix(err, "failed API /info", 0)
 	}
 
-	base, baseErr := server.Base()
-
-	if baseErr != nil {
-		return types.NewWrappedError(errorMessage, baseErr)
+	b, err := srv.Base()
+	if err != nil {
+		return err
 	}
 
 	// Store the profiles and make sure that the current profile is not overwritten
-	previousProfile := base.Profiles.Current
-	base.Profiles = structure
-	base.Profiles.Current = previousProfile
+	prev := b.Profiles.Current
+	b.Profiles = pi
+	b.Profiles.Current = prev
 	return nil
 }
 
 // see https://github.com/eduvpn/documentation/blob/v3/API.md#request-1
-func GetPreferTCPString(preferTCP bool) string {
+func boolToYesNo(preferTCP bool) string {
 	if preferTCP {
 		return "yes"
 	}
@@ -141,88 +124,77 @@ func GetPreferTCPString(preferTCP bool) string {
 }
 
 func APIConnectWireguard(
-	server Server,
+	srv Server,
 	profileID string,
 	pubkey string,
 	preferTCP bool,
-	supportsOpenVPN bool,
+	openVPNSupport bool,
 ) (string, string, time.Time, error) {
-	errorMessage := "failed obtaining a WireGuard configuration"
-	headers := http.Header{
+	hdrs := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 		"accept":       {"application/x-wireguard-profile"},
 	}
 
 	// This profile also supports OpenVPN
 	// Indicate that we also accept OpenVPN profiles
-	if supportsOpenVPN {
-		headers.Add("accept", "application/x-openvpn-profile")
+	if openVPNSupport {
+		hdrs.Add("accept", "application/x-openvpn-profile")
 	}
 
-	urlForm := url.Values{
+	vals := url.Values{
 		"profile_id": {profileID},
 		"public_key": {pubkey},
-		"prefer_tcp": {GetPreferTCPString(preferTCP)},
+		"prefer_tcp": {boolToYesNo(preferTCP)},
 	}
-	header, connectBody, connectErr := apiAuthorizedRetry(
-		server,
-		http.MethodPost,
-		"/connect",
-		&httpw.OptionalParams{Headers: headers, Body: urlForm},
-	)
-	if connectErr != nil {
-		return "", "", time.Time{}, types.NewWrappedError(
-			errorMessage,
-			connectErr,
-		)
+	h, body, err := apiAuthorizedRetry(srv, http.MethodPost, "/connect",
+		&httpw.OptionalParams{Headers: hdrs, Body: vals})
+	if err != nil {
+		return "", "", time.Time{}, err
 	}
 
-	expires := header.Get("expires")
+	exp := h.Get("expires")
 
-	pTime, pTimeErr := http.ParseTime(expires)
-	if pTimeErr != nil {
-		return "", "", time.Time{}, types.NewWrappedError(errorMessage, pTimeErr)
+	ptm, err := http.ParseTime(exp)
+	if err != nil {
+		return "", "", time.Time{}, errors.WrapPrefix(err, "failed obtaining a WireGuard configuration", 0)
 	}
 
-	contentType := header.Get("content-type")
-
-	content := "openvpn"
-	if contentType == "application/x-wireguard-profile" {
-		content = "wireguard"
+	ct := h.Get("content-type")
+	c := "openvpn"
+	if ct == "application/x-wireguard-profile" {
+		c = "wireguard"
 	}
-	return string(connectBody), content, pTime, nil
+
+	return string(body), c, ptm, nil
 }
 
-func APIConnectOpenVPN(server Server, profileID string, preferTCP bool) (string, time.Time, error) {
-	errorMessage := "failed obtaining an OpenVPN configuration"
-	headers := http.Header{
+func APIConnectOpenVPN(srv Server, profileID string, preferTCP bool) (string, time.Time, error) {
+	hdrs := http.Header{
 		"content-type": {"application/x-www-form-urlencoded"},
 		"accept":       {"application/x-openvpn-profile"},
 	}
 
-	urlForm := url.Values{
+	vals := url.Values{
 		"profile_id": {profileID},
-		"prefer_tcp": {GetPreferTCPString(preferTCP)},
+		"prefer_tcp": {boolToYesNo(preferTCP)},
 	}
 
-	header, connectBody, connectErr := apiAuthorizedRetry(
-		server,
-		http.MethodPost,
-		"/connect",
-		&httpw.OptionalParams{Headers: headers, Body: urlForm},
-	)
-	if connectErr != nil {
-		return "", time.Time{}, types.NewWrappedError(errorMessage, connectErr)
+	h, body, err := apiAuthorizedRetry(srv, http.MethodPost, "/connect",
+		&httpw.OptionalParams{Headers: hdrs, Body: vals})
+	if err != nil {
+		return "", time.Time{}, err
 	}
 
-	expires := header.Get("expires")
-	pTime, pTimeErr := http.ParseTime(expires)
-	if pTimeErr != nil {
-		return "", time.Time{}, types.NewWrappedError(errorMessage, pTimeErr)
+	exp := h.Get("expires")
+	ptm, err := http.ParseTime(exp)
+	if err != nil {
+		return "", time.Time{}, errors.WrapPrefix(err, "failed obtaining an OpenVPN configuration", 0)
 	}
-	return string(connectBody), pTime, nil
+
+	return string(body), ptm, nil
 }
 
+// APIDisconnect disconnects from the API.
 // This needs no further return value as it's best effort.
 func APIDisconnect(server Server) {
 	_, _, _ = apiAuthorized(server, http.MethodPost, "/disconnect", nil)

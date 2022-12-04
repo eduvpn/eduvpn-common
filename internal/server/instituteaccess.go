@@ -1,14 +1,10 @@
 package server
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
-	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
 
-// An instute access server.
 type InstituteAccessServer struct {
 	// An instute access server has its own OAuth
 	Auth oauth.OAuth `json:"oauth"`
@@ -22,80 +18,75 @@ type InstituteAccessServers struct {
 	CurrentURL string                            `json:"current_url"`
 }
 
-func (servers *Servers) SetInstituteAccess(server Server) error {
-	errorMessage := "failed setting institute access server"
-	base, baseErr := server.Base()
-	if baseErr != nil {
-		return types.NewWrappedError(errorMessage, baseErr)
+func (ss *Servers) SetInstituteAccess(srv Server) error {
+	b, err := srv.Base()
+	if err != nil {
+		return err
 	}
 
-	if base.Type != "institute_access" {
-		return types.NewWrappedError(errorMessage, errors.New("not an institute access server"))
+	if b.Type != "institute_access" {
+		return errors.Errorf("not an institute access server")
 	}
 
-	if _, ok := servers.InstituteServers.Map[base.URL]; ok {
-		servers.InstituteServers.CurrentURL = base.URL
-		servers.IsType = InstituteAccessServerType
+	if _, ok := ss.InstituteServers.Map[b.URL]; ok {
+		ss.InstituteServers.CurrentURL = b.URL
+		ss.IsType = InstituteAccessServerType
 	} else {
-		return types.NewWrappedError(errorMessage, errors.New("no such institute access server"))
+		return errors.Errorf("no such institute access server")
 	}
 	return nil
 }
 
-func (servers *Servers) GetInstituteAccess(url string) (*InstituteAccessServer, error) {
-	if server, ok := servers.InstituteServers.Map[url]; ok {
-		return server, nil
+func (ss *Servers) GetInstituteAccess(url string) (*InstituteAccessServer, error) {
+	if srv, ok := ss.InstituteServers.Map[url]; ok {
+		return srv, nil
 	}
-	return nil, types.NewWrappedError(
-		"failed to get institute access server",
-		fmt.Errorf("no institute access server with URL: %s", url),
-	)
+	return nil, errors.Errorf("no institute access server with URL: %s", url)
 }
 
-func (servers *Servers) RemoveInstituteAccess(url string) {
-	servers.InstituteServers.Remove(url)
+func (ss *Servers) RemoveInstituteAccess(url string) {
+	ss.InstituteServers.Remove(url)
 }
 
-func (servers *InstituteAccessServers) Remove(url string) {
+func (iass *InstituteAccessServers) Remove(url string) {
 	// Reset the current url
-	if servers.CurrentURL == url {
-		servers.CurrentURL = ""
+	if iass.CurrentURL == url {
+		iass.CurrentURL = ""
 	}
 
 	// Delete the url from the map
-	delete(servers.Map, url)
+	delete(iass.Map, url)
 }
 
-func (institute *InstituteAccessServer) TemplateAuth() func(string) string {
+func (ias *InstituteAccessServer) TemplateAuth() func(string) string {
 	return func(authURL string) string {
 		return authURL
 	}
 }
 
-func (institute *InstituteAccessServer) Base() (*Base, error) {
-	return &institute.Basic, nil
+func (ias *InstituteAccessServer) Base() (*Base, error) {
+	return &ias.Basic, nil
 }
 
-func (institute *InstituteAccessServer) OAuth() *oauth.OAuth {
-	return &institute.Auth
+func (ias *InstituteAccessServer) OAuth() *oauth.OAuth {
+	return &ias.Auth
 }
 
-func (institute *InstituteAccessServer) init(
+func (ias *InstituteAccessServer) init(
 	url string,
-	displayName map[string]string,
-	serverType string,
+	name map[string]string,
+	srvType string,
 	supportContact []string,
 ) error {
-	errorMessage := fmt.Sprintf("failed initializing server %s", url)
-	institute.Basic.URL = url
-	institute.Basic.DisplayName = displayName
-	institute.Basic.SupportContact = supportContact
-	institute.Basic.Type = serverType
-	endpointsErr := institute.Basic.InitializeEndpoints()
-	if endpointsErr != nil {
-		return types.NewWrappedError(errorMessage, endpointsErr)
+	ias.Basic.URL = url
+	ias.Basic.DisplayName = name
+	ias.Basic.SupportContact = supportContact
+	ias.Basic.Type = srvType
+	err := ias.Basic.InitializeEndpoints()
+	if err != nil {
+		return err
 	}
-	API := institute.Basic.Endpoints.API.V3
-	institute.Auth.Init(url, API.Authorization, API.Token)
+	API := ias.Basic.Endpoints.API.V3
+	ias.Auth.Init(url, API.Authorization, API.Token)
 	return nil
 }

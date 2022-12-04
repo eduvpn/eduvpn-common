@@ -1,10 +1,10 @@
-// package verify implement signature verification using minisign
+// Package verify implement signature verification using minisign
 package verify
 
 import (
 	"fmt"
 
-	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 	"github.com/jedisct1/go-minisign"
 )
 
@@ -31,7 +31,7 @@ func Verify(
 		"RWRtBSX1alxyGX+Xn3LuZnWUT0w//B6EmTJvgaAxBMYzlQeI+jdrO6KF", // fkooman@tuxed.net, kolla@uninett.no
 		"RWQKqtqvd0R7rUDp0rWzbtYPA3towPWcLDCl7eY9pBMMI/ohCmrS0WiM", // RoSp
 	}
-	valid, err := verifyWithKeys(
+	return verifyWithKeys(
 		signatureFileContent,
 		signedJSON,
 		expectedFileName,
@@ -39,10 +39,6 @@ func Verify(
 		keyStrs,
 		forcePrehash,
 	)
-	if err != nil {
-		return valid, types.NewWrappedError("failed signature verify", err)
-	}
-	return valid, nil
 }
 
 // verifyWithKeys verifies the Minisign signature in signatureFileContent (minisig file format) over the server_list/organization_list JSON in signedJSON.
@@ -67,23 +63,21 @@ func verifyWithKeys(
 	case "server_list.json", "organization_list.json":
 		break
 	default:
-		return false, &UnknownExpectedFilenameError{
-			Filename: filename,
-			Expected: "server_list.json or organization_list.json",
-		}
+		return false, errors.Errorf(
+			"invalid filename '%s'; expected 'server_list.json' or 'organization_list.json'",
+			filename)
 	}
 
 	sig, err := minisign.DecodeSignature(signatureFileContent)
 	if err != nil {
-		return false, &InvalidSignatureFormatError{Err: err}
+		return false, errors.WrapPrefix(err, "invalid signature format", 0)
 	}
 
 	// Check if signature is prehashed, see https://jedisct1.github.io/minisign/#signature-format
 	if forcePrehash && sig.SignatureAlgorithm != [2]byte{'E', 'D'} {
-		return false, &InvalidSignatureAlgorithmError{
-			Algorithm:       string(sig.SignatureAlgorithm[:]),
-			WantedAlgorithm: "ED (BLAKE2b-prehashed EdDSA)",
-		}
+		return false, errors.Errorf(
+			"invalid signature algorithm '%s'; expected `ED (BLAKE2b-prehashed EdDSA)`",
+			sig.SignatureAlgorithm[:])
 	}
 
 	// Find allowed key used for signature
@@ -91,7 +85,7 @@ func verifyWithKeys(
 		key, err := minisign.NewPublicKey(keyStr)
 		if err != nil {
 			// Should only happen if Verify is wrong or extraKey is invalid
-			return false, &CreatePublicKeyError{PublicKey: keyStr, Err: err}
+			return false, errors.WrapPrefix(err, fmt.Sprintf("failed to create public key '%s'", keyStr), 0)
 		}
 
 		if sig.KeyId != key.KeyId {
@@ -100,7 +94,7 @@ func verifyWithKeys(
 
 		valid, err := key.Verify(signedJSON, sig)
 		if !valid {
-			return false, &InvalidSignatureError{Err: err}
+			return false, errors.WrapPrefix(err, "invalid signature", 0)
 		}
 
 		// Parse trusted comment
@@ -114,125 +108,21 @@ func verifyWithKeys(
 			&sigFileName,
 		)
 		if err != nil {
-			return false, &InvalidTrustedCommentError{
-				TrustedComment: sig.TrustedComment,
-				Err:            err,
-			}
+			return false, errors.WrapPrefix(err, fmt.Sprintf("invalid trusted comment '%s'", sig.TrustedComment), 0)
 		}
 
 		if sigFileName != filename {
-			return false, &WrongSigFilenameError{Filename: filename, SigFilename: sigFileName}
+			return false, errors.Errorf("wrong filename '%s'; expected filename '%s' for signature",
+				filename, sigFileName)
 		}
 
 		if signTime < minSignTime {
-			return false, &SigTimeEarlierError{SigTime: signTime, MinSigTime: minSignTime}
+			return false, errors.Errorf("sign time %d is before sign tim: %d", signTime, minSignTime)
 		}
 
 		return true, nil
 	}
 
 	// No matching allowed key found
-	return false, &UnknownKeyError{Filename: filename}
-}
-
-type UnknownExpectedFilenameError struct {
-	Filename string
-	Expected string
-}
-
-func (e *UnknownExpectedFilenameError) Error() string {
-	return fmt.Sprintf("invalid filename: %s, expected: %s", e.Filename, e.Expected)
-}
-
-type InvalidSignatureFormatError struct {
-	Err error
-}
-
-func (e *InvalidSignatureFormatError) Error() string {
-	return fmt.Sprintf("invalid signature format with error: %v", e.Err)
-}
-
-func (e *InvalidSignatureFormatError) Unwrap() error {
-	return e.Err
-}
-
-type InvalidSignatureAlgorithmError struct {
-	Algorithm       string
-	WantedAlgorithm string
-}
-
-func (e *InvalidSignatureAlgorithmError) Error() string {
-	return fmt.Sprintf(
-		"invalid signature algorithm: %s, wanted: %s",
-		e.Algorithm,
-		e.WantedAlgorithm,
-	)
-}
-
-type CreatePublicKeyError struct {
-	PublicKey string
-	Err       error
-}
-
-func (e *CreatePublicKeyError) Error() string {
-	return fmt.Sprintf("failed to create public key: %s with error: %v", e.PublicKey, e.Err)
-}
-
-func (e *CreatePublicKeyError) Unwrap() error {
-	return e.Err
-}
-
-type InvalidSignatureError struct {
-	Err error
-}
-
-func (e *InvalidSignatureError) Error() string {
-	return fmt.Sprintf("invalid signature with error: %v", e.Err)
-}
-
-func (e *InvalidSignatureError) Unwrap() error {
-	return e.Err
-}
-
-type InvalidTrustedCommentError struct {
-	TrustedComment string
-	Err            error
-}
-
-func (e *InvalidTrustedCommentError) Error() string {
-	return fmt.Sprintf("invalid trusted comment: %s with error: %v", e.TrustedComment, e.Err)
-}
-
-func (e *InvalidTrustedCommentError) Unwrap() error {
-	return e.Err
-}
-
-type WrongSigFilenameError struct {
-	Filename    string
-	SigFilename string
-}
-
-func (e *WrongSigFilenameError) Error() string {
-	return fmt.Sprintf(
-		"wrong filename: %s, expected filename: %s for signature",
-		e.Filename,
-		e.SigFilename,
-	)
-}
-
-type SigTimeEarlierError struct {
-	SigTime    uint64
-	MinSigTime uint64
-}
-
-func (e *SigTimeEarlierError) Error() string {
-	return fmt.Sprintf("Sign time: %d is earlier than sign time: %d", e.SigTime, e.MinSigTime)
-}
-
-type UnknownKeyError struct {
-	Filename string
-}
-
-func (e *UnknownKeyError) Error() string {
-	return fmt.Sprintf("signature for filename: %s was created with an unknown key", e.Filename)
+	return false, errors.Errorf("signature for filename '%s' was created with an unknown key", filename)
 }

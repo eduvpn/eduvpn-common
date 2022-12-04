@@ -1,42 +1,35 @@
 package server
 
 import (
-	"errors"
-	"fmt"
-
-	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
 
-func (servers *Servers) SetCustomServer(server Server) error {
-	errorMessage := "failed setting custom server"
-	base, baseErr := server.Base()
-	if baseErr != nil {
-		return types.NewWrappedError(errorMessage, baseErr)
+func (ss *Servers) SetCustomServer(server Server) error {
+	b, err := server.Base()
+	if err != nil {
+		return err
 	}
 
-	if base.Type != "custom_server" {
-		return types.NewWrappedError(errorMessage, errors.New("not a custom server"))
+	if b.Type != "custom_server" {
+		return errors.WrapPrefix(err, "not a custom server", 0)
 	}
 
-	if _, ok := servers.CustomServers.Map[base.URL]; ok {
-		servers.CustomServers.CurrentURL = base.URL
-		servers.IsType = CustomServerType
+	if _, ok := ss.CustomServers.Map[b.URL]; ok {
+		ss.CustomServers.CurrentURL = b.URL
+		ss.IsType = CustomServerType
 	} else {
-		return types.NewWrappedError(errorMessage, errors.New("not a custom server"))
+		return errors.Errorf("not a custom server")
 	}
 	return nil
 }
 
-func (servers *Servers) GetCustomServer(url string) (*InstituteAccessServer, error) {
-	if server, ok := servers.CustomServers.Map[url]; ok {
-		return server, nil
+func (ss *Servers) GetCustomServer(url string) (*InstituteAccessServer, error) {
+	if srv, ok := ss.CustomServers.Map[url]; ok {
+		return srv, nil
 	}
-	return nil, types.NewWrappedError(
-		"failed to get institute access server",
-		fmt.Errorf("no custom server with URL: %s", url),
-	)
+	return nil, errors.Errorf("failed to get institute access server - no custom server with URL '%s'", url)
 }
 
-func (servers *Servers) RemoveCustomServer(url string) {
-	servers.CustomServers.Remove(url)
+func (ss *Servers) RemoveCustomServer(url string) {
+	ss.CustomServers.Remove(url)
 }
