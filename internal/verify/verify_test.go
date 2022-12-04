@@ -2,10 +2,10 @@ package verify
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -28,29 +28,17 @@ func Test_verifyWithKeys(t *testing.T) {
 		pk = []string{scanner.Text()}
 	}
 
-	var (
-		verifyCreatePublicKeyError           *CreatePublicKeyError
-		verifyInvalidSignatureAlgorithmError *InvalidSignatureAlgorithmError
-		verifyWrongSigFilenameError          *WrongSigFilenameError
-		verifyInvalidTrustedCommentError     *InvalidTrustedCommentError
-		verifyInvalidSignatureFormatError    *InvalidSignatureFormatError
-		verifyInvalidSignatureError          *InvalidSignatureError
-		verifySigTimeEarlierError            *SigTimeEarlierError
-		verifyUnknownExpectedFilenameError   *UnknownExpectedFilenameError
-		verifyUnknownKeyError                *UnknownKeyError
-	)
-
 	tests := []struct {
-		expectedErr      interface{}
-		testName         string
-		signatureFile    string
-		jsonFile         string
-		expectedFileName string
-		minSignTime      uint64
-		allowedPks       []string
+		expectedErrPrefix string
+		testName          string
+		signatureFile     string
+		jsonFile          string
+		expectedFileName  string
+		minSignTime       uint64
+		allowedPks        []string
 	}{
 		{
-			&verifyInvalidSignatureAlgorithmError,
+			"invalid signature algorithm '",
 			"pure",
 			"server_list.json.pure.minisig",
 			"server_list.json",
@@ -58,9 +46,8 @@ func Test_verifyWithKeys(t *testing.T) {
 			10,
 			pk,
 		},
-
 		{
-			nil,
+			"",
 			"valid server_list",
 			"server_list.json.minisig",
 			"server_list.json",
@@ -69,7 +56,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			nil,
+			"",
 			"TC no hashed",
 			"server_list.json.tc_nohashed.minisig",
 			"server_list.json",
@@ -78,7 +65,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			nil,
+			"",
 			"TC later time",
 			"server_list.json.tc_latertime.minisig",
 			"server_list.json",
@@ -87,7 +74,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyWrongSigFilenameError,
+			"wrong filename '",
 			"server_list TC file:organization_list",
 			"server_list.json.tc_orglist.minisig",
 			"server_list.json",
@@ -96,7 +83,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyWrongSigFilenameError,
+			"wrong filename '",
 			"organization_list as server_list",
 			"organization_list.json.minisig",
 			"organization_list.json",
@@ -105,7 +92,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyWrongSigFilenameError,
+			"wrong filename '",
 			"TC file:otherfile",
 			"server_list.json.tc_otherfile.minisig",
 			"server_list.json",
@@ -114,7 +101,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyInvalidTrustedCommentError,
+			"invalid trusted comment '",
 			"TC no file",
 			"server_list.json.tc_nofile.minisig",
 			"server_list.json",
@@ -123,7 +110,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyInvalidTrustedCommentError,
+			"invalid trusted comment '",
 			"TC no time",
 			"server_list.json.tc_notime.minisig",
 			"server_list.json",
@@ -132,7 +119,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyInvalidTrustedCommentError,
+			"invalid trusted comment '",
 			"TC empty time",
 			"server_list.json.tc_emptytime.minisig",
 			"server_list.json",
@@ -141,7 +128,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyWrongSigFilenameError,
+			"wrong filename '",
 			"TC empty file",
 			"server_list.json.tc_emptyfile.minisig",
 			"server_list.json",
@@ -150,7 +137,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyInvalidTrustedCommentError,
+			"invalid trusted comment '",
 			"TC random",
 			"server_list.json.tc_random.minisig",
 			"server_list.json",
@@ -159,7 +146,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			nil,
+			"",
 			"large time",
 			"server_list.json.large_time.minisig",
 			"server_list.json",
@@ -168,7 +155,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			nil,
+			"",
 			"lower min time",
 			"server_list.json.minisig",
 			"server_list.json",
@@ -177,7 +164,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifySigTimeEarlierError,
+			"sign time",
 			"higher min time",
 			"server_list.json.minisig",
 			"server_list.json",
@@ -185,9 +172,8 @@ func Test_verifyWithKeys(t *testing.T) {
 			11,
 			pk,
 		},
-
 		{
-			nil,
+			"",
 			"valid organization_list",
 			"organization_list.json.minisig",
 			"organization_list.json",
@@ -196,7 +182,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyWrongSigFilenameError,
+			"wrong filename '",
 			"organization_list TC file:server_list",
 			"organization_list.json.tc_servlist.minisig",
 			"organization_list.json",
@@ -205,7 +191,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyWrongSigFilenameError,
+			"wrong filename '",
 			"server_list as organization_list",
 			"server_list.json.minisig",
 			"server_list.json",
@@ -215,7 +201,7 @@ func Test_verifyWithKeys(t *testing.T) {
 		},
 
 		{
-			&verifyUnknownExpectedFilenameError,
+			"invalid filename '",
 			"valid other_list",
 			"other_list.json.minisig",
 			"other_list.json",
@@ -224,7 +210,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyWrongSigFilenameError,
+			"wrong filename '",
 			"other_list as server_list",
 			"other_list.json.minisig",
 			"other_list.json",
@@ -232,9 +218,8 @@ func Test_verifyWithKeys(t *testing.T) {
 			10,
 			pk,
 		},
-
 		{
-			&verifyInvalidSignatureFormatError,
+			"invalid signature format",
 			"invalid signature file",
 			"random.txt",
 			"server_list.json",
@@ -243,7 +228,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyInvalidSignatureFormatError,
+			"invalid signature format",
 			"empty signature file",
 			"empty",
 			"server_list.json",
@@ -253,7 +238,7 @@ func Test_verifyWithKeys(t *testing.T) {
 		},
 
 		{
-			&verifyUnknownKeyError,
+			"signature for filename '",
 			"wrong key",
 			"server_list.json.wrong_key.minisig",
 			"server_list.json",
@@ -263,7 +248,7 @@ func Test_verifyWithKeys(t *testing.T) {
 		},
 
 		{
-			&verifyInvalidSignatureAlgorithmError,
+			"invalid signature algorithm '",
 			"forged pure signature",
 			"server_list.json.forged_pure.minisig",
 			"server_list.json.blake2b",
@@ -272,7 +257,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			pk,
 		},
 		{
-			&verifyInvalidSignatureError,
+			"invalid signature",
 			"forged key ID",
 			"server_list.json.forged_keyid.minisig",
 			"server_list.json",
@@ -282,7 +267,7 @@ func Test_verifyWithKeys(t *testing.T) {
 		},
 
 		{
-			&verifyUnknownKeyError,
+			"signature for filename '",
 			"no allowed keys",
 			"server_list.json.minisig",
 			"server_list.json",
@@ -291,7 +276,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			[]string{},
 		},
 		{
-			nil,
+			"",
 			"multiple allowed keys 1",
 			"server_list.json.minisig",
 			"server_list.json",
@@ -302,7 +287,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			},
 		},
 		{
-			nil,
+			"",
 			"multiple allowed keys 2",
 			"server_list.json.minisig",
 			"server_list.json",
@@ -313,7 +298,7 @@ func Test_verifyWithKeys(t *testing.T) {
 			},
 		},
 		{
-			&verifyCreatePublicKeyError,
+			"failed to create public key '",
 			"invalid allowed key",
 			"server_list.json.minisig",
 			"server_list.json",
@@ -345,7 +330,7 @@ func Test_verifyWithKeys(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			valid, err := verifyWithKeys(string(files[tt.signatureFile]), files[tt.jsonFile],
 				tt.expectedFileName, tt.minSignTime, tt.allowedPks, forcePrehash)
-			compareResults(t, valid, err, tt.expectedErr, func() string {
+			compareResults(t, valid, err, tt.expectedErrPrefix, func() string {
 				return fmt.Sprintf(
 					"verifyWithKeys(%q, %q, %q, %v, %v, %t)",
 					tt.signatureFile,
@@ -366,17 +351,33 @@ func compareResults(
 	t *testing.T,
 	ret bool,
 	err error,
-	expectedErr interface{},
+	expectedErrPrefix string,
 	callStr func() string,
 ) {
-	// different error returned
-	if expectedErr != nil && !errors.As(err, expectedErr) {
-		t.Errorf("%v\nerror %T = %v, wantErr %T", callStr(), err, err, expectedErr)
+	if expectedErrPrefix == "" {
+		// we don't expect any error
+		if err != nil {
+			t.Errorf("error not expected but returned '%s'", err.Error())
+		}
+		if !ret {
+			t.Errorf("error is nil and result is false")
+		}
 		return
 	}
-	// different boolean returned
-	expectedBool := expectedErr == nil
-	if ret != expectedBool {
-		t.Errorf("%v\n= %v, want %v", callStr(), ret, expectedBool)
+
+	if err == nil {
+		// we expect an error but received nil
+		t.Errorf("expected error prefix '%s' but received nil", expectedErrPrefix)
+		return
+	}
+
+	if !strings.HasPrefix(err.Error(), expectedErrPrefix) {
+		// wrong error
+		t.Errorf("expected error prefix '%s' for error '%s'", expectedErrPrefix, err.Error())
+		return
+	}
+
+	if ret {
+		t.Errorf("error is not nil and result is true")
 	}
 }

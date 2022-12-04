@@ -2,11 +2,9 @@ package server
 
 import (
 	"time"
-
-	"github.com/eduvpn/eduvpn-common/types"
 )
 
-// The base type for servers.
+// Base is the base type for servers.
 type Base struct {
 	URL            string            `json:"base_url"`
 	DisplayName    map[string]string `json:"display_name"`
@@ -18,28 +16,27 @@ type Base struct {
 	Type           string            `json:"server_type"`
 }
 
-func (base *Base) InitializeEndpoints() error {
-	errorMessage := "failed initializing endpoints"
-	endpoints, endpointsErr := APIGetEndpoints(base.URL)
-	if endpointsErr != nil {
-		return types.NewWrappedError(errorMessage, endpointsErr)
+func (b *Base) InitializeEndpoints() error {
+	ep, err := APIGetEndpoints(b.URL)
+	if err != nil {
+		return err
 	}
-	base.Endpoints = *endpoints
+	b.Endpoints = *ep
 	return nil
 }
 
-func (base *Base) ValidProfiles(clientSupportsWireguard bool) ProfileInfo {
-	var validProfiles []Profile
-	for _, profile := range base.Profiles.Info.ProfileList {
+func (b *Base) ValidProfiles(wireguardSupport bool) ProfileInfo {
+	var vps []Profile
+	for _, p := range b.Profiles.Info.ProfileList {
 		// Not a valid profile because it does not support openvpn
 		// Also the client does not support wireguard
-		if !profile.supportsOpenVPN() && !clientSupportsWireguard {
+		if !p.supportsOpenVPN() && !wireguardSupport {
 			continue
 		}
-		validProfiles = append(validProfiles, profile)
+		vps = append(vps, p)
 	}
 	return ProfileInfo{
-		Current: base.Profiles.Current,
-		Info:    ProfileListInfo{ProfileList: validProfiles},
+		Current: b.Profiles.Current,
+		Info:    ProfileListInfo{ProfileList: vps},
 	}
 }

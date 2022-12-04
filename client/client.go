@@ -1,4 +1,4 @@
-// package client implements the public interface for creating eduVPN/Let's Connect! clients
+// Package client implements the public interface for creating eduVPN/Let's Connect! clients
 package client
 
 import (
@@ -11,6 +11,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
 
 type (
@@ -19,19 +20,14 @@ type (
 	ServerBase = server.Base
 )
 
-// This wraps the error, logs it and then returns the wrapped error.
-func (client *Client) handleError(message string, err error) error {
-	if err != nil {
-		// Logs the error with the same level/verbosity as the error
-		client.Logger.Inherit(message, err)
-		return types.NewWrappedError(message, err)
-	}
-	return nil
+func (c *Client) logError(err error) {
+	// Logs the error with the same level/verbosity as the error
+	c.Logger.Inherit(err)
 }
 
-func (client Client) isLetsConnect() bool {
+func (c *Client) isLetsConnect() bool {
 	// see https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/ClientDb.php
-	return strings.HasPrefix(client.Name, "org.letsconnect-vpn.app")
+	return strings.HasPrefix(c.Name, "org.letsconnect-vpn.app")
 }
 
 // Client is the main struct for the VPN client.
@@ -71,100 +67,98 @@ type Client struct {
 //   - debug: whether or not we want to enable debugging
 //
 // It returns an error if initialization failed, for example when discovery cannot be obtained and when there are no servers.
-func (client *Client) Register(
+func (c *Client) Register(
 	name string,
 	directory string,
 	language string,
 	stateCallback func(FSMStateID, FSMStateID, interface{}) bool,
 	debug bool,
-) error {
-	errorMessage := "failed to register with the GO library"
-	if !client.InFSMState(StateDeregistered) {
-		return client.handleError(
-			errorMessage,
-			FSMDeregisteredError{}.CustomError(),
-		)
+) (err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
+
+	if !c.InFSMState(StateDeregistered) {
+		return errors.Errorf("fsm attempt to register while in '%v'", c.FSM.Current)
 	}
-	client.Name = name
+
+	c.Name = name
 
 	// TODO: Verify language setting?
-	client.Language = language
+	c.Language = language
 
 	// Initialize the logger
-	logLevel := log.LevelWarning
+	lvl := log.LevelWarning
 	if debug {
-		logLevel = log.LevelDebug
+		lvl = log.LevelDebug
 	}
 
-	loggerErr := client.Logger.Init(logLevel, directory)
-	if loggerErr != nil {
-		return client.handleError(errorMessage, loggerErr)
+	if err = c.Logger.Init(lvl, directory); err != nil {
+		return err
 	}
 
 	// Initialize the FSM
-	client.FSM = newFSM(stateCallback, directory, debug)
+	c.FSM = newFSM(stateCallback, directory, debug)
 
 	// By default we support wireguard
-	client.SupportsWireguard = true
+	c.SupportsWireguard = true
 
 	// Debug only if given
-	client.Debug = debug
+	c.Debug = debug
 
 	// Initialize the Config
-	client.Config.Init(directory, "state")
+	c.Config.Init(directory, "state")
 
 	// Try to load the previous configuration
-	if client.Config.Load(&client) != nil {
+	if c.Config.Load(&c) != nil {
 		// This error can be safely ignored, as when the config does not load, the struct will not be filled
-		client.Logger.Infof("Previous configuration not found")
+		c.Logger.Infof("Previous configuration not found")
 	}
 
 	// Go to the No Server state with the saved servers after we're done
-	defer client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
+	defer c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
 
 	// Let's Connect! doesn't care about discovery
-	if client.isLetsConnect() {
+	if c.isLetsConnect() {
 		return nil
 	}
 
 	// Check if we are able to fetch discovery, and log if something went wrong
-	_, discoServersErr := client.DiscoServers()
-	if discoServersErr != nil {
-		client.Logger.Warningf("Failed to get discovery servers: %v", discoServersErr)
+	if _, err := c.DiscoServers(); err != nil {
+		c.Logger.Warningf("Failed to get discovery servers: %v", err)
 	}
-	_, discoOrgsErr := client.DiscoOrganizations()
-	if discoOrgsErr != nil {
-		client.Logger.Warningf("Failed to get discovery organizations: %v", discoOrgsErr)
+
+	if _, err := c.DiscoOrganizations(); err != nil {
+		c.Logger.Warningf("Failed to get discovery organizations: %v", err)
 	}
 
 	return nil
 }
 
 // Deregister 'deregisters' the client, meaning saving the log file and the config and emptying out the client struct.
-func (client *Client) Deregister() {
+func (c *Client) Deregister() {
 	// Close the log file
-	client.Logger.Close()
+	_ = c.Logger.Close()
 
 	// Save the config
-	saveErr := client.Config.Save(&client)
-	if saveErr != nil {
-		client.Logger.Infof("failed saving configuration, error: %s", types.ErrorTraceback(saveErr))
+	if err := c.Config.Save(&c); err != nil {
+		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s", err.Error(), err.(*errors.Error).ErrorStack())
 	}
 
 	// Empty out the state
-	*client = Client{}
+	*c = Client{}
 }
 
 // askProfile asks the user for a profile by moving the FSM to the ASK_PROFILE state.
-func (client *Client) askProfile(chosenServer server.Server) error {
-	errorMessage := "failed asking for profiles"
-	profiles, profilesErr := server.ValidProfiles(chosenServer, client.SupportsWireguard)
-	if profilesErr != nil {
-		return types.NewWrappedError(errorMessage, profilesErr)
+func (c *Client) askProfile(srv server.Server) error {
+	ps, err := server.ValidProfiles(srv, c.SupportsWireguard)
+	if err != nil {
+		return err
 	}
-	goTransitionErr := client.FSM.GoTransitionRequired(StateAskProfile, profiles)
-	if goTransitionErr != nil {
-		return types.NewWrappedError(errorMessage, goTransitionErr)
+	if err = c.FSM.GoTransitionRequired(StateAskProfile, ps); err != nil {
+		return err
 	}
 	return nil
 }
@@ -173,52 +167,41 @@ func (client *Client) askProfile(chosenServer server.Server) error {
 // If the list cannot be retrieved an error is returned.
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#organization-list.
-func (client *Client) DiscoOrganizations() (*types.DiscoveryOrganizations, error) {
-	errorMessage := "failed getting discovery organizations list"
+func (c *Client) DiscoOrganizations() (orgs *types.DiscoveryOrganizations, err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
+
 	// Not supported with Let's Connect!
-	if client.isLetsConnect() {
-		return nil, client.handleError(errorMessage, LetsConnectNotSupportedError{})
+	if c.isLetsConnect() {
+		return nil, errors.Errorf("discovery with Let's Connect is not supported")
 	}
 
-	orgs, orgsErr := client.Discovery.Organizations()
-	if orgsErr != nil {
-		return nil, client.handleError(
-			errorMessage,
-			orgsErr,
-		)
-	}
-	return orgs, nil
+	return c.Discovery.Organizations()
 }
 
 // DiscoServers gets the servers list from the discovery server
 // If the list cannot be retrieved an error is returned.
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#server-list.
-func (client *Client) DiscoServers() (*types.DiscoveryServers, error) {
-	errorMessage := "failed getting discovery servers list"
+func (c *Client) DiscoServers() (dss *types.DiscoveryServers, err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
 
 	// Not supported with Let's Connect!
-	if client.isLetsConnect() {
-		return nil, client.handleError(errorMessage, LetsConnectNotSupportedError{})
+	if c.isLetsConnect() {
+		return nil, errors.Errorf("discovery with Let's Connect is not supported")
 	}
 
-	servers, serversErr := client.Discovery.Servers()
-	if serversErr != nil {
-		return nil, client.handleError(
-			errorMessage,
-			serversErr,
-		)
-	}
-	return servers, nil
+	return c.Discovery.Servers()
 }
 
 // GetTranslated gets the translation for `languages` using the current state language.
-func (client *Client) GetTranslated(languages map[string]string) string {
-	return util.GetLanguageMatched(languages, client.Language)
-}
-
-type LetsConnectNotSupportedError struct{}
-
-func (e LetsConnectNotSupportedError) Error() string {
-	return "Any operation that involves discovery is not allowed with the Let's Connect! client"
+func (c *Client) GetTranslated(languages map[string]string) string {
+	return util.GetLanguageMatched(languages, c.Language)
 }

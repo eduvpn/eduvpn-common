@@ -1,160 +1,139 @@
 package client
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
 
 // getConfigAuth gets a config with authorization and authentication.
 // It also asks for a profile if no valid profile is found.
-func (client *Client) getConfigAuth(
-	chosenServer server.Server,
-	preferTCP bool,
-) (string, string, error) {
-	loginErr := client.ensureLogin(chosenServer)
-	if loginErr != nil {
-		return "", "", loginErr
+func (c *Client) getConfigAuth(srv server.Server, preferTCP bool) (string, string, error) {
+	err := c.ensureLogin(srv)
+	if err != nil {
+		return "", "", err
 	}
-	client.FSM.GoTransition(StateRequestConfig)
 
-	validProfile, profileErr := server.HasValidProfile(chosenServer, client.SupportsWireguard)
-	if profileErr != nil {
-		return "", "", profileErr
+	//TODO(jwijenbergh): Should we check if it returns false?
+	c.FSM.GoTransition(StateRequestConfig)
+
+	ok, err := server.HasValidProfile(srv, c.SupportsWireguard)
+	if err != nil {
+		return "", "", err
 	}
 
 	// No valid profile, ask for one
-	if !validProfile {
-		askProfileErr := client.askProfile(chosenServer)
-		if askProfileErr != nil {
-			return "", "", askProfileErr
+	if !ok {
+		if err = c.askProfile(srv); err != nil {
+			return "", "", err
 		}
 	}
 
 	// We return the error otherwise we wrap it too much
-	return server.Config(chosenServer, client.SupportsWireguard, preferTCP)
+	return server.Config(srv, c.SupportsWireguard, preferTCP)
 }
 
 // retryConfigAuth retries the getConfigAuth function if the tokens are invalid.
 // If OAuth is cancelled, it makes sure that we only forward the error as additional info.
-func (client *Client) retryConfigAuth(
-	chosenServer server.Server,
-	preferTCP bool,
-) (string, string, error) {
-	errorMessage := "failed authorized config retry"
-	config, configType, configErr := client.getConfigAuth(chosenServer, preferTCP)
-	if configErr != nil {
-		var error *oauth.TokensInvalidError
-
+func (c *Client) retryConfigAuth(srv server.Server, preferTCP bool) (string, string, error) {
+	cfg, cfgType, err := c.getConfigAuth(srv, preferTCP)
+	if err == nil {
+		return cfg, cfgType, nil
+	}
+	if err != nil {
 		// Only retry if the error is that the tokens are invalid
-		if errors.As(configErr, &error) {
-			config, configType, configErr = client.getConfigAuth(
-				chosenServer,
-				preferTCP,
-			)
-			if configErr == nil {
-				return config, configType, nil
+		if errors.As(err, &oauth.TokensInvalidError{}) {
+			cfg, cfgType, err = c.getConfigAuth(srv, preferTCP)
+			if err == nil {
+				return cfg, cfgType, nil
 			}
 		}
-		client.goBackInternal()
-		return "", "", types.NewWrappedError(errorMessage, configErr)
+		c.goBackInternal()
 	}
-	return config, configType, nil
+	return "", "", err
 }
 
 // getConfig gets an OpenVPN/WireGuard configuration by contacting the server, moving the FSM towards the DISCONNECTED state and then saving the local configuration file.
-func (client *Client) getConfig(
-	chosenServer server.Server,
-	preferTCP bool,
-) (string, string, error) {
-	errorMessage := "failed to get a configuration for OpenVPN/Wireguard"
-	if client.InFSMState(StateDeregistered) {
-		return "", "", types.NewWrappedError(
-			errorMessage,
-			FSMDeregisteredError{}.CustomError(),
-		)
+func (c *Client) getConfig(srv server.Server, preferTCP bool) (string, string, error) {
+	if c.InFSMState(StateDeregistered) {
+		return "", "", errors.Errorf("getConfig attempt in '%v'", StateDeregistered)
 	}
 
 	// Refresh the server endpoints
-	// This is best effort
-	endpointErr := server.RefreshEndpoints(chosenServer)
-	if endpointErr != nil {
-		client.Logger.Warningf("failed to refresh server endpoints: %v", endpointErr)
+	// This is the best effort
+	err := server.RefreshEndpoints(srv)
+	if err != nil {
+		c.Logger.Warningf("failed to refresh server endpoints: %v", err)
 	}
 
-	config, configType, configErr := client.retryConfigAuth(chosenServer, preferTCP)
-	if configErr != nil {
-		return "", "", types.NewWrappedError(errorMessage, configErr)
+	cfg, cfgType, err := c.retryConfigAuth(srv, preferTCP)
+	if err != nil {
+		return "", "", err
 	}
 
-	currentServer, currentServerErr := client.Servers.GetCurrentServer()
-	if currentServerErr != nil {
-		return "", "", types.NewWrappedError(errorMessage, currentServerErr)
+	srv1, err := c.Servers.GetCurrentServer()
+	if err != nil {
+		return "", "", err
 	}
 
 	// Signal the server display info
-	client.FSM.GoTransitionWithData(StateDisconnected, currentServer)
+	c.FSM.GoTransitionWithData(StateDisconnected, srv1)
 
 	// Save the config
-	saveErr := client.Config.Save(&client)
-	if saveErr != nil {
-		client.Logger.Infof(
-			"Failed saving configuration after getting a server: %s",
-			types.ErrorTraceback(saveErr),
-		)
+	if err = c.Config.Save(&c); err != nil {
+		//TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
+		//TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
+		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
+			err.Error(), err.(*errors.Error).ErrorStack())
 	}
 
-	return config, configType, nil
+	return cfg, cfgType, nil
 }
 
 // SetSecureLocation sets the location for the current secure location server. countryCode is the secure location to be chosen.
 // This function returns an error e.g. if the server cannot be found or the location is wrong.
-func (client *Client) SetSecureLocation(countryCode string) error {
-	errorMessage := "failed asking secure location"
-
+func (c *Client) SetSecureLocation(countryCode string) error {
 	// Not supported with Let's Connect!
-	if client.isLetsConnect() {
-		return client.handleError(errorMessage, LetsConnectNotSupportedError{})
+	if c.isLetsConnect() {
+		err := errors.Errorf("discovery with Let's Connect is not supported")
+		c.logError(err)
+		return err
 	}
 
-	server, serverErr := client.Discovery.ServerByCountryCode(countryCode, "secure_internet")
-	if serverErr != nil {
-		client.goBackInternal()
-		return client.handleError(errorMessage, serverErr)
+	srv, err := c.Discovery.ServerByCountryCode(countryCode, "secure_internet")
+	if err != nil {
+		c.goBackInternal()
+		c.logError(err)
+		return err
 	}
 
-	setLocationErr := client.Servers.SetSecureLocation(server)
-	if setLocationErr != nil {
-		client.goBackInternal()
-		return client.handleError(errorMessage, setLocationErr)
+	if err = c.Servers.SetSecureLocation(srv); err != nil {
+		c.goBackInternal()
+		c.logError(err)
 	}
-	return nil
+	return err
 }
 
 // RemoveSecureInternet removes the current secure internet server.
 // It returns an error if the server cannot be removed due to the state being DEREGISTERED.
 // Note that if the server does not exist, it returns nil as an error.
-func (client *Client) RemoveSecureInternet() error {
-	if client.InFSMState(StateDeregistered) {
-		return client.handleError(
-			"failed to remove Secure Internet",
-			FSMDeregisteredError{}.CustomError(),
-		)
+func (c *Client) RemoveSecureInternet() error {
+	if c.InFSMState(StateDeregistered) {
+		err := errors.Errorf("RemoveSecureInternet attempt in '%v'", StateDeregistered)
+		c.logError(err)
+		return err
 	}
 	// No error because we can only have one secure internet server and if there are no secure internet servers, this is a NO-OP
-	client.Servers.RemoveSecureInternet()
-	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
+	c.Servers.RemoveSecureInternet()
+	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
 	// Save the config
-	saveErr := client.Config.Save(&client)
-	if saveErr != nil {
-		client.Logger.Infof(
-			"Failed saving configuration after removing a secure internet server: %s",
-			types.ErrorTraceback(saveErr),
-		)
+	if err := c.Config.Save(&c); err != nil {
+		//TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
+		//TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
+		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
+			err.Error(), err.(*errors.Error).ErrorStack())
 	}
 	return nil
 }
@@ -162,23 +141,21 @@ func (client *Client) RemoveSecureInternet() error {
 // RemoveInstituteAccess removes the institute access server with `url`.
 // It returns an error if the server cannot be removed due to the state being DEREGISTERED.
 // Note that if the server does not exist, it returns nil as an error.
-func (client *Client) RemoveInstituteAccess(url string) error {
-	if client.InFSMState(StateDeregistered) {
-		return client.handleError(
-			"failed to remove Institute Access",
-			FSMDeregisteredError{}.CustomError(),
-		)
+func (c *Client) RemoveInstituteAccess(url string) error {
+	if c.InFSMState(StateDeregistered) {
+		err := errors.Errorf("RemoveInstituteAccess attempt in '%v'", StateDeregistered)
+		c.logError(err)
+		return err
 	}
 	// No error because this is a NO-OP if the server doesn't exist
-	client.Servers.RemoveInstituteAccess(url)
-	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
+	c.Servers.RemoveInstituteAccess(url)
+	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
 	// Save the config
-	saveErr := client.Config.Save(&client)
-	if saveErr != nil {
-		client.Logger.Infof(
-			"Failed saving configuration after removing an institute access server: %s",
-			types.ErrorTraceback(saveErr),
-		)
+	if err := c.Config.Save(&c); err != nil {
+		//TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
+		//TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
+		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
+			err.Error(), err.(*errors.Error).ErrorStack())
 	}
 	return nil
 }
@@ -186,146 +163,149 @@ func (client *Client) RemoveInstituteAccess(url string) error {
 // RemoveCustomServer removes the custom server with `url`.
 // It returns an error if the server cannot be removed due to the state being DEREGISTERED.
 // Note that if the server does not exist, it returns nil as an error.
-func (client *Client) RemoveCustomServer(url string) error {
-	if client.InFSMState(StateDeregistered) {
-		return client.handleError(
-			"failed to remove Custom Server",
-			FSMDeregisteredError{}.CustomError(),
-		)
+func (c *Client) RemoveCustomServer(url string) error {
+	if c.InFSMState(StateDeregistered) {
+		err := errors.Errorf("RemoveCustomServer attempt in '%v'", StateDeregistered)
+		c.logError(err)
+		return err
 	}
 	// No error because this is a NO-OP if the server doesn't exist
-	client.Servers.RemoveCustomServer(url)
-	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
+	c.Servers.RemoveCustomServer(url)
+	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
 	// Save the config
-	saveErr := client.Config.Save(&client)
-	if saveErr != nil {
-		client.Logger.Infof(
-			"Failed saving configuration after removing a custom server: %s",
-			types.ErrorTraceback(saveErr),
-		)
+	if err := c.Config.Save(&c); err != nil {
+		//TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
+		//TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
+		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
+			err.Error(), err.(*errors.Error).ErrorStack())
 	}
 	return nil
 }
 
 // AddInstituteServer adds an Institute Access server by `url`.
-func (client *Client) AddInstituteServer(url string) (server.Server, error) {
-	errorMessage := fmt.Sprintf("failed adding Institute Access server with url %s", url)
+func (c *Client) AddInstituteServer(url string) (srv server.Server, err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
 
 	// Not supported with Let's Connect!
-	if client.isLetsConnect() {
-		return nil, client.handleError(errorMessage, LetsConnectNotSupportedError{})
+	if c.isLetsConnect() {
+		err = errors.Errorf("discovery with Let's Connect is not supported")
+		return nil, err
 	}
 
 	// Indicate that we're loading the server
-	client.FSM.GoTransition(StateLoadingServer)
+	c.FSM.GoTransition(StateLoadingServer)
 
 	// FIXME: Do nothing with discovery here as the client already has it
 	// So pass a server as the parameter
-	instituteServer, discoErr := client.Discovery.ServerByURL(url, "institute_access")
-	if discoErr != nil {
-		client.goBackInternal()
-		return nil, client.handleError(errorMessage, discoErr)
+	var dSrv *types.DiscoveryServer
+	dSrv, err = c.Discovery.ServerByURL(url, "institute_access")
+	if err != nil {
+		c.goBackInternal()
+		return nil, err
 	}
 
 	// Add the secure internet server
-	server, serverErr := client.Servers.AddInstituteAccessServer(instituteServer)
-	if serverErr != nil {
-		client.goBackInternal()
-		return nil, client.handleError(errorMessage, serverErr)
+	srv, err = c.Servers.AddInstituteAccessServer(dSrv)
+	if err != nil {
+		c.goBackInternal()
+		return nil, err
 	}
 
 	// Set the server as the current so OAuth can be cancelled
-	currentErr := client.Servers.SetInstituteAccess(server)
-	if currentErr != nil {
-		client.goBackInternal()
-		return nil, client.handleError(errorMessage, currentErr)
+	if err = c.Servers.SetInstituteAccess(srv); err != nil {
+		c.goBackInternal()
+		return nil, err
 	}
 
 	// Indicate that we want to authorize this server
-	client.FSM.GoTransition(StateChosenServer)
+	c.FSM.GoTransition(StateChosenServer)
 
 	// Authorize it
-	loginErr := client.ensureLogin(server)
-	if loginErr != nil {
+	if err = c.ensureLogin(srv); err != nil {
 		// Removing is best effort
-		_ = client.RemoveInstituteAccess(url)
-		return nil, client.handleError(errorMessage, loginErr)
+		_ = c.RemoveInstituteAccess(url)
+		return nil, err
 	}
 
-	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
-	return server, nil
+	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
+	return srv, nil
 }
 
 // AddSecureInternetHomeServer adds a Secure Internet Home Server with `orgID` that was obtained from the Discovery file.
 // Because there is only one Secure Internet Home Server, it replaces the existing one.
-func (client *Client) AddSecureInternetHomeServer(orgID string) (server.Server, error) {
-	errorMessage := fmt.Sprintf(
-		"failed adding Secure Internet home server with organization ID %s",
-		orgID,
-	)
+func (c *Client) AddSecureInternetHomeServer(orgID string) (srv server.Server, err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
 
 	// Not supported with Let's Connect!
-	if client.isLetsConnect() {
-		return nil, client.handleError(errorMessage, LetsConnectNotSupportedError{})
+	if c.isLetsConnect() {
+		return nil, errors.Errorf("discovery with Let's Connect is not supported")
 	}
 
 	// Indicate that we're loading the server
-	client.FSM.GoTransition(StateLoadingServer)
+	c.FSM.GoTransition(StateLoadingServer)
 
 	// Get the secure internet URL from discovery
-	secureOrg, secureServer, discoErr := client.Discovery.SecureHomeArgs(orgID)
-	if discoErr != nil {
-		client.goBackInternal()
-		return nil, client.handleError(errorMessage, discoErr)
+	org, dSrv, err := c.Discovery.SecureHomeArgs(orgID)
+	if err != nil {
+		c.goBackInternal()
+		return nil, err
 	}
 
 	// Add the secure internet server
-	server, serverErr := client.Servers.AddSecureInternet(secureOrg, secureServer)
-	if serverErr != nil {
-		client.goBackInternal()
-		return nil, client.handleError(errorMessage, serverErr)
+	srv, err = c.Servers.AddSecureInternet(org, dSrv)
+	if err != nil {
+		return nil, err
 	}
 
-	locationErr := client.askSecureLocation()
-	if locationErr != nil {
-		// Removing is best effort
+	//TODO(jwijenbergh): Does this call transfers execution flow to UI?
+	if err = c.askSecureLocation(); err != nil {
+		// Removing is the best effort
 		// This already goes back to the main screen
-		_ = client.RemoveSecureInternet()
-		return nil, client.handleError(errorMessage, locationErr)
+		_ = c.RemoveSecureInternet()
+		return nil, err
 	}
 
 	// Set the server as the current so OAuth can be cancelled
-	currentErr := client.Servers.SetSecureInternet(server)
-	if currentErr != nil {
-		client.goBackInternal()
-		return nil, client.handleError(errorMessage, currentErr)
+	if err = c.Servers.SetSecureInternet(srv); err != nil {
+		c.goBackInternal()
+		return nil, err
 	}
 
 	// Server has been chosen for authentication
-	client.FSM.GoTransition(StateChosenServer)
+	c.FSM.GoTransition(StateChosenServer)
 
 	// Authorize it
-	loginErr := client.ensureLogin(server)
-	if loginErr != nil {
+	if err = c.ensureLogin(srv); err != nil {
 		// Removing is best effort
-		_ = client.RemoveSecureInternet()
-		return nil, client.handleError(errorMessage, loginErr)
+		_ = c.RemoveSecureInternet()
+		return nil, err
 	}
-	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
-	return server, nil
+	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
+	return srv, nil
 }
 
 // AddCustomServer adds a Custom Server by `url`.
-func (client *Client) AddCustomServer(url string) (server.Server, error) {
-	errorMessage := fmt.Sprintf("failed adding Custom server with url %s", url)
+func (c *Client) AddCustomServer(url string) (srv server.Server, err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
 
-	url, urlErr := util.EnsureValidURL(url)
-	if urlErr != nil {
-		return nil, client.handleError(errorMessage, urlErr)
+	if url, err = util.EnsureValidURL(url); err != nil {
+		return nil, err
 	}
 
 	// Indicate that we're loading the server
-	client.FSM.GoTransition(StateLoadingServer)
+	c.FSM.GoTransition(StateLoadingServer)
 
 	customServer := &types.DiscoveryServer{
 		BaseURL:     url,
@@ -334,167 +314,160 @@ func (client *Client) AddCustomServer(url string) (server.Server, error) {
 	}
 
 	// A custom server is just an institute access server under the hood
-	server, serverErr := client.Servers.AddCustomServer(customServer)
-	if serverErr != nil {
-		client.goBackInternal()
-		return nil, client.handleError(errorMessage, serverErr)
+	if srv, err = c.Servers.AddCustomServer(customServer); err != nil {
+		c.goBackInternal()
+		return nil, err
 	}
 
 	// Set the server as the current so OAuth can be cancelled
-	currentErr := client.Servers.SetCustomServer(server)
-	if currentErr != nil {
-		client.goBackInternal()
-		return nil, client.handleError(errorMessage, currentErr)
+	if err = c.Servers.SetCustomServer(srv); err != nil {
+		c.goBackInternal()
+		return nil, err
 	}
 
 	// Server has been chosen for authentication
-	client.FSM.GoTransition(StateChosenServer)
+	c.FSM.GoTransition(StateChosenServer)
 
 	// Authorize it
-	loginErr := client.ensureLogin(server)
-	if loginErr != nil {
+	if err = c.ensureLogin(srv); err != nil {
 		// removing is best effort
-		_ = client.RemoveCustomServer(url)
-		return nil, client.handleError(errorMessage, loginErr)
+		_ = c.RemoveCustomServer(url)
+		return nil, err
 	}
 
-	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
-	return server, nil
+	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
+	return srv, nil
 }
 
 // GetConfigInstituteAccess gets a configuration for an Institute Access Server.
 // It ensures that the Institute Access Server exists by creating or using an existing one with the url.
 // `preferTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
-func (client *Client) GetConfigInstituteAccess(url string, preferTCP bool) (string, string, error) {
-	errorMessage := fmt.Sprintf("failed getting a configuration for Institute Access %s", url)
+func (c *Client) GetConfigInstituteAccess(url string, preferTCP bool) (cfg string, cfgType string, err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
 
 	// Not supported with Let's Connect!
-	if client.isLetsConnect() {
-		return "", "", client.handleError(errorMessage, LetsConnectNotSupportedError{})
+	if c.isLetsConnect() {
+		return "", "", errors.Errorf("discovery with Let's Connect is not supported")
 	}
 
-	client.FSM.GoTransition(StateLoadingServer)
+	c.FSM.GoTransition(StateLoadingServer)
 
 	// Get the server if it exists
-	server, serverErr := client.Servers.GetInstituteAccess(url)
-	if serverErr != nil {
-		client.goBackInternal()
-		return "", "", client.handleError(errorMessage, serverErr)
+	var iaSrv *server.InstituteAccessServer
+	if iaSrv, err = c.Servers.GetInstituteAccess(url); err != nil {
+		c.goBackInternal()
+		return "", "", err
 	}
 
 	// Set the server as the current
-	currentErr := client.Servers.SetInstituteAccess(server)
-	if currentErr != nil {
-		return "", "", client.handleError(errorMessage, currentErr)
+	if err = c.Servers.SetInstituteAccess(iaSrv); err != nil {
+		return "", "", err
 	}
 
 	// The server has now been chosen
-	client.FSM.GoTransition(StateChosenServer)
+	c.FSM.GoTransition(StateChosenServer)
 
-	config, configType, configErr := client.getConfig(server, preferTCP)
-	if configErr != nil {
-		client.goBackInternal()
-		return "", "", client.handleError(errorMessage, configErr)
+	if cfg, cfgType, err = c.getConfig(iaSrv, preferTCP); err != nil {
+		c.goBackInternal()
 	}
-	return config, configType, nil
+
+	return cfg, cfgType, err
 }
 
 // GetConfigSecureInternet gets a configuration for a Secure Internet Server.
 // It ensures that the Secure Internet Server exists by creating or using an existing one with the orgID.
 // `preferTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
-func (client *Client) GetConfigSecureInternet(
-	orgID string,
-	preferTCP bool,
-) (string, string, error) {
-	errorMessage := fmt.Sprintf(
-		"failed getting a configuration for Secure Internet organization %s",
-		orgID,
-	)
+func (c *Client) GetConfigSecureInternet(orgID string, preferTCP bool) (cfg string, cfgType string, err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
 
 	// Not supported with Let's Connect!
-	if client.isLetsConnect() {
-		return "", "", client.handleError(errorMessage, LetsConnectNotSupportedError{})
+	if c.isLetsConnect() {
+		return "", "", errors.Errorf("discovery with Let's Connect is not supported")
 	}
 
-	client.FSM.GoTransition(StateLoadingServer)
+	c.FSM.GoTransition(StateLoadingServer)
 
 	// Get the server if it exists
-	server, serverErr := client.Servers.GetSecureInternetHomeServer()
-	if serverErr != nil {
-		client.goBackInternal()
-		return "", "", client.handleError(errorMessage, serverErr)
+	var srv *server.SecureInternetHomeServer
+	if srv, err = c.Servers.GetSecureInternetHomeServer(); err != nil {
+		c.goBackInternal()
+		return "", "", err
 	}
 
 	// Set the server as the current
-	currentErr := client.Servers.SetSecureInternet(server)
-	if currentErr != nil {
-		return "", "", client.handleError(errorMessage, currentErr)
+	if err = c.Servers.SetSecureInternet(srv); err != nil {
+		return "", "", err
 	}
 
-	client.FSM.GoTransition(StateChosenServer)
+	c.FSM.GoTransition(StateChosenServer)
 
-	config, configType, configErr := client.getConfig(server, preferTCP)
-	if configErr != nil {
-		client.goBackInternal()
-		return "", "", client.handleError(errorMessage, configErr)
+	if cfg, cfgType, err = c.getConfig(srv, preferTCP); err != nil {
+		c.goBackInternal()
 	}
-	return config, configType, nil
+
+	return cfg, cfgType, err
 }
 
 // GetConfigCustomServer gets a configuration for a Custom Server.
 // It ensures that the Custom Server exists by creating or using an existing one with the url.
 // `preferTCP` indicates that the client wants to use TCP (through OpenVPN) to establish the VPN tunnel.
-func (client *Client) GetConfigCustomServer(url string, preferTCP bool) (string, string, error) {
-	errorMessage := fmt.Sprintf("failed getting a configuration for custom server %s", url)
+func (c *Client) GetConfigCustomServer(url string, preferTCP bool) (cfg string, cfgType string, err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
 
-	url, urlErr := util.EnsureValidURL(url)
-	if urlErr != nil {
-		return "", "", client.handleError(errorMessage, urlErr)
+	if url, err = util.EnsureValidURL(url); err != nil {
+		return "", "", err
 	}
 
-	client.FSM.GoTransition(StateLoadingServer)
+	c.FSM.GoTransition(StateLoadingServer)
 
 	// Get the server if it exists
-	server, serverErr := client.Servers.GetCustomServer(url)
-	if serverErr != nil {
-		client.goBackInternal()
-		return "", "", client.handleError(errorMessage, serverErr)
+	var srv *server.InstituteAccessServer
+	if srv, err = c.Servers.GetCustomServer(url); err != nil {
+		c.goBackInternal()
+		return "", "", err
 	}
 
 	// Set the server as the current
-	currentErr := client.Servers.SetCustomServer(server)
-	if currentErr != nil {
-		return "", "", client.handleError(errorMessage, currentErr)
+	if err = c.Servers.SetCustomServer(srv); err != nil {
+		return "", "", err
 	}
 
-	client.FSM.GoTransition(StateChosenServer)
+	c.FSM.GoTransition(StateChosenServer)
 
-	config, configType, configErr := client.getConfig(server, preferTCP)
-	if configErr != nil {
-		client.goBackInternal()
-		return "", "", client.handleError(errorMessage, configErr)
+	if cfg, cfgType, err = c.getConfig(srv, preferTCP); err != nil {
+		c.goBackInternal()
 	}
-	return config, configType, nil
+
+	return cfg, cfgType, err
 }
 
 // askSecureLocation asks the user to choose a Secure Internet location by moving the FSM to the STATE_ASK_LOCATION state.
-func (client *Client) askSecureLocation() error {
-	errorMessage := "failed settings secure location"
-	locations := client.Discovery.SecureLocationList()
+func (c *Client) askSecureLocation() error {
+	loc := c.Discovery.SecureLocationList()
 
 	// Ask for the location in the callback
-	goTransitionErr := client.FSM.GoTransitionRequired(StateAskLocation, locations)
-	if goTransitionErr != nil {
-		return types.NewWrappedError(errorMessage, goTransitionErr)
+	if err := c.FSM.GoTransitionRequired(StateAskLocation, loc); err != nil {
+		return err
 	}
 
 	// The state has changed, meaning setting the secure location was not successful
-	if client.FSM.Current != StateAskLocation {
+	if c.FSM.Current != StateAskLocation {
 		// TODO: maybe a custom type for this errors.new?
-		return types.NewWrappedError(
-			errorMessage,
-			errors.New("failed loading secure location"),
-		)
+		// ^^^^ Definitely no! New error types should be introduced only when actually needed.
+		return errors.Errorf("fsm failed to transit; expected %v / actual %v",
+			StateAskLocation, c.FSM.Current)
 	}
 	return nil
 }
@@ -502,123 +475,113 @@ func (client *Client) askSecureLocation() error {
 // ChangeSecureLocation changes the location for an existing Secure Internet Server.
 // Changing a secure internet location is only possible when the user is in the main screen (STATE_NO_SERVER), otherwise it returns an error.
 // It also returns an error if something has gone wrong when selecting the new location.
-func (client *Client) ChangeSecureLocation() error {
-	errorMessage := "failed to change location from the main screen"
-
-	if !client.InFSMState(StateNoServer) {
-		return client.handleError(
-			errorMessage,
-			FSMWrongStateError{
-				Got:  client.FSM.Current,
-				Want: StateNoServer,
-			}.CustomError(),
-		)
+func (c *Client) ChangeSecureLocation() error {
+	if !c.InFSMState(StateNoServer) {
+		return errors.Errorf("ChangeSecureLocation attempt in %v (only %v allowed)",
+			c.FSM.Current, StateNoServer)
 	}
 
-	askLocationErr := client.askSecureLocation()
-	if askLocationErr != nil {
-		return client.handleError(errorMessage, askLocationErr)
+	if err := c.askSecureLocation(); err != nil {
+		c.logError(err)
+		return err
 	}
 
 	// Go back to the main screen
-	client.FSM.GoTransitionWithData(StateNoServer, client.Servers)
+	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
 
 	return nil
 }
 
 // RenewSession renews the session for the current VPN server.
 // This logs the user back in.
-func (client *Client) RenewSession() error {
-	errorMessage := "failed to renew session"
+func (c *Client) RenewSession() (err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
 
-	currentServer, currentServerErr := client.Servers.GetCurrentServer()
-	if currentServerErr != nil {
-		return client.handleError(errorMessage, currentServerErr)
+	var srv server.Server
+	if srv, err = c.Servers.GetCurrentServer(); err != nil {
+		return err
 	}
 
 	// The server has not been chosen yet, this means that we want to manually renew
-	if client.FSM.InState(StateNoServer) {
-		client.FSM.GoTransition(StateChosenServer)
+	if c.FSM.InState(StateNoServer) {
+		c.FSM.GoTransition(StateChosenServer)
 	}
 
-	server.MarkTokensForRenew(currentServer)
-	loginErr := client.ensureLogin(currentServer)
-	if loginErr != nil {
-		return client.handleError(errorMessage, loginErr)
-	}
-
-	return nil
+	server.MarkTokensForRenew(srv)
+	return c.ensureLogin(srv)
 }
 
 // ShouldRenewButton returns true if the renew button should be shown
 // If there is no server then this returns false and logs with INFO if so
 // In other cases it simply checks the expiry time and calculates according to: https://github.com/eduvpn/documentation/blob/b93854dcdd22050d5f23e401619e0165cb8bc591/API.md#session-expiry.
-func (client *Client) ShouldRenewButton() bool {
-	if !client.InFSMState(StateConnected) && !client.InFSMState(StateConnecting) &&
-		!client.InFSMState(StateDisconnected) &&
-		!client.InFSMState(StateDisconnecting) {
+func (c *Client) ShouldRenewButton() bool {
+	if !c.InFSMState(StateConnected) && !c.InFSMState(StateConnecting) &&
+		!c.InFSMState(StateDisconnected) &&
+		!c.InFSMState(StateDisconnecting) {
 		return false
 	}
 
-	currentServer, currentServerErr := client.Servers.GetCurrentServer()
-
-	if currentServerErr != nil {
-		client.Logger.Infof(
-			"No server found to renew with err: %s",
-			types.ErrorTraceback(currentServerErr),
-		)
+	srv, err := c.Servers.GetCurrentServer()
+	if err != nil {
+		c.Logger.Infof("no server to renew: %s\nstacktrace:\n%s", err.Error(), err.(*errors.Error).ErrorStack())
 		return false
 	}
 
-	return server.ShouldRenewButton(currentServer)
+	return server.ShouldRenewButton(srv)
 }
 
 // ensureLogin logs the user back in if needed.
 // It runs the FSM transitions to ask for user input.
-func (client *Client) ensureLogin(chosenServer server.Server) error {
-	errorMessage := "failed ensuring login"
+func (c *Client) ensureLogin(srv server.Server) error {
 	// Relogin with oauth
 	// This moves the state to authorized
-	if server.NeedsRelogin(chosenServer) {
-		url, urlErr := server.OAuthURL(chosenServer, client.Name)
-
-		goTransitionErr := client.FSM.GoTransitionRequired(StateOAuthStarted, url)
-		if goTransitionErr != nil {
-			return types.NewWrappedError(errorMessage, goTransitionErr)
-		}
-
-		if urlErr != nil {
-			client.goBackInternal()
-			return types.NewWrappedError(errorMessage, urlErr)
-		}
-
-		exchangeErr := server.OAuthExchange(chosenServer)
-
-		if exchangeErr != nil {
-			client.goBackInternal()
-			return types.NewWrappedError(errorMessage, exchangeErr)
-		}
+	if !server.NeedsRelogin(srv) {
+		// OAuth was valid, ensure we are in the authorized state
+		c.FSM.GoTransition(StateAuthorized)
+		return nil
 	}
-	// OAuth was valid, ensure we are in the authorized state
-	client.FSM.GoTransition(StateAuthorized)
-	return nil
+
+	url, err := server.OAuthURL(srv, c.Name)
+	//TODO(jwijenbergh): Check if this if block is needed.
+	if err != nil {
+		return nil
+	}
+
+	if err = c.FSM.GoTransitionRequired(StateOAuthStarted, url); err != nil {
+		return err
+	}
+
+	if err = server.OAuthExchange(srv); err != nil {
+		c.goBackInternal()
+	}
+
+	return err
 }
 
 // SetProfileID sets a `profileID` for the current server.
 // An error is returned if this is not possible, for example when no server is configured.
-func (client *Client) SetProfileID(profileID string) error {
-	errorMessage := "failed to set the profile ID for the current server"
-	server, serverErr := client.Servers.GetCurrentServer()
-	if serverErr != nil {
-		client.goBackInternal()
-		return client.handleError(errorMessage, serverErr)
+func (c *Client) SetProfileID(profileID string) (err error) {
+	defer func() {
+		if err != nil {
+			c.logError(err)
+		}
+	}()
+
+	var srv server.Server
+	if srv, err = c.Servers.GetCurrentServer(); err != nil {
+		c.goBackInternal()
+		return err
 	}
 
-	base, baseErr := server.Base()
-	if baseErr != nil {
-		client.goBackInternal()
-		return client.handleError(errorMessage, baseErr)
+	var b *server.Base
+	if b, err = srv.Base(); err != nil {
+		c.goBackInternal()
+		return err
 	}
-	base.Profiles.Current = profileID
+	b.Profiles.Current = profileID
 	return nil
 }

@@ -1,7 +1,6 @@
 package client
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,9 +11,8 @@ import (
 	"time"
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/util"
-	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/go-errors/errors"
 )
 
 func getServerURI(t *testing.T) string {
@@ -29,7 +27,7 @@ func getServerURI(t *testing.T) string {
 	return serverURI
 }
 
-func runCommand(t *testing.T, errBuffer *strings.Builder, name string, args ...string) error {
+func runCommand(errBuffer *strings.Builder, name string, args ...string) error {
 	cmd := exec.Command(name, args...)
 
 	cmd.Stderr = errBuffer
@@ -41,11 +39,11 @@ func runCommand(t *testing.T, errBuffer *strings.Builder, name string, args ...s
 	return cmd.Wait()
 }
 
-func loginOAuthSelenium(t *testing.T, url string, state *Client) {
+func loginOAuthSelenium(url string, state *Client) {
 	// We could use the go selenium library
 	// But it does not support the latest selenium v4 just yet
 	var errBuffer strings.Builder
-	err := runCommand(t, &errBuffer, "python3", "../selenium_eduvpn.py", url)
+	err := runCommand(&errBuffer, "python3", "../selenium_eduvpn.py", url)
 	if err != nil {
 		_ = state.CancelOAuth()
 		panic(fmt.Sprintf(
@@ -58,7 +56,7 @@ func loginOAuthSelenium(t *testing.T, url string, state *Client) {
 
 func stateCallback(
 	t *testing.T,
-	oldState FSMStateID,
+	_ FSMStateID,
 	newState FSMStateID,
 	data interface{},
 	state *Client,
@@ -69,7 +67,7 @@ func stateCallback(
 		if !ok {
 			t.Fatalf("data is not a string for OAuth URL")
 		}
-		loginOAuthSelenium(t, url, state)
+		loginOAuthSelenium(url, state)
 	}
 }
 
@@ -104,7 +102,7 @@ func TestServer(t *testing.T) {
 func testConnectOAuthParameter(
 	t *testing.T,
 	parameters httpw.URLParameters,
-	expectedErr interface{},
+	errPrefix string,
 ) {
 	serverURI := getServerURI(t)
 	state := &Client{}
@@ -151,55 +149,68 @@ func testConnectOAuthParameter(
 		t.Fatalf("Register error: %v", registerErr)
 	}
 
-	_, addErr := state.AddCustomServer(serverURI)
+	_, err := state.AddCustomServer(serverURI)
 
-	var wrappedErr *types.WrappedErrorMessage
-
-	// We ensure the error is of a wrappedErrorMessage
-	if !errors.As(addErr, &wrappedErr) {
-		t.Fatalf("error %T = %v, wantErr %T", addErr, addErr, wrappedErr)
+	if errPrefix == "" {
+		if err != nil {
+			t.Fatalf("unexpected error %v", err)
+		}
+		return
 	}
 
-	gotExpectedErr := wrappedErr.Cause()
+	if err == nil {
+		t.Fatalf("expected error with prefix '%s' but got nil", errPrefix)
+	}
+
+	err1, ok := err.(*errors.Error)
+	// We ensure the error is of a wrappedErrorMessage
+	if !ok {
+		t.Fatalf("error %T = %v, wantErr %T", err, err, &errors.Error{})
+	}
+
+	msg := err1.Error()
+	if err1.Err != nil {
+		msg = err1.Err.Error()
+	}
 
 	// Then we check if the cause is correct
-	if !errors.As(gotExpectedErr, expectedErr) {
-		t.Fatalf("error %T = %v, wantErr %T", gotExpectedErr, gotExpectedErr, expectedErr)
+	if !strings.HasPrefix(msg, errPrefix) {
+		t.Fatalf("expected error with prefix '%s' but got '%s'", errPrefix, msg)
 	}
 }
 
 func TestConnectOAuthParameters(t *testing.T) {
-	var (
-		failedCallbackParameterError  *oauth.CallbackParameterError
-		failedCallbackStateMatchError *oauth.CallbackStateMatchError
-		failedCallbackISSMatchError   *oauth.CallbackISSMatchError
+	const (
+		callbackParameterErrorPrefix  = "failed retrieving parameter '"
+		callbackStateMatchErrorPrefix = "failed matching state"
+		callbackISSMatchErrorPrefix   = "failed matching ISS"
 	)
 
 	serverURI := getServerURI(t)
 	// serverURI already ends with a / due to using the util EnsureValidURL function
 	iss := serverURI
 	tests := []struct {
-		expectedErr interface{}
-		parameters  httpw.URLParameters
+		errPrefix  string
+		parameters httpw.URLParameters
 	}{
 		// missing state and code
-		{&failedCallbackParameterError, httpw.URLParameters{"iss": iss}},
+		{callbackParameterErrorPrefix, httpw.URLParameters{"iss": iss}},
 		// missing state
-		{&failedCallbackParameterError, httpw.URLParameters{"iss": iss, "code": "42"}},
+		{callbackParameterErrorPrefix, httpw.URLParameters{"iss": iss, "code": "42"}},
 		// invalid state
 		{
-			&failedCallbackStateMatchError,
+			callbackStateMatchErrorPrefix,
 			httpw.URLParameters{"iss": iss, "code": "42", "state": "21"},
 		},
 		// invalid iss
 		{
-			&failedCallbackISSMatchError,
+			callbackISSMatchErrorPrefix,
 			httpw.URLParameters{"iss": "37", "code": "42", "state": "21"},
 		},
 	}
 
 	for _, test := range tests {
-		testConnectOAuthParameter(t, test.parameters, test.expectedErr)
+		testConnectOAuthParameter(t, test.parameters, test.errPrefix)
 	}
 }
 
