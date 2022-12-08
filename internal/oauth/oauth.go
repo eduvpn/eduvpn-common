@@ -79,7 +79,7 @@ func genVerifier() (string, error) {
 
 // OAuth defines the main structure for this package.
 type OAuth struct {
-	// ISS indicates the issuer indentifier of the authorization server as defined in RFC 9207
+	// ISS indicates the issuer identifier of the authorization server as defined in RFC 9207
 	ISS string `json:"iss"`
 
 	// BaseAuthorizationURL is the URL where authorization should take place
@@ -103,10 +103,10 @@ type ExchangeSession struct {
 	// ClientID is the ID of the OAuth client
 	ClientID string
 
-	// ISS indicates the issuer inditifer
+	// ISS indicates the issuer identifier
 	ISS string
 
-	// State is the expected URL state paremeter
+	// State is the expected URL state parameter
 	State string
 
 	// Verifier is the preimage of the challenge
@@ -131,7 +131,7 @@ func (oauth *OAuth) AccessToken() (string, error) {
 
 	// We have tokens...
 	// The tokens are not expired yet
-	// So they should be valid, re-login not needed
+	// So they should be valid, re-authorization not needed
 	if !tokens.Expired() {
 		return tokens.access, nil
 	}
@@ -163,6 +163,8 @@ func (oauth *OAuth) AccessToken() (string, error) {
 
 // setupListener sets up an OAuth listener
 // If it was unsuccessful it returns an error.
+// @see https://www.ietf.org/archive/id/draft-ietf-oauth-v2-1-07.html#section-8.4.2
+// "Loopback Interface Redirection".
 func (oauth *OAuth) setupListener() error {
 	errorMessage := "failed setting up listener"
 	oauth.session.Context = context.Background()
