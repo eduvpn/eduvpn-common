@@ -31,6 +31,6 @@ type Token struct {
 
 // Expired checks if the access token is expired.
 func (tokens *Token) Expired() bool {
-	currentTime := time.Now()
-	return !currentTime.Before(tokens.expiredTimestamp)
+	now := time.Now()
+	return !now.Before(tokens.expiredTimestamp)
 }

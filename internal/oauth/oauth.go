@@ -30,13 +30,13 @@ import (
 // client.
 // We implement it similarly to the verifier.
 func genState() (string, error) {
-	bts, err := util.MakeRandomByteSlice(32)
+	bs, err := util.MakeRandomByteSlice(32)
 	if err != nil {
 		return "", err
 	}
 
 	// For consistency, we also use raw url encoding here
-	return base64.RawURLEncoding.EncodeToString(bts), nil
+	return base64.RawURLEncoding.EncodeToString(bs), nil
 }
 
 // genChallengeS256 generates a sha256 base64 challenge from a verifier
@@ -65,12 +65,12 @@ func genChallengeS256(verifier string) string {
 //
 // See: https://datatracker.ietf.org/doc/html/rfc7636#section-4.1
 func genVerifier() (string, error) {
-	randomBytes, err := util.MakeRandomByteSlice(32)
+	random, err := util.MakeRandomByteSlice(32)
 	if err != nil {
 		return "", err
 	}
 
-	return base64.RawURLEncoding.EncodeToString(randomBytes), nil
+	return base64.RawURLEncoding.EncodeToString(random), nil
 }
 
 // OAuth defines the main structure for this package.
@@ -122,18 +122,18 @@ type ExchangeSession struct {
 // It returns the access token as a string, possibly obtained fresh using the Refresh Token
 // If the token cannot be obtained, an error is returned and the token is an empty string.
 func (oauth *OAuth) AccessToken() (string, error) {
-	ts := oauth.token
+	t := oauth.token
 
 	// We have tokens...
 	// The tokens are not expired yet
 	// So they should be valid, re-login not needed
-	if !ts.Expired() {
-		return ts.access, nil
+	if !t.Expired() {
+		return t.access, nil
 	}
 
 	// Check if refresh is even possible by doing a simple check if the refresh token is empty
 	// This is not needed but reduces API calls to the server
-	if ts.refresh == "" {
+	if t.refresh == "" {
 		return "", errors.Wrap(&TokensInvalidError{Cause: "no refresh token is present"}, 0)
 	}
 
@@ -146,7 +146,7 @@ func (oauth *OAuth) AccessToken() (string, error) {
 	}
 
 	// We have obtained new tokens with refresh
-	return ts.access, nil
+	return t.access, nil
 }
 
 // setupListener sets up an OAuth listener
