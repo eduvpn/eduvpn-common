@@ -23,27 +23,18 @@ const (
 )
 
 func GetErrorLevel(err error) ErrLevel {
-	if err == nil {
+	// Get the inner error
+	e := err
+	if err1, ok := err.(*errors.Error); ok {
+		e = err1.Err
+	}
+
+	switch e.(type) {
+	case *oauth.CancelledCallbackError:
+		return ErrInfo
+	default:
 		return ErrOther
 	}
-
-	getLevel := func(e error) ErrLevel {
-		if e == nil {
-			return ErrOther
-		}
-
-		switch e.(type) {
-		case *oauth.CancelledCallbackError:
-			return ErrInfo
-		default:
-			return ErrOther
-		}
-	}
-
-	if err1, ok := err.(*errors.Error); ok {
-		return getLevel(err1.Err)
-	}
-	return getLevel(err)
 }
 
 // FileLogger defines the type of logger that this package implements
