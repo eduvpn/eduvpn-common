@@ -357,21 +357,21 @@ func (c *Client) GetConfigInstituteAccess(url string, preferTCP bool) (cfg strin
 	c.FSM.GoTransition(StateLoadingServer)
 
 	// Get the server if it exists
-	var iaSrv *server.InstituteAccessServer
-	if iaSrv, err = c.Servers.GetInstituteAccess(url); err != nil {
+	var srv *server.InstituteAccessServer
+	if srv, err = c.Servers.GetInstituteAccess(url); err != nil {
 		c.goBackInternal()
 		return "", "", err
 	}
 
 	// Set the server as the current
-	if err = c.Servers.SetInstituteAccess(iaSrv); err != nil {
+	if err = c.Servers.SetInstituteAccess(srv); err != nil {
 		return "", "", err
 	}
 
 	// The server has now been chosen
 	c.FSM.GoTransition(StateChosenServer)
 
-	if cfg, cfgType, err = c.getConfig(iaSrv, preferTCP); err != nil {
+	if cfg, cfgType, err = c.getConfig(srv, preferTCP); err != nil {
 		c.goBackInternal()
 	}
 
@@ -464,8 +464,6 @@ func (c *Client) askSecureLocation() error {
 
 	// The state has changed, meaning setting the secure location was not successful
 	if c.FSM.Current != StateAskLocation {
-		// TODO: maybe a custom type for this errors.new?
-		// ^^^^ Definitely no! New error types should be introduced only when actually needed.
 		return errors.Errorf("fsm failed to transit; expected %v / actual %v",
 			StateAskLocation, c.FSM.Current)
 	}
@@ -536,7 +534,7 @@ func (c *Client) ShouldRenewButton() bool {
 
 // ensureLogin logs the user back in if needed.
 // It runs the FSM transitions to ask for user input.
-func (c *Client) ensureLogin(srv server.Server) error {
+func (c *Client) ensureLogin(srv server.Server) (err error) {
 	// Relogin with oauth
 	// This moves the state to authorized
 	if !server.NeedsRelogin(srv) {
@@ -545,10 +543,9 @@ func (c *Client) ensureLogin(srv server.Server) error {
 		return nil
 	}
 
-	url, err := server.OAuthURL(srv, c.Name)
-	//TODO(jwijenbergh): Check if this if block is needed.
-	if err != nil {
-		return nil
+	var url string
+	if url, err = server.OAuthURL(srv, c.Name); err != nil {
+		return err
 	}
 
 	if err = c.FSM.GoTransitionRequired(StateOAuthStarted, url); err != nil {
