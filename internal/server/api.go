@@ -18,9 +18,7 @@ func APIGetEndpoints(baseURL string) (*Endpoints, error) {
 		return nil, errors.WrapPrefix(err, "failed getting server endpoints", 0)
 	}
 
-	wk := "/.well-known/vpn-user-portal"
-
-	u.Path = path.Join(u.Path, wk)
+	u.Path = path.Join(u.Path, "/.well-known/vpn-user-portal")
 	_, body, err := httpw.Get(u.String())
 	if err != nil {
 		return nil, errors.WrapPrefix(err, "failed getting server endpoints", 0)
@@ -44,22 +42,23 @@ func apiAuthorized(
 	if opts == nil {
 		opts = &httpw.OptionalParams{}
 	}
+	errorMessage := "failed API authorized"
 	b, err := srv.Base()
 	if err != nil {
-		return nil, nil, errors.WrapPrefix(err, "failed API authorized", 0)
+		return nil, nil, errors.WrapPrefix(err, errorMessage, 0)
 	}
 
 	// Join the paths
 	u, err := url.Parse(b.Endpoints.API.V3.API)
 	if err != nil {
-		return nil, nil, errors.WrapPrefix(err, "failed API authorized", 0)
+		return nil, nil, errors.WrapPrefix(err, errorMessage, 0)
 	}
 	u.Path = path.Join(u.Path, endpoint)
 
 	// Make sure the tokens are valid, this will return an error if re-login is needed
 	t, err := HeaderToken(srv)
 	if err != nil {
-		return nil, nil, errors.WrapPrefix(err, "failed API authorized", 0)
+		return nil, nil, errors.WrapPrefix(err, errorMessage, 0)
 	}
 
 	key := "Authorization"
@@ -98,8 +97,8 @@ func APIInfo(srv Server) error {
 	if err != nil {
 		return err
 	}
-	pi := ProfileInfo{}
-	if err = json.Unmarshal(body, &pi); err != nil {
+	profiles := ProfileInfo{}
+	if err = json.Unmarshal(body, &profiles); err != nil {
 		return errors.WrapPrefix(err, "failed API /info", 0)
 	}
 
@@ -110,7 +109,7 @@ func APIInfo(srv Server) error {
 
 	// Store the profiles and make sure that the current profile is not overwritten
 	prev := b.Profiles.Current
-	b.Profiles = pi
+	b.Profiles = profiles
 	b.Profiles.Current = prev
 	return nil
 }
@@ -154,18 +153,18 @@ func APIConnectWireguard(
 
 	exp := h.Get("expires")
 
-	ptm, err := http.ParseTime(exp)
+	expTime, err := http.ParseTime(exp)
 	if err != nil {
 		return "", "", time.Time{}, errors.WrapPrefix(err, "failed obtaining a WireGuard configuration", 0)
 	}
 
-	ct := h.Get("content-type")
-	c := "openvpn"
-	if ct == "application/x-wireguard-profile" {
-		c = "wireguard"
+	contentH := h.Get("content-type")
+	content := "openvpn"
+	if contentH == "application/x-wireguard-profile" {
+		content = "wireguard"
 	}
 
-	return string(body), c, ptm, nil
+	return string(body), content, expTime, nil
 }
 
 func APIConnectOpenVPN(srv Server, profileID string, preferTCP bool) (string, time.Time, error) {
@@ -185,13 +184,13 @@ func APIConnectOpenVPN(srv Server, profileID string, preferTCP bool) (string, ti
 		return "", time.Time{}, err
 	}
 
-	exp := h.Get("expires")
-	ptm, err := http.ParseTime(exp)
+	expH := h.Get("expires")
+	expT, err := http.ParseTime(expH)
 	if err != nil {
 		return "", time.Time{}, errors.WrapPrefix(err, "failed obtaining an OpenVPN configuration", 0)
 	}
 
-	return string(body), ptm, nil
+	return string(body), expT, nil
 }
 
 // APIDisconnect disconnects from the API.

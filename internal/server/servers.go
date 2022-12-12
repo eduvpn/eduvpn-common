@@ -43,12 +43,11 @@ func (ss *Servers) GetCurrentServer() (Server, error) {
 	if ss.IsType == CustomServerType {
 		srvs = &ss.CustomServers
 	}
-	bs := srvs.Map
-	if bs == nil {
+	if srvs.Map == nil {
 		return nil, errors.Errorf("srvs.Map is nil")
 	}
 
-	if srv, ok := bs[srvs.CurrentURL]; !ok || srv == nil {
+	if srv, ok := srvs.Map[srvs.CurrentURL]; !ok || srv == nil {
 		return nil, errors.Errorf("server not found")
 	} else {
 		return srv, nil
@@ -59,7 +58,7 @@ func (ss *Servers) addInstituteAndCustom(
 	discoServer *types.DiscoveryServer,
 	isCustom bool,
 ) (Server, error) {
-	url := discoServer.BaseURL
+	URL := discoServer.BaseURL
 	srvs := &ss.InstituteServers
 	srvType := InstituteAccessServerType
 
@@ -72,17 +71,17 @@ func (ss *Servers) addInstituteAndCustom(
 		srvs.Map = make(map[string]*InstituteAccessServer)
 	}
 
-	srv, ok := srvs.Map[url]
+	srv, ok := srvs.Map[URL]
 
 	// initialize the server if it doesn't exist yet
 	if !ok {
 		srv = &InstituteAccessServer{}
 	}
 
-	if err := srv.init(url, discoServer.DisplayName, discoServer.Type, discoServer.SupportContact); err != nil {
+	if err := srv.init(URL, discoServer.DisplayName, discoServer.Type, discoServer.SupportContact); err != nil {
 		return nil, err
 	}
-	srvs.Map[url] = srv
+	srvs.Map[URL] = srv
 	ss.IsType = srvType
 	return srv, nil
 }

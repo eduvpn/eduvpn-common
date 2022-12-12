@@ -26,17 +26,17 @@ func (b *Base) InitializeEndpoints() error {
 }
 
 func (b *Base) ValidProfiles(wireguardSupport bool) ProfileInfo {
-	var vps []Profile
+	var valid []Profile
 	for _, p := range b.Profiles.Info.ProfileList {
 		// Not a valid profile because it does not support openvpn
 		// Also the client does not support wireguard
 		if !p.supportsOpenVPN() && !wireguardSupport {
 			continue
 		}
-		vps = append(vps, p)
+		valid = append(valid, p)
 	}
 	return ProfileInfo{
 		Current: b.Profiles.Current,
-		Info:    ProfileListInfo{ProfileList: vps},
+		Info:    ProfileListInfo{ProfileList: valid},
 	}
 }

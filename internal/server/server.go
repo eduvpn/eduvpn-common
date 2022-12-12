@@ -67,9 +67,9 @@ func ShouldRenewButton(srv Server) bool {
 	}
 
 	// Session duration is less than 24 hours but not 75% has passed
-	d := b.EndTime.Sub(b.StartTime)
-	pct := b.StartTime.Add((d / 4) * 3)
-	if d < 24*time.Hour && !now.After(pct) {
+	delta := b.EndTime.Sub(b.StartTime)
+	passed := b.StartTime.Add((delta / 4) * 3)
+	if delta < 24*time.Hour && !now.After(passed) {
 		return false
 	}
 
@@ -110,14 +110,14 @@ func CurrentProfile(srv Server) (*Profile, error) {
 	if err != nil {
 		return nil, err
 	}
-	pid := b.Profiles.Current
+	pID := b.Profiles.Current
 	for _, profile := range b.Profiles.Info.ProfileList {
-		if profile.ID == pid {
+		if profile.ID == pID {
 			return &profile, nil
 		}
 	}
 
-	return nil, errors.Errorf("profile not found: " + pid)
+	return nil, errors.Errorf("profile not found: " + pID)
 }
 
 func ValidProfiles(srv Server, wireguardSupport bool) (*ProfileInfo, error) {
@@ -139,14 +139,14 @@ func wireguardGetConfig(srv Server, preferTCP bool, openVPNSupport bool) (string
 		return "", "", err
 	}
 
-	pid := b.Profiles.Current
+	pID := b.Profiles.Current
 	key, err := wireguard.GenerateKey()
 	if err != nil {
 		return "", "", err
 	}
 
 	pub := key.PublicKey().String()
-	cfg, ct, exp, err := APIConnectWireguard(srv, pid, pub, preferTCP, openVPNSupport)
+	cfg, proto, exp, err := APIConnectWireguard(srv, pID, pub, preferTCP, openVPNSupport)
 	if err != nil {
 		return "", "", err
 	}
@@ -155,7 +155,7 @@ func wireguardGetConfig(srv Server, preferTCP bool, openVPNSupport bool) (string
 	b.StartTime = time.Now()
 	b.EndTime = exp
 
-	if ct == "wireguard" {
+	if proto == "wireguard" {
 		// This needs the go code a way to identify a connection
 		// Use the uuid of the connection e.g. on Linux
 		// This needs the client code to call the go code
@@ -163,7 +163,7 @@ func wireguardGetConfig(srv Server, preferTCP bool, openVPNSupport bool) (string
 		cfg = wireguard.ConfigAddKey(cfg, key)
 	}
 
-	return cfg, ct, nil
+	return cfg, proto, nil
 }
 
 func openVPNGetConfig(srv Server, preferTCP bool) (string, string, error) {
@@ -173,14 +173,13 @@ func openVPNGetConfig(srv Server, preferTCP bool) (string, string, error) {
 	}
 	pid := b.Profiles.Current
 	cfg, exp, err := APIConnectOpenVPN(srv, pid, preferTCP)
+	if err != nil {
+		return "", "", err
+	}
 
 	// Store start and end time
 	b.StartTime = time.Now()
 	b.EndTime = exp
-
-	if err != nil {
-		return "", "", err
-	}
 
 	return cfg, "openvpn", nil
 }
