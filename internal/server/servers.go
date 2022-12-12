@@ -20,7 +20,6 @@ func (ss *Servers) AddSecureInternet(
 	// If we have specified an organization ID
 	// We also need to get an authorization template
 	err := ss.SecureInternetHomeServer.init(secureOrg, secureServer)
-
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +29,7 @@ func (ss *Servers) AddSecureInternet(
 }
 
 func (ss *Servers) GetCurrentServer() (Server, error) {
-	//TODO(jwijenbergh): Almost certainly the return type should be pointer (*Server)
+	// TODO(jwijenbergh): Almost certainly the return type should be pointer (*Server)
 	if ss.IsType == SecureInternetServerType {
 		if !ss.HasSecureLocation() {
 			return nil, errors.Errorf("ss.IsType = %v; ss.HasSecureLocation() = false", ss.IsType)

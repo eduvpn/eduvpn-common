@@ -3,11 +3,12 @@ package log
 
 import (
 	"fmt"
-	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"io"
 	"log"
 	"os"
 	"path"
+
+	"github.com/eduvpn/eduvpn-common/internal/oauth"
 
 	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/go-errors/errors"

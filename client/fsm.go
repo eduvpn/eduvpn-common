@@ -212,7 +212,7 @@ func (c *Client) SetSearchServer() error {
 		return err
 	}
 
-	//TODO(jwijenbergh): Should we handle `false` returned value here?
+	// TODO(jwijenbergh): Should we handle `false` returned value here?
 	c.FSM.GoTransition(StateSearchServer)
 	return nil
 }
@@ -325,7 +325,7 @@ func (c *Client) SetDisconnected(cleanup bool) error {
 func (c *Client) goBackInternal() {
 	err := c.GoBack()
 	if err != nil {
-		//TODO(jwijenbergh): Bit suspicious - logging level INFO, yet stacktrace logged.
+		// TODO(jwijenbergh): Bit suspicious - logging level INFO, yet stacktrace logged.
 		c.Logger.Infof("failed going back: %s\nstacktrace:\n%s", err.Error(), err.(*errors.Error).ErrorStack())
 	}
 }

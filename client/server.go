@@ -16,7 +16,7 @@ func (c *Client) getConfigAuth(srv server.Server, preferTCP bool) (string, strin
 		return "", "", err
 	}
 
-	//TODO(jwijenbergh): Should we check if it returns false?
+	// TODO(jwijenbergh): Should we check if it returns false?
 	c.FSM.GoTransition(StateRequestConfig)
 
 	ok, err := server.HasValidProfile(srv, c.SupportsWireguard)
@@ -83,8 +83,8 @@ func (c *Client) getConfig(srv server.Server, preferTCP bool) (string, string, e
 
 	// Save the config
 	if err = c.Config.Save(&c); err != nil {
-		//TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
-		//TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
+		// TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
+		// TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
 		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
 			err.Error(), err.(*errors.Error).ErrorStack())
 	}
@@ -130,8 +130,8 @@ func (c *Client) RemoveSecureInternet() error {
 	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
 	// Save the config
 	if err := c.Config.Save(&c); err != nil {
-		//TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
-		//TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
+		// TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
+		// TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
 		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
 			err.Error(), err.(*errors.Error).ErrorStack())
 	}
@@ -152,8 +152,8 @@ func (c *Client) RemoveInstituteAccess(url string) error {
 	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
 	// Save the config
 	if err := c.Config.Save(&c); err != nil {
-		//TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
-		//TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
+		// TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
+		// TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
 		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
 			err.Error(), err.(*errors.Error).ErrorStack())
 	}
@@ -174,8 +174,8 @@ func (c *Client) RemoveCustomServer(url string) error {
 	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
 	// Save the config
 	if err := c.Config.Save(&c); err != nil {
-		//TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
-		//TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
+		// TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
+		// TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
 		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
 			err.Error(), err.(*errors.Error).ErrorStack())
 	}
@@ -265,7 +265,7 @@ func (c *Client) AddSecureInternetHomeServer(orgID string) (srv server.Server, e
 		return nil, err
 	}
 
-	//TODO(jwijenbergh): Does this call transfers execution flow to UI?
+	// TODO(jwijenbergh): Does this call transfers execution flow to UI?
 	if err = c.askSecureLocation(); err != nil {
 		// Removing is the best effort
 		// This already goes back to the main screen

@@ -108,7 +108,8 @@ func (s *SecureInternetHomeServer) addLocation(locSrv *types.DiscoveryServer) (*
 
 // Initializes the home server and adds its own location.
 func (s *SecureInternetHomeServer) init(
-	homeOrg *types.DiscoveryOrganization, homeLoc *types.DiscoveryServer) error {
+	homeOrg *types.DiscoveryOrganization, homeLoc *types.DiscoveryServer,
+) error {
 	if s.HomeOrganizationID != homeOrg.OrgID {
 		// New home organisation, clear everything
 		*s = SecureInternetHomeServer{}

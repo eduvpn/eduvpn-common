@@ -454,7 +454,6 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 	}
 
 	u, err := httpw.ConstructURL(oauth.BaseAuthorizationURL, params)
-
 	if err != nil {
 		return "", errors.WrapPrefix(err, "httpw.ConstructURL error", 0)
 	}

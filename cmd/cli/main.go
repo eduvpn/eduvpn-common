@@ -28,7 +28,7 @@ func openBrowser(url interface{}) {
 	fmt.Printf("OAuth: Initialized with AuthURL %s\n", str)
 	fmt.Println("OAuth: Opening browser with xdg-open...")
 	if exec.Command("xdg-open", str).Start() != nil {
-		//TODO(): Shouldn't this if statement be inverted?
+		// TODO(): Shouldn't this if statement be inverted?
 		fmt.Println("OAuth: Browser opened with xdg-open...")
 	}
 }

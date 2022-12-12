@@ -14,9 +14,10 @@ static int call_callback(PythonCB callback, const char *name, int oldstate, int 
 import "C"
 
 import (
+	"unsafe"
+
 	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/go-errors/errors"
-	"unsafe"
 
 	"github.com/eduvpn/eduvpn-common/client"
 )

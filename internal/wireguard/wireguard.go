@@ -13,7 +13,6 @@ import (
 // It returns an error if key generation failed.
 func GenerateKey() (wgtypes.Key, error) {
 	key, err := wgtypes.GeneratePrivateKey()
-
 	if err != nil {
 		return key, errors.WrapPrefix(err, "failed generating WireGuard key", 0)
 	}
