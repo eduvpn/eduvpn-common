@@ -16,13 +16,11 @@ type ProfileInfo struct {
 	Info    ProfileListInfo `json:"info"`
 }
 
-func (info ProfileInfo) GetCurrentProfileIndex() int {
-	index := 0
-	for _, profile := range info.Info.ProfileList {
+func (info ProfileInfo) CurrentProfileIndex() int {
+	for i, profile := range info.Info.ProfileList {
 		if profile.ID == info.Current {
-			return index
+			return i
 		}
-		index++
 	}
 	// Default is 'first' profile
 	return 0

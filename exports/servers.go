@@ -94,7 +94,7 @@ func getCPtrProfiles(serverProfiles *server.ProfileInfo) *C.serverProfiles {
 			profiles[index] = getCPtrProfile(&profile)
 			index++
 		}
-		cProfiles.current = C.int(serverProfiles.GetCurrentProfileIndex())
+		cProfiles.current = C.int(serverProfiles.CurrentProfileIndex())
 		cProfiles.profiles = (**C.serverProfile)(profilesPtr)
 	}
 	return cProfiles
