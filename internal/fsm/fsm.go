@@ -113,7 +113,7 @@ func (fsm *FSM) CheckTransition(desired StateID) error {
 			return nil
 		}
 	}
-	return errors.Errorf("fsm invalid transition attempt from '%v' to '%v'", fsm.Current, desired)
+	return errors.Errorf("fsm invalid transition attempt from '%s' to '%s'", fsm.GetStateName(fsm.Current), fsm.GetStateName(desired))
 }
 
 // graphFilename gets the full path to the graph filename including the .graph extension.
