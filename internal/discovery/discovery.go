@@ -25,16 +25,16 @@ type Discovery struct {
 // If it was unsuccessful it returns an error.
 func discoFile(jsonFile string, previousVersion uint64, structure interface{}) error {
 	// Get json data
-	du := "https://disco.eduvpn.org/v2/"
-	fu := du + jsonFile
-	_, body, err := http.Get(fu)
+	URL := "https://disco.eduvpn.org/v2/"
+	jsonURL := URL + jsonFile
+	_, body, err := http.Get(jsonURL)
 	if err != nil {
 		return err
 	}
 
 	// Get signature
 	sigFile := jsonFile + ".minisig"
-	sigURL := du + sigFile
+	sigURL := URL + sigFile
 	_, sigBody, err := http.Get(sigURL)
 	if err != nil {
 		return err
