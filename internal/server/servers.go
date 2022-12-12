@@ -46,11 +46,11 @@ func (ss *Servers) GetCurrentServer() (Server, error) {
 		return nil, errors.Errorf("srvs.Map is nil")
 	}
 
-	if srv, ok := srvs.Map[srvs.CurrentURL]; !ok || srv == nil {
+	srv, ok := srvs.Map[srvs.CurrentURL]
+	if !ok || srv == nil {
 		return nil, errors.Errorf("server not found")
-	} else {
-		return srv, nil
 	}
+	return srv, nil
 }
 
 func (ss *Servers) addInstituteAndCustom(
