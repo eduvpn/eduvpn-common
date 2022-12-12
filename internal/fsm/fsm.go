@@ -96,17 +96,6 @@ func (fsm *FSM) InState(check StateID) bool {
 	return check == fsm.Current
 }
 
-// HasTransition checks whether or not the state machine has a transition to the given 'check' state.
-//func (fsm *FSM) HasTransition(check StateID) bool {
-//	for _, transitionState := range fsm.States[fsm.Current].Transitions {
-//		if transitionState.To == check {
-//			return true
-//		}
-//	}
-//
-//	return false
-//}
-
 func (fsm *FSM) CheckTransition(desired StateID) error {
 	for _, ts := range fsm.States[fsm.Current].Transitions {
 		if ts.To == desired {
