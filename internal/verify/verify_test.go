@@ -3,7 +3,6 @@ package verify
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -313,7 +312,7 @@ func Test_verifyWithKeys(t *testing.T) {
 	loadFile := func(name string) {
 		_, loaded := files[name]
 		if !loaded {
-			content, err := ioutil.ReadFile("test_data/" + name)
+			content, err := os.ReadFile("test_data/" + name)
 			if err != nil {
 				panic(err)
 			}
