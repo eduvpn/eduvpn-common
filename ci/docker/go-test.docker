@@ -6,7 +6,20 @@ WORKDIR /eduvpn
 
 # Dependencies
 RUN apt-get update
-RUN apt-get -y install openjdk-11-jre xvfb python3-selenium firefox-esr python3-pip golang wget
+RUN apt-get -y install openjdk-11-jre xvfb python3-selenium firefox-esr python3-pip wget
+
+# Install go from go.dev
+# Get
+RUN wget https://go.dev/dl/go1.19.4.linux-amd64.tar.gz -O go.tar.gz
+
+# Verify hash
+RUN echo "c9c08f783325c4cf840a94333159cc937f05f75d36a8b307951d5bd959cf2ab8  go.tar.gz" | sha256sum --check
+
+# Untar
+RUN tar -C /usr/local -xzf go.tar.gz
+
+# Update PATH
+ENV PATH="/usr/local/go/bin:$PATH"
 
 # Install geckodriver and add to path
 WORKDIR /eduvpn/vendor
