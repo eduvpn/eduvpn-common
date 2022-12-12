@@ -333,7 +333,7 @@ func (c *Client) goBackInternal() {
 // GoBack transitions the FSM back to the previous UI state, for now this is always the NO_SERVER state.
 func (c *Client) GoBack() error {
 	if c.InFSMState(StateDeregistered) {
-		err := errors.Errorf("fms attempt going back from 'StateDeregistered'")
+		err := errors.Errorf("fsm attempt going back from 'StateDeregistered'")
 		c.logError(err)
 		return err
 	}
