@@ -112,20 +112,22 @@ func (logger *FileLogger) Init(lvl Level, dir string) error {
 	return nil
 }
 
-// Inherit logs an error with a label using the error level of the error.
-func (logger *FileLogger) Inherit(err error) {
+// Inheritf logs an error with a message and params using the error level verbosity of the error.
+// The message is always prefixed with the error.
+func (logger *FileLogger) Inheritf(err error, msg string, params...interface{}) {
 	if err == nil {
 		return
 	}
+	s := err.Error() + msg
 	switch GetErrorLevel(err) {
 	case ErrInfo:
-		logger.Infof(err.Error())
+		logger.Infof(s, params...)
 	case ErrWarning:
-		logger.Warningf(err.Error())
+		logger.Warningf(s, params...)
 	case ErrOther:
-		logger.Errorf(err.Error())
+		logger.Errorf(s, params...)
 	case ErrFatal:
-		logger.Fatalf(err.Error())
+		logger.Fatalf(s, params...)
 	}
 }
 
