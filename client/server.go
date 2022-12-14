@@ -555,6 +555,7 @@ func (c *Client) ensureLogin(srv server.Server) (err error) {
 	if err = server.OAuthExchange(srv); err != nil {
 		c.goBackInternal()
 	}
+	c.FSM.GoTransition(StateAuthorized)
 
 	return err
 }
