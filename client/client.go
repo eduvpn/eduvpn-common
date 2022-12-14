@@ -22,7 +22,11 @@ type (
 
 func (c *Client) logError(err error) {
 	// Logs the error with the same level/verbosity as the error
-	c.Logger.Inherit(err)
+	if c.Debug {
+		c.Logger.Inheritf(err, "\nwith stacktrace: %s\n", err.(*errors.Error).ErrorStack())
+	} else {
+		c.Logger.Inheritf(err, "")
+	}
 }
 
 func (c *Client) isLetsConnect() bool {
