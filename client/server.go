@@ -44,7 +44,8 @@ func (c *Client) retryConfigAuth(srv server.Server, preferTCP bool) (string, str
 	}
 	if err != nil {
 		// Only retry if the error is that the tokens are invalid
-		if errors.As(err, &oauth.TokensInvalidError{}) {
+		tErr := &oauth.TokensInvalidError{}
+		if errors.As(err, &tErr) {
 			cfg, cfgType, err = c.getConfigAuth(srv, preferTCP)
 			if err == nil {
 				return cfg, cfgType, nil
