@@ -88,7 +88,8 @@ type OAuth struct {
 	session ExchangeSession
 
 	// Token is where the access and refresh tokens are stored along with the timestamps
-	token Token
+	// It is protected by a lock
+	token *tokenLock
 }
 
 // ExchangeSession is a structure that gets passed to the callback for easy access to the current state.
@@ -119,31 +120,11 @@ type ExchangeSession struct {
 // It returns the access token as a string, possibly obtained fresh using the Refresh Token
 // If the token cannot be obtained, an error is returned and the token is an empty string.
 func (oauth *OAuth) AccessToken() (string, error) {
-	t := oauth.token
-
-	// We have tokens...
-	// The tokens are not expired yet
-	// So they should be valid, re-login not needed
-	if !t.Expired() {
-		return t.access, nil
+	tl := oauth.token
+	if tl == nil {
+		return "", errors.New("No token structure available")
 	}
-
-	// Check if refresh is even possible by doing a simple check if the refresh token is empty
-	// This is not needed but reduces API calls to the server
-	if t.refresh == "" {
-		return "", errors.Wrap(&TokensInvalidError{Cause: "no refresh token is present"}, 0)
-	}
-
-	// Otherwise refresh and then later return the access token if we are successful
-	err := oauth.tokensWithRefresh()
-	if err != nil {
-		// We have failed to ensure the tokens due to refresh not working
-		return "", errors.Wrap(
-			&TokensInvalidError{Cause: fmt.Sprintf("tokens failed refresh with error: %v", err)}, 0)
-	}
-
-	// We have obtained new tokens with refresh
-	return t.access, nil
+	return tl.Access()
 }
 
 // setupListener sets up an OAuth listener
@@ -188,33 +169,35 @@ func (oauth *OAuth) tokensWithCallback() error {
 	return <-oauth.session.ErrChan
 }
 
-// fillToken fills the OAuth token structure by the response
-// It calculates the expired timestamp by having a 'startTime' passed to it
-// The URL that is input here is used for additional context.
-func (oauth *OAuth) fillToken(response []byte, startTime time.Time, url string) error {
+// tokenResponse fills the OAuth token response structure by the response
+// The URL that is input here is used for additional context
+// It returns this structure and an error if there is one
+func (oauth *OAuth) tokenResponse(response []byte, url string) (*TokenResponse, error) {
+	if oauth.token == nil {
+		return nil, errors.New("No oauth structure when filling token")
+	}
 	res := TokenResponse{}
 
 	err := json.Unmarshal(response, &res)
 	if err != nil {
-		return errors.WrapPrefix(err, "failed filling OAuth tokens from "+url, 0)
+		return nil, errors.WrapPrefix(err, "failed filling OAuth tokens from "+url, 0)
 	}
 
-	oauth.token = Token{
-		access:           res.Access,
-		refresh:          res.Refresh,
-		expiredTimestamp: startTime.Add(time.Second * time.Duration(res.Expires)),
-	}
-	return nil
+	return &res, nil
 }
 
 // SetTokenExpired marks the tokens as expired by setting the expired timestamp to the current time.
 func (oauth *OAuth) SetTokenExpired() {
-	oauth.token.expiredTimestamp = time.Now()
+	if oauth.token != nil {
+		oauth.token.SetExpired()
+	}
 }
 
 // SetTokenRenew sets the tokens for renewal by completely clearing the structure.
 func (oauth *OAuth) SetTokenRenew() {
-	oauth.token = Token{}
+	if oauth.token != nil {
+		oauth.token.Clear()
+	}
 }
 
 // tokensWithAuthCode gets the access and refresh tokens using the authorization code
@@ -248,17 +231,30 @@ func (oauth *OAuth) tokensWithAuthCode(authCode string) error {
 		return err
 	}
 
-	return oauth.fillToken(body, now, u)
+	tr, err := oauth.tokenResponse(body, u)
+	if err != nil {
+		return err
+	}
+	if tr == nil {
+		return errors.New("No token response after authorization code")
+	}
+
+	oauth.token.Update(*tr, now)
+	return nil
 }
 
-// tokensWithRefresh gets the access and refresh tokens with a previously received refresh token
+// refreshResponse gets the refresh token response with a refresh token
+// This response contains the access and refresh tokens, together with a timestamp
 // Access tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.4
 // Refresh tokens: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.2
 // If it was unsuccessful it returns an error.
-func (oauth *OAuth) tokensWithRefresh() error {
+func (oauth *OAuth) refreshResponse(r string) (*TokenResponse, time.Time, error) {
 	u := oauth.TokenURL
+	if oauth.token == nil {
+		return nil, time.Time{}, errors.New("No oauth token structure in refresh")
+	}
 	data := url.Values{
-		"refresh_token": {oauth.token.refresh},
+		"refresh_token": {r},
 		"grant_type":    {"refresh_token"},
 	}
 	h := http.Header{
@@ -268,10 +264,11 @@ func (oauth *OAuth) tokensWithRefresh() error {
 	now := time.Now()
 	_, body, err := httpw.PostWithOpts(u, opts)
 	if err != nil {
-		return err
+		return nil, time.Time{}, err
 	}
 
-	return oauth.fillToken(body, now, u)
+	tr, err := oauth.tokenResponse(body, u)
+	return tr, now, err
 }
 
 // responseTemplate is the HTML template for the OAuth authorized response
@@ -329,6 +326,8 @@ func writeResponseHTML(w http.ResponseWriter, title string, message string) erro
 	return t.Execute(w, oauthResponseHTML{Title: title, Message: message})
 }
 
+// Authcode gets the authorization code from the url
+// It returns the code and an error if there is one
 func (s *ExchangeSession) Authcode(url *url.URL) (string, error) {
 	// ISS: https://www.rfc-editor.org/rfc/rfc9207.html
 	// TODO: Make this a required parameter in the future
@@ -358,7 +357,9 @@ func (s *ExchangeSession) Authcode(url *url.URL) (string, error) {
 	return code, nil
 }
 
-func (oauth *OAuth) TokenHandler(url *url.URL) error {
+// tokenHandler gets the tokens using the authorization code that is obtained through the url
+// This function is called by the http handler and returns an error if the tokens cannot be obtained
+func (oauth *OAuth) tokenHandler(url *url.URL) error {
 	// Get the authorization code
 	c, err := oauth.session.Authcode(url)
 	if err != nil {
@@ -369,10 +370,11 @@ func (oauth *OAuth) TokenHandler(url *url.URL) error {
 	return oauth.tokensWithAuthCode(c)
 }
 
-// Callback is the public function used to get the OAuth tokens using an authorization code callback
+// Handler is the function used to get the OAuth tokens using an authorization code callback
 // The callback to retrieve the authorization code: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-1.3.1
+// It sends an error to the session channel (can be nil)
 func (oauth *OAuth) Handler(w http.ResponseWriter, req *http.Request) {
-	err := oauth.TokenHandler(req.URL)
+	err := oauth.tokenHandler(req.URL)
 	if err != nil {
 		_ = writeResponseHTML(
 			w,
@@ -417,6 +419,9 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 	if err != nil {
 		return "", errors.WrapPrefix(err, "genState error", 0)
 	}
+
+	// Fill the oauth tokens
+	oauth.token = &tokenLock{t: &token{Refresher: oauth.refreshResponse}}
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
 	oauth.session = ExchangeSession{
