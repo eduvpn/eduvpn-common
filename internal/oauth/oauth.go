@@ -176,7 +176,8 @@ func (oauth *OAuth) tokensWithCallback() error {
 		// A bit overkill maybe for a local server but good to define anyways
 		ReadHeaderTimeout: 60 * time.Second,
 	}
-	defer s.Shutdown(oauth.session.Context)
+	// TODO: Log error
+	defer s.Shutdown(oauth.session.Context) //nolint:errcheck
 	mux.HandleFunc("/callback", oauth.Handler)
 
 	go func() {
