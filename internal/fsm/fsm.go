@@ -5,7 +5,6 @@ package fsm
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"sort"
 
@@ -115,7 +114,6 @@ func (fsm *FSM) graphFilename(extension string) string {
 func (fsm *FSM) writeGraph() {
 	gph := fsm.GenerateGraph()
 	gf := fsm.graphFilename(".graph")
-	gif := fsm.graphFilename(".png")
 	f, err := os.Create(gf)
 	if err != nil {
 		return
@@ -124,12 +122,9 @@ func (fsm *FSM) writeGraph() {
 		_ = f.Close()
 	}()
 
-	_, err = f.WriteString(gph)
-	if err != nil {
-		cmd := exec.Command("mmdc", "-i", gf, "-o", gif, "--scale", "4")
-		// Generating is best effort
-		_ = cmd.Start()
-	}
+	// Writing the graph is best effort
+	// TODO: Return string instead, we do not want to write files in this library
+	_, _ = f.WriteString(gph)
 }
 
 // GoTransitionRequired transitions the state machine to a new state with associated state data 'data'
