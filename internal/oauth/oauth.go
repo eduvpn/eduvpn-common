@@ -85,15 +85,15 @@ type OAuth struct {
 	TokenURL string `json:"token_url"`
 
 	// session is the internal in progress OAuth session
-	session ExchangeSession
+	session exchangeSession
 
 	// Token is where the access and refresh tokens are stored along with the timestamps
 	// It is protected by a lock
 	token *tokenLock
 }
 
-// ExchangeSession is a structure that gets passed to the callback for easy access to the current state.
-type ExchangeSession struct {
+// exchangeSession is a structure that gets passed to the callback for easy access to the current state.
+type exchangeSession struct {
 	// ClientID is the ID of the OAuth client
 	ClientID string
 
@@ -328,7 +328,7 @@ func writeResponseHTML(w http.ResponseWriter, title string, message string) erro
 
 // Authcode gets the authorization code from the url
 // It returns the code and an error if there is one
-func (s *ExchangeSession) Authcode(url *url.URL) (string, error) {
+func (s *exchangeSession) Authcode(url *url.URL) (string, error) {
 	// ISS: https://www.rfc-editor.org/rfc/rfc9207.html
 	// TODO: Make this a required parameter in the future
 	q := url.Query()
@@ -424,7 +424,7 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 	oauth.token = &tokenLock{t: &token{Refresher: oauth.refreshResponse}}
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
-	oauth.session = ExchangeSession{
+	oauth.session = exchangeSession{
 		ClientID: name,
 		ISS:      oauth.ISS,
 		State:    state,
