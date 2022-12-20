@@ -86,8 +86,8 @@ func (c *Client) getConfig(srv server.Server, preferTCP bool, t oauth.Token) (*C
 
 	// Save the config
 	if err = c.Config.Save(&c); err != nil {
-		//TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
-		//TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
+		// TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
+		// TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
 		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
 			err.Error(), err.(*errors.Error).ErrorStack())
 	}

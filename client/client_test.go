@@ -12,6 +12,7 @@ import (
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/util"
+	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/go-errors/errors"
 )
 
@@ -93,7 +94,7 @@ func TestServer(t *testing.T) {
 	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
 	}
-	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
+	_, configErr := state.GetConfigCustomServer(serverURI, false, oauth.Token{})
 	if configErr != nil {
 		t.Fatalf("Connect error: %v", configErr)
 	}
@@ -252,7 +253,7 @@ func TestTokenExpired(t *testing.T) {
 		t.Fatalf("Add error: %v", addErr)
 	}
 
-	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
+	_, configErr := state.GetConfigCustomServer(serverURI, false, oauth.Token{})
 
 	if configErr != nil {
 		t.Fatalf("Connect error before expired: %v", configErr)
@@ -273,7 +274,7 @@ func TestTokenExpired(t *testing.T) {
 	// Wait for TTL so that the tokens expire
 	time.Sleep(time.Duration(expiredInt) * time.Second)
 
-	_, _, configErr = state.GetConfigCustomServer(serverURI, false)
+	_, configErr = state.GetConfigCustomServer(serverURI, false, oauth.Token{})
 
 	if configErr != nil {
 		t.Fatalf("Connect error after expiry: %v", configErr)
@@ -314,7 +315,7 @@ func TestInvalidProfileCorrected(t *testing.T) {
 		t.Fatalf("Add error: %v", addErr)
 	}
 
-	_, _, configErr := state.GetConfigCustomServer(serverURI, false)
+	_, configErr := state.GetConfigCustomServer(serverURI, false, oauth.Token{})
 
 	if configErr != nil {
 		t.Fatalf("First connect error: %v", configErr)
@@ -333,7 +334,7 @@ func TestInvalidProfileCorrected(t *testing.T) {
 	previousProfile := base.Profiles.Current
 	base.Profiles.Current = "IDONOTEXIST"
 
-	_, _, configErr = state.GetConfigCustomServer(serverURI, false)
+	_, configErr = state.GetConfigCustomServer(serverURI, false, oauth.Token{})
 
 	if configErr != nil {
 		t.Fatalf("Second connect error: %v", configErr)
@@ -373,10 +374,10 @@ func TestPreferTCP(t *testing.T) {
 	}
 
 	// get a config with preferTCP set to true
-	config, configType, configErr := state.GetConfigCustomServer(serverURI, true)
+	config, configErr := state.GetConfigCustomServer(serverURI, true, oauth.Token{})
 
 	// Test server should accept prefer TCP!
-	if configType != "openvpn" {
+	if config.Type != "openvpn" {
 		t.Fatalf("Invalid protocol for prefer TCP, got: WireGuard, want: OpenVPN")
 	}
 
@@ -384,18 +385,18 @@ func TestPreferTCP(t *testing.T) {
 		t.Fatalf("Config error: %v", configErr)
 	}
 
-	if !strings.HasSuffix(config, "remote eduvpnserver 1194 tcp\nremote eduvpnserver 1194 udp") {
+	if !strings.HasSuffix(config.Config, "remote eduvpnserver 1194 tcp\nremote eduvpnserver 1194 udp") {
 		t.Fatalf("Suffix for prefer TCP is not in the right order for config: %s", config)
 	}
 
 	// get a config with preferTCP set to false
-	config, configType, configErr = state.GetConfigCustomServer(serverURI, false)
+	config, configErr = state.GetConfigCustomServer(serverURI, false, oauth.Token{})
 	if configErr != nil {
 		t.Fatalf("Config error: %v", configErr)
 	}
 
-	if configType == "openvpn" &&
-		!strings.HasSuffix(config, "remote eduvpnserver 1194 udp\nremote eduvpnserver 1194 tcp") {
+	if config.Type == "openvpn" &&
+		!strings.HasSuffix(config.Config, "remote eduvpnserver 1194 udp\nremote eduvpnserver 1194 tcp") {
 		t.Fatalf("Suffix for disable prefer TCP is not in the right order for config: %s", config)
 	}
 }

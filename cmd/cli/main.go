@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/eduvpn/eduvpn-common/client"
+	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/go-errors/errors"
 )
@@ -80,7 +81,7 @@ func stateCallback(state *client.Client, oldState client.FSMStateID, newState cl
 }
 
 // Get a config for Institute Access or Secure Internet Server.
-func getConfig(state *client.Client, url string, srvType ServerTypes) (string, string, error) {
+func getConfig(state *client.Client, url string, srvType ServerTypes) (*client.ConfigData, error) {
 	if !strings.HasPrefix(url, "http") {
 		url = "https://" + url
 	}
@@ -88,21 +89,21 @@ func getConfig(state *client.Client, url string, srvType ServerTypes) (string, s
 	if srvType == ServerTypeInstituteAccess {
 		_, err := state.AddInstituteServer(url)
 		if err != nil {
-			return "", "", err
+			return nil, err
 		}
-		return state.GetConfigInstituteAccess(url, false)
+		return state.GetConfigInstituteAccess(url, false, oauth.Token{})
 	} else if srvType == ServerTypeCustom {
 		_, err := state.AddCustomServer(url)
 		if err != nil {
-			return "", "", err
+			return nil, err
 		}
-		return state.GetConfigCustomServer(url, false)
+		return state.GetConfigCustomServer(url, false, oauth.Token{})
 	}
 	_, err := state.AddSecureInternetHomeServer(url)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
-	return state.GetConfigSecureInternet(url, false)
+	return state.GetConfigSecureInternet(url, false, oauth.Token{})
 }
 
 // Get a config for a single server, Institute Access or Secure Internet.
@@ -126,7 +127,7 @@ func printConfig(url string, srvType ServerTypes) {
 
 	defer c.Deregister()
 
-	cfg, _, err := getConfig(c, url, srvType)
+	cfg, err := getConfig(c, url, srvType)
 	if err != nil {
 		err1 := err.(*errors.Error)
 		// Show the usage of tracebacks and causes
@@ -135,7 +136,7 @@ func printConfig(url string, srvType ServerTypes) {
 		return
 	}
 
-	fmt.Println("Obtained config:", cfg)
+	fmt.Println("Obtained config:", cfg.Config)
 }
 
 // The main function
