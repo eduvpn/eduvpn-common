@@ -4,7 +4,7 @@
 
 Name:           lib%{libname}
 Version:        0.2.0
-Release:        1%{?dist}
+Release:        0.1%{?dist}
 Summary:        %{sum}
 
 License:        MIT
