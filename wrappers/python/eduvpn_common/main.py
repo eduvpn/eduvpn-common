@@ -332,14 +332,15 @@ class EduVPN(object):
         if connecting_err:
             raise connecting_err
 
-    def set_disconnected(self, cleanup: bool = True) -> None:
+    def set_disconnected(self, cleanup: bool = True, tokens: Optional[Token] = None) -> None:
         """Set the FSM to disconnected
 
         :param cleanup: bool:  (Default value = True): Whether or not to call /disconnect to the server. This invalidates the OpenVPN/WireGuard configuration
+        :param tokens: Optional[Token]  (Default value = None): The OAuth tokens if available
 
         :raises WrappedError: An error by the Go library
         """
-        disconnect_err = self.go_function(self.lib.SetDisconnected, cleanup)
+        disconnect_err = self.go_function(self.lib.SetDisconnected, cleanup, encode_tokens(tokens))
 
         if disconnect_err:
             raise disconnect_err

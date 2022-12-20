@@ -143,6 +143,7 @@ def initialize_functions(lib: CDLL) -> None:
     lib.SetDisconnected.argtypes, lib.SetDisconnected.restype = [
         c_char_p,
         c_int,
+        cToken,
     ], c_void_p
     lib.SetDisconnecting.argtypes, lib.SetDisconnecting.restype = [c_char_p], c_void_p
     lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p, c_char_p], c_void_p

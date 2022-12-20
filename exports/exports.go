@@ -415,13 +415,18 @@ func SetSearchServer(name *C.char) *C.error {
 }
 
 //export SetDisconnected
-func SetDisconnected(name *C.char, cleanup C.int) *C.error {
+func SetDisconnected(name *C.char, cleanup C.int, prevTokens C.token) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
 		return getError(stateErr)
 	}
-	setDisconnectedErr := state.SetDisconnected(int(cleanup) == 1)
+	t := oauth.Token{
+		Access: C.GoString(prevTokens.access),
+		Refresh: C.GoString(prevTokens.refresh),
+		ExpiredTimestamp: time.Unix(int64(prevTokens.expired), 0),
+	}
+	setDisconnectedErr := state.SetDisconnected(int(cleanup) == 1, t)
 	return getError(setDisconnectedErr)
 }
 

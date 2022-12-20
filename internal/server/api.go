@@ -194,7 +194,7 @@ func APIConnectOpenVPN(srv Server, profileID string, preferTCP bool) (string, ti
 }
 
 // APIDisconnect disconnects from the API.
-// This needs no further return value as it's best effort.
-func APIDisconnect(server Server) {
-	_, _, _ = apiAuthorized(server, http.MethodPost, "/disconnect", nil)
+func APIDisconnect(server Server) error {
+	_, _, err := apiAuthorized(server, http.MethodPost, "/disconnect", nil)
+	return err
 }

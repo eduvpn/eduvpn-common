@@ -299,6 +299,6 @@ func Config(server Server, wireguardSupport bool, preferTCP bool) (*ConfigData, 
 	}
 }
 
-func Disconnect(server Server) {
-	APIDisconnect(server)
+func Disconnect(server Server) error {
+	return APIDisconnect(server)
 }
