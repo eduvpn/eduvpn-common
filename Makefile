@@ -35,9 +35,9 @@ srpm:
 	rm -rf dist/*
 
 # Archive code with vendored dependencies
-	git clone . dist/libeduvpn-common-0.1.0
+	git clone . dist/libeduvpn-common-0.2.0
 	go mod vendor
-	cp -r vendor dist/libeduvpn-common-0.1.0/vendor
+	cp -r vendor dist/libeduvpn-common-0.2.0/vendor
 	tar -zcvf ~/rpmbuild/SOURCES/libeduvpn-common.tar.gz -C dist .
 
 # Cleanup
