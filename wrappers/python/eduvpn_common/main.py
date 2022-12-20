@@ -7,8 +7,7 @@ from eduvpn_common.event import EventHandler
 from eduvpn_common.loader import initialize_functions, load_lib
 from eduvpn_common.server import Profiles, Config, Token, encode_tokens, get_config, Server, get_transition_server, get_servers
 from eduvpn_common.state import State, StateType
-from eduvpn_common.types import ReadRxBytes, VPNStateChange, decode_res, encode_args, get_data_error, get_bool
-from eduvpn_common.types import VPNStateChange, ReadRXBytes, cToken, decode_res, encode_args, get_data_error, get_bool
+from eduvpn_common.types import VPNStateChange, ReadRxBytes, cToken, decode_res, encode_args, get_data_error, get_bool
 
 
 class EduVPN(object):
