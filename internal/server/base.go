@@ -30,7 +30,7 @@ func (b *Base) ValidProfiles(wireguardSupport bool) ProfileInfo {
 	for _, p := range b.Profiles.Info.ProfileList {
 		// Not a valid profile because it does not support openvpn
 		// Also the client does not support wireguard
-		if !p.supportsOpenVPN() && !wireguardSupport {
+		if !p.SupportsOpenVPN() && !wireguardSupport {
 			continue
 		}
 		valid = append(valid, p)

@@ -4,8 +4,13 @@ package main
 #include <stdlib.h>
 #include "error.h"
 
+typedef long long int (*ReadRxBytes)();
 typedef int (*PythonCB)(const char* name, int oldstate, int newstate, void* data);
 
+static long long int get_read_rx_bytes(ReadRxBytes read)
+{
+   return read();
+}
 static int call_callback(PythonCB callback, const char *name, int oldstate, int newstate, void* data)
 {
     return callback(name, oldstate, newstate, data);
@@ -438,6 +443,44 @@ func SetSupportWireguard(name *C.char, support C.int) *C.error {
 		return getError(stateErr)
 	}
 	state.SupportsWireguard = support == 1
+	return nil
+}
+
+//export StartFailover
+func StartFailover(name *C.char, gateway *C.char, mtu C.int, readRxBytes C.ReadRxBytes) (C.int, *C.error) {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return C.int(0), getError(stateErr)
+	}
+	dropped, droppedErr := state.StartFailover(C.GoString(gateway), int(mtu), func() (int64, error) {
+		rxBytes := int64(C.get_read_rx_bytes(readRxBytes))
+		if rxBytes == -1 {
+			return 0, errors.New("client gave an invalid rx bytes value")
+		}
+		return rxBytes, nil
+	})
+	if droppedErr != nil {
+		return C.int(0), getError(droppedErr)
+	}
+	droppedC := C.int(0)
+	if dropped {
+		droppedC = C.int(1)
+	}
+	return droppedC, nil
+}
+
+//export CancelFailover
+func CancelFailover(name *C.char) *C.error {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return getError(stateErr)
+	}
+	cancelErr := state.CancelFailover()
+	if cancelErr != nil {
+		return getError(cancelErr)
+	}
 	return nil
 }
 

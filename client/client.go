@@ -6,6 +6,7 @@ import (
 
 	"github.com/eduvpn/eduvpn-common/internal/config"
 	"github.com/eduvpn/eduvpn-common/internal/discovery"
+	"github.com/eduvpn/eduvpn-common/internal/failover"
 	"github.com/eduvpn/eduvpn-common/internal/fsm"
 	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/server"
@@ -62,6 +63,9 @@ type Client struct {
 
 	// Whether to enable debugging
 	Debug bool `json:"-"`
+
+	// The Failover monitor for the current VPN connection
+	Failover *failover.DroppedConMon
 }
 
 // Register initializes the clientwith the following parameters:

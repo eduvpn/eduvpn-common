@@ -1,6 +1,7 @@
 package server
 
 import (
+	"os"
 	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
@@ -219,7 +220,7 @@ func HasValidProfile(srv Server, wireguardSupport bool) (bool, error) {
 		return false, err
 	}
 	// Profile does not support OpenVPN but the client also doesn't support WireGuard
-	if !p.supportsOpenVPN() && !wireguardSupport {
+	if !p.SupportsOpenVPN() && !wireguardSupport {
 		return false, nil
 	}
 	return true, nil
@@ -242,8 +243,9 @@ func Config(server Server, wireguardSupport bool, preferTCP bool) (string, strin
 		return "", "", err
 	}
 
-	ovpn := p.supportsOpenVPN()
-	wg := p.supportsWireguard() && wireguardSupport
+	ovpn := p.SupportsOpenVPN()
+	wg := p.SupportsWireguard() && wireguardSupport
+
 	// If we don't prefer TCP and this profile and client supports wireguard,
 	// we disable openvpn if the EDUVPN_PREFER_WG environment variable is set
 	// This is useful to force WireGuard if the profile supports both OpenVPN and WireGuard but the server still prefers OpenVPN

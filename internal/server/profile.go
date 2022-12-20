@@ -35,10 +35,10 @@ func (profile *Profile) supportsProtocol(protocol string) bool {
 	return false
 }
 
-func (profile *Profile) supportsWireguard() bool {
+func (profile *Profile) SupportsWireguard() bool {
 	return profile.supportsProtocol("wireguard")
 }
 
-func (profile *Profile) supportsOpenVPN() bool {
+func (profile *Profile) SupportsOpenVPN() bool {
 	return profile.supportsProtocol("openvpn")
 }

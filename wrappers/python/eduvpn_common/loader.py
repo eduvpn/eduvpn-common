@@ -7,6 +7,7 @@ from eduvpn_common import __version__
 from eduvpn_common.types import (
     ConfigError,
     DataError,
+    ReadRxBytes,
     VPNStateChange,
 )
 
@@ -151,3 +152,5 @@ def initialize_functions(lib: CDLL) -> None:
         c_int,
     ], c_void_p
     lib.ShouldRenewButton.argtypes, lib.ShouldRenewButton.restype = [], int
+    lib.StartFailover.argtypes, lib.StartFailover.restype = [c_char_p, c_char_p, c_int, ReadRxBytes], DataError
+    lib.CancelFailover.argtypes, lib.CancelFailover.restype = [c_char_p], c_void_p

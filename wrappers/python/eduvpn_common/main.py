@@ -7,7 +7,7 @@ from eduvpn_common.event import EventHandler
 from eduvpn_common.loader import initialize_functions, load_lib
 from eduvpn_common.server import Profiles, Server, get_transition_server, get_servers
 from eduvpn_common.state import State, StateType
-from eduvpn_common.types import VPNStateChange, decode_res, encode_args, get_data_error
+from eduvpn_common.types import ReadRxBytes, VPNStateChange, decode_res, encode_args, get_data_error, get_bool
 
 
 class EduVPN(object):
@@ -501,6 +501,20 @@ class EduVPN(object):
             raise servers_err
 
         return servers
+
+    def start_failover(self, gateway: str, wg_mtu: int, readrxbytes: ReadRxBytes) -> bool:
+        dropped, dropped_err = self.go_function(
+            self.lib.StartFailover, gateway, wg_mtu, readrxbytes,
+            decode_func=lambda lib, x: get_data_error(lib, x, get_bool),
+        )
+        if dropped_err:
+            raise dropped_err
+        return dropped
+
+    def cancel_failover(self):
+        cancel_err = self.go_function(self.lib.CancelFailover)
+        if cancel_err:
+            raise cancel_err
 
 
 eduvpn_objects: Dict[str, EduVPN] = {}

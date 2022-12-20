@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/eduvpn/eduvpn-common/internal/failover"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/internal/util"
@@ -84,8 +85,8 @@ func (c *Client) getConfig(srv server.Server, preferTCP bool) (string, string, e
 
 	// Save the config
 	if err = c.Config.Save(&c); err != nil {
-		// TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
-		// TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
+		//TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
+		//TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
 		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
 			err.Error(), err.(*errors.Error).ErrorStack())
 	}
@@ -582,5 +583,39 @@ func (c *Client) SetProfileID(profileID string) (err error) {
 		return err
 	}
 	b.Profiles.Current = profileID
+	return nil
+}
+
+func (c *Client) StartFailover(gateway string, wgMTU int, readRxBytes func() (int64, error)) (bool, error) {
+	currentServer, currentServerErr := c.Servers.GetCurrentServer()
+	if currentServerErr != nil {
+		return false, currentServerErr
+	}
+
+	// Check if the current profile supports OpenVPN
+	profile, profileErr := server.CurrentProfile(currentServer)
+	if profileErr != nil {
+		return false, profileErr
+	}
+
+	if !profile.SupportsOpenVPN() {
+		return false, errors.New("Profile does not support OpenVPN fallback")
+	}
+
+	monitor, monitorErr := failover.New(readRxBytes)
+	if monitorErr != nil {
+		return false, monitorErr
+	}
+	// Initialize the client's monitor
+	c.Failover = monitor
+
+	return c.Failover.Start(gateway, wgMTU)
+}
+
+func (c *Client) CancelFailover() error {
+	if c.Failover == nil {
+		return errors.New("No failover process")
+	}
+	c.Failover.Cancel()
 	return nil
 }
