@@ -244,6 +244,14 @@ func Config(server Server, wireguardSupport bool, preferTCP bool) (string, strin
 
 	ovpn := p.supportsOpenVPN()
 	wg := p.supportsWireguard() && wireguardSupport
+	// If we don't prefer TCP and this profile and client supports wireguard,
+	// we disable openvpn if the EDUVPN_PREFER_WG environment variable is set
+	// This is useful to force WireGuard if the profile supports both OpenVPN and WireGuard but the server still prefers OpenVPN
+	if !preferTCP && wg {
+		if os.Getenv("EDUVPN_PREFER_WG") == "1" {
+			ovpn = false
+		}
+	}
 
 	switch {
 	// The config supports wireguard and optionally openvpn
