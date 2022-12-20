@@ -15,6 +15,24 @@ from typing import Any, Callable, Iterator, List, Optional, Tuple
 
 from eduvpn_common.error import ErrorLevel, WrappedError
 
+class cToken(Structure):
+    """The C type that represents the Token as forwarded to the Go library
+
+    :meta private:
+    """
+    _fields_ = [
+        ("access", c_char_p),
+        ("refresh", c_char_p),
+        ("expired", c_ulonglong),
+    ]
+
+
+class cConfig(Structure):
+    """The C type that represents the data that gets by the Go library returned when a config is obtained
+
+    :meta private:
+    """
+    _fields_ = [("config", c_char_p), ("config_type", c_char_p), ("token", POINTER(cToken))]
 
 class cError(Structure):
     """The C type that represents the Error as returned by the Go library
@@ -156,18 +174,9 @@ class DataError(Structure):
     _fields_ = [("data", c_void_p), ("error", c_void_p)]
 
 
-class ConfigError(Structure):
-    """The C type that represents the data that gets by the Go library returned when a config is obtained
-
-    :meta private:
-    """
-    _fields_ = [("config", c_void_p), ("config_type", c_void_p), ("error", c_void_p)]
-
-
 # The type for a Go state change callback
 VPNStateChange = CFUNCTYPE(c_int, c_char_p, c_int, c_int, c_void_p)
 ReadRxBytes = CFUNCTYPE(c_ulonglong)
-
 
 def encode_args(args: List[Any], types: List[Any]) -> Iterator[Any]:
     """Encode the arguments ready to be used by the Go library
@@ -182,8 +191,11 @@ def encode_args(args: List[Any], types: List[Any]) -> Iterator[Any]:
     """
     for arg, t in zip(args, types):
         # c_char_p needs the str to be encoded to bytes
-        if t is c_char_p:
-            arg = arg.encode("utf-8")
+        encode_map = {
+            c_char_p: lambda x: x.encode("utf-8"),
+        }
+        if t in encode_map:
+            arg = encode_map[t](arg)
         yield arg
 
 
@@ -201,7 +213,6 @@ def decode_res(res: Any) -> Any:
         c_int: get_bool,
         c_void_p: get_error,
         DataError: get_data_error,
-        ConfigError: get_config_error,
     }
     return decode_map.get(res, lambda lib, x: x)
 
@@ -266,25 +277,6 @@ def get_error(lib: CDLL, ptr: c_void_p) -> Optional[WrappedError]:
     )
     lib.FreeError(ptr)
     return wrapped
-
-
-def get_config_error(
-    lib: CDLL, config_error: ConfigError
-) -> Tuple[str, str, Optional[WrappedError]]:
-    """Convert a C config structure to a Python usable config structure
-
-    :param lib: CDLL: The Go shared library
-    :param config_error: ConfigError: The config error structure
-
-    :meta private:
-
-    :return: The configuration, configuration type ('openvpn'/'wireguard') and an optional error
-    :rtype: Tuple[str, str, Optional[WrappedError]]
-    """
-    config = get_ptr_string(lib, config_error.config)
-    config_type = get_ptr_string(lib, config_error.config_type)
-    err = get_error(lib, config_error.error)
-    return config, config_type, err
 
 
 def get_data_error(

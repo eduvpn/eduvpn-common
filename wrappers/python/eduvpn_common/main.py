@@ -1,13 +1,14 @@
 import threading
-from ctypes import c_int
+from ctypes import cast, c_void_p, c_int, pointer
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 from eduvpn_common.discovery import DiscoOrganizations, DiscoServers, get_disco_organizations, get_disco_servers
 from eduvpn_common.event import EventHandler
 from eduvpn_common.loader import initialize_functions, load_lib
-from eduvpn_common.server import Profiles, Server, get_transition_server, get_servers
+from eduvpn_common.server import Profiles, Config, Token, encode_tokens, get_config, Server, get_transition_server, get_servers
 from eduvpn_common.state import State, StateType
 from eduvpn_common.types import ReadRxBytes, VPNStateChange, decode_res, encode_args, get_data_error, get_bool
+from eduvpn_common.types import VPNStateChange, ReadRXBytes, cToken, decode_res, encode_args, get_data_error, get_bool
 
 
 class EduVPN(object):
@@ -219,26 +220,27 @@ class EduVPN(object):
         if remove_err:
             raise remove_err
 
-    def get_config(self, identifier: str, func: Any, prefer_tcp: bool = False) -> Tuple[str, str]:
+    def get_config(self, identifier: str, func: Any, prefer_tcp: bool = False, tokens: Optional[Token] = None) -> Optional[Config]:
         """Get an OpenVPN/WireGuard configuration from the server
 
         :param identifier: str: The identifier of the server, e.g. URL or ORG ID
         :param func: Any: The Go function to call
         :param prefer_tcp: bool:  (Default value = False): Whether or not to prefer TCP
+        :param tokens: Optional[Token]  (Default value = None): The OAuth tokens if available
 
         :meta private:
 
         :raises WrappedError: An error by the Go library
 
         :return: The configuration and configuration type ('openvpn' or 'wireguard')
-        :rtype: Tuple[str, str]
+        :rtype: Config
         """
         # Because it could be the case that a profile callback is started, store a threading event
         # In the constructor, we have defined a wait event for Ask_Profile, this waits for this event to be set
         # The event is set in self.set_profile
         self.profile_event = threading.Event()
 
-        config, config_type, config_err = self.go_function(func, identifier, prefer_tcp)
+        config, config_err = self.go_function(func, identifier, prefer_tcp, encode_tokens(tokens), decode_func=lambda lib, x: get_data_error(lib, x, get_config))
 
         self.profile_event = None
         self.location_event = None
@@ -246,49 +248,55 @@ class EduVPN(object):
         if config_err:
             raise config_err
 
-        return config, config_type
+        return config
 
     def get_config_custom_server(
-        self, url: str, prefer_tcp: bool = False
-    ) -> Tuple[str, str]:
+        self, url: str, prefer_tcp: bool = False, tokens: Optional[Token] = None
+    ) -> Optional[Config]:
         """Get an OpenVPN/WireGuard configuration from a custom server
 
         :param url: str: The URL of the custom server
         :param prefer_tcp: bool:  (Default value = False): Whether or not to prefer TCP
+        :param tokens: Optional[Token]  (Default value = None): The OAuth tokens if available
 
         :raises WrappedError: An error by the Go library
 
         :return: The configuration and configuration type ('openvpn' or 'wireguard')
-        :rtype: Tuple[str, str]
+        :rtype: Config
         """
-        return self.get_config(url, self.lib.GetConfigCustomServer, prefer_tcp)
+        return self.get_config(url, self.lib.GetConfigCustomServer, prefer_tcp, tokens)
 
     def get_config_institute_access(
-        self, url: str, prefer_tcp: bool = False
-    ) -> Tuple[str, str]:
+        self, url: str, prefer_tcp: bool = False, tokens: Optional[Token] = None
+    ) -> Optional[Config]:
         """Get an OpenVPN/WireGuard configuration from an institute access server
 
         :param url: str: The URL of the institute access server. Use the one from Discovery
         :param prefer_tcp: bool:  (Default value = False): Whether or not to prefer TCP
+        :param tokens: Optional[Token]  (Default value = None): The OAuth tokens if available
 
         :raises WrappedError: An error by the Go library
 
         :return: The configuration and configuration type ('openvpn' or 'wireguard')
-        :rtype: Tuple[str, str]
+        :rtype: Config
         """
-        return self.get_config(url, self.lib.GetConfigInstituteAccess, prefer_tcp)
+        return self.get_config(url, self.lib.GetConfigInstituteAccess, prefer_tcp, tokens)
 
     def get_config_secure_internet(
-        self, org_id: str, prefer_tcp: bool = False
-    ) -> Tuple[str, str]:
+        self, org_id: str, prefer_tcp: bool = False, tokens: Optional[Token] = None
+    ) -> Optional[Config]:
         """Get an OpenVPN/WireGuard configuration from a secure internet server
 
         :param org_id: str: The organization ID of the secure internet server. Use the one from Discovery
         :param prefer_tcp: bool:  (Default value = False): Whether or not to prefer TCP
+        :param tokens: Optional[Token]  (Default value = None): The OAuth tokens if available
 
         :raises WrappedError: An error by the Go library
+
+        :return: The configuration and configuration type ('openvpn' or 'wireguard')
+        :rtype: Config
         """
-        return self.get_config(org_id, self.lib.GetConfigSecureInternet, prefer_tcp)
+        return self.get_config(org_id, self.lib.GetConfigSecureInternet, prefer_tcp, tokens)
 
     def go_back(self) -> None:
         """Go back in the FSM"""
@@ -538,7 +546,6 @@ def state_callback(name: bytes, old_state: int, new_state: int, data: Any) -> in
     if handled:
         return 1
     return 0
-
 
 def add_as_global_object(eduvpn: EduVPN) -> bool:
     """Add the provided parameter to the global objects lists so we can call the callback

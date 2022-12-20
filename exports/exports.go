@@ -5,6 +5,18 @@ package main
 #include "error.h"
 
 typedef long long int (*ReadRxBytes)();
+typedef struct token {
+    const char* access;
+    const char* refresh;
+    unsigned long long int expired;
+} token;
+
+typedef struct configData {
+    const char* config;
+    const char* config_type;
+    token* tokens;
+} configData;
+
 typedef int (*PythonCB)(const char* name, int oldstate, int newstate, void* data);
 
 static long long int get_read_rx_bytes(ReadRxBytes read)
@@ -20,8 +32,10 @@ import "C"
 
 import (
 	"unsafe"
+	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/log"
+	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/go-errors/errors"
 
 	"github.com/eduvpn/eduvpn-common/client"
@@ -249,20 +263,56 @@ func RemoveCustomServer(name *C.char, url *C.char) *C.error {
 	return getError(removeErr)
 }
 
+func cToken(t oauth.Token) *C.token {
+	cTok := (*C.token)(C.malloc(C.size_t(unsafe.Sizeof(C.token{}))))
+	cTok.access = C.CString(t.Access)
+	cTok.refresh = C.CString(t.Refresh)
+	cTok.expired = C.ulonglong(t.ExpiredTimestamp.Unix())
+	return cTok
+}
+
+func cConfig(config *client.ConfigData) *C.configData {
+	// No config so return nil pointer
+	if config == nil {
+		return nil
+	}
+	cConf := (*C.configData)(C.malloc(C.size_t(unsafe.Sizeof(C.configData{}))))
+	cConf.config = C.CString(config.Config)
+	cConf.config_type = C.CString(config.Type)
+	cConf.tokens = cToken(config.Tokens)
+	return cConf
+}
+
+//export FreeConfig
+func FreeConfig(config *C.configData) {
+	C.free(unsafe.Pointer(config.config))
+	C.free(unsafe.Pointer(config.config_type))
+	C.free(unsafe.Pointer(config.tokens.access))
+	C.free(unsafe.Pointer(config.tokens.refresh))
+	C.free(unsafe.Pointer(config.tokens))
+	C.free(unsafe.Pointer(config))
+}
+
 //export GetConfigSecureInternet
 func GetConfigSecureInternet(
 	name *C.char,
 	orgID *C.char,
 	preferTCP C.int,
-) (*C.char, *C.char, *C.error) {
+	prevTokens C.token,
+) (*C.configData, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, nil, getError(stateErr)
+		return nil, getError(stateErr)
 	}
 	preferTCPBool := preferTCP == 1
-	config, configType, configErr := state.GetConfigSecureInternet(C.GoString(orgID), preferTCPBool)
-	return C.CString(config), C.CString(configType), getError(configErr)
+	t := oauth.Token{
+		Access: C.GoString(prevTokens.access),
+		Refresh: C.GoString(prevTokens.refresh),
+		ExpiredTimestamp: time.Unix(int64(prevTokens.expired), 0),
+	}
+	cfg, configErr := state.GetConfigSecureInternet(C.GoString(orgID), preferTCPBool, t)
+	return cConfig(cfg), getError(configErr)
 }
 
 //export GetConfigInstituteAccess
@@ -270,15 +320,21 @@ func GetConfigInstituteAccess(
 	name *C.char,
 	url *C.char,
 	preferTCP C.int,
-) (*C.char, *C.char, *C.error) {
+	prevTokens C.token,
+) (*C.configData, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, nil, getError(stateErr)
+		return nil, getError(stateErr)
 	}
 	preferTCPBool := preferTCP == 1
-	config, configType, configErr := state.GetConfigInstituteAccess(C.GoString(url), preferTCPBool)
-	return C.CString(config), C.CString(configType), getError(configErr)
+	t := oauth.Token{
+		Access: C.GoString(prevTokens.access),
+		Refresh: C.GoString(prevTokens.refresh),
+		ExpiredTimestamp: time.Unix(int64(prevTokens.expired), 0),
+	}
+	cfg, configErr := state.GetConfigInstituteAccess(C.GoString(url), preferTCPBool, t)
+	return cConfig(cfg), getError(configErr)
 }
 
 //export GetConfigCustomServer
@@ -286,15 +342,21 @@ func GetConfigCustomServer(
 	name *C.char,
 	url *C.char,
 	preferTCP C.int,
-) (*C.char, *C.char, *C.error) {
+	prevTokens C.token,
+) (*C.configData, *C.error) {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
-		return nil, nil, getError(stateErr)
+		return nil, getError(stateErr)
 	}
 	preferTCPBool := preferTCP == 1
-	config, configType, configErr := state.GetConfigCustomServer(C.GoString(url), preferTCPBool)
-	return C.CString(config), C.CString(configType), getError(configErr)
+	t := oauth.Token{
+		Access: C.GoString(prevTokens.access),
+		Refresh: C.GoString(prevTokens.refresh),
+		ExpiredTimestamp: time.Unix(int64(prevTokens.expired), 0),
+	}
+	cfg, configErr := state.GetConfigCustomServer(C.GoString(url), preferTCPBool, t)
+	return cConfig(cfg), getError(configErr)
 }
 
 //export SetProfileID

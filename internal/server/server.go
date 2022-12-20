@@ -77,6 +77,10 @@ func ShouldRenewButton(srv Server) bool {
 	return true
 }
 
+func UpdateTokens(srv Server, t oauth.Token) {
+	srv.OAuth().UpdateTokens(t)
+}
+
 func OAuthURL(srv Server, name string) (string, error) {
 	return srv.OAuth().AuthURL(name, srv.TemplateAuth())
 }
@@ -134,22 +138,33 @@ func ValidProfiles(srv Server, wireguardSupport bool) (*ProfileInfo, error) {
 	return &ps, nil
 }
 
-func wireguardGetConfig(srv Server, preferTCP bool, openVPNSupport bool) (string, string, error) {
+type ConfigData struct {
+	// The configuration
+	Config string
+
+	// The type of configuration
+	Type string
+
+	// The tokens
+	Tokens oauth.Token
+}
+
+func wireguardGetConfig(srv Server, preferTCP bool, openVPNSupport bool) (*ConfigData, error) {
 	b, err := srv.Base()
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	pID := b.Profiles.Current
 	key, err := wireguard.GenerateKey()
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	pub := key.PublicKey().String()
 	cfg, proto, exp, err := APIConnectWireguard(srv, pID, pub, preferTCP, openVPNSupport)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	// Store start and end time
@@ -164,25 +179,39 @@ func wireguardGetConfig(srv Server, preferTCP bool, openVPNSupport bool) (string
 		cfg = wireguard.ConfigAddKey(cfg, key)
 	}
 
-	return cfg, proto, nil
+	t := oauth.Token{}
+
+	o := srv.OAuth()
+	if o != nil {
+		t = o.Token()
+	}
+
+	return &ConfigData{Config: cfg, Type: proto, Tokens: t}, nil
 }
 
-func openVPNGetConfig(srv Server, preferTCP bool) (string, string, error) {
+func openVPNGetConfig(srv Server, preferTCP bool) (*ConfigData, error) {
 	b, err := srv.Base()
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	pid := b.Profiles.Current
 	cfg, exp, err := APIConnectOpenVPN(srv, pid, preferTCP)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	// Store start and end time
 	b.StartTime = time.Now()
 	b.EndTime = exp
 
-	return cfg, "openvpn", nil
+	t := oauth.Token{}
+
+	o := srv.OAuth()
+	if o != nil {
+		t = o.Token()
+	}
+
+	return &ConfigData{Config: cfg, Type: "openvpn", Tokens: t}, nil
 }
 
 func HasValidProfile(srv Server, wireguardSupport bool) (bool, error) {
@@ -237,10 +266,10 @@ func RefreshEndpoints(srv Server) error {
 	return b.InitializeEndpoints()
 }
 
-func Config(server Server, wireguardSupport bool, preferTCP bool) (string, string, error) {
+func Config(server Server, wireguardSupport bool, preferTCP bool) (*ConfigData, error) {
 	p, err := CurrentProfile(server)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	ovpn := p.SupportsOpenVPN()
@@ -266,7 +295,7 @@ func Config(server Server, wireguardSupport bool, preferTCP bool) (string, strin
 		return openVPNGetConfig(server, preferTCP)
 		// The config supports no available protocol because the profile only supports WireGuard but the client doesn't
 	default:
-		return "", "", errors.Errorf("no supported protocol found")
+		return nil, errors.Errorf("no supported protocol found")
 	}
 }
 

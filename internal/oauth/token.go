@@ -23,17 +23,23 @@ type TokenResponse struct {
 	Expires int64 `json:"expires_in"`
 }
 
-// token is a structure that contains our access and refresh tokens and a timestamp when they expire.
-type token struct {
-	// Access is the access token returned by the server
-	access string
+// The public type that can be passed to an update function
+// It contains our access and refresh tokens with a timestamp
+type Token struct {
+	// Access is the Access token returned by the server
+	Access string
 
-	// Refresh token is the refresh token returned by the server
-	refresh string
+	// Refresh token is the Refresh token returned by the server
+	Refresh string
 
 	// ExpiredTimestamp is the Expires field but converted to a Go timestamp
-	expiredTimestamp time.Time
+	ExpiredTimestamp time.Time
+}
 
+// tokenRefresher is a structure that contains our access and refresh tokens and a timestamp when they expire.
+// Additionally, it contains the refresher to get new tokens
+type tokenRefresher struct {
+	Token
 	// Refresher is the function that refreshes the token
 	Refresher func(string) (*TokenResponse, time.Time, error)
 }
@@ -44,7 +50,8 @@ type tokenLock struct {
 	mu sync.Mutex
 
 	// The token fields protected by the lock
-	t *token
+	// This token struct contains a refresher
+	t *tokenRefresher
 }
 
 // Access gets the OAuth access token used for contacting the server API
@@ -57,17 +64,17 @@ func (l *tokenLock) Access() (string, error) {
 	// The tokens are not expired yet
 	// So they should be valid, re-login not neede
 	if !l.expired() {
-		return l.t.access, nil
+		return l.t.Access, nil
 	}
 
 	// Check if refresh is even possible by doing a simple check if the refresh token is empty
 	// This is not needed but reduces API calls to the server
-	if l.t.refresh == "" {
+	if l.t.Refresh == "" {
 		return "", errors.Wrap(&TokensInvalidError{Cause: "no refresh token is present"}, 0)
 	}
 
 	// Otherwise refresh and then later return the access token if we are successful
-	tr, s, err := l.t.Refresher(l.t.refresh)
+	tr, s, err := l.t.Refresher(l.t.Refresh)
 	if err != nil {
 		// We have failed to ensure the tokens due to refresh not working
 		return "", errors.Wrap(
@@ -76,37 +83,50 @@ func (l *tokenLock) Access() (string, error) {
 	if tr == nil {
 		return "", errors.New("No token response after refreshing")
 	}
-	l.updateInternal(*tr, s)
-	return l.t.access, nil
+	r := *tr
+	e := s.Add(time.Second * time.Duration(r.Expires))
+	t := Token{Access: r.Access, Refresh: r.Refresh, ExpiredTimestamp: e}
+	l.updateInternal(t)
+	return l.t.Access, nil
 }
 
-// Clear completely clears the token structure
-// This is useful for forcing re-authorization
-func (l *tokenLock) Clear() {
+// UpdateResponse updates the structure using the server response and locks
+func (l *tokenLock) UpdateResponse(r TokenResponse, s time.Time) {
 	l.mu.Lock()
-	l.t = &token{}
+	e := s.Add(time.Second * time.Duration(r.Expires))
+	t := Token{Access: r.Access, Refresh: r.Refresh, ExpiredTimestamp: e}
+	l.updateInternal(t)
 	l.mu.Unlock()
 }
 
-// updateInternal updates the structure using the response without locking
-func (l *tokenLock) updateInternal(r TokenResponse, s time.Time) {
-	l.t.access = r.Access
-	l.t.refresh = r.Refresh
-	l.t.expiredTimestamp = s.Add(time.Second * time.Duration(r.Expires))
+// updateInternal updates the token structure internally but does not lock
+func (l *tokenLock) updateInternal(r Token) {
+	l.t.Access = r.Access
+	l.t.Refresh = r.Refresh
+	l.t.ExpiredTimestamp = r.ExpiredTimestamp
 }
 
-// Update updates the structure usign the response and locks
-func (l *tokenLock) Update(r TokenResponse, s time.Time) {
+// Update updates the token structure using the internal function but locks
+func (l *tokenLock) Update(r Token) {
 	l.mu.Lock()
-	l.updateInternal(r, s)
+	l.updateInternal(r)
 	l.mu.Unlock()
+}
+
+
+// Get gets the tokens into a public struct
+func (l *tokenLock) Get() Token {
+	// TODO: Check nil?
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return l.t.Token
 }
 
 // SetExpired overrides the timestamp to the current time
 // This marks the tokens as expired
 func (l *tokenLock) SetExpired() {
 	l.mu.Lock()
-	l.t.expiredTimestamp = time.Now()
+	l.t.ExpiredTimestamp = time.Now()
 	l.mu.Unlock()
 }
 
@@ -114,5 +134,5 @@ func (l *tokenLock) SetExpired() {
 // This is only called internally and thus does not lock
 func (l *tokenLock) expired() bool {
 	now := time.Now()
-	return !now.Before(l.t.expiredTimestamp)
+	return !now.Before(l.t.ExpiredTimestamp)
 }

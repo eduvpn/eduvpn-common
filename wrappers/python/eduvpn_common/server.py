@@ -2,7 +2,7 @@ from ctypes import CDLL, POINTER, c_void_p, cast
 from datetime import datetime
 from typing import List, Optional, Type
 
-from eduvpn_common.types import cServer, cServerLocations, cServerProfiles, cServers
+from eduvpn_common.types import cConfig, cServer, cServerLocations, cServerProfiles, cServers, cToken
 
 
 class Profile:
@@ -19,6 +19,34 @@ class Profile:
 
     def __str__(self):
         return self.display_name
+
+class Token:
+    """The class that represents oauth Tokens
+
+    :param: access: str: The access token
+    :param: refresh: str: The refresh token
+    :param: expired: int: The expire unix time
+    """
+    def __init__(self, access: str, refresh: str, expired: int):
+        self.access = access
+        self.refresh = refresh
+        self.expires = expired
+
+
+class Config:
+    """The class that represents an OpenVPN/WireGuard config
+
+    :param: config: str: The config string
+    :param: config_type: str: The type of config, openvpn/wireguard
+    :param: tokens: Optional[Token]: The tokens
+    """
+    def __init__(self, config: str, config_type: str, tokens: Optional[Token]):
+        self.config = config
+        self.config_type = config_type
+        self.tokens = tokens
+
+    def __str__(self):
+        return self.config
 
 
 class Profiles:
@@ -347,3 +375,36 @@ def get_locations(lib: CDLL, ptr: c_void_p) -> Optional[List[str]]:
         lib.FreeSecureLocations(ptr)
         return location_list
     return None
+
+
+def get_config(lib: CDLL, ptr: c_void_p) -> Optional[Config]:
+    """Get the config from the Go library as a C structure and return a Python usable structure
+
+    :param lib: CDLL: The Go shared library
+    :param ptr: c_void_p: The C pointer to the confg structure
+
+    :meta private:
+
+    :return: The configuration if there is any
+    :rtype: Optional[Config]
+    """
+    # TODO: FREE
+    if ptr:
+        config = cast(ptr, POINTER(cConfig)).contents
+        cfg = config.config.decode("utf-8")
+        cfg_type = config.config_type.decode("utf-8")
+        tokens = None
+        if config.token:
+            token_struct = config.token.contents
+            tokens = Token(token_struct.access.decode("utf-8"), token_struct.refresh.decode("utf-8"), token_struct.expired)
+
+        config_class = Config(cfg, cfg_type, tokens)
+        lib.FreeConfig(ptr)
+        return config_class
+    return None
+
+def encode_tokens(arg: Optional[Token]) -> cToken:
+    if arg is None:
+        return cToken("".encode("utf-8"), "".encode("utf-8"), 0)
+    return cToken(arg.access.encode("utf-8"), arg.refresh.encode("utf-8"), arg.expires)
+

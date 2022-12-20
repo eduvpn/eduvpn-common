@@ -5,7 +5,7 @@ from ctypes import CDLL, c_char_p, c_int, c_void_p, cdll
 
 from eduvpn_common import __version__
 from eduvpn_common.types import (
-    ConfigError,
+    cToken,
     DataError,
     ReadRxBytes,
     VPNStateChange,
@@ -67,6 +67,7 @@ def initialize_functions(lib: CDLL) -> None:
         c_char_p
     ], c_void_p
     lib.Deregister.argtypes, lib.Deregister.restype = [c_char_p], None
+    lib.FreeConfig.argtypes, lib.FreeConfig.restype = [c_void_p], None
     lib.FreeDiscoOrganizations.argtypes, lib.FreeDiscoOrganizations.restype = [
         c_void_p
     ], None
@@ -81,17 +82,20 @@ def initialize_functions(lib: CDLL) -> None:
         c_char_p,
         c_char_p,
         c_int,
-    ], ConfigError
+        cToken,
+    ], DataError
     lib.GetConfigInstituteAccess.argtypes, lib.GetConfigInstituteAccess.restype = [
         c_char_p,
         c_char_p,
         c_int,
-    ], ConfigError
+        cToken,
+    ], DataError
     lib.GetConfigSecureInternet.argtypes, lib.GetConfigSecureInternet.restype = [
         c_char_p,
         c_char_p,
         c_int,
-    ], ConfigError
+        cToken,
+    ], DataError
     lib.GetDiscoOrganizations.argtypes, lib.GetDiscoOrganizations.restype = [
         c_char_p
     ], DataError

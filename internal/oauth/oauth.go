@@ -196,8 +196,17 @@ func (oauth *OAuth) SetTokenExpired() {
 // SetTokenRenew sets the tokens for renewal by completely clearing the structure.
 func (oauth *OAuth) SetTokenRenew() {
 	if oauth.token != nil {
-		oauth.token.Clear()
+		oauth.token.Update(Token{})
 	}
+}
+
+func (oauth *OAuth) Token() Token {
+	t := Token{}
+	if oauth.token != nil {
+		t = oauth.token.Get()
+	}
+
+	return t
 }
 
 // tokensWithAuthCode gets the access and refresh tokens using the authorization code
@@ -239,8 +248,15 @@ func (oauth *OAuth) tokensWithAuthCode(authCode string) error {
 		return errors.New("No token response after authorization code")
 	}
 
-	oauth.token.Update(*tr, now)
+	oauth.token.UpdateResponse(*tr, now)
 	return nil
+}
+
+func (oauth *OAuth) UpdateTokens(t Token) {
+	if oauth.token == nil {
+		oauth.token = &tokenLock{t: &tokenRefresher{Refresher: oauth.refreshResponse}}
+	}
+	oauth.token.Update(t)
 }
 
 // refreshResponse gets the refresh token response with a refresh token
@@ -420,8 +436,8 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 		return "", errors.WrapPrefix(err, "genState error", 0)
 	}
 
-	// Fill the oauth tokens
-	oauth.token = &tokenLock{t: &token{Refresher: oauth.refreshResponse}}
+	// Re-initialize the token structure
+	oauth.UpdateTokens(Token{})
 
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
 	oauth.session = exchangeSession{
