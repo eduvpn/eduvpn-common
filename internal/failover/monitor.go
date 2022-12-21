@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-errors/errors"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 )
 
 // The DroppedConMon is a connection monitor that checks for an increase in rx bytes in certain intervals
@@ -21,13 +22,16 @@ type DroppedConMon struct {
 	// The cancel context
 	// This is used to cancel the dropped connection monitor
 	cancel context.CancelFunc
+
+	// logger is the logger for debugging purposes
+	logger log.FileLogger
 }
 
-func NewDroppedMonitor(pingInterval time.Duration, pAlive int, pDropped int, readRxBytes func() (int64, error)) (*DroppedConMon, error) {
+func NewDroppedMonitor(pingInterval time.Duration, pAlive int, pDropped int, readRxBytes func() (int64, error), logger log.FileLogger) (*DroppedConMon, error) {
 	if pAlive >= pDropped {
 		return nil, errors.New("pAlive must be smaller than pDropped")
 	}
-	return &DroppedConMon{pInterval: pingInterval, pAlive: pAlive, pDropped: pDropped, readRxBytes: readRxBytes}, nil
+	return &DroppedConMon{pInterval: pingInterval, pAlive: pAlive, pDropped: pDropped, readRxBytes: readRxBytes, logger: logger}, nil
 }
 
 // Dropped checks whether or not the connection is 'dropped'
@@ -37,6 +41,7 @@ func (m *DroppedConMon) dropped(startBytes int64) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	m.logger.Debugf("[Failover] Alive check, current Rx bytes: %d, start Rx bytes: %d", b, startBytes)
 	return b <= startBytes, nil
 }
 
@@ -70,20 +75,26 @@ func (m *DroppedConMon) Start(gateway string, mtuSize int) (bool, error) {
 	ticker := time.NewTicker(m.pInterval)
 	defer ticker.Stop()
 
+	m.logger.Debugf("[Failover] Starting...")
 	// Loop until the max drop counter
 	// We begin with 1 as this is used as the sequence number for ping
 	for s := 1; s <= m.pDropped; s++ {
+		m.logger.Debugf("[Failover] Sending ping: %d, with size: %d", s, mtuSize)
 		// Send a ping and return if an error occurs
 		if err := p.Send(gateway, s); err != nil {
+			m.logger.Debugf("[Failover] A ping failed, exiting...")
 			return false, err
 		}
 
 		// Early alive check
 		// If not dropped, return
 		if s == m.pAlive {
+			m.logger.Debugf("[Failover] Doing check if we are alive")
 			if d, err := m.dropped(b); !d {
+				m.logger.Debugf("[Failover] We are alive")
 				return false, err
 			}
+			m.logger.Debugf("[Failover] Not alive currently, ticking further...")
 		}
 		// Wait for the next tick to continue
 		select {

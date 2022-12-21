@@ -613,7 +613,7 @@ func (c *Client) StartFailover(gateway string, wgMTU int, readRxBytes func() (in
 		return false, errors.New("Profile does not support OpenVPN fallback")
 	}
 
-	monitor, monitorErr := failover.New(readRxBytes)
+	monitor, monitorErr := failover.New(readRxBytes, c.Logger)
 	if monitorErr != nil {
 		return false, monitorErr
 	}
