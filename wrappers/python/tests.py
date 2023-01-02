@@ -18,7 +18,7 @@ from selenium_eduvpn import login_eduvpn
 
 class ConfigTests(unittest.TestCase):
     def testConfig(self):
-        _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "testconfigs", "en")
+        _eduvpn = eduvpn.EduVPN("org.letsconnect-vpn.app.linux", "testconfigs", "en")
         # This can throw an exception
         _eduvpn.register()
 
@@ -28,7 +28,9 @@ class ConfigTests(unittest.TestCase):
 
         server_uri = os.getenv("SERVER_URI")
         if not server_uri:
-            self.fail("No SERVER_URI environment variable given")
+            print("No SERVER_URI environment variable given, skipping...")
+            _eduvpn.deregister()
+            return
 
         # This can throw an exception
         _eduvpn.add_custom_server(server_uri)
@@ -38,7 +40,7 @@ class ConfigTests(unittest.TestCase):
         _eduvpn.deregister()
 
     def testDoubleRegister(self):
-        _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "testconfigs", "en")
+        _eduvpn = eduvpn.EduVPN("org.letsconnect-vpn.app.linux", "testconfigs", "en")
         # This can throw an exception
         _eduvpn.register()
         # This should throw
