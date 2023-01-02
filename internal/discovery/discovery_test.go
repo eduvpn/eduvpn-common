@@ -16,7 +16,7 @@ func setupFileServer(t *testing.T, directory string) (*http.Server) {
 		t.Fatalf("Failed to setup discovery file server")
 	}
 	s := &http.Server{Handler: http.FileServer(http.Dir(directory))}
-	go s.Serve(listener)
+	go s.Serve(listener) //nolint:errcheck
 
 	// Override the global disco URL with the local file server
 	port := listener.Addr().(*net.TCPAddr).Port
