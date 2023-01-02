@@ -69,7 +69,7 @@ func getCPtrDiscoOrganizations(
 		organizationsPtr := (**C.discoveryOrganization)(
 			C.malloc(totalOrganizations * C.size_t(unsafe.Sizeof(uintptr(0)))),
 		)
-		cOrganizations := (*[1<<30 - 1]*C.discoveryOrganization)(unsafe.Pointer(organizationsPtr))[:totalOrganizations:totalOrganizations]
+		cOrganizations := unsafe.Slice(organizationsPtr, totalOrganizations)
 		index := 0
 		for _, organization := range organizations.List {
 			cOrganization := getCPtrDiscoOrganization(state, &organization)
@@ -112,7 +112,7 @@ func getCPtrDiscoServers(
 		serversPtr := (**C.discoveryServer)(
 			C.malloc(totalServers * C.size_t(unsafe.Sizeof(uintptr(0)))),
 		)
-		cServers := (*[1<<30 - 1]*C.discoveryServer)(unsafe.Pointer(serversPtr))
+		cServers := unsafe.Slice(serversPtr, totalServers)
 		index := 0
 		for _, server := range servers.List {
 			cServer := getCPtrDiscoServer(state, &server)
@@ -147,7 +147,7 @@ func freeDiscoServer(cServer *C.discoveryServer) {
 //export FreeDiscoServers
 func FreeDiscoServers(cServers *C.discoveryServers) {
 	if cServers.total_servers > 0 {
-		servers := (*[1<<30 - 1]*C.discoveryServer)(unsafe.Pointer(cServers.servers))[:cServers.total_servers:cServers.total_servers]
+		servers := unsafe.Slice(cServers.servers, cServers.total_servers)
 		for i := C.size_t(0); i < cServers.total_servers; i++ {
 			freeDiscoServer(servers[i])
 		}
@@ -159,7 +159,7 @@ func FreeDiscoServers(cServers *C.discoveryServers) {
 //export FreeDiscoOrganizations
 func FreeDiscoOrganizations(cOrganizations *C.discoveryOrganizations) {
 	if cOrganizations.total_organizations > 0 {
-		organizations := (*[1<<30 - 1]*C.discoveryOrganization)(unsafe.Pointer(cOrganizations.organizations))[:cOrganizations.total_organizations:cOrganizations.total_organizations]
+		organizations := unsafe.Slice(cOrganizations.organizations, cOrganizations.total_organizations)
 		for i := C.size_t(0); i < cOrganizations.total_organizations; i++ {
 			freeDiscoOrganization(organizations[i])
 		}

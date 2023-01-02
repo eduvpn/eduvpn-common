@@ -87,8 +87,8 @@ func getCPtrProfiles(serverProfiles *server.ProfileInfo) *C.serverProfiles {
 	// If we have profiles (which we should), we allocate the struct with malloc and the size of a pointer
 	// We then fill the struct by converting it to a go slice and get a C pointer for each profile
 	if totalProfiles > 0 {
-		profilesPtr := C.malloc(totalProfiles * C.size_t(unsafe.Sizeof(uintptr(0))))
-		profiles := (*[1<<30 - 1]*C.serverProfile)(unsafe.Pointer(profilesPtr))[:totalProfiles:totalProfiles]
+		profilesPtr := (**C.serverProfile)(C.malloc(totalProfiles * C.size_t(unsafe.Sizeof(uintptr(0)))))
+		profiles := unsafe.Slice(profilesPtr, totalProfiles)
 		index := 0
 		for _, profile := range goProfiles {
 			profiles[index] = getCPtrProfile(&profile)
@@ -108,7 +108,7 @@ func FreeProfiles(profiles *C.serverProfiles) {
 	// We should only free the profiles if we have them (which we should)
 	if profiles.total_profiles > 0 {
 		// Convert it to a go slice
-		profilesSlice := (*[1<<30 - 1]*C.serverProfile)(unsafe.Pointer(profiles.profiles))[:profiles.total_profiles:profiles.total_profiles]
+		profilesSlice := unsafe.Slice(profiles.profiles, profiles.total_profiles)
 		// Loop through the pointers and free th  allocated strings and the struct itself
 		for i := C.size_t(0); i < profiles.total_profiles; i++ {
 			C.free(unsafe.Pointer(profilesSlice[i].id))
@@ -131,9 +131,9 @@ func getCPtrListStrings(allStrings []string) (C.size_t, **C.char) {
 	// If we have strings
 	// Allocate memory for the strings array
 	if totalStrings > 0 {
-		stringsPtr := C.malloc(totalStrings * C.size_t(unsafe.Sizeof(uintptr(0))))
+		stringsPtr := (**C.char)(C.malloc(totalStrings * C.size_t(unsafe.Sizeof(uintptr(0)))))
 		// Go slice conversion
-		cStrings := (*[1<<30 - 1]*C.char)(unsafe.Pointer(stringsPtr))[:totalStrings:totalStrings]
+		cStrings := unsafe.Slice(stringsPtr, totalStrings)
 
 		// Loop through and allocate the string for each contact
 		for index, string := range allStrings {
@@ -153,7 +153,7 @@ func freeCListStrings(allStrings **C.char, totalStrings C.size_t) {
 	// By converting to a Go slice, and freeing them ony by one
 	// At last free the pointer itself
 	if totalStrings > 0 {
-		stringsSlice := (*[1<<30 - 1]*C.char)(unsafe.Pointer(allStrings))[:totalStrings:totalStrings]
+		stringsSlice := unsafe.Slice(allStrings, totalStrings)
 		for i := C.size_t(0); i < totalStrings; i++ {
 			C.free(unsafe.Pointer(stringsSlice[i]))
 		}
@@ -231,7 +231,7 @@ func getCPtrServers(
 	// If we have servers, which is not always the case
 	if totalServers > 0 {
 		serversPtr := (**C.server)(C.malloc(totalServers * C.size_t(unsafe.Sizeof(uintptr(0)))))
-		servers := (*[1<<30 - 1]*C.server)(unsafe.Pointer(serversPtr))[:totalServers:totalServers]
+		servers := unsafe.Slice(serversPtr, totalServers)
 		index := 0
 		for _, currentServer := range serverMap {
 			cServer := getCPtrServer(state, &currentServer.Basic)
@@ -250,7 +250,7 @@ func getCPtrServers(
 func FreeServers(cServers *C.servers) {
 	// Free the custom servers if there are any
 	if cServers.total_custom > 0 {
-		customServers := (*[1<<30 - 1]*C.server)(unsafe.Pointer(cServers.custom_servers))[:cServers.total_custom:cServers.total_custom]
+		customServers := unsafe.Slice(cServers.custom_servers, cServers.total_custom)
 		for i := C.size_t(0); i < cServers.total_custom; i++ {
 			FreeServer(customServers[i])
 		}
@@ -258,7 +258,7 @@ func FreeServers(cServers *C.servers) {
 	}
 	// Free the institute access servers if there are any
 	if cServers.total_institute > 0 {
-		instituteServers := (*[1<<30 - 1]*C.server)(unsafe.Pointer(cServers.institute_servers))[:cServers.total_institute:cServers.total_institute]
+		instituteServers := unsafe.Slice(cServers.institute_servers, cServers.total_institute)
 
 		for i := C.size_t(0); i < cServers.total_institute; i++ {
 			FreeServer(instituteServers[i])
