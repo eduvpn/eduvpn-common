@@ -21,7 +21,7 @@ type Discovery struct {
 	servers types.DiscoveryServers
 }
 
-var DiscoURL string = "https://disco.eduvpn.org/v2/"
+var DiscoURL = "https://disco.eduvpn.org/v2/"
 
 // discoFile is a helper function that gets a disco JSON and fills the structure with it
 // If it was unsuccessful it returns an error.
