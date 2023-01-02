@@ -21,12 +21,13 @@ type Discovery struct {
 	servers types.DiscoveryServers
 }
 
+var DiscoURL string = "https://disco.eduvpn.org/v2/"
+
 // discoFile is a helper function that gets a disco JSON and fills the structure with it
 // If it was unsuccessful it returns an error.
 func discoFile(jsonFile string, previousVersion uint64, structure interface{}) error {
 	// Get json data
-	URL := "https://disco.eduvpn.org/v2/"
-	jsonURL := URL + jsonFile
+	jsonURL := DiscoURL + jsonFile
 	_, body, err := http.Get(jsonURL)
 	if err != nil {
 		return err
@@ -34,7 +35,7 @@ func discoFile(jsonFile string, previousVersion uint64, structure interface{}) e
 
 	// Get signature
 	sigFile := jsonFile + ".minisig"
-	sigURL := URL + sigFile
+	sigURL := DiscoURL + sigFile
 	_, sigBody, err := http.Get(sigURL)
 	if err != nil {
 		return err
