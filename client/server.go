@@ -105,7 +105,7 @@ func (c *Client) SetSecureLocation(countryCode string) error {
 		return err
 	}
 
-	srv, err := c.Discovery.ServerByCountryCode(countryCode, "secure_internet")
+	srv, err := c.Discovery.ServerByCountryCode(countryCode)
 	if err != nil {
 		c.goBackInternal()
 		c.logError(err)

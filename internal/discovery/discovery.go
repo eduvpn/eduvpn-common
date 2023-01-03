@@ -101,15 +101,15 @@ func (discovery *Discovery) ServerByURL(
 	return nil, errors.Errorf("no server of type '%s' at URL '%s'", srvType, baseURL)
 }
 
-// ServerByCountryCode returns the discovery server by the country code and the according type ("secure_internet", "institute_access")
+// ServerByCountryCode returns the discovery server by the country code
 // An error is returned if and only if nil is returned for the server.
-func (discovery *Discovery) ServerByCountryCode(countryCode string, srvType string) (*types.DiscoveryServer, error) {
+func (discovery *Discovery) ServerByCountryCode(countryCode string) (*types.DiscoveryServer, error) {
 	for _, srv := range discovery.servers.List {
-		if srv.CountryCode == countryCode && srv.Type == srvType {
+		if srv.CountryCode == countryCode && srv.Type == "secure_internet" {
 			return &srv, nil
 		}
 	}
-	return nil, errors.Errorf("no server of type '%s' with country code '%s'", srvType, countryCode)
+	return nil, errors.Errorf("no server of type 'secure_internet' with country code '%s'", countryCode)
 }
 
 // orgByID returns the discovery organization by the organization ID
