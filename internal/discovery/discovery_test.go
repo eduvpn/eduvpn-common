@@ -13,7 +13,7 @@ import (
 )
 
 // setupFileServer sets up a file server with a directory
-func setupFileServer(t *testing.T, directory string) (*http.Server) {
+func setupFileServer(t *testing.T, directory string) *http.Server {
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
 		t.Fatalf("Failed to setup discovery file server")
@@ -197,7 +197,6 @@ func TestServerByCountryCode(t *testing.T) {
 
 // TestOrgByID tests the function for getting an organization by ID
 func TestOrgByID(t *testing.T) {
-
 	o1 := types.DiscoveryOrganization{OrgID: "a"}
 	d := Discovery{
 		organizations: types.DiscoveryOrganizations{

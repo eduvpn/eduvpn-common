@@ -113,7 +113,6 @@ func (l *tokenLock) Update(r Token) {
 	l.mu.Unlock()
 }
 
-
 // Get gets the tokens into a public struct
 func (l *tokenLock) Get() Token {
 	// TODO: Check nil?

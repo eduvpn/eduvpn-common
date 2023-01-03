@@ -113,7 +113,7 @@ func (logger *FileLogger) Init(lvl Level, dir string) error {
 
 // Inheritf logs an error with a message and params using the error level verbosity of the error.
 // The message is always prefixed with the error.
-func (logger *FileLogger) Inheritf(err error, msg string, params...interface{}) {
+func (logger *FileLogger) Inheritf(err error, msg string, params ...interface{}) {
 	if err == nil {
 		return
 	}

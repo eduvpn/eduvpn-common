@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-errors/errors"
 	"github.com/eduvpn/eduvpn-common/internal/log"
+	"github.com/go-errors/errors"
 )
 
 // The DroppedConMon is a connection monitor that checks for an increase in rx bytes in certain intervals

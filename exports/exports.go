@@ -31,8 +31,8 @@ static int call_callback(PythonCB callback, const char *name, int oldstate, int 
 import "C"
 
 import (
-	"unsafe"
 	"time"
+	"unsafe"
 
 	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
@@ -307,8 +307,8 @@ func GetConfigSecureInternet(
 	}
 	preferTCPBool := preferTCP == 1
 	t := oauth.Token{
-		Access: C.GoString(prevTokens.access),
-		Refresh: C.GoString(prevTokens.refresh),
+		Access:           C.GoString(prevTokens.access),
+		Refresh:          C.GoString(prevTokens.refresh),
 		ExpiredTimestamp: time.Unix(int64(prevTokens.expired), 0),
 	}
 	cfg, configErr := state.GetConfigSecureInternet(C.GoString(orgID), preferTCPBool, t)
@@ -329,8 +329,8 @@ func GetConfigInstituteAccess(
 	}
 	preferTCPBool := preferTCP == 1
 	t := oauth.Token{
-		Access: C.GoString(prevTokens.access),
-		Refresh: C.GoString(prevTokens.refresh),
+		Access:           C.GoString(prevTokens.access),
+		Refresh:          C.GoString(prevTokens.refresh),
 		ExpiredTimestamp: time.Unix(int64(prevTokens.expired), 0),
 	}
 	cfg, configErr := state.GetConfigInstituteAccess(C.GoString(url), preferTCPBool, t)
@@ -351,8 +351,8 @@ func GetConfigCustomServer(
 	}
 	preferTCPBool := preferTCP == 1
 	t := oauth.Token{
-		Access: C.GoString(prevTokens.access),
-		Refresh: C.GoString(prevTokens.refresh),
+		Access:           C.GoString(prevTokens.access),
+		Refresh:          C.GoString(prevTokens.refresh),
 		ExpiredTimestamp: time.Unix(int64(prevTokens.expired), 0),
 	}
 	cfg, configErr := state.GetConfigCustomServer(C.GoString(url), preferTCPBool, t)
@@ -422,8 +422,8 @@ func SetDisconnected(name *C.char, cleanup C.int, prevTokens C.token) *C.error {
 		return getError(stateErr)
 	}
 	t := oauth.Token{
-		Access: C.GoString(prevTokens.access),
-		Refresh: C.GoString(prevTokens.refresh),
+		Access:           C.GoString(prevTokens.access),
+		Refresh:          C.GoString(prevTokens.refresh),
 		ExpiredTimestamp: time.Unix(int64(prevTokens.expired), 0),
 	}
 	setDisconnectedErr := state.SetDisconnected(int(cleanup) == 1, t)

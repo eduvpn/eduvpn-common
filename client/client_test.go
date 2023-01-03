@@ -11,8 +11,8 @@ import (
 	"time"
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
+	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/go-errors/errors"
 )
 
