@@ -1,5 +1,5 @@
 # Testing
-The Go library right now has tests defined for server interaction and signature verification tests.
+The Go library right now has various tests defined. E.g. server interaction, oauth, discovery and signature verification tests.
 
 To run the test suite, issue the following command in a shell
 
@@ -13,7 +13,7 @@ Note that this runs the tests without any server interaction (so for now only th
 SERVER_URI="eduvpn.example.com" PORTAL_USER="example" PORTAL_PASS="example" make test-go
 ```
 
-This needs [python3-selenium](https://selenium-python.readthedocs.io/) and [geckodriver](https://github.com/mozilla/geckodriver/releases) (extract and put in your `$PATH`).
+This needs [python3-selenium](https://selenium-python.readthedocs.io/) and [geckodriver](https://github.com/mozilla/geckodriver/releases) (extract and put in your `$PATH`). Note that testing with a server assumes it uses a default portal, due to it needing to click on buttons on the web page. You can add your own portal by customizing the [called Selenium script](https://github.com/eduvpn/eduvpn-common/blob/main/selenium_eduvpn.py).
 
 If you have [Docker](https://www.docker.com/get-started/) installed and [Docker-compose](https://docs.docker.com/compose/install/) you can use a convenient helper script which starts up two containers
 - An eduVPN server for testing
@@ -47,4 +47,4 @@ make test
 
 This accepts the same environment variables as we have explained before.
 
-[^1]: For now, this is only the Python wrapper as the other wrappers do not implement the newest API just yet.
+[^1]: For now, this is only the Python wrapper.

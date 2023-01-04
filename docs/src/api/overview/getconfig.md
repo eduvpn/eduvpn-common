@@ -1,11 +1,11 @@
 # Getting an OpenVPN/Wireguard config
 ## Summary
-name: `Get Config Institute Access` and `Get Config Secure Internet`
+name: `Get Config Institute Access`, `Get Config Custom Server`  and `Get Config Secure Internet`
 
-| Arguments  | Description                              | type     |
-| ---------  | ---------------------------------------- | -------- |
-| URL        | The url of the VPN server to connect to  | string   |
-| Prefer TCP | Whether or not to prefer the use of TCP  | string   |
+| Arguments  | Description                                     | type     |
+| ---------  | ----------------------------------------------- | -------- |
+| Identifier | The url/org ID of the VPN server to connect to  | string   |
+| Prefer TCP | Whether or not to prefer the use of TCP         | string   |
 
 Returns: `OpenVPN/Wireguard config (string)` `wireguard/openvpn type (string)`, `Error`
 
@@ -13,10 +13,10 @@ Used to obtain the OpenVPN/Wireguard config
 
 ## Detailed information
 
-To get a configuration that is used to actually establish a tunnel with the VPN server, we have the Get Config function for Institute Access and Secure Internet (the exact name depends on the language you're using) function in the library. This function has two parameters *URL* and *Prefer TCP*.
+To get a configuration that is used to actually establish a tunnel with the VPN server, we have the Get Config function for Institute Access, Custom Servers and Secure Internet (the exact name depends on the language you're using) function in the library. This function has two parameters *URL* and *Prefer TCP*.
 
-*URL* is the base url of the server to connect to
-e.g. `nl.eduvpn.org`. Use the correct function to indicate if it is an Institute Access server or a Secure Internet server. A user configured server is often an Institute Access server. In case of a Secure Internet server and no Secure Internet was configured previously, this URL is set as the home server. This means that this server is set as the authorization server for all secure internet servers.
+*URL/OrgID* is the base URL of the server to connect to
+e.g. `nl.eduvpn.org` in case of Institute Access or a Custom Server. In case of Secure Internet, the identifier is the Organization ID. Use the correct function to indicate if it is an Institute Access server or a Secure Internet server. 
 
 The *Prefer TCP* flag is a boolean that indicates whether or not we want to prefer TCP to connect over the VPN. This flag is useful if the user has enabled e.g. a setting that prefers the use of TCP, which is only supported by OpenVPN. Note that this setting may be ignored by the server.
 
@@ -38,39 +38,5 @@ This callback can be cancelled by using a `Cancel OAuth` function.
 
 ### Callback: Selecting a profile (Ask_Profile)
 
-Another aspect that needs to be taken into account is the fact that there can be multiple profiles that a client can connect to. When the function gets called for obtaining an OpenVPN/Wireguard configuration, it asks the client which profile it wants to connect to using the callback that gets triggered on the Ask Profile state. The data is the list of profiles in JSON format, e.g.
-
-```json
-{
-  "info": {
-    "profile_list": [
-      {
-        "profile_id": "internet",
-        "default_gateway": true,
-        "display_name": "IPv4 (NAT) IPv6 (GUA) Access",
-        "vpn_proto_list": [
-          "openvpn"
-        ]
-      },
-      {
-        "profile_id": "adblock",
-        "default_gateway": true,
-        "display_name": "Malware/Tracking-Blocker IPv4 (NAT) IPv6 (GUA)",
-        "vpn_proto_list": [
-          "openvpn"
-        ]
-      },
-      {
-        "profile_id": "dnsonly",
-        "default_gateway": false,
-        "display_name": "DNS-Only & Malware/Tracking-Blocker (experimental)",
-        "vpn_proto_list": [
-          "openvpn"
-        ]
-      }
-    ]
-  }
-}
-```
-
+Another aspect that needs to be taken into account is the fact that there can be multiple profiles that a client can connect to. When the function gets called for obtaining an OpenVPN/Wireguard configuration, it asks the client which profile it wants to connect to using the callback that gets triggered on the Ask Profile state. The data is the list of profiles
 For actually selecting the profile, there is a separate function which takes care of this. This function takes as only argument the profile ID as a string.

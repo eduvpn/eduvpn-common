@@ -3,11 +3,11 @@
 The eduvpn-common library uses a finite state machine internally to keep track of which state the client is in and to communicate data callbacks (e.g. to communicate the Authorization URL in the OAuth process to the client).
 
 ## Viewing the FSM
-To view the FSM in an image, set the debug variable to `True`. This outputs the graph with a `.graph` extension in the client-specified config directory (See [API](../../api/index.html)). The format of this graph is from [Mermaid](https://mermaid-js.github.io/mermaid/#/).
-
-If you have the [Mermaid command line client](https://github.com/mermaid-js/mermaid-cli) installed, the Go library will automatically provide a PNG file in the same directory of the `.graph` file. We recommend to use an image viewer that has auto-reload capabilities, such as [feh](https://feh.finalrewind.org/)[^1] for Linux.
-
-If you do not want to install additional tools to view the graph, you can submit the contents of the `.graph` file to the [Mermaid Live Editor](https://mermaid.live/) to see the image.
+To view the FSM in an image, set the debug variable to `True`. This
+outputs the graph with a `.graph` extension in the client-specified
+config directory (See [API](../../api/index.html)). The format of this
+graph is from [Mermaid](https://mermaid-js.github.io/mermaid/#/). You
+can convert this to an image using the [Mermaid command-line client](https://github.com/mermaid-js/mermaid-cli) installed or from the Mermaid web site, the [Mermaid Live Editor](https://mermaid.live)
 
 ## FSM example
 The following is an example of the FSM when the client has obtained a Wireguard/OpenVPN configuration from an eduVPN server
@@ -18,15 +18,17 @@ The current state is highlighted in the <span style="color:cyan">cyan</span> col
 
 ## State explanation
 The states mean the following:
-
-- `Deregistered`: The client has not registered with the library yet, the state variables are not initialized
-- `No_Server`: The client is registered, but has not chosen a server yet
-- `Chosen_Server`: The client has chosen a server to connect to
-- `OAuth_Started`: The OAuth process has been started. This means that the client needs to redirect to the browser so that the user can login and approve the application
-- `Authorized`: The OAuth process has finished. The client now has tokens and is thus authorized
-- `Request_Config`: The client is in the process of requesting an OpenVPN/Wireguard configuration from the server
-- `Ask_Profile`: The server has multiple profiles for which a config can be obtained, the client must show an UI of the profiles. The user then selects one of these profiles to exit this state
-- `Has_Config`: The client now has a configuration that it can use to connect using OpenVPN/Wireguard
-- `Connected`: The client is connected to the VPN
-
-[^1]: We recommend the following arguments for feh: `feh --auto-reload --keep-zoom-vp directory/example.png`. This auto reloads the feh image viewer and keeps the zoom level when reloading
+- `Deregistered`: the app is not registered with the wrapper
+- `No_Server`: means the user has not chosen a server yet
+- `Ask_Location`: the user selected a Secure Internet server but needs to choose a location
+- `Search_Server`: the user is currently selecting a server in the UI
+- `Loading_Server`: means we are loading the server details
+- `Chosen_Server`: means the user has chosen a server to connect to
+- `OAuth_Started`: means the OAuth process has started
+- `Authorized`: means the OAuth process has finished and the user is now authorized with the server
+- `Request_Config`: the user has requested a config for connecting
+- `Ask_Profile`: the go code is asking for a profile selection from the UI
+- `Disconnected`: the user has gotten a config for a server but is not connected yet
+- `Disconnecting`: the OS is disconnecting and the Go code is doing the /disconnect
+- `Connecting`: the OS is establishing a connection to the server
+- `Connected`: the user has been connected to the server.

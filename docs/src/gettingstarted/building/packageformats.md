@@ -39,3 +39,4 @@ make rpm-mock MOCK_TARGET=centos-stream-8-aarch64
 A list of targets can be found in ```/etc/mock/*.cfg```. The default target is `fedora-36-x86_64`
 
 # Linux: Deb
+The debian files can be found on a different [GitHub repository](https://github.com/jwijenbergh/python-eduvpn-common.deb). The debian packages for this repository are then build with [nbuilder.deb](https://git.sr.ht/~fkooman/nbuilder.deb).

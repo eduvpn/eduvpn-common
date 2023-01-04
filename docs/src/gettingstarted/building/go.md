@@ -5,17 +5,17 @@ To build the Go library, you need the dependencies for your system installed. We
 ### Linux
 To build the Go shared library using Linux you need the following dependencies:
 
-- [Go](https://go.dev/doc/install) 1.15 or later
+- [Go](https://go.dev/doc/install) 1.18 or later
 - [Gcc](https://gcc.gnu.org/)
 - [GNU Make](https://www.gnu.org/software/make/)
-- Dependencies for each wrapper you are interested in
+- Dependencies for each wrapper you are interested in (read next sections)
 
 ### Windows
 On Windows, you can install gcc and make (or even Go) via MinGW or Cygwin or use WSL. For MinGW:
 
 1. [Install MinGW](https://www.msys2.org/#installation) (you don't need to install any extra packages yet) and open some
    MSYS2 terminal (e.g. from the start menu or one of the installed binaries)
-2. Install the [`make`](https://packages.msys2.org/package/make?repo=msys) package (`pacman -S make`) (or
+2. Install the [`make`](https://packages.msys2.org/package/make?repo=msys) package (or
    e.g. [`mingw-w64-x86_64-make`](https://packages.msys2.org/package/mingw-w64-x86_64-make?repo=mingw64) and
    use `mingw32-make` in the command line)
 3. To compile for x86_64:
@@ -57,7 +57,7 @@ make GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc
 
 For example, you can cross compile for Windows from Linux using [MinGW-w64](https://www.mingw-w64.org/downloads/).
 
-This shared library gets loaded by the different wrappers. To build the actual wrapper code, you need other build commands. This will be explained now
+This shared library gets loaded by the different wrappers. To build the actual wrapper code, you need other build commands. This will be explained now.
 
 ### Cleaning
 To clean build the library and wrapper, issue the following command in the root directory:
