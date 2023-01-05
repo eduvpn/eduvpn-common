@@ -20,12 +20,64 @@ jobs:
 
   test-go:
     name: Test Go
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-22.04
+    env:
+      WEB_FQDN: eduvpnghci
+      PORTAL_USER: ci
+      PORTAL_PASS: ci
     steps:
       - uses: actions/checkout@v3
-      - name: Test with docker-compose
-        run: OAUTH_EXPIRED_TTL="5" PORTAL_USER="ci" PORTAL_PASS="ci" ./ci/startcompose.sh
+      - name: Setup server
+        run: |
+          git clone https://github.com/eduvpn/documentation
+          cd documentation
+          sudo cp resources/repo+v3@eduvpn.org.asc /etc/apt/trusted.gpg.d/repo+v3@eduvpn.org.asc
+          echo "deb https://repo.eduvpn.org/v3/deb jammy main" | sudo tee /etc/apt/sources.list.d/eduVPN_v3.list
+          sudo apt-get -y update
+          sudo apt-get install -y vpn-user-portal vpn-server-node vpn-maint-scripts
+          sudo openssl req -nodes -subj "/CN=${WEB_FQDN}" -addext "subjectAltName = DNS:${WEB_FQDN}" -x509 -sha256 -newkey rsa:2048 -keyout "/etc/ssl/private/${WEB_FQDN}.key" -out "/etc/ssl/certs/${WEB_FQDN}.crt" -days 90
+          # Apache 2
+          PHP_VERSION=$(/usr/sbin/phpquery -V)
+          sudo a2enmod ssl headers rewrite proxy_fcgi setenvif
+          sudo a2dismod status
+          sudo a2enconf "php${PHP_VERSION}-fpm"
+          sudo cp resources/ssl.debian.conf /etc/apache2/mods-available/ssl.conf
+          sudo cp resources/vpn.example.debian.conf "/etc/apache2/sites-available/${WEB_FQDN}.conf"
+          sudo cp resources/localhost.debian.conf /etc/apache2/sites-available/localhost.conf
+          sudo sed -i "s/vpn.example/${WEB_FQDN}/" "/etc/apache2/sites-available/${WEB_FQDN}.conf"
+          sudo a2enconf vpn-user-portal
+          sudo a2ensite "${WEB_FQDN}" localhost
+          sudo a2dissite 000-default
+          sudo systemctl restart apache2
+
+          # NETWORK
+          sudo cp /etc/vpn-user-portal/keys/node.0.key /etc/vpn-server-node/keys/node.key
+
+          sudo systemctl enable --now "php${PHP_VERSION}-fpm"
+          sudo systemctl enable --now apache2
+
+          sudo /usr/libexec/vpn-server-node/server-config
+          sudo -u www-data vpn-user-portal-account --add "${PORTAL_USER}" --password "${PORTAL_PASS}"
+
+          # Update /etc/hosts to point to our server
+          echo "127.0.0.1 ${WEB_FQDN}" | sudo tee -a /etc/hosts
+      - name: Install Go
+        run: |
+          wget https://go.dev/dl/go1.19.4.linux-amd64.tar.gz -q -O go.tar.gz
+          echo "c9c08f783325c4cf840a94333159cc937f05f75d36a8b307951d5bd959cf2ab8  go.tar.gz" | sha256sum --check
+          sudo rm -rf /usr/local/go
+          sudo tar -C /usr/local -xzf go.tar.gz
+      - name: Selenium dependencies
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install tar python3 python3-selenium
+      - name: Test Go
+        run: |
+          # Add geckodriver and go to path
+          export PATH=$PATH:/usr/local/go/bin
+
+          ## Run tests
+          SERVER_URI=https://${WEB_FQDN} make test
 
   build-lib:
     name: Build shared Go library

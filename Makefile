@@ -6,7 +6,7 @@ build:
 test: test-go test-wrappers
 
 test-go:
-	go test ./...
+	go test ./... -v
 
 #WRAPPERS ?= $(notdir $(patsubst %/,%,$(wildcard wrappers/*/)))
 WRAPPERS=python
