@@ -9,26 +9,15 @@ x-common-env: &common-env
   OAUTH_EXPIRED_TTL: ${OAUTH_EXPIRED_TTL}
   SERVER_URI: "https://eduvpnserver"
 
-# Define a network so that the containers can talk with eachother using their service name
-networks:
-  eduvpn_network:
-    ipam:
-        driver: default
-        config:
-          - subnet: 172.20.0.0/24
-
 # Defines the services
 services:
   # The eduvpn server with portal
   eduvpnserver:
     build:
-      context: "."
-      dockerfile: 'ci/docker/eduvpn-server.docker'
+      context: .
+      dockerfile: ci/docker/eduvpnserver.docker
     sysctls: # needed for wireguard permissions, otherwise we get a permisison failed
       - net.ipv6.conf.all.disable_ipv6=0
-    networks:
-      eduvpn_network:
-        ipv4_address: 172.20.0.6
     cap_add: # needed for wireguard
       - NET_ADMIN
     environment: *common-env
@@ -40,12 +29,9 @@ services:
   # The container for testing the go code
   gotest:
     build:
-      context: "."
-      dockerfile: 'ci/docker/go-test.docker'
+      context: .
+      dockerfile: ci/docker/gotest.docker
     environment: *common-env
-    networks:
-      eduvpn_network:
-        ipv4_address: 172.20.0.5
     # Wait for eduvpn server to come online
     depends_on:
       eduvpnserver:

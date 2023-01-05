@@ -13,9 +13,14 @@ fi
 # Get absolute path to current directory this script is in
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# Create self-signed certificate
-mkdir -p "$SCRIPT_DIR"/docker/selfsigned
-"$SCRIPT_DIR"/docker/createcert.sh
+pushd "$SCRIPT_DIR"/..
 
-# Get the parent directory to get the root directory
-docker-compose --file ci/docker/docker-compose.yml --project-directory "$SCRIPT_DIR"/.. up --build --force-recreate --abort-on-container-exit
+# Create self-signed certificate
+mkdir -p ci/docker/selfsigned
+./ci/docker/createcert.sh
+
+# Up the containers and abort on exit. Also rebuild the necessary steps if there are changes
+# You can symlink docker-compose to podman-compose to use Podman
+docker-compose up --build --force-recreate --abort-on-container-exit
+
+popd
