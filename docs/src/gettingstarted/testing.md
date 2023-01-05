@@ -29,6 +29,7 @@ This script is also used in the continuous integration, so we recommend to run t
 There are other environment variables that can be used:
 
 - `OAUTH_EXPIRED_TTL`: Use this for a server which has a low OAuth access token expiry time, e.g. 10 seconds. You would then set this variable to `"10"` so that a test is ran which waits for 10 seconds for the OAuth tokens to expire
+- `EDUVPN_PODCOMP`: Set this to 1 to instruct the `./ci/startcompose.sh` script to use [podman-compose](https://github.com/containers/podman-compose) if you prefer this over using docker-compose.
 ## Testing the wrappers
 To test the wrappers, issue the following command in a shell (you will need dependencies for all wrappers if you do this[^1]):
 
