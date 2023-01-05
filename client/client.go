@@ -2,6 +2,7 @@
 package client
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/eduvpn/eduvpn-common/internal/config"
@@ -24,9 +25,9 @@ type (
 func (c *Client) logError(err error) {
 	// Logs the error with the same level/verbosity as the error
 	if c.Debug {
-		c.Logger.Inheritf(err, "\nwith stacktrace: %s\n", err.(*errors.Error).ErrorStack())
+		c.Logger.Inherit(err, fmt.Sprintf("\nwith stacktrace: %s\n", err.(*errors.Error).ErrorStack()))
 	} else {
-		c.Logger.Inheritf(err, "")
+		c.Logger.Inherit(err, "")
 	}
 }
 
