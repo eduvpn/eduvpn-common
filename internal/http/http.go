@@ -78,6 +78,11 @@ func optionalBodyReader(opts *OptionalParams) io.Reader {
 	return nil
 }
 
+// ReadLimit denotes the maximum amount of bytes that are read in HTTP responses
+// This is used to prevent servers from sending huge amounts of data
+// A limit of 16MB, although maybe much larger than needed, ensures that we do not run into problems
+var ReadLimit int64 = 16 << 20
+
 // MethodWithOpts creates a HTTP request using a method (e.g. GET, POST), an url and optional parameters
 // It returns the HTTP headers, the body and an error if there is one.
 func MethodWithOpts(
@@ -130,12 +135,16 @@ func MethodWithOpts(
 	}()
 
 	// Return a string
-	body, err := io.ReadAll(res.Body)
+	// A max bytes reader is normally used for request bodies with a writer
+	// However, this is still nice to use because unlike a limitreader, it returns an error if the body is too large
+	// We use this function without a writer so we pass nil
+	// We impose a limit because servers could be malicious and send huge amounts of data
+	r := http.MaxBytesReader(nil, res.Body, ReadLimit)
+	body, err := io.ReadAll(r)
 	if err != nil {
 		return res.Header, nil, errors.WrapPrefix(err,
-			fmt.Sprintf("failed HTTP request with method %s and url %s", method, urlStr), 0)
+			fmt.Sprintf("failed HTTP request with method: %s, url: %s and max bytes size: %v", method, urlStr, ReadLimit), 0)
 	}
-
 	if res.StatusCode < 200 || res.StatusCode > 299 {
 		return res.Header, body, errors.Wrap(&StatusError{URL: urlStr, Body: string(body), Status: res.StatusCode}, 0)
 	}
