@@ -397,6 +397,6 @@ func TestPreferTCP(t *testing.T) {
 
 	if config.Type == "openvpn" &&
 		!strings.HasSuffix(config.Config, "remote eduvpnserver 1194 udp\nremote eduvpnserver 1194 tcp") {
-		t.Fatalf("Suffix for disable prefer TCP is not in the right order for config: %s", config)
+		t.Fatalf("Suffix for disable prefer TCP is not in the right order for config: %s", config.Config)
 	}
 }
