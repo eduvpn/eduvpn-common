@@ -20,7 +20,6 @@ type OptionalParams struct {
 	Headers       http.Header
 	URLParameters URLParameters
 	Body          url.Values
-	Timeout       time.Duration
 }
 
 // ConstructURL creates a URL with the included parameters.
@@ -38,16 +37,6 @@ func ConstructURL(baseURL string, params URLParameters) (string, error) {
 	}
 	u.RawQuery = q.Encode()
 	return u.String(), nil
-}
-
-// Get creates a Get request and returns the headers, body and an error.
-func Get(url string) (http.Header, []byte, error) {
-	return MethodWithOpts(http.MethodGet, url, nil)
-}
-
-// PostWithOpts creates a Post request with optional parameters and returns the headers, body and an error.
-func PostWithOpts(url string, opts *OptionalParams) (http.Header, []byte, error) {
-	return MethodWithOpts(http.MethodPost, url, opts)
 }
 
 // optionalURL ensures that the URL contains the optional parameters
@@ -78,18 +67,43 @@ func optionalBodyReader(opts *OptionalParams) io.Reader {
 	return nil
 }
 
-// ReadLimit denotes the maximum amount of bytes that are read in HTTP responses
-// This is used to prevent servers from sending huge amounts of data
-// A limit of 16MB, although maybe much larger than needed, ensures that we do not run into problems
-var ReadLimit int64 = 16 << 20
+// Client is a wrapper around http.Client with some convenience features
+// - A default timeout of 5 seconds
+// - A read limiter to prevent servers from sending large amounts of data
+// - Checking on http code with custom errors
+type Client struct {
+	// Client is the HTTP Client that sends the request
+	Client *http.Client
+	// ReadLimit denotes the maximum amount of bytes that are read in HTTP responses
+	// This is used to prevent servers from sending huge amounts of data
+	// A limit of 16MB, although maybe much larger than needed, ensures that we do not run into problems
+	ReadLimit int64
+}
 
-// MethodWithOpts creates a HTTP request using a method (e.g. GET, POST), an url and optional parameters
+// Returns a HTTP client with some default settings
+func NewClient() *Client {
+	// The timeout is 5 seconds by default
+	c := &http.Client{Timeout: 5 * time.Second}
+	// ReadLimit denotes the maximum amount of bytes that are read in HTTP responses
+	// This is used to prevent servers from sending huge amounts of data
+	// A limit of 16MB, although maybe much larger than needed, ensures that we do not run into problems
+	return &Client{Client: c, ReadLimit: 16 << 20}
+}
+
+// Get creates a Get request and returns the headers, body and an error.
+func (c *Client) Get(url string) (http.Header, []byte, error) {
+	return c.Do(http.MethodGet, url, nil)
+}
+
+// PostWithOpts creates a Post request with optional parameters and returns the headers, body and an error.
+func (c *Client) PostWithOpts(url string, opts *OptionalParams) (http.Header, []byte, error) {
+	return c.Do(http.MethodPost, url, opts)
+}
+
+
+// MethodWithOpts Do send a HTTP request using a method (e.g. GET, POST), an url and optional parameters
 // It returns the HTTP headers, the body and an error if there is one.
-func MethodWithOpts(
-	method string,
-	urlStr string,
-	opts *OptionalParams,
-) (http.Header, []byte, error) {
+func (c *Client) Do(method string, urlStr string, opts *OptionalParams) (http.Header, []byte, error) {
 	// Make sure the url contains all the parameters
 	// This can return an error,
 	// it already has the right error, so we don't wrap it further
@@ -99,13 +113,6 @@ func MethodWithOpts(
 		return nil, nil, err
 	}
 
-	// Default timeout is 5 seconds
-	// If a different timeout is given, set it
-	var timeout time.Duration = 5
-	if opts != nil && opts.Timeout > 0 {
-		timeout = opts.Timeout
-	}
-
 	// Create request object with the body reader generated from the optional arguments
 	req, err := http.NewRequest(method, urlStr, optionalBodyReader(opts))
 	if err != nil {
@@ -113,17 +120,11 @@ func MethodWithOpts(
 			fmt.Sprintf("failed HTTP request with method %s and url %s", method, urlStr), 0)
 	}
 
-	// See https://stackoverflow.com/questions/17714494/golang-http-request-results-in-eof-errors-when-making-multiple-requests-successi
-	req.Close = true
-
 	// Make sure the headers contain all the parameters
 	optionalHeaders(req, opts)
 
-	// Create a client
-	c := &http.Client{Timeout: timeout * time.Second}
-
 	// Do request
-	res, err := c.Do(req)
+	res, err := c.Client.Do(req)
 	if err != nil {
 		return nil, nil, errors.WrapPrefix(err,
 			fmt.Sprintf("failed HTTP request with method %s and url %s", method, urlStr), 0)
@@ -139,11 +140,11 @@ func MethodWithOpts(
 	// However, this is still nice to use because unlike a limitreader, it returns an error if the body is too large
 	// We use this function without a writer so we pass nil
 	// We impose a limit because servers could be malicious and send huge amounts of data
-	r := http.MaxBytesReader(nil, res.Body, ReadLimit)
+	r := http.MaxBytesReader(nil, res.Body, c.ReadLimit)
 	body, err := io.ReadAll(r)
 	if err != nil {
 		return res.Header, nil, errors.WrapPrefix(err,
-			fmt.Sprintf("failed HTTP request with method: %s, url: %s and max bytes size: %v", method, urlStr, ReadLimit), 0)
+			fmt.Sprintf("failed HTTP request with method: %s, url: %s and max bytes size: %v", method, urlStr, c.ReadLimit), 0)
 	}
 	if res.StatusCode < 200 || res.StatusCode > 299 {
 		return res.Header, body, errors.Wrap(&StatusError{URL: urlStr, Body: string(body), Status: res.StatusCode}, 0)

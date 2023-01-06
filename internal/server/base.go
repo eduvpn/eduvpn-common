@@ -2,6 +2,7 @@ package server
 
 import (
 	"time"
+	"github.com/eduvpn/eduvpn-common/internal/http"
 )
 
 // Base is the base type for servers.
@@ -14,6 +15,7 @@ type Base struct {
 	StartTime      time.Time         `json:"start_time"`
 	EndTime        time.Time         `json:"expire_time"`
 	Type           string            `json:"server_type"`
+	httpClient     *http.Client
 }
 
 func (b *Base) InitializeEndpoints() error {

@@ -14,6 +14,9 @@ import (
 
 // Discovery is the main structure used for this package.
 type Discovery struct {
+	// The httpClient for sending HTTP requests
+	httpClient *http.Client
+
 	// organizations represents the organizations that are returned by the discovery server
 	organizations types.DiscoveryOrganizations
 
@@ -23,12 +26,17 @@ type Discovery struct {
 
 var DiscoURL = "https://disco.eduvpn.org/v2/"
 
-// discoFile is a helper function that gets a disco JSON and fills the structure with it
+// file is a helper function that gets a disco JSON and fills the structure with it
 // If it was unsuccessful it returns an error.
-func discoFile(jsonFile string, previousVersion uint64, structure interface{}) error {
+func (discovery *Discovery) file(jsonFile string, previousVersion uint64, structure interface{}) error {
+	// No HTTP client present, create one
+	if discovery.httpClient == nil {
+		discovery.httpClient = http.NewClient()
+	}
+
 	// Get json data
 	jsonURL := DiscoURL + jsonFile
-	_, body, err := http.Get(jsonURL)
+	_, body, err := discovery.httpClient.Get(jsonURL)
 	if err != nil {
 		return err
 	}
@@ -36,7 +44,7 @@ func discoFile(jsonFile string, previousVersion uint64, structure interface{}) e
 	// Get signature
 	sigFile := jsonFile + ".minisig"
 	sigURL := DiscoURL + sigFile
-	_, sigBody, err := http.Get(sigURL)
+	_, sigBody, err := discovery.httpClient.Get(sigURL)
 	if err != nil {
 		return err
 	}
@@ -162,7 +170,7 @@ func (discovery *Discovery) Organizations() (*types.DiscoveryOrganizations, erro
 		return &discovery.organizations, nil
 	}
 	file := "organization_list.json"
-	err := discoFile(file, discovery.organizations.Version, &discovery.organizations)
+	err := discovery.file(file, discovery.organizations.Version, &discovery.organizations)
 	if err != nil {
 		// Return previous with an error
 		return &discovery.organizations, err
@@ -178,7 +186,7 @@ func (discovery *Discovery) Servers() (*types.DiscoveryServers, error) {
 		return &discovery.servers, nil
 	}
 	file := "server_list.json"
-	err := discoFile(file, discovery.servers.Version, &discovery.servers)
+	err := discovery.file(file, discovery.servers.Version, &discovery.servers)
 	if err != nil {
 		// Return previous with an error
 		return &discovery.servers, err

@@ -19,7 +19,8 @@ func APIGetEndpoints(baseURL string) (*Endpoints, error) {
 	}
 
 	u.Path = path.Join(u.Path, "/.well-known/vpn-user-portal")
-	_, body, err := httpw.Get(u.String())
+	c := httpw.NewClient()
+	_, body, err := c.Get(u.String())
 	if err != nil {
 		return nil, errors.WrapPrefix(err, "failed getting server endpoints", 0)
 	}
@@ -68,7 +69,12 @@ func apiAuthorized(
 	} else {
 		opts.Headers = http.Header{key: {val}}
 	}
-	return httpw.MethodWithOpts(method, u.String(), opts)
+
+	// Create a client if it doesn't exist
+	if b.httpClient == nil {
+		b.httpClient = httpw.NewClient()
+	}
+	return b.httpClient.Do(method, u.String(), opts)
 }
 
 func apiAuthorizedRetry(

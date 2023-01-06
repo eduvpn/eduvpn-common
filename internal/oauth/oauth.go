@@ -75,6 +75,9 @@ func genVerifier() (string, error) {
 
 // OAuth defines the main structure for this package.
 type OAuth struct {
+	// The HTTP client that is used
+	httpClient *httpw.Client
+
 	// ISS indicates the issuer identifier of the authorization server as defined in RFC 9207
 	ISS string `json:"iss"`
 
@@ -235,7 +238,9 @@ func (oauth *OAuth) tokensWithAuthCode(authCode string) error {
 	}
 	opts := &httpw.OptionalParams{Headers: h, Body: data}
 	now := time.Now()
-	_, body, err := httpw.PostWithOpts(u, opts)
+
+	// We are sure that we have a http client because we have initialized it when starting the exchange
+	_, body, err := oauth.httpClient.PostWithOpts(u, opts)
 	if err != nil {
 		return err
 	}
@@ -278,7 +283,13 @@ func (oauth *OAuth) refreshResponse(r string) (*TokenResponse, time.Time, error)
 	}
 	opts := &httpw.OptionalParams{Headers: h, Body: data}
 	now := time.Now()
-	_, body, err := httpw.PostWithOpts(u, opts)
+
+	// Test if we have a http client and if not recreate one
+	if oauth.httpClient == nil {
+		oauth.httpClient = httpw.NewClient()
+	}
+
+	_, body, err := oauth.httpClient.PostWithOpts(u, opts)
 	if err != nil {
 		return nil, time.Time{}, err
 	}
@@ -481,6 +492,10 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 // Exchange starts the OAuth exchange by getting the tokens with the redirect callback
 // If it was unsuccessful it returns an error.
 func (oauth *OAuth) Exchange() error {
+	// If there is no HTTP client defined, create a new one
+	if oauth.httpClient == nil {
+		oauth.httpClient = httpw.NewClient()
+	}
 	return oauth.tokensWithCallback()
 }
 
