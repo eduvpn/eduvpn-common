@@ -188,6 +188,11 @@ func (c *Client) DiscoOrganizations() (orgs *types.DiscoveryOrganizations, err e
 		return nil, errors.Errorf("discovery with Let's Connect is not supported")
 	}
 
+	// Mark organizations as expired if we have not set an organization yet
+	if !c.Servers.HasSecureInternet() {
+		c.Discovery.MarkOrganizationsExpired()
+	}
+
 	return c.Discovery.Organizations()
 }
 

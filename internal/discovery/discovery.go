@@ -73,13 +73,19 @@ func (discovery *Discovery) file(jsonFile string, previousVersion uint64, struct
 	return nil
 }
 
+// MarkOrganizationsExpired marks the organizations as expired
+func (discovery *Discovery) MarkOrganizationsExpired() {
+	// Re-initialize the timestamp to zero
+	discovery.organizations.Timestamp = time.Time{}
+}
+
 // DetermineOrganizationsUpdate returns a boolean indicating whether or not the discovery organizations should be updated
 // FIXME: Implement based on
 // https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md
 // - [IMPLEMENTED] on "first launch" when offering the search for "Institute Access" and "Organizations";
-// - [TODO] when the user tries to add new server AND the user did NOT yet choose an organization before;
-// - [TODO] when the authorization for the server associated with an already chosen organization is triggered, e.g. after expiry or revocation.
-// - [IMPLEMENTED using a custom error message] NOTE: when the org_id that the user chose previously is no longer available in organization_list.json the application should ask the user to choose their organization (again). This can occur for example when the organization replaced their identity provider, uses a different domain after rebranding or simply ceased to exist.
+// - [IMPLEMENTED in client/server.go] when the user tries to add new server AND the user did NOT yet choose an organization before;
+// - [IMPLEMENTED in client/server.go] when the authorization for the server associated with an already chosen organization is triggered, e.g. after expiry or revocation.
+// - [IMPLEMENTED using a custom error message, and in client/server.go] NOTE: when the org_id that the user chose previously is no longer available in organization_list.json the application should ask the user to choose their organization (again). This can occur for example when the organization replaced their identity provider, uses a different domain after rebranding or simply ceased to exist.
 func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
 	return discovery.organizations.Timestamp.IsZero()
 }

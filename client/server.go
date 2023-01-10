@@ -258,6 +258,10 @@ func (c *Client) AddSecureInternetHomeServer(orgID string) (srv server.Server, e
 	// Get the secure internet URL from discovery
 	org, dSrv, err := c.Discovery.SecureHomeArgs(orgID)
 	if err != nil {
+		// We mark the organizations as expired because we got an error
+		// Note that in the docs it states that it only should happen when the Org ID doesn't exist
+		// However, this is nice as well because it also catches the error where the SecureInternetHome server is not found
+		c.Discovery.MarkOrganizationsExpired()
 		c.goBackInternal()
 		return nil, err
 	}
@@ -552,6 +556,13 @@ func (c *Client) ensureLogin(srv server.Server, ct oauth.Token) (err error) {
 		// OAuth was valid, ensure we are in the authorized state
 		c.FSM.GoTransition(StateAuthorized)
 		return nil
+	}
+
+	// Mark organizations as expired if the server is a secure internet server
+	b, err := srv.Base()
+	// We only try to update it when we found the server base
+	if err == nil && b.Type == "secure_internet" {
+		c.Discovery.MarkOrganizationsExpired()
 	}
 
 	// Tokens are not valid or the client gave an error when updating tokens

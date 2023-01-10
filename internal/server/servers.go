@@ -13,6 +13,11 @@ type Servers struct {
 	IsType                   Type                     `json:"is_secure_internet"`
 }
 
+// HasSecureInternet returns whether or not we have a secure internet server added
+func (ss *Servers) HasSecureInternet() bool {
+	return len(ss.SecureInternetHomeServer.BaseMap) > 0
+}
+
 func (ss *Servers) AddSecureInternet(
 	secureOrg *types.DiscoveryOrganization,
 	secureServer *types.DiscoveryServer,
