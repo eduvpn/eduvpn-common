@@ -75,6 +75,9 @@ func genVerifier() (string, error) {
 
 // OAuth defines the main structure for this package.
 type OAuth struct {
+	// The cached client id so we don't have to pass it around
+	ClientID string `json:"client_id"`
+
 	// The HTTP client that is used
 	httpClient *httpw.Client
 
@@ -274,7 +277,11 @@ func (oauth *OAuth) refreshResponse(r string) (*TokenResponse, time.Time, error)
 	if oauth.token == nil {
 		return nil, time.Time{}, errors.New("No oauth token structure in refresh")
 	}
+	if oauth.ClientID == "" {
+		return nil, time.Time{}, errors.New("No client ID was cached for refresh")
+	}
 	data := url.Values{
+		"client_id": {oauth.ClientID},
 		"refresh_token": {r},
 		"grant_type":    {"refresh_token"},
 	}
@@ -435,6 +442,9 @@ func (oauth *OAuth) ListenerPort() (int, error) {
 
 // AuthURL gets the authorization url to start the OAuth procedure.
 func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (string, error) {
+	// Update the client ID
+	oauth.ClientID = name
+
 	// Generate the verifier and challenge
 	v, err := genVerifier()
 	if err != nil {
