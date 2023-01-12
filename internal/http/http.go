@@ -82,8 +82,8 @@ type Client struct {
 
 // Returns a HTTP client with some default settings
 func NewClient() *Client {
-	// The timeout is 5 seconds by default
-	c := &http.Client{Timeout: 5 * time.Second}
+	// The timeout is 10 seconds by default
+	c := &http.Client{Timeout: 10 * time.Second}
 	// ReadLimit denotes the maximum amount of bytes that are read in HTTP responses
 	// This is used to prevent servers from sending huge amounts of data
 	// A limit of 16MB, although maybe much larger than needed, ensures that we do not run into problems
