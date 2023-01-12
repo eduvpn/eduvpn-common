@@ -12,8 +12,6 @@ import (
 type DroppedConMon struct {
 	// pInterval means how the interval in which to send pings
 	pInterval time.Duration
-	// pAlive means how many pings need to be send before checking if the connection is alive
-	pAlive int
 	// pDropped means how many pings need to be send before checking if the connection is dropped
 	pDropped int
 	// The function that reads Rx bytes
@@ -27,11 +25,8 @@ type DroppedConMon struct {
 	logger log.FileLogger
 }
 
-func NewDroppedMonitor(pingInterval time.Duration, pAlive int, pDropped int, readRxBytes func() (int64, error), logger log.FileLogger) (*DroppedConMon, error) {
-	if pAlive >= pDropped {
-		return nil, errors.New("pAlive must be smaller than pDropped")
-	}
-	return &DroppedConMon{pInterval: pingInterval, pAlive: pAlive, pDropped: pDropped, readRxBytes: readRxBytes, logger: logger}, nil
+func NewDroppedMonitor(pingInterval time.Duration, pDropped int, readRxBytes func() (int64, error), logger log.FileLogger) *DroppedConMon {
+	return &DroppedConMon{pInterval: pingInterval, pDropped: pDropped, readRxBytes: readRxBytes, logger: logger}
 }
 
 // Dropped checks whether or not the connection is 'dropped'
@@ -70,31 +65,37 @@ func (m *DroppedConMon) Start(gateway string, mtuSize int) (bool, error) {
 		return false, err
 	}
 
+	// Send a ping and wait for max 2 seconds
+	// If we have then increased Rx bytes we return early
+	if err = p.Send(gateway, 1); err != nil {
+		m.logger.Debugf("[Failover] First ping failed, exiting...")
+		return false, err
+	}
+	m.logger.Debugf("[Failover] Now we are doing alive check")
+
+	// Read the pong, if we got the echo reply then everything is fine, early return
+	if err = p.Read(time.Now().Add(m.pInterval)); err == nil {
+		m.logger.Debugf("[Failover] Got early pong, exiting...")
+		return false, err
+	}
+	m.logger.Debugf("[Failover] Error reading pong: %v", err)
+
 	// Create a new ticker that executes our ping function every 'interval' seconds
 	// It starts immediately and stops when we reach the end
 	ticker := time.NewTicker(m.pInterval)
 	defer ticker.Stop()
 
-	m.logger.Debugf("[Failover] Starting...")
+	// Otherwise send n pings, without waiting for pong and then check if dropped
+	m.logger.Debugf("[Failover] Starting by sending pings and not waiting for pong...")
 	// Loop until the max drop counter
-	// We begin with 1 as this is used as the sequence number for ping
-	for s := 1; s <= m.pDropped; s++ {
+	// We begin with 2 as this is used as the sequence number for ping
+	// and we have already sent a ping
+	for s := 2; s <= m.pDropped; s++ {
 		m.logger.Debugf("[Failover] Sending ping: %d, with size: %d", s, mtuSize)
 		// Send a ping and return if an error occurs
 		if err := p.Send(gateway, s); err != nil {
 			m.logger.Debugf("[Failover] A ping failed, exiting...")
 			return false, err
-		}
-
-		// Early alive check
-		// If not dropped, return
-		if s == m.pAlive {
-			m.logger.Debugf("[Failover] Doing check if we are alive")
-			if d, err := m.dropped(b); !d {
-				m.logger.Debugf("[Failover] We are alive")
-				return false, err
-			}
-			m.logger.Debugf("[Failover] Not alive currently, ticking further...")
 		}
 		// Wait for the next tick to continue
 		select {
