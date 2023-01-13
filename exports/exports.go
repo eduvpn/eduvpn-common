@@ -414,8 +414,8 @@ func SetSearchServer(name *C.char) *C.error {
 	return getError(setSearchErr)
 }
 
-//export SetDisconnected
-func SetDisconnected(name *C.char, cleanup C.int, prevTokens C.token) *C.error {
+//export Cleanup
+func Cleanup(name *C.char, prevTokens C.token) *C.error {
 	nameStr := C.GoString(name)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
@@ -426,7 +426,18 @@ func SetDisconnected(name *C.char, cleanup C.int, prevTokens C.token) *C.error {
 		Refresh:          C.GoString(prevTokens.refresh),
 		ExpiredTimestamp: time.Unix(int64(prevTokens.expired), 0),
 	}
-	setDisconnectedErr := state.SetDisconnected(int(cleanup) == 1, t)
+	err := state.Cleanup(t)
+	return getError(err)
+}
+
+//export SetDisconnected
+func SetDisconnected(name *C.char) *C.error {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return getError(stateErr)
+	}
+	setDisconnectedErr := state.SetDisconnected()
 	return getError(setDisconnectedErr)
 }
 

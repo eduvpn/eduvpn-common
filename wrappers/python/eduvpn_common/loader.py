@@ -140,11 +140,11 @@ def initialize_functions(lib: CDLL) -> None:
     lib.RenewSession.argtypes, lib.RenewSession.restype = [c_char_p], c_void_p
     lib.SetConnected.argtypes, lib.SetConnected.restype = [c_char_p], c_void_p
     lib.SetConnecting.argtypes, lib.SetConnecting.restype = [c_char_p], c_void_p
-    lib.SetDisconnected.argtypes, lib.SetDisconnected.restype = [
+    lib.Cleanup.argtypes, lib.Cleanup.restype = [
         c_char_p,
-        c_int,
         cToken,
     ], c_void_p
+    lib.SetDisconnected.argtypes, lib.SetDisconnected.restype = [c_char_p], c_void_p
     lib.SetDisconnecting.argtypes, lib.SetDisconnecting.restype = [c_char_p], c_void_p
     lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p, c_char_p], c_void_p
     lib.SetSearchServer.argtypes, lib.SetSearchServer.restype = [c_char_p], c_void_p

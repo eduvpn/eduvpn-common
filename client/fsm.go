@@ -2,7 +2,6 @@ package client
 
 import (
 	"github.com/eduvpn/eduvpn-common/internal/fsm"
-	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/go-errors/errors"
 )
@@ -295,7 +294,7 @@ func (c *Client) SetDisconnecting() error {
 // This indicates that the VPN is currently disconnected from the server.
 // This also sends the /disconnect API call to the server.
 // Returns an error if this state transition is not possible.
-func (c *Client) SetDisconnected(cleanup bool, ct oauth.Token) error {
+func (c *Client) SetDisconnected() error {
 	if c.InFSMState(StateDisconnected) {
 		// already disconnected, show no error
 		c.Logger.Warningf("Already disconnected")
@@ -310,18 +309,6 @@ func (c *Client) SetDisconnected(cleanup bool, ct oauth.Token) error {
 	if err != nil {
 		c.logError(err)
 		return err
-	}
-
-	if cleanup {
-		// If we need to relogin, update tokens
-		if server.NeedsRelogin(srv) {
-			server.UpdateTokens(srv, ct)
-		}
-		// Do the /disconnect API call and go to disconnected after...
-		err := server.Disconnect(srv)
-		if err != nil {
-			c.Logger.Warningf("Error disconnecting %v", err)
-		}
 	}
 
 	c.FSM.GoTransitionWithData(StateDisconnected, srv)

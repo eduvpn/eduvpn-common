@@ -95,6 +95,30 @@ func (c *Client) getConfig(srv server.Server, preferTCP bool, t oauth.Token) (*C
 	return cfg, nil
 }
 
+// Cleanup cleans up the VPN connection by sending a /disconnect to the server
+func (c *Client) Cleanup(ct oauth.Token) error {
+	srv, err := c.Servers.GetCurrentServer()
+	if err != nil {
+		c.logError(err)
+		return err
+	}
+
+	// If we need to relogin, update tokens
+	if server.NeedsRelogin(srv) {
+		server.UpdateTokens(srv, ct)
+	}
+	// Do the /disconnect API call
+	err = server.Disconnect(srv)
+	if err != nil {
+		// We log nothing here because this can happen regularly
+		// Maybe we should not log errors that we return directly anyways?
+		return err
+	}
+	// TODO: Tokens might be refreshed, return updated tokens
+	// Not implemented yet, because ideally we want this implemented with an interface
+	return nil
+}
+
 // SetSecureLocation sets the location for the current secure location server. countryCode is the secure location to be chosen.
 // This function returns an error e.g. if the server cannot be found or the location is wrong.
 func (c *Client) SetSecureLocation(countryCode string) error {
