@@ -2,6 +2,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -20,6 +21,7 @@ type OptionalParams struct {
 	Headers       http.Header
 	URLParameters URLParameters
 	Body          url.Values
+	Timeout       time.Duration
 }
 
 // ConstructURL creates a URL with the included parameters.
@@ -78,16 +80,19 @@ type Client struct {
 	// This is used to prevent servers from sending huge amounts of data
 	// A limit of 16MB, although maybe much larger than needed, ensures that we do not run into problems
 	ReadLimit int64
+
+	// Timeout denotes the default timeout for each request
+	Timeout time.Duration
 }
 
 // Returns a HTTP client with some default settings
 func NewClient() *Client {
-	// The timeout is 10 seconds by default
-	c := &http.Client{Timeout: 10 * time.Second}
+	c := &http.Client{}
 	// ReadLimit denotes the maximum amount of bytes that are read in HTTP responses
 	// This is used to prevent servers from sending huge amounts of data
 	// A limit of 16MB, although maybe much larger than needed, ensures that we do not run into problems
-	return &Client{Client: c, ReadLimit: 16 << 20}
+	// The timeout is 10 seconds by default. We pass it here and not in the http client because we want to do it per request
+	return &Client{Client: c, ReadLimit: 16 << 20, Timeout: 10 * time.Second}
 }
 
 // Get creates a Get request and returns the headers, body and an error.
@@ -113,8 +118,17 @@ func (c *Client) Do(method string, urlStr string, opts *OptionalParams) (http.He
 		return nil, nil, err
 	}
 
+	// The timeout is configurable for each request
+	timeout := c.Timeout
+	if opts != nil && opts.Timeout.Seconds() > 0 {
+		timeout = opts.Timeout
+	}
+
+	ctx, cncl := context.WithTimeout(context.Background(), timeout)
+	defer cncl()
+
 	// Create request object with the body reader generated from the optional arguments
-	req, err := http.NewRequest(method, urlStr, optionalBodyReader(opts))
+	req, err := http.NewRequestWithContext(ctx, method, urlStr, optionalBodyReader(opts))
 	if err != nil {
 		return nil, nil, errors.WrapPrefix(err,
 			fmt.Sprintf("failed HTTP request with method %s and url %s", method, urlStr), 0)
