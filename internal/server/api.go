@@ -201,6 +201,8 @@ func APIConnectOpenVPN(srv Server, profileID string, preferTCP bool) (string, ti
 
 // APIDisconnect disconnects from the API.
 func APIDisconnect(server Server) error {
-	_, _, err := apiAuthorized(server, http.MethodPost, "/disconnect", nil)
+	// The timeout is a bit lower here such that this does not take a too long time for disconnecting
+	// Clients may wish to retry this
+	_, _, err := apiAuthorized(server, http.MethodPost, "/disconnect", &httpw.OptionalParams{Timeout: 5 * time.Second})
 	return err
 }
