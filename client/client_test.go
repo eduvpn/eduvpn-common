@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"net/url"
 	"strconv"
 	"strings"
 	"testing"
@@ -125,7 +126,12 @@ func testConnectOAuthParameter(
 					t.Fatalf("No port with error: %v", portErr)
 				}
 				baseURL := fmt.Sprintf("http://127.0.0.1:%d/callback", port)
-				url, err := httpw.ConstructURL(baseURL, parameters)
+				p, err := url.Parse(baseURL)
+				if err != nil {
+					_ = state.CancelOAuth()
+					t.Fatalf("Failed to parse URL with error: %v", err)
+				}
+				url, err := httpw.ConstructURL(p, parameters)
 				if err != nil {
 					_ = state.CancelOAuth()
 					t.Fatalf(
