@@ -391,7 +391,8 @@ func TestPreferTCP(t *testing.T) {
 		t.Fatalf("Config error: %v", configErr)
 	}
 
-	if !strings.HasSuffix(config.Config, "udp") {
+	// We also test for script security 0 here
+	if !strings.HasSuffix(config.Config, "udp\nscript-security 0") {
 		t.Fatalf("Suffix for prefer TCP is not in the right order for config: %s", config)
 	}
 
@@ -401,8 +402,9 @@ func TestPreferTCP(t *testing.T) {
 		t.Fatalf("Config error: %v", configErr)
 	}
 
+	// We also test for script security 0 here
 	if config.Type == "openvpn" &&
-		!strings.HasSuffix(config.Config, "tcp") {
+		!strings.HasSuffix(config.Config, "tcp\nscript-security 0") {
 		t.Fatalf("Suffix for disable prefer TCP is not in the right order for config: %s", config.Config)
 	}
 }

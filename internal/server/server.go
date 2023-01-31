@@ -284,19 +284,28 @@ func Config(server Server, wireguardSupport bool, preferTCP bool) (*ConfigData, 
 		}
 	}
 
+	var cfg *ConfigData
+
 	switch {
 	// The config supports wireguard and optionally openvpn
 	case wg:
 		// A wireguard connect call needs to generate a wireguard key and add it to the config
 		// Also the server could send back an OpenVPN config if it supports OpenVPN
-		return wireguardGetConfig(server, preferTCP, ovpn)
+		cfg, err = wireguardGetConfig(server, preferTCP, ovpn)
 	//  The config only supports OpenVPN
 	case ovpn:
-		return openVPNGetConfig(server, preferTCP)
+		cfg, err = openVPNGetConfig(server, preferTCP)
 		// The config supports no available protocol because the profile only supports WireGuard but the client doesn't
 	default:
 		return nil, errors.Errorf("no supported protocol found")
 	}
+
+	// Add script security 0 to disable OpenVPN scripts
+	// The client may override this but we provide the default protection here
+	if err == nil && cfg.Type == "openvpn" {
+		cfg.Config += "\nscript-security 0"
+	}
+	return cfg, err
 }
 
 func Disconnect(server Server) error {
