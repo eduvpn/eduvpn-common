@@ -1,31 +1,59 @@
 package discovery
 
 import (
-	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 	"time"
 
+	httpw "github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/types"
 )
 
 // setupFileServer sets up a file server with a directory
-func setupFileServer(t *testing.T, directory string) *http.Server {
+func setupFileServer(t *testing.T, directory string) *httptest.Server {
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
 		t.Fatalf("Failed to setup discovery file server")
 	}
-	s := &http.Server{Handler: http.FileServer(http.Dir(directory))}
-	go s.Serve(listener) //nolint:errcheck
+	handler := http.FileServer(http.Dir(directory))
+	s := httptest.NewUnstartedServer(handler)
+	// Close the server listener and use a custom one
+	s.Listener.Close()
+	s.Listener = listener
+	s.StartTLS()
 
 	// Override the global disco URL with the local file server
 	port := listener.Addr().(*net.TCPAddr).Port
 	DiscoURL = fmt.Sprintf("http://127.0.0.1:%d/", port)
-
 	return s
+}
+
+func setupCerts(t *testing.T, discovery *Discovery, server *httptest.Server) {
+	// Get the certs from the test server
+	certs := x509.NewCertPool()
+	for _, c := range server.TLS.Certificates {
+		roots, err := x509.ParseCertificates(c.Certificate[len(c.Certificate)-1])
+		if err != nil {
+			t.Fatalf("failed to parse root certificate with error: %v", err)
+		}
+		for _, root := range roots {
+			certs.AddCert(root)
+		}
+	}
+	// Override the client such that it only trusts the test server cert
+	client := httpw.NewClient()
+	client.Client.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs: certs,
+		},
+	}
+	discovery.httpClient = client
 }
 
 // TestServers tests whether or not we can obtain discovery servers
@@ -33,6 +61,7 @@ func setupFileServer(t *testing.T, directory string) *http.Server {
 func TestServers(t *testing.T) {
 	s := setupFileServer(t, "test_files")
 	d := &Discovery{}
+	setupCerts(t, d, s)
 	// get servers
 	s1, err := d.Servers()
 	if err != nil {
@@ -40,11 +69,7 @@ func TestServers(t *testing.T) {
 	}
 
 	// Shutdown the server
-	err = s.Shutdown(context.Background())
-	if err != nil {
-		t.Fatalf("Failed to shutdown server: %v", err)
-	}
-
+	s.Close()
 	// Test if we get the same cached copy
 	s2, err := d.Servers()
 	// We should not get an error as the timestamp is not expired
@@ -73,6 +98,7 @@ func TestServers(t *testing.T) {
 func TestOrganizations(t *testing.T) {
 	s := setupFileServer(t, "test_files")
 	d := &Discovery{}
+	setupCerts(t, d, s)
 	// get servers
 	s1, err := d.Organizations()
 	if err != nil {
@@ -80,11 +106,7 @@ func TestOrganizations(t *testing.T) {
 	}
 
 	// Shutdown the server
-	err = s.Shutdown(context.Background())
-	if err != nil {
-		t.Fatalf("Failed to shutdown server: %v", err)
-	}
-
+	s.Close()
 	// Test if we get the same cached copy
 	// We should not get an error as the timestamp is not zero
 	s2, err := d.Organizations()
@@ -112,6 +134,7 @@ func TestSecureLocationList(t *testing.T) {
 			},
 		},
 	}
+
 	cc := d.SecureLocationList()
 	want := []string{"b", "c"}
 
