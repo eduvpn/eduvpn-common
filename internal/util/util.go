@@ -24,7 +24,8 @@ func EnsureValidURL(s string) (string, error) {
 		return "", errors.WrapPrefix(err, "failed parsing url", 0)
 	}
 
-	if u.Scheme == "" {
+	// Make sure the scheme is always https
+	if u.Scheme != "https" {
 		u.Scheme = "https"
 	}
 	if u.Path != "" {

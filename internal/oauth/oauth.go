@@ -490,7 +490,12 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 		"redirect_uri":          fmt.Sprintf("http://127.0.0.1:%d/callback", port),
 	}
 
-	u, err := httpw.ConstructURL(oauth.BaseAuthorizationURL, params)
+	p, err := url.Parse(oauth.BaseAuthorizationURL)
+	if err != nil {
+		return "", errors.WrapPrefix(err, fmt.Sprintf("failed to parse OAuth base URL '%s'", oauth.BaseAuthorizationURL), 0)
+	}
+
+	u, err := httpw.ConstructURL(p, params)
 	if err != nil {
 		return "", errors.WrapPrefix(err, "httpw.ConstructURL error", 0)
 	}

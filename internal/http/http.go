@@ -25,13 +25,7 @@ type OptionalParams struct {
 }
 
 // ConstructURL creates a URL with the included parameters.
-func ConstructURL(baseURL string, params URLParameters) (string, error) {
-	u, err := url.Parse(baseURL)
-	if err != nil {
-		return "", errors.WrapPrefix(err,
-			fmt.Sprintf("failed to construct url '%s' with parameters: %v", u, params), 0)
-	}
-
+func ConstructURL(u *url.URL, params URLParameters) (string, error) {
 	q := u.Query()
 
 	for p, value := range params {
@@ -44,11 +38,21 @@ func ConstructURL(baseURL string, params URLParameters) (string, error) {
 // optionalURL ensures that the URL contains the optional parameters
 // it returns the url (with parameters if success) and an error indicating success.
 func optionalURL(urlStr string, opts *OptionalParams) (string, error) {
-	if opts == nil {
-		return urlStr, nil
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return "", errors.WrapPrefix(err,
+			fmt.Sprintf("failed to construct parse url '%s'", urlStr), 0)
+	}
+	// Make sure the scheme is always set to HTTPS
+	if u.Scheme != "https" {
+		u.Scheme = "https"
 	}
 
-	return ConstructURL(urlStr, opts.URLParameters)
+	if opts == nil {
+		return u.String(), nil
+	}
+
+	return ConstructURL(u, opts.URLParameters)
 }
 
 // optionalHeaders ensures that the HTTP request uses the optional headers if defined.
