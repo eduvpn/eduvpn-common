@@ -11,8 +11,6 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/go-errors/errors"
-
-	"github.com/pkg/browser"
 )
 
 type ServerTypes int8
@@ -40,13 +38,12 @@ func openBrowser(data interface{}) {
 		fmt.Fprintln(os.Stderr, "got invalid scheme for URL:", u.String())
 		return
 	}
-	fmt.Printf("OAuth: Initialized with AuthURL %s\n", str)
-	fmt.Println("Opening browser...")
-	err = browser.OpenURL(str)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to open browser with error:", err)
-		fmt.Println("Please open your browser manually")
-	}
+	fmt.Println("Please open your browser with URL:", u.String())
+	// In practice, a client should open the browser here
+	// But be careful with which commands you execute with this input
+	// As a client you should do enough input validation such that opening the browser does not have unwanted side effects
+	// We do our best to validate the URL in this example by parsing if it's a URL and additionally failing if the scheme is not HTTPS
+	// Note that the library already tries it best to validate data from the server, but a client should always be careful which data it uses
 }
 
 // Ask for a profile in the command line.

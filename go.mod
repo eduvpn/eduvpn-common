@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/jedisct1/go-minisign v0.0.0-20211028175153-1c139d1cc84b
-	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20220916014741-473347a5e6e3
 )
 
