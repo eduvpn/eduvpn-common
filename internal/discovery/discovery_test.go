@@ -30,7 +30,7 @@ func setupFileServer(t *testing.T, directory string) *httptest.Server {
 
 	// Override the global disco URL with the local file server
 	port := listener.Addr().(*net.TCPAddr).Port
-	DiscoURL = fmt.Sprintf("http://127.0.0.1:%d/", port)
+	DiscoURL = fmt.Sprintf("https://127.0.0.1:%d/", port)
 	return s
 }
 
