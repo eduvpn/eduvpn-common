@@ -15,8 +15,8 @@ func TestEnsureValidURL(t *testing.T) {
 	testCases := map[string]string{
 		// Make sure we set https
 		"example.com/": "https://example.com/",
-		// Make sure we do not override the scheme if provided
-		"http://example.com/": "http://example.com/",
+		// Make sure we do override the scheme to https
+		"http://example.com/": "https://example.com/",
 		// This URL is already valid
 		"https://example.com/": "https://example.com/",
 		// Make sure to add a trailing slash (/)
