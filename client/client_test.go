@@ -406,3 +406,41 @@ func TestPreferTCP(t *testing.T) {
 		t.Fatalf("Suffix for disable prefer TCP is not in the right order for config: %s", config.Config)
 	}
 }
+
+func TestInvalidClientID(t *testing.T) {
+	tests := map[string]bool {
+		"test": false,
+		"org.letsconnect-vpn.app.linux": true,
+		"org.letsconnect-vpn": false,
+		"org.letsconnect-vpn.app": false,
+		"org.letsconnect-vpn.linuxsd": false,
+		"org.letsconnect-vpn.app.macos": true,
+	}
+
+	for k, v := range tests {
+		state := &Client{}
+		registerErr := state.Register(
+			k,
+			"configsclientid",
+			"en",
+			func(old FSMStateID, new FSMStateID, data interface{}) bool {
+				stateCallback(t, old, new, data, state)
+				return true
+			},
+			false,
+		)
+		if v {
+			if registerErr != nil {
+				t.Fatalf("expected valid register with clientID: %v, got error: %v", k, registerErr)
+			}
+			continue
+		}
+		if registerErr == nil {
+			t.Fatalf("expected invalid register with clientID: %v, but got no error", k)
+		}
+		if !strings.HasPrefix(registerErr.Error(), "client ID is not allowed") {
+			t.Fatalf("register error has invalid prefix: %v", registerErr.Error())
+		}
+	}
+
+}

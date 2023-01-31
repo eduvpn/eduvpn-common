@@ -32,8 +32,32 @@ func (c *Client) logError(err error) {
 }
 
 func (c *Client) isLetsConnect() bool {
-	// see https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/ClientDb.php
+	// see https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/VpnClientDb.php
 	return strings.HasPrefix(c.Name, "org.letsconnect-vpn.app")
+}
+
+// isAllowedClientID checks if the 'clientID' is in the list of allowed client IDs
+func isAllowedClientID(clientID string) bool {
+	allowList := []string{
+		// eduVPN
+		"org.eduvpn.app.windows",
+		"org.eduvpn.app.android",
+		"org.eduvpn.app.ios",
+		"org.eduvpn.app.macos",
+		"org.eduvpn.app.linux",
+		// Let's Connect!
+		"org.letsconnect-vpn.app.windows",
+		"org.letsconnect-vpn.app.android",
+		"org.letsconnect-vpn.app.ios",
+		"org.letsconnect-vpn.app.macos",
+		"org.letsconnect-vpn.app.linux",
+	}
+	for _, x := range allowList {
+		if x == clientID {
+			return true
+		}
+	}
+	return false
 }
 
 // Client is the main struct for the VPN client.
@@ -91,6 +115,10 @@ func (c *Client) Register(
 
 	if !c.InFSMState(StateDeregistered) {
 		return errors.Errorf("fsm attempt to register while in '%v'", c.FSM.Current)
+	}
+
+	if !isAllowedClientID(name) {
+		return errors.Errorf("client ID is not allowed: '%v', see https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/VpnClientDb.php for a list of allowed IDs", name)
 	}
 
 	c.Name = name
