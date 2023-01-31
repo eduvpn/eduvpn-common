@@ -3,13 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os/exec"
+	"net/url"
+	"os"
 	"strings"
 
 	"github.com/eduvpn/eduvpn-common/client"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/go-errors/errors"
+
+	"github.com/pkg/browser"
 )
 
 type ServerTypes int8
@@ -21,16 +24,28 @@ const (
 )
 
 // Open a browser with xdg-open.
-func openBrowser(url interface{}) {
-	str, ok := url.(string)
+func openBrowser(data interface{}) {
+	str, ok := data.(string)
 	if !ok {
 		return
 	}
+	// double check URL scheme
+	u, err := url.Parse(str)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed parsing url", err)
+		return
+	}
+	// Double check the scheme
+	if u.Scheme != "https" {
+		fmt.Fprintln(os.Stderr, "got invalid scheme for URL:", u.String())
+		return
+	}
 	fmt.Printf("OAuth: Initialized with AuthURL %s\n", str)
-	fmt.Println("OAuth: Opening browser with xdg-open...")
-	if exec.Command("xdg-open", str).Start() != nil {
-		// TODO(): Shouldn't this if statement be inverted?
-		fmt.Println("OAuth: Browser opened with xdg-open...")
+	fmt.Println("Opening browser...")
+	err = browser.OpenURL(str)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to open browser with error:", err)
+		fmt.Println("Please open your browser manually")
 	}
 }
 
@@ -39,7 +54,7 @@ func sendProfile(state *client.Client, data interface{}) {
 	fmt.Printf("Multiple VPN profiles found. Please select a profile by entering e.g. 1")
 	sps, ok := data.(*server.ProfileInfo)
 	if !ok {
-		fmt.Println("Invalid data type")
+		fmt.Fprintln(os.Stderr, "invalid data type")
 		return
 	}
 
@@ -54,7 +69,7 @@ func sendProfile(state *client.Client, data interface{}) {
 	var idx int
 	if _, err := fmt.Scanf("%d", &idx); err != nil || idx <= 0 ||
 		idx > len(sps.Info.ProfileList) {
-		fmt.Println("invalid profile chosen, please retry")
+		fmt.Fprintln(os.Stderr, "invalid profile chosen, please retry")
 		sendProfile(state, data)
 		return
 	}
@@ -62,7 +77,7 @@ func sendProfile(state *client.Client, data interface{}) {
 	p := sps.Info.ProfileList[idx-1]
 	fmt.Println("Sending profile ID", p.ID)
 	if err := state.SetProfileID(p.ID); err != nil {
-		fmt.Println("Failed setting profile with error", err)
+		fmt.Fprintln(os.Stderr, "failed setting profile with error", err)
 	}
 }
 
@@ -131,7 +146,7 @@ func printConfig(url string, srvType ServerTypes) {
 	if err != nil {
 		err1 := err.(*errors.Error)
 		// Show the usage of tracebacks and causes
-		fmt.Printf("Error getting config: %s\nCause:\n%s\nStack trace:\n%s\n\n'",
+		fmt.Fprintf(os.Stderr, "Error getting config: %s\nCause:\n%s\nStack trace:\n%s\n\n'",
 			err1.Error(), err1.Err, err1.ErrorStack())
 		return
 	}
