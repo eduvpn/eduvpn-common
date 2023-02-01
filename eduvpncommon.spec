@@ -3,7 +3,7 @@
 %global sum eduVPN common Go library
 
 Name:           lib%{libname}
-Version:        0.2.0
+Version:        0.3.0
 Release:        0.1%{?dist}
 Summary:        %{sum}
 
@@ -41,7 +41,7 @@ popd
 
 %package -n python3-%{libname}
 BuildArch: noarch
-Requires: %{name} >= 0.2.0, %{name} < 0.3.0
+Requires: %{name} >= 0.3.0, %{name} < 0.4.0
 Summary: Python3 eduvpncommon wrapper
 
 %description -n python3-%{libname}
