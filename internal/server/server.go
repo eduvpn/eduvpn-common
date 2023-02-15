@@ -42,6 +42,8 @@ type Endpoints struct {
 	V string `json:"v"`
 }
 
+// ShouldRenewButton returns whether or not the renew button should be shown for the server
+// Implemented according to: https://github.com/eduvpn/documentation/blob/cdf4d054f7652d74e4192494e8bb0e21040e46ac/API.md#session-expiry
 func ShouldRenewButton(srv Server) bool {
 	b, err := srv.Base()
 	if err != nil {
@@ -64,13 +66,6 @@ func ShouldRenewButton(srv Server) bool {
 
 	// Session will not expire today
 	if !now.Add(24 * time.Hour).After(b.EndTime) {
-		return false
-	}
-
-	// Session duration is less than 24 hours but not 75% has passed
-	delta := b.EndTime.Sub(b.StartTime)
-	passed := b.StartTime.Add((delta / 4) * 3)
-	if delta < 24*time.Hour && !now.After(passed) {
 		return false
 	}
 
