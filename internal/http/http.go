@@ -59,6 +59,23 @@ func EnsureValidURL(s string) (string, error) {
 	}
 	return cleanPath(u), nil
 }
+
+// JoinURLPath joins url's path, in go 1.19 we can use url.JoinPath
+func JoinURLPath(u string, p string) (string, error) {
+	pu, err := url.Parse(u)
+	if err != nil {
+		return "", errors.WrapPrefix(err, "failed to parse url for joining paths", 0)
+	}
+	pp, err := url.Parse(p)
+	if err != nil {
+		return "", errors.WrapPrefix(err, "failed to parse path for joining paths", 0)
+	}
+	fp := pu.ResolveReference(pp)
+
+	// We also clean the path for consistency
+	return cleanPath(fp), nil
+}
+
 // ConstructURL creates a URL with the included parameters.
 func ConstructURL(u *url.URL, params URLParameters) (string, error) {
 	q := u.Query()
