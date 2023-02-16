@@ -10,18 +10,18 @@ import (
 	"github.com/go-errors/errors"
 )
 
-type TestServer struct {
+type Server struct {
 	*httptest.Server
 }
 
-func NewServer(handler http.Handler) *TestServer {
+func NewServer(handler http.Handler) *Server {
 	s := httptest.NewTLSServer(handler)
 
-	return &TestServer{s}
+	return &Server{s}
 }
 
 // Client returns a test client that trusts the HTTPS certificates
-func (srv *TestServer) Client() (*httpw.Client, error) {
+func (srv *Server) Client() (*httpw.Client, error) {
 	// Get the certs from the test server
 	certs := x509.NewCertPool()
 	for _, c := range srv.TLS.Certificates {
