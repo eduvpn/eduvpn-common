@@ -1,67 +1,26 @@
 package discovery
 
 import (
-	"crypto/tls"
-	"crypto/x509"
-	"fmt"
-	"net"
 	"net/http"
-	"net/http/httptest"
 	"reflect"
 	"testing"
 	"time"
 
-	httpw "github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/types"
+	"github.com/eduvpn/eduvpn-common/internal/test"
 )
-
-// setupFileServer sets up a file server with a directory
-func setupFileServer(t *testing.T, directory string) *httptest.Server {
-	listener, err := net.Listen("tcp", ":0")
-	if err != nil {
-		t.Fatalf("Failed to setup discovery file server")
-	}
-	handler := http.FileServer(http.Dir(directory))
-	s := httptest.NewUnstartedServer(handler)
-	// Close the server listener and use a custom one
-	s.Listener.Close()
-	s.Listener = listener
-	s.StartTLS()
-
-	// Override the global disco URL with the local file server
-	port := listener.Addr().(*net.TCPAddr).Port
-	DiscoURL = fmt.Sprintf("https://127.0.0.1:%d/", port)
-	return s
-}
-
-func setupCerts(t *testing.T, discovery *Discovery, server *httptest.Server) {
-	// Get the certs from the test server
-	certs := x509.NewCertPool()
-	for _, c := range server.TLS.Certificates {
-		roots, err := x509.ParseCertificates(c.Certificate[len(c.Certificate)-1])
-		if err != nil {
-			t.Fatalf("failed to parse root certificate with error: %v", err)
-		}
-		for _, root := range roots {
-			certs.AddCert(root)
-		}
-	}
-	// Override the client such that it only trusts the test server cert
-	client := httpw.NewClient()
-	client.Client.Transport = &http.Transport{
-		TLSClientConfig: &tls.Config{
-			RootCAs: certs,
-		},
-	}
-	discovery.httpClient = client
-}
 
 // TestServers tests whether or not we can obtain discovery servers
 // It setups up a file server using the 'test_files' directory
 func TestServers(t *testing.T) {
-	s := setupFileServer(t, "test_files")
-	d := &Discovery{}
-	setupCerts(t, d, s)
+	handler := http.FileServer(http.Dir("test_files"))
+	s := test.NewServer(handler)
+	DiscoURL = s.URL
+	c, err := s.Client()
+	if err != nil {
+		t.Fatalf("Failed to get HTTP test client: %v", err)
+	}
+	d := &Discovery{httpClient: c}
 	// get servers
 	s1, err := d.Servers()
 	if err != nil {
@@ -96,9 +55,14 @@ func TestServers(t *testing.T) {
 // TestOrganizations tests whether or not we can obtain discovery organizations
 // It setups up a file server using the 'test_files' directory
 func TestOrganizations(t *testing.T) {
-	s := setupFileServer(t, "test_files")
-	d := &Discovery{}
-	setupCerts(t, d, s)
+	handler := http.FileServer(http.Dir("test_files"))
+	s := test.NewServer(handler)
+	DiscoURL = s.URL
+	c, err := s.Client()
+	if err != nil {
+		t.Fatalf("Failed to get HTTP test client: %v", err)
+	}
+	d := &Discovery{httpClient: c}
 	// get servers
 	s1, err := d.Organizations()
 	if err != nil {

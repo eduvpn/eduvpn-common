@@ -35,7 +35,10 @@ func (discovery *Discovery) file(jsonFile string, previousVersion uint64, struct
 	}
 
 	// Get json data
-	jsonURL := DiscoURL + jsonFile
+	jsonURL, err := http.JoinURLPath(DiscoURL, jsonFile)
+	if err != nil {
+		return err
+	}
 	_, body, err := discovery.httpClient.Get(jsonURL)
 	if err != nil {
 		return err
@@ -43,7 +46,10 @@ func (discovery *Discovery) file(jsonFile string, previousVersion uint64, struct
 
 	// Get signature
 	sigFile := jsonFile + ".minisig"
-	sigURL := DiscoURL + sigFile
+	sigURL, err := http.JoinURLPath(DiscoURL, sigFile)
+	if err != nil {
+		return err
+	}
 	_, sigBody, err := discovery.httpClient.Get(sigURL)
 	if err != nil {
 		return err
