@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"net/http"
 	"net/http/httptest"
+
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/go-errors/errors"
 )

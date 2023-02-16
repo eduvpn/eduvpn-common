@@ -7,7 +7,7 @@ import (
 
 // HandlerSet is a struct with a mutex that allows us to swap handlers while a test server is running
 type HandlerSet struct {
-	mu sync.Mutex
+	mu      sync.Mutex
 	handler http.Handler
 }
 

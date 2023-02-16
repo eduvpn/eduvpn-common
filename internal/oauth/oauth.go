@@ -281,7 +281,7 @@ func (oauth *OAuth) refreshResponse(r string) (*TokenResponse, time.Time, error)
 		return nil, time.Time{}, errors.New("No client ID was cached for refresh")
 	}
 	data := url.Values{
-		"client_id": {oauth.ClientID},
+		"client_id":     {oauth.ClientID},
 		"refresh_token": {r},
 		"grant_type":    {"refresh_token"},
 	}

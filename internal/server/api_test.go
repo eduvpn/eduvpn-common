@@ -10,7 +10,6 @@ import (
 	"github.com/go-errors/errors"
 )
 
-
 func getErrorMsg(err error) string {
 	if err == nil {
 		return ""
@@ -44,49 +43,49 @@ func Test_APIGetEndpoints(t *testing.T) {
 	}{
 		{
 			epl: EndpointList{
-				API: "https://example.com/1",
+				API:           "https://example.com/1",
 				Authorization: "https://example.com/2",
-				Token: "https://example.com/3",
+				Token:         "https://example.com/3",
 			},
 			err: nil,
 		},
 		{
 			epl: EndpointList{
-				API: "http://example.com/1",
+				API:           "http://example.com/1",
 				Authorization: "https://example.com/2",
-				Token: "https://example.com/3",
+				Token:         "https://example.com/3",
 			},
 			err: errors.New("API scheme: 'http', is not equal to authorization scheme: 'https'"),
 		},
 		{
 			epl: EndpointList{
-				API: "https://example.com/1",
+				API:           "https://example.com/1",
 				Authorization: "https://example.com/2",
-				Token: "ftp://example.com/3",
+				Token:         "ftp://example.com/3",
 			},
 			err: errors.New("API scheme: 'https', is not equal to token scheme: 'ftp'"),
 		},
 		{
 			epl: EndpointList{
-				API: "https://malicious.com/1",
+				API:           "https://malicious.com/1",
 				Authorization: "https://example.com/2",
-				Token: "https://example.com/3",
+				Token:         "https://example.com/3",
 			},
 			err: errors.New("API host: 'malicious.com', is not equal to authorization host: 'example.com'"),
 		},
 		{
 			epl: EndpointList{
-				API: "https://example.com/1",
+				API:           "https://example.com/1",
 				Authorization: "https://example.com/2",
-				Token: "https://malicious.com/3",
+				Token:         "https://malicious.com/3",
 			},
 			err: errors.New("API host: 'example.com', is not equal to token host: 'malicious.com'"),
 		},
 		{
 			epl: EndpointList{
-				API: "https://example.com/1",
+				API:           "https://example.com/1",
 				Authorization: "https://malicious.com/2",
-				Token: "https://example.com/3",
+				Token:         "https://example.com/3",
 			},
 			err: errors.New("API host: 'example.com', is not equal to authorization host: 'malicious.com'"),
 		},
@@ -99,7 +98,7 @@ func Test_APIGetEndpoints(t *testing.T) {
 			},
 		}
 		// Update the handler
-		hs.SetHandler(http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+		hs.SetHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
 			jsonStr, err := json.Marshal(ep)
@@ -108,7 +107,6 @@ func Test_APIGetEndpoints(t *testing.T) {
 			}
 
 			fmt.Fprintln(w, string(jsonStr))
-
 		}))
 		gotEP, err := APIGetEndpoints(s.URL, c)
 		if getErrorMsg(err) != getErrorMsg(tc.err) {

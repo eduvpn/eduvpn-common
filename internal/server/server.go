@@ -41,7 +41,7 @@ type EndpointsVersions struct {
 // Endpoints defines the json format for /.well-known/vpn-user-portal".
 type Endpoints struct {
 	API EndpointsVersions `json:"api"`
-	V string `json:"v"`
+	V   string            `json:"v"`
 }
 
 // ShouldRenewButton returns whether or not the renew button should be shown for the server

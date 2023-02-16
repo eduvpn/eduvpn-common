@@ -2,6 +2,7 @@ package server
 
 import (
 	"time"
+
 	"github.com/eduvpn/eduvpn-common/internal/http"
 )
 

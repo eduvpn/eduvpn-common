@@ -161,7 +161,6 @@ func (c *Client) PostWithOpts(url string, opts *OptionalParams) (http.Header, []
 	return c.Do(http.MethodPost, url, opts)
 }
 
-
 // MethodWithOpts Do send a HTTP request using a method (e.g. GET, POST), an url and optional parameters
 // It returns the HTTP headers, the body and an error if there is one.
 func (c *Client) Do(method string, urlStr string, opts *OptionalParams) (http.Header, []byte, error) {

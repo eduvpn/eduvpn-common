@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/types"
 	"github.com/eduvpn/eduvpn-common/internal/test"
+	"github.com/eduvpn/eduvpn-common/types"
 )
 
 // TestServers tests whether or not we can obtain discovery servers

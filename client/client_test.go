@@ -3,9 +3,9 @@ package client
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
-	"net/url"
 	"strconv"
 	"strings"
 	"testing"
@@ -409,12 +409,12 @@ func TestPreferTCP(t *testing.T) {
 }
 
 func TestInvalidClientID(t *testing.T) {
-	tests := map[string]bool {
-		"test": false,
+	tests := map[string]bool{
+		"test":                          false,
 		"org.letsconnect-vpn.app.linux": true,
-		"org.letsconnect-vpn": false,
-		"org.letsconnect-vpn.app": false,
-		"org.letsconnect-vpn.linuxsd": false,
+		"org.letsconnect-vpn":           false,
+		"org.letsconnect-vpn.app":       false,
+		"org.letsconnect-vpn.linuxsd":   false,
 		"org.letsconnect-vpn.app.macos": true,
 	}
 
@@ -443,5 +443,4 @@ func TestInvalidClientID(t *testing.T) {
 			t.Fatalf("register error has invalid prefix: %v", registerErr.Error())
 		}
 	}
-
 }
