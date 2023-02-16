@@ -33,12 +33,14 @@ type EndpointList struct {
 	Token         string `json:"token_endpoint"`
 }
 
+type EndpointsVersions struct {
+	V2 EndpointList `json:"http://eduvpn.org/api#2"`
+	V3 EndpointList `json:"http://eduvpn.org/api#3"`
+}
+
 // Endpoints defines the json format for /.well-known/vpn-user-portal".
 type Endpoints struct {
-	API struct {
-		V2 EndpointList `json:"http://eduvpn.org/api#2"`
-		V3 EndpointList `json:"http://eduvpn.org/api#3"`
-	} `json:"api"`
+	API EndpointsVersions `json:"api"`
 	V string `json:"v"`
 }
 

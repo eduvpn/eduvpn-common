@@ -19,7 +19,7 @@ type Base struct {
 }
 
 func (b *Base) InitializeEndpoints() error {
-	ep, err := APIGetEndpoints(b.URL)
+	ep, err := APIGetEndpoints(b.URL, b.httpClient)
 	if err != nil {
 		return err
 	}
