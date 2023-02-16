@@ -2,9 +2,9 @@ package client
 
 import (
 	"github.com/eduvpn/eduvpn-common/internal/failover"
+	"github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
-	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/eduvpn/eduvpn-common/types"
 	"github.com/go-errors/errors"
 )
@@ -331,7 +331,7 @@ func (c *Client) AddCustomServer(url string) (srv server.Server, err error) {
 		}
 	}()
 
-	if url, err = util.EnsureValidURL(url); err != nil {
+	if url, err = http.EnsureValidURL(url); err != nil {
 		return nil, err
 	}
 
@@ -457,7 +457,7 @@ func (c *Client) GetConfigCustomServer(url string, preferTCP bool, t oauth.Token
 		}
 	}()
 
-	if url, err = util.EnsureValidURL(url); err != nil {
+	if url, err = http.EnsureValidURL(url); err != nil {
 		return nil, err
 	}
 

@@ -5,39 +5,6 @@ import (
 	"testing"
 )
 
-func TestEnsureValidURL(t *testing.T) {
-	_, validErr := EnsureValidURL("%notvalid%")
-
-	if validErr == nil {
-		t.Fatal("Got nil error, want: non-nil")
-	}
-
-	testCases := map[string]string{
-		// Make sure we set https
-		"example.com/": "https://example.com/",
-		// Make sure we do override the scheme to https
-		"http://example.com/": "https://example.com/",
-		// This URL is already valid
-		"https://example.com/": "https://example.com/",
-		// Make sure to add a trailing slash (/)
-		"https://example.com": "https://example.com/",
-		// Cleanup the path 1
-		"https://example.com/////": "https://example.com/",
-		// Cleanup the path 2
-		"https://example.com/..": "https://example.com/",
-	}
-
-	for k, v := range testCases {
-		valid, validErr := EnsureValidURL(k)
-		if validErr != nil {
-			t.Fatalf("Got: %v, want: nil", validErr)
-		}
-		if valid != v {
-			t.Fatalf("Got: %v, want: %v", valid, v)
-		}
-	}
-}
-
 func TestMakeRandomByteSlice(t *testing.T) {
 	random, randomErr := MakeRandomByteSlice(32)
 	if randomErr != nil {

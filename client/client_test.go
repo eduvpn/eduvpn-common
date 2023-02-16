@@ -13,7 +13,6 @@ import (
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
-	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/go-errors/errors"
 )
 
@@ -22,7 +21,7 @@ func getServerURI(t *testing.T) string {
 	if serverURI == "" {
 		t.Skip("Skipping server test as no SERVER_URI env var has been passed")
 	}
-	serverURI, parseErr := util.EnsureValidURL(serverURI)
+	serverURI, parseErr := httpw.EnsureValidURL(serverURI)
 	if parseErr != nil {
 		t.Skip("Skipping server test as the server uri is not valid")
 	}

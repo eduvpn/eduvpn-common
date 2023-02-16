@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 	"time"
 
@@ -24,6 +25,40 @@ type OptionalParams struct {
 	Timeout       time.Duration
 }
 
+func cleanPath(u *url.URL) string {
+	if u.Path != "" {
+		// Clean the path
+		// https://pkg.go.dev/path#Clean
+		u.Path = path.Clean(u.Path)
+	}
+
+	str := u.String()
+
+	// Make sure the URL ends with a /
+	if str[len(str)-1:] != "/" {
+		str += "/"
+	}
+	return str
+}
+
+// EnsureValidURL ensures that the input URL is valid to be used internally
+// It does the following
+// - Sets the scheme to https if none is given
+// - It 'cleans' up the path using path.Clean
+// - It makes sure that the URL ends with a /
+// It returns an error if the URL cannot be parsed.
+func EnsureValidURL(s string) (string, error) {
+	u, err := url.Parse(s)
+	if err != nil {
+		return "", errors.WrapPrefix(err, "failed parsing url", 0)
+	}
+
+	// Make sure the scheme is always https
+	if u.Scheme != "https" {
+		u.Scheme = "https"
+	}
+	return cleanPath(u), nil
+}
 // ConstructURL creates a URL with the included parameters.
 func ConstructURL(u *url.URL, params URLParameters) (string, error) {
 	q := u.Query()

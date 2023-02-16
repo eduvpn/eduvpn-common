@@ -6,42 +6,10 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/go-errors/errors"
 )
-
-// EnsureValidURL ensures that the input URL is valid to be used internally
-// It does the following
-// - Sets the scheme to https if none is given
-// - It 'cleans' up the path using path.Clean
-// - It makes sure that the URL ends with a /
-// It returns an error if the URL cannot be parsed.
-func EnsureValidURL(s string) (string, error) {
-	u, err := url.Parse(s)
-	if err != nil {
-		return "", errors.WrapPrefix(err, "failed parsing url", 0)
-	}
-
-	// Make sure the scheme is always https
-	if u.Scheme != "https" {
-		u.Scheme = "https"
-	}
-	if u.Path != "" {
-		// Clean the path
-		// https://pkg.go.dev/path#Clean
-		u.Path = path.Clean(u.Path)
-	}
-
-	str := u.String()
-
-	// Make sure the URL ends with a /
-	if str[len(str)-1:] != "/" {
-		str += "/"
-	}
-	return str, nil
-}
 
 // MakeRandomByteSlice creates a cryptographically random bytes slice of `size`
 // It returns the byte slice (or nil if error) and an error if it could not be generated.
