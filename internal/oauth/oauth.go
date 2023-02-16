@@ -364,10 +364,9 @@ func writeResponseHTML(w http.ResponseWriter, title string, message string) erro
 // It returns the code and an error if there is one
 func (s *exchangeSession) Authcode(url *url.URL) (string, error) {
 	// ISS: https://www.rfc-editor.org/rfc/rfc9207.html
-	// TODO: Make this a required parameter in the future
 	q := url.Query()
 	iss := q.Get("iss")
-	if iss != "" && s.ISS != iss {
+	if s.ISS != iss {
 		return "", errors.Errorf("failed matching ISS; expected '%s' got '%s'", s.ISS, iss)
 	}
 
