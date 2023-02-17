@@ -43,11 +43,11 @@ func Test_JoinURLPath(t *testing.T) {
 		p    string
 		want string
 	}{
-		{u: "https://example.com", p: "test", want: "https://example.com/test/"},
-		{u: "https://example.com", p: "/test", want: "https://example.com/test/"},
-		{u: "https://example.com", p: "../test", want: "https://example.com/test/"},
-		{u: "https://example.com", p: "../test/", want: "https://example.com/test/"},
-		{u: "https://example.com", p: "test/", want: "https://example.com/test/"},
+		{u: "https://example.com", p: "test", want: "https://example.com/test"},
+		{u: "https://example.com", p: "/test", want: "https://example.com/test"},
+		{u: "https://example.com", p: "../test", want: "https://example.com/test"},
+		{u: "https://example.com", p: "../test/", want: "https://example.com/test"},
+		{u: "https://example.com", p: "test/", want: "https://example.com/test"},
 	}
 	for _, c := range cases {
 		got, err := JoinURLPath(c.u, c.p)
