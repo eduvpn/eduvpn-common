@@ -9,7 +9,7 @@ written using some FFI framework for each language used in eduVPN clients to eas
 The only support language is Python at the moment. Other languages will come with updates.
 
 ## Documentation
-The documentation for this library can be found at https://eduvpn.github.io/eduvpn-common.
+The documentation for this library can be found at [GitHub pages](https://eduvpn.github.io/eduvpn-common).
 
 ## Contributing
 Contributions are welcome.
