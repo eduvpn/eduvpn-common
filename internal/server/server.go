@@ -294,7 +294,7 @@ func Config(server Server, wireguardSupport bool, preferTCP bool) (*ConfigData, 
 		cfg, err = openVPNGetConfig(server, preferTCP)
 		// The config supports no available protocol because the profile only supports WireGuard but the client doesn't
 	default:
-		return nil, errors.Errorf("no supported protocol found")
+		return nil, errors.New("no supported protocol found")
 	}
 
 	// Add script security 0 to disable OpenVPN scripts

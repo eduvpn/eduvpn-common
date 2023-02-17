@@ -25,14 +25,14 @@ func (ss *Servers) SetInstituteAccess(srv Server) error {
 	}
 
 	if b.Type != "institute_access" {
-		return errors.Errorf("not an institute access server")
+		return errors.Errorf("not an institute access server, url: %s, type: %s", b.URL, b.Type)
 	}
 
 	if _, ok := ss.InstituteServers.Map[b.URL]; ok {
 		ss.InstituteServers.CurrentURL = b.URL
 		ss.IsType = InstituteAccessServerType
 	} else {
-		return errors.Errorf("no such institute access server")
+		return errors.Errorf("institute access server with url: %s, is not yet configured", b.URL)
 	}
 	return nil
 }

@@ -153,7 +153,7 @@ func (oauth *OAuth) setupListener() error {
 // If it was unsuccessful it returns an error.
 func (oauth *OAuth) tokensWithCallback() error {
 	if oauth.session.Listener == nil {
-		return errors.Errorf("failed getting tokens with callback: no listener")
+		return errors.New("failed getting tokens with callback: no listener")
 	}
 	mux := http.NewServeMux()
 	// server /callback over the listener address
@@ -434,7 +434,7 @@ func (oauth *OAuth) Init(iss string, baseAuthorizationURL string, tokenURL strin
 // It returns the port as an integer and an error if there is any.
 func (oauth *OAuth) ListenerPort() (int, error) {
 	if oauth.session.Listener == nil {
-		return 0, errors.Errorf("failed to get listener port")
+		return 0, errors.New("failed to get listener port")
 	}
 	return oauth.session.Listener.Addr().(*net.TCPAddr).Port, nil
 }

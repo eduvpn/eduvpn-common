@@ -18,7 +18,7 @@ func (ss *Servers) SetCustomServer(server Server) error {
 		ss.CustomServers.CurrentURL = b.URL
 		ss.IsType = CustomServerType
 	} else {
-		return errors.Errorf("not a custom server")
+		return errors.Errorf("this server is not yet added as a custom server: %s", b.URL)
 	}
 	return nil
 }
