@@ -25,7 +25,7 @@ type OptionalParams struct {
 	Timeout       time.Duration
 }
 
-func cleanPath(u *url.URL) string {
+func cleanPath(u *url.URL, trailing bool) string {
 	if u.Path != "" {
 		// Clean the path
 		// https://pkg.go.dev/path#Clean
@@ -35,7 +35,7 @@ func cleanPath(u *url.URL) string {
 	str := u.String()
 
 	// Make sure the URL ends with a /
-	if str[len(str)-1:] != "/" {
+	if trailing && str[len(str)-1:] != "/" {
 		str += "/"
 	}
 	return str
@@ -57,7 +57,7 @@ func EnsureValidURL(s string) (string, error) {
 	if u.Scheme != "https" {
 		u.Scheme = "https"
 	}
-	return cleanPath(u), nil
+	return cleanPath(u, true), nil
 }
 
 // JoinURLPath joins url's path, in go 1.19 we can use url.JoinPath
@@ -73,7 +73,7 @@ func JoinURLPath(u string, p string) (string, error) {
 	fp := pu.ResolveReference(pp)
 
 	// We also clean the path for consistency
-	return cleanPath(fp), nil
+	return cleanPath(fp, false), nil
 }
 
 // ConstructURL creates a URL with the included parameters.
