@@ -12,6 +12,9 @@ import (
 	"github.com/go-errors/errors"
 )
 
+// HasCache denotes whether or not we have an embedded cache available
+var HasCache bool
+
 // Discovery is the main structure used for this package.
 type Discovery struct {
 	// The httpClient for sending HTTP requests
@@ -73,7 +76,7 @@ func (discovery *Discovery) file(jsonFile string, previousVersion uint64, struct
 	// Parse JSON to extract version and list
 	if err = json.Unmarshal(body, structure); err != nil {
 		return errors.WrapPrefix(err,
-			fmt.Sprintf("failed getting file: %s from the Discovery server", jsonFile), 0)
+			fmt.Sprintf("failed parsing discovery file: %s from the server", jsonFile), 0)
 	}
 
 	return nil
@@ -175,6 +178,38 @@ func (discovery *Discovery) DetermineServersUpdate() bool {
 	return !time.Now().Before(upd)
 }
 
+func (discovery *Discovery) previousOrganizations() (*types.DiscoveryOrganizations, error) {
+	// If the version field is not zero then we have a cached struct
+	// We also immediately return this copy if we have no embedded JSON
+	if discovery.organizations.Version != 0 || !HasCache {
+		return &discovery.organizations, nil
+	}
+
+	// We do not have a cached struct, this we need to get it using the embedded JSON
+	var eo types.DiscoveryOrganizations
+	if err := json.Unmarshal(eOrganizations, &eo); err != nil {
+		return nil, errors.WrapPrefix(err, "failed parsing discovery organizations from the embedded cache", 0)
+	}
+	discovery.organizations = eo
+	return &eo, nil
+}
+
+func (discovery *Discovery) previousServers() (*types.DiscoveryServers, error) {
+	// If the version field is not zero then we have a cached struct
+	// We also immediately return this copy if we have no embedded JSON
+	if discovery.servers.Version != 0 || !HasCache {
+		return &discovery.servers, nil
+	}
+
+	// We do not have a cached struct, this we need to get it using the embedded JSON
+	var es types.DiscoveryServers
+	if err := json.Unmarshal(eServers, &es); err != nil {
+		return nil, errors.WrapPrefix(err, "failed parsing discovery servers from the embedded cache", 0)
+	}
+	discovery.servers = es
+	return &es, nil
+}
+
 // Organizations returns the discovery organizations
 // If there was an error, a cached copy is returned if available.
 func (discovery *Discovery) Organizations() (*types.DiscoveryOrganizations, error) {
@@ -185,7 +220,9 @@ func (discovery *Discovery) Organizations() (*types.DiscoveryOrganizations, erro
 	err := discovery.file(file, discovery.organizations.Version, &discovery.organizations)
 	if err != nil {
 		// Return previous with an error
-		return &discovery.organizations, err
+		// TODO: Log here if we fail to get previous
+		orgs, _ := discovery.previousOrganizations()
+		return orgs, err
 	}
 	discovery.organizations.Timestamp = time.Now()
 	return &discovery.organizations, nil
@@ -201,7 +238,9 @@ func (discovery *Discovery) Servers() (*types.DiscoveryServers, error) {
 	err := discovery.file(file, discovery.servers.Version, &discovery.servers)
 	if err != nil {
 		// Return previous with an error
-		return &discovery.servers, err
+		// TODO: Log here if we fail to get previous
+		srvs, _ := discovery.previousServers()
+		return srvs, err
 	}
 	// Update servers timestamp
 	discovery.servers.Timestamp = time.Now()
