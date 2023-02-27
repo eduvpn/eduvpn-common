@@ -5,83 +5,83 @@ import "testing"
 func Test_CurrentProfileIndex(t *testing.T) {
 	testCases := []struct {
 		profiles []Profile
-		current string
-		index int
+		current  string
+		index    int
 	}{
 		{
 			profiles: []Profile{
 				{
-					ID: "a",
-					DisplayName: "b",
+					ID:           "a",
+					DisplayName:  "b",
 					VPNProtoList: []string{"openvpn", "wireguard"},
 				},
 			},
 			current: "a",
-			index: 0,
+			index:   0,
 		},
 		{
 			profiles: []Profile{
 				{
-					ID: "a",
-					DisplayName: "a",
+					ID:           "a",
+					DisplayName:  "a",
 					VPNProtoList: []string{"openvpn", "wireguard"},
 				},
 				{
-					ID: "b",
-					DisplayName: "b",
+					ID:           "b",
+					DisplayName:  "b",
 					VPNProtoList: []string{"openvpn", "wireguard"},
 				},
 			},
 			current: "b",
-			index: 1,
+			index:   1,
 		},
 		{
 			profiles: []Profile{
 				{
-					ID: "a",
-					DisplayName: "a",
+					ID:           "a",
+					DisplayName:  "a",
 					VPNProtoList: []string{"openvpn", "wireguard"},
 				},
 				{
-					ID: "b",
-					DisplayName: "b",
+					ID:           "b",
+					DisplayName:  "b",
 					VPNProtoList: []string{"openvpn", "wireguard"},
 				},
 			},
 			current: "",
-			index: 0,
+			index:   0,
 		},
 		{
 			profiles: []Profile{
 				{
-					ID: "a",
-					DisplayName: "a",
+					ID:           "a",
+					DisplayName:  "a",
 					VPNProtoList: []string{"openvpn", "wireguard"},
 				},
 				{
-					ID: "b",
-					DisplayName: "b",
+					ID:           "b",
+					DisplayName:  "b",
 					VPNProtoList: []string{"openvpn", "wireguard"},
 				},
 			},
 			current: "",
-			index: 0,
+			index:   0,
 		},
 		{
 			profiles: []Profile{
 				{
-					ID: "a",
-					DisplayName: "a",
+					ID:           "a",
+					DisplayName:  "a",
 					VPNProtoList: []string{"openvpn", "wireguard"},
 				},
 				{
-					ID: "b",
-					DisplayName: "b",
+					ID:           "b",
+					DisplayName:  "b",
 					VPNProtoList: []string{"openvpn", "wireguard"},
 				},
 			},
 			current: "idonotexist",
-			index: 0,
+			index:   0,
 		},
 	}
 
