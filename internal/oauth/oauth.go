@@ -15,6 +15,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
@@ -112,9 +113,6 @@ type exchangeSession struct {
 	// Verifier is the preimage of the challenge
 	Verifier string
 
-	// Context is the context used for cancellation
-	Context context.Context
-
 	// Listener is the listener where the servers 'listens' on
 	Listener net.Listener
 
@@ -138,8 +136,6 @@ func (oauth *OAuth) AccessToken() (string, error) {
 // @see https://www.ietf.org/archive/id/draft-ietf-oauth-v2-1-07.html#section-8.4.2
 // "Loopback Interface Redirection".
 func (oauth *OAuth) setupListener() error {
-	oauth.session.Context = context.Background()
-
 	// create a listener
 	lst, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -163,9 +159,15 @@ func (oauth *OAuth) tokensWithCallback() error {
 		// A bit overkill maybe for a local server but good to define anyways
 		ReadHeaderTimeout: 60 * time.Second,
 	}
-	// TODO: Log error
-	defer s.Shutdown(oauth.session.Context) //nolint:errcheck
-	mux.HandleFunc("/callback", oauth.Handler)
+	defer s.Shutdown(context.Background()) //nolint:errcheck
+
+	// Use a sync.Once to only handle one request up until we shutdown the server
+	var once sync.Once
+	mux.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
+		once.Do(func() {
+			oauth.Handler(w, r)
+		})
+	})
 
 	go func() {
 		if err := s.Serve(oauth.session.Listener); err != http.ErrServerClosed {
