@@ -223,7 +223,6 @@ func (c *Client) SetSearchServer() error {
 func (c *Client) SetConnected() error {
 	if c.InFSMState(StateConnected) {
 		// already connected, show no error
-		c.Logger.Warningf("Already connected")
 		return nil
 	}
 
