@@ -293,6 +293,7 @@ func (c *Client) AddSecureInternetHomeServer(orgID string) (srv server.Server, e
 	// Add the secure internet server
 	srv, err = c.Servers.AddSecureInternet(org, dSrv)
 	if err != nil {
+		c.goBackInternal()
 		return nil, err
 	}
 
