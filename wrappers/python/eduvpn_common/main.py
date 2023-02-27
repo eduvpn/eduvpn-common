@@ -120,13 +120,10 @@ class EduVPN(object):
         :return: The disco Servers if any
         :rtype: Optional[DiscoServers]
         """
-        servers, servers_err = self.go_function(
+        servers, _ = self.go_function(
             self.lib.GetDiscoServers,
             decode_func=lambda lib, x: get_data_error(lib, x, get_disco_servers),
         )
-
-        if servers_err:
-            raise servers_err
 
         return servers
 
@@ -138,13 +135,10 @@ class EduVPN(object):
         :return: The discovery Organizations if any
         :rtype: Optional[DiscoOrganizations]
         """
-        organizations, organizations_err = self.go_function(
+        organizations, _ = self.go_function(
             self.lib.GetDiscoOrganizations,
             decode_func=lambda lib, x: get_data_error(lib, x, get_disco_organizations),
         )
-
-        if organizations_err:
-            raise organizations_err
 
         return organizations
 
