@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-errors/errors"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 )
 
 // TokenResponse defines the OAuth response from the server that includes the tokens.
@@ -58,29 +59,34 @@ type tokenLock struct {
 // It returns the access token as a string, possibly obtained fresh using the refresher
 // If the token cannot be obtained, an error is returned and the token is an empty string.
 func (l *tokenLock) Access() (string, error) {
+	log.Logger.Debugf("Getting access token")
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	// The tokens are not expired yet
 	// So they should be valid, re-login not neede
 	if !l.expired() {
+		log.Logger.Debugf("Access token is not expired, returning")
 		return l.t.Access, nil
 	}
 
 	// Check if refresh is even possible by doing a simple check if the refresh token is empty
 	// This is not needed but reduces API calls to the server
 	if l.t.Refresh == "" {
+		log.Logger.Debugf("Refresh token is empty, returning error")
 		return "", errors.Wrap(&TokensInvalidError{Cause: "no refresh token is present"}, 0)
 	}
 
 	// Otherwise refresh and then later return the access token if we are successful
 	tr, s, err := l.t.Refresher(l.t.Refresh)
 	if err != nil {
+		log.Logger.Debugf("Got a refresh token error: %v", err)
 		// We have failed to ensure the tokens due to refresh not working
 		return "", errors.Wrap(
 			&TokensInvalidError{Cause: fmt.Sprintf("tokens failed refresh with error: %v", err)}, 0)
 	}
 	if tr == nil {
+		log.Logger.Debugf("No token response after refreshing")
 		return "", errors.New("No token response after refreshing")
 	}
 	r := *tr

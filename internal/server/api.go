@@ -9,6 +9,7 @@ import (
 	"time"
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/go-errors/errors"
 )
 
@@ -124,6 +125,7 @@ func apiAuthorizedRetry(
 	statErr := &httpw.StatusError{}
 	// Only retry authorized if we get an HTTP 401
 	if errors.As(err, &statErr) && statErr.Status == 401 {
+		log.Logger.Debugf("Got a 401 error after HTTP method: %s, endpoint: %s. Marking token as expired...", method, endpoint)
 		// Mark the token as expired and retry, so we trigger the refresh flow
 		MarkTokenExpired(srv)
 		h, body, err = apiAuthorized(srv, method, endpoint, opts)
