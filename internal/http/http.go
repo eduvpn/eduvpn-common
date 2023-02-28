@@ -14,6 +14,9 @@ import (
 	"github.com/go-errors/errors"
 )
 
+// UserAgent is the user agent that is used for requests
+var UserAgent string
+
 // URLParameters is a type used for the parameters in the URL.
 type URLParameters map[string]string
 
@@ -188,6 +191,9 @@ func (c *Client) Do(method string, urlStr string, opts *OptionalParams) (http.He
 		return nil, nil, errors.WrapPrefix(err,
 			fmt.Sprintf("failed HTTP request with method %s and url %s", method, urlStr), 0)
 	}
+	if UserAgent != "" {
+		req.Header.Add("User-Agent", UserAgent)
+	}
 
 	// Make sure the headers contain all the parameters
 	optionalHeaders(req, opts)
@@ -238,4 +244,10 @@ func (e *StatusError) Error() string {
 		e.Status,
 		e.Body,
 	)
+}
+
+// RegisterAgent registers the user agent for client and version
+func RegisterAgent(client string, version string) {
+	UserAgent = fmt.Sprintf("%s/%s %s", client, version, "eduvpn-common/1.0.0")
+
 }

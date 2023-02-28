@@ -108,12 +108,14 @@ func GetVPNState(name string) (*client.Client, error) {
 //export Register
 func Register(
 	name *C.char,
+	version *C.char,
 	configDirectory *C.char,
 	language *C.char,
 	stateCallback C.PythonCB,
 	debug C.int,
 ) *C.error {
 	nameStr := C.GoString(name)
+	versionStr := C.GoString(version)
 	state, stateErr := GetVPNState(nameStr)
 	if stateErr != nil {
 		state = &client.Client{}
@@ -128,6 +130,7 @@ func Register(
 	PStateCallbacks[nameStr] = stateCallback
 	registerErr := state.Register(
 		nameStr,
+		versionStr,
 		C.GoString(configDirectory),
 		C.GoString(language),
 		func(old client.FSMStateID, new client.FSMStateID, data interface{}) bool {

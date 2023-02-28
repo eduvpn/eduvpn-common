@@ -9,6 +9,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/discovery"
 	"github.com/eduvpn/eduvpn-common/internal/failover"
 	"github.com/eduvpn/eduvpn-common/internal/fsm"
+	"github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/internal/util"
@@ -60,6 +61,34 @@ func isAllowedClientID(clientID string) bool {
 	return false
 }
 
+func userAgentName(clientID string) string {
+	switch clientID {
+	case "org.eduvpn.app.windows":
+		return "eduVPN Windows"
+	case "org.eduvpn.app.android":
+		return "eduVPN Android"
+	case "org.eduvpn.app.ios":
+		return "eduVPN iOS"
+	case "org.eduvpn.app.macos":
+		return "eduVPN MacOS"
+	case "org.eduvpn.app.linux":
+		return "eduVPN Linux"
+	case "org.letsconnect-vpn.app.windows":
+		return "Let's Connect! Windows"
+	case "org.letsconnect-vpn.app.android":
+		return "Let's Connect! Android"
+	case "org.letsconnect-vpn.app.ios":
+		return "Let's Connect! iOS"
+	case "org.letsconnect-vpn.app.macos":
+		return "Let's Connect! MacOS"
+	case "org.letsconnect-vpn.app.linux":
+		return "Let's Connect! Linux"
+	default:
+		return "unknown"
+	}
+
+}
+
 // Client is the main struct for the VPN client.
 type Client struct {
 	// The name of the client
@@ -99,6 +128,7 @@ type Client struct {
 // It returns an error if initialization failed, for example when discovery cannot be obtained and when there are no servers.
 func (c *Client) Register(
 	name string,
+	version string,
 	directory string,
 	language string,
 	stateCallback func(FSMStateID, FSMStateID, interface{}) bool,
@@ -117,6 +147,12 @@ func (c *Client) Register(
 	if !isAllowedClientID(name) {
 		return errors.Errorf("client ID is not allowed: '%v', see https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/VpnClientDb.php for a list of allowed IDs", name)
 	}
+
+	if len([]rune(version)) > 10 {
+		return errors.Errorf("version is not allowed: '%s', must be max 10 characters", version)
+	}
+
+	http.RegisterAgent(userAgentName(name), version)
 
 	c.Name = name
 
