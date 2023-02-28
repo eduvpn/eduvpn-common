@@ -20,7 +20,7 @@ type Config struct {
 	Name string
 }
 
-type ConfigFormat struct {
+type Format struct {
 	Data interface{} `json:"v1"`
 }
 
@@ -41,7 +41,7 @@ func (c *Config) Save(readStruct interface{}) error {
 	if err := util.EnsureDirectory(c.Directory); err != nil {
 		return err
 	}
-	cf := &ConfigFormat{Data: readStruct}
+	cf := &Format{Data: readStruct}
 	cfg, err := json.Marshal(cf)
 	if err != nil {
 		return errors.WrapPrefix(err, "json.Marshal failed", 0)
@@ -59,7 +59,7 @@ func (c *Config) Load(writeStruct interface{}) error {
 	if err != nil {
 		return errors.WrapPrefix(err, "failed loading configuration", 0)
 	}
-	cf := ConfigFormat{Data: writeStruct}
+	cf := Format{Data: writeStruct}
 	if err = json.Unmarshal(bts, &cf); err != nil {
 		return errors.WrapPrefix(err, "json.Unmarshal failed", 0)
 	}
