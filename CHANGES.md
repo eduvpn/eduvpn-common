@@ -1,24 +1,25 @@
 # 1.0.0
 * Discovery:
     - Bundle on release using embed
-	- Cache in the JSON
+    - Cache in the JSON
 * Errors:
     - Remove error levels for now
-	- Improve the context
-	- Use `errors.New` when we can
+    - Improve the context
+    - Use `errors.New` when we can
 * HTTP:
-    - Implement some utility functions for paths
 	- Add tests
+    - Implement some utility functions for paths
+    - Set a user agent
 * OAuth:
     - Make ISS required
-	- Only handle the token authorization callback request once
-	- Add logging for token flow
+    - Only handle the token authorization callback request once
+    - Add logging for token flow
 * Server:
     - Add profile tests
-	- Validate endpoints to have the same scheme and hostname
+    - Validate endpoints to have the same scheme and hostname
 * General:
     - Update dependencies
-	- Use one logger instance
+    - Use one logger instance
 
 # 0.3.0 (2023-02-01)
 * Discovery:
