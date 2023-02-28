@@ -40,7 +40,7 @@ func TestServers(t *testing.T) {
 	}
 
 	// Force expired, 1 hour in the past
-	d.servers.Timestamp = time.Now().Add(-1 * time.Hour)
+	d.ServerList.Timestamp = time.Now().Add(-1 * time.Hour)
 
 	s3, err := d.Servers()
 	// Now we expect an error with the cached copy
@@ -85,7 +85,7 @@ func TestOrganizations(t *testing.T) {
 // TestSecureLocationList tests the function for getting a list of secure internet servers
 func TestSecureLocationList(t *testing.T) {
 	d := Discovery{
-		servers: types.DiscoveryServers{
+		ServerList: types.DiscoveryServers{
 			Version: 1,
 			List: []types.DiscoveryServer{
 				// institute access server, this should not be found
@@ -110,7 +110,7 @@ func TestSecureLocationList(t *testing.T) {
 // TestServerByURL tests the function for getting a server by the Base URL and type
 func TestServerByURL(t *testing.T) {
 	d := Discovery{
-		servers: types.DiscoveryServers{
+		ServerList: types.DiscoveryServers{
 			Version: 1,
 			List: []types.DiscoveryServer{
 				// institute access server
@@ -151,7 +151,7 @@ func TestServerByURL(t *testing.T) {
 func TestServerByCountryCode(t *testing.T) {
 	s1 := types.DiscoveryServer{CountryCode: "a", Type: "secure_internet"}
 	d := Discovery{
-		servers: types.DiscoveryServers{
+		ServerList: types.DiscoveryServers{
 			Version: 1,
 			List: []types.DiscoveryServer{
 				// secure internet server
@@ -186,7 +186,7 @@ func TestServerByCountryCode(t *testing.T) {
 func TestOrgByID(t *testing.T) {
 	o1 := types.DiscoveryOrganization{OrgID: "a"}
 	d := Discovery{
-		organizations: types.DiscoveryOrganizations{
+		OrganizationList: types.DiscoveryOrganizations{
 			Version: 1,
 			List: []types.DiscoveryOrganization{
 				o1,
@@ -211,14 +211,14 @@ func TestSecureHomeArgs(t *testing.T) {
 	o1 := types.DiscoveryOrganization{OrgID: "id", SecureInternetHome: "a"}
 	s1 := types.DiscoveryServer{BaseURL: "a", Type: "secure_internet"}
 	d := Discovery{
-		organizations: types.DiscoveryOrganizations{
+		OrganizationList: types.DiscoveryOrganizations{
 			Version: 1,
 			List: []types.DiscoveryOrganization{
 				{OrgID: "id2", SecureInternetHome: "c"},
 				o1,
 			},
 		},
-		servers: types.DiscoveryServers{
+		ServerList: types.DiscoveryServers{
 			Version: 1,
 			List: []types.DiscoveryServer{
 				s1,
