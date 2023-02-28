@@ -1,4 +1,26 @@
-# 0.3.0 (01-02-2023)
+# 1.0.0
+* Discovery:
+    - Bundle on release using embed
+	- Cache in the JSON
+* Errors:
+    - Remove error levels for now
+	- Improve the context
+	- Use `errors.New` when we can
+* HTTP:
+    - Implement some utility functions for paths
+	- Add tests
+* OAuth:
+    - Make ISS required
+	- Only handle the token authorization callback request once
+	- Add logging for token flow
+* Server:
+    - Add profile tests
+	- Validate endpoints to have the same scheme and hostname
+* General:
+    - Update dependencies
+	- Use one logger instance
+
+# 0.3.0 (2023-02-01)
 * Discovery:
     - Add tests with a local TLS server
     - Implement expiry/caching closer to spec
@@ -16,5 +38,5 @@
     - Separate cleanup from disconnect function
 * Failover: Return early if we get a Pong within ping interval seconds
 
-# 0.2.0 (23-12-2022)
+# 0.2.0 (2021-12-23)
 * Initial release
