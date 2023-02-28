@@ -20,11 +20,11 @@ type Discovery struct {
 	// The httpClient for sending HTTP requests
 	httpClient *http.Client
 
-	// organizations represents the organizations that are returned by the discovery server
-	organizations types.DiscoveryOrganizations
+	// OrganizationList represents the organizations that are returned by the discovery server
+	OrganizationList types.DiscoveryOrganizations `json:"organizations"`
 
-	// servers represents the servers that are returned by the discovery server
-	servers types.DiscoveryServers
+	// ServerList represents the servers that are returned by the discovery server
+	ServerList types.DiscoveryServers `json:"servers"`
 }
 
 var DiscoURL = "https://disco.eduvpn.org/v2/"
@@ -85,7 +85,7 @@ func (discovery *Discovery) file(jsonFile string, previousVersion uint64, struct
 // MarkOrganizationsExpired marks the organizations as expired
 func (discovery *Discovery) MarkOrganizationsExpired() {
 	// Re-initialize the timestamp to zero
-	discovery.organizations.Timestamp = time.Time{}
+	discovery.OrganizationList.Timestamp = time.Time{}
 }
 
 // DetermineOrganizationsUpdate returns a boolean indicating whether or not the discovery organizations should be updated
@@ -96,13 +96,13 @@ func (discovery *Discovery) MarkOrganizationsExpired() {
 // - [IMPLEMENTED in client/server.go] when the authorization for the server associated with an already chosen organization is triggered, e.g. after expiry or revocation.
 // - [IMPLEMENTED using a custom error message, and in client/server.go] NOTE: when the org_id that the user chose previously is no longer available in organization_list.json the application should ask the user to choose their organization (again). This can occur for example when the organization replaced their identity provider, uses a different domain after rebranding or simply ceased to exist.
 func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
-	return discovery.organizations.Timestamp.IsZero()
+	return discovery.OrganizationList.Timestamp.IsZero()
 }
 
 // SecureLocationList returns a slice of all the available locations.
 func (discovery *Discovery) SecureLocationList() []string {
 	var loc []string
-	for _, srv := range discovery.servers.List {
+	for _, srv := range discovery.ServerList.List {
 		if srv.Type == "secure_internet" {
 			loc = append(loc, srv.CountryCode)
 		}
@@ -116,7 +116,7 @@ func (discovery *Discovery) ServerByURL(
 	baseURL string,
 	srvType string,
 ) (*types.DiscoveryServer, error) {
-	for _, currentServer := range discovery.servers.List {
+	for _, currentServer := range discovery.ServerList.List {
 		if currentServer.BaseURL == baseURL && currentServer.Type == srvType {
 			return &currentServer, nil
 		}
@@ -127,7 +127,7 @@ func (discovery *Discovery) ServerByURL(
 // ServerByCountryCode returns the discovery server by the country code
 // An error is returned if and only if nil is returned for the server.
 func (discovery *Discovery) ServerByCountryCode(countryCode string) (*types.DiscoveryServer, error) {
-	for _, srv := range discovery.servers.List {
+	for _, srv := range discovery.ServerList.List {
 		if srv.CountryCode == countryCode && srv.Type == "secure_internet" {
 			return &srv, nil
 		}
@@ -138,7 +138,7 @@ func (discovery *Discovery) ServerByCountryCode(countryCode string) (*types.Disc
 // orgByID returns the discovery organization by the organization ID
 // An error is returned if and only if nil is returned for the organization.
 func (discovery *Discovery) orgByID(orgID string) (*types.DiscoveryOrganization, error) {
-	for _, org := range discovery.organizations.List {
+	for _, org := range discovery.OrganizationList.List {
 		if org.OrgID == orgID {
 			return &org, nil
 		}
@@ -170,19 +170,19 @@ func (discovery *Discovery) SecureHomeArgs(orgID string) (*types.DiscoveryOrgani
 // - The application MAY refresh the server_list.json periodically, e.g. once every hour.
 func (discovery *Discovery) DetermineServersUpdate() bool {
 	// No servers, we should update
-	if discovery.servers.Timestamp.IsZero() {
+	if discovery.ServerList.Timestamp.IsZero() {
 		return true
 	}
 	// 1 hour from the last update
-	upd := discovery.servers.Timestamp.Add(1 * time.Hour)
+	upd := discovery.ServerList.Timestamp.Add(1 * time.Hour)
 	return !time.Now().Before(upd)
 }
 
 func (discovery *Discovery) previousOrganizations() (*types.DiscoveryOrganizations, error) {
 	// If the version field is not zero then we have a cached struct
 	// We also immediately return this copy if we have no embedded JSON
-	if discovery.organizations.Version != 0 || !HasCache {
-		return &discovery.organizations, nil
+	if discovery.OrganizationList.Version != 0 || !HasCache {
+		return &discovery.OrganizationList, nil
 	}
 
 	// We do not have a cached struct, this we need to get it using the embedded JSON
@@ -190,15 +190,15 @@ func (discovery *Discovery) previousOrganizations() (*types.DiscoveryOrganizatio
 	if err := json.Unmarshal(eOrganizations, &eo); err != nil {
 		return nil, errors.WrapPrefix(err, "failed parsing discovery organizations from the embedded cache", 0)
 	}
-	discovery.organizations = eo
+	discovery.OrganizationList = eo
 	return &eo, nil
 }
 
 func (discovery *Discovery) previousServers() (*types.DiscoveryServers, error) {
 	// If the version field is not zero then we have a cached struct
 	// We also immediately return this copy if we have no embedded JSON
-	if discovery.servers.Version != 0 || !HasCache {
-		return &discovery.servers, nil
+	if discovery.ServerList.Version != 0 || !HasCache {
+		return &discovery.ServerList, nil
 	}
 
 	// We do not have a cached struct, this we need to get it using the embedded JSON
@@ -206,7 +206,7 @@ func (discovery *Discovery) previousServers() (*types.DiscoveryServers, error) {
 	if err := json.Unmarshal(eServers, &es); err != nil {
 		return nil, errors.WrapPrefix(err, "failed parsing discovery servers from the embedded cache", 0)
 	}
-	discovery.servers = es
+	discovery.ServerList = es
 	return &es, nil
 }
 
@@ -214,28 +214,28 @@ func (discovery *Discovery) previousServers() (*types.DiscoveryServers, error) {
 // If there was an error, a cached copy is returned if available.
 func (discovery *Discovery) Organizations() (*types.DiscoveryOrganizations, error) {
 	if !discovery.DetermineOrganizationsUpdate() {
-		return &discovery.organizations, nil
+		return &discovery.OrganizationList, nil
 	}
 	file := "organization_list.json"
-	err := discovery.file(file, discovery.organizations.Version, &discovery.organizations)
+	err := discovery.file(file, discovery.OrganizationList.Version, &discovery.OrganizationList)
 	if err != nil {
 		// Return previous with an error
 		// TODO: Log here if we fail to get previous
 		orgs, _ := discovery.previousOrganizations()
 		return orgs, err
 	}
-	discovery.organizations.Timestamp = time.Now()
-	return &discovery.organizations, nil
+	discovery.OrganizationList.Timestamp = time.Now()
+	return &discovery.OrganizationList, nil
 }
 
 // Servers returns the discovery servers
 // If there was an error, a cached copy is returned if available.
 func (discovery *Discovery) Servers() (*types.DiscoveryServers, error) {
 	if !discovery.DetermineServersUpdate() {
-		return &discovery.servers, nil
+		return &discovery.ServerList, nil
 	}
 	file := "server_list.json"
-	err := discovery.file(file, discovery.servers.Version, &discovery.servers)
+	err := discovery.file(file, discovery.ServerList.Version, &discovery.ServerList)
 	if err != nil {
 		// Return previous with an error
 		// TODO: Log here if we fail to get previous
@@ -243,6 +243,6 @@ func (discovery *Discovery) Servers() (*types.DiscoveryServers, error) {
 		return srvs, err
 	}
 	// Update servers timestamp
-	discovery.servers.Timestamp = time.Now()
-	return &discovery.servers, nil
+	discovery.ServerList.Timestamp = time.Now()
+	return &discovery.ServerList, nil
 }
