@@ -13,7 +13,7 @@ from ctypes import (
 )
 from typing import Any, Callable, Iterator, List, Optional, Tuple
 
-from eduvpn_common.error import ErrorLevel, WrappedError
+from eduvpn_common.error import WrappedError
 
 class cToken(Structure):
     """The C type that represents the Token as forwarded to the Go library
@@ -40,7 +40,6 @@ class cError(Structure):
     :meta private:
     """
     _fields_ = [
-        ("level", c_int),
         ("traceback", c_char_p),
         ("cause", c_char_p),
     ]
@@ -273,7 +272,7 @@ def get_error(lib: CDLL, ptr: c_void_p) -> Optional[WrappedError]:
         return None
     err = cast(ptr, POINTER(cError)).contents
     wrapped = WrappedError(
-        err.traceback.decode("utf-8"), err.cause.decode("utf-8"), ErrorLevel(err.level)
+        err.traceback.decode("utf-8"), err.cause.decode("utf-8")
     )
     lib.FreeError(ptr)
     return wrapped

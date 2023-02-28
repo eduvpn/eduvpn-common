@@ -8,34 +8,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/go-errors/errors"
 )
-
-type ErrLevel int8
-
-const (
-	ErrOther ErrLevel = iota
-	ErrInfo
-	ErrWarning
-	ErrFatal
-)
-
-func GetErrorLevel(err error) ErrLevel {
-	// Get the inner error
-	e := err
-	if err1, ok := err.(*errors.Error); ok {
-		e = err1.Err
-	}
-
-	switch e.(type) {
-	case *oauth.CancelledCallbackError:
-		return ErrInfo
-	default:
-		return ErrOther
-	}
-}
 
 // FileLogger defines the type of logger that this package implements
 // As the name suggests, it saves the log to a file.
@@ -121,16 +96,7 @@ func (logger *FileLogger) Inherit(err error, msg string) {
 		return
 	}
 	s := "%s %s"
-	switch GetErrorLevel(err) {
-	case ErrInfo:
-		logger.Infof(s, err.Error(), msg)
-	case ErrWarning:
-		logger.Warningf(s, err.Error(), msg)
-	case ErrOther:
-		logger.Errorf(s, err.Error(), msg)
-	case ErrFatal:
-		logger.Fatalf(s, err.Error(), msg)
-	}
+	logger.Errorf(s, err.Error(), msg)
 }
 
 // Debugf logs a message with parameters as level LevelDebug.

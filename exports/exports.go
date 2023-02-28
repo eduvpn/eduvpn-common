@@ -34,7 +34,6 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/go-errors/errors"
 
@@ -172,7 +171,6 @@ func getError(err error) *C.error {
 		errorStruct.traceback = C.CString("N/A")
 		errorStruct.cause = C.CString(err.Error())
 	}
-	errorStruct.level = C.errorLevel(log.GetErrorLevel(err))
 	return errorStruct
 }
 
