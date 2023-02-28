@@ -47,6 +47,9 @@ type FileLogger struct {
 	file *os.File
 }
 
+// Logger is the global logger instance
+var Logger *FileLogger
+
 type Level int8
 
 const (
@@ -173,4 +176,8 @@ func (logger *FileLogger) log(lvl Level, msg string, params ...interface{}) {
 		// To log file
 		log.Println(f)
 	}
+}
+
+func init() {
+	Logger = &FileLogger{}
 }

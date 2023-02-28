@@ -3,6 +3,7 @@ package client
 import (
 	"github.com/eduvpn/eduvpn-common/internal/failover"
 	"github.com/eduvpn/eduvpn-common/internal/http"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/types"
@@ -68,7 +69,7 @@ func (c *Client) getConfig(srv server.Server, preferTCP bool, t oauth.Token) (*C
 	// This is the best effort
 	err := server.RefreshEndpoints(srv)
 	if err != nil {
-		c.Logger.Warningf("failed to refresh server endpoints: %v", err)
+		log.Logger.Warningf("failed to refresh server endpoints: %v", err)
 	}
 
 	cfg, err := c.retryConfigAuth(srv, preferTCP, t)
@@ -88,7 +89,7 @@ func (c *Client) getConfig(srv server.Server, preferTCP bool, t oauth.Token) (*C
 	if err = c.Config.Save(&c); err != nil {
 		// TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
 		// TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
-		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
+		log.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
 			err.Error(), err.(*errors.Error).ErrorStack())
 	}
 
@@ -159,7 +160,7 @@ func (c *Client) RemoveSecureInternet() error {
 	if err := c.Config.Save(&c); err != nil {
 		// TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
 		// TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
-		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
+		log.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
 			err.Error(), err.(*errors.Error).ErrorStack())
 	}
 	return nil
@@ -181,7 +182,7 @@ func (c *Client) RemoveInstituteAccess(url string) error {
 	if err := c.Config.Save(&c); err != nil {
 		// TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
 		// TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
-		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
+		log.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
 			err.Error(), err.(*errors.Error).ErrorStack())
 	}
 	return nil
@@ -203,7 +204,7 @@ func (c *Client) RemoveCustomServer(url string) error {
 	if err := c.Config.Save(&c); err != nil {
 		// TODO(jwijenbergh): Not sure why INFO level, yet stacktrace...
 		// TODO(jwijenbergh): Even worse, why logging it but then return nil? The calling code will think that everything went well.
-		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
+		log.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s",
 			err.Error(), err.(*errors.Error).ErrorStack())
 	}
 	return nil
@@ -557,7 +558,7 @@ func (c *Client) ShouldRenewButton() bool {
 
 	srv, err := c.Servers.GetCurrentServer()
 	if err != nil {
-		c.Logger.Infof("no server to renew: %s\nstacktrace:\n%s", err.Error(), err.(*errors.Error).ErrorStack())
+		log.Logger.Infof("no server to renew: %s\nstacktrace:\n%s", err.Error(), err.(*errors.Error).ErrorStack())
 		return false
 	}
 
@@ -649,7 +650,7 @@ func (c *Client) StartFailover(gateway string, wgMTU int, readRxBytes func() (in
 		return false, errors.New("Profile does not support OpenVPN fallback")
 	}
 
-	c.Failover = failover.New(readRxBytes, c.Logger)
+	c.Failover = failover.New(readRxBytes)
 
 	return c.Failover.Start(gateway, wgMTU)
 }

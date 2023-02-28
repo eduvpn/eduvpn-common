@@ -25,9 +25,9 @@ type (
 func (c *Client) logError(err error) {
 	// Logs the error with the same level/verbosity as the error
 	if c.Debug {
-		c.Logger.Inherit(err, fmt.Sprintf("\nwith stacktrace: %s\n", err.(*errors.Error).ErrorStack()))
+		log.Logger.Inherit(err, fmt.Sprintf("\nwith stacktrace: %s\n", err.(*errors.Error).ErrorStack()))
 	} else {
-		c.Logger.Inherit(err, "")
+		log.Logger.Inherit(err, "")
 	}
 }
 
@@ -77,9 +77,6 @@ type Client struct {
 	// The fsm
 	FSM fsm.FSM `json:"-"`
 
-	// The logger
-	Logger log.FileLogger `json:"-"`
-
 	// The config
 	Config config.Config `json:"-"`
 
@@ -90,7 +87,7 @@ type Client struct {
 	Debug bool `json:"-"`
 
 	// The Failover monitor for the current VPN connection
-	Failover *failover.DroppedConMon
+	Failover *failover.DroppedConMon `json:"-"`
 }
 
 // Register initializes the clientwith the following parameters:
@@ -132,7 +129,7 @@ func (c *Client) Register(
 		lvl = log.LevelDebug
 	}
 
-	if err = c.Logger.Init(lvl, directory); err != nil {
+	if err = log.Logger.Init(lvl, directory); err != nil {
 		return err
 	}
 
@@ -151,7 +148,7 @@ func (c *Client) Register(
 	// Try to load the previous configuration
 	if c.Config.Load(&c) != nil {
 		// This error can be safely ignored, as when the config does not load, the struct will not be filled
-		c.Logger.Infof("Previous configuration not found")
+		log.Logger.Infof("Previous configuration not found")
 	}
 
 	// Go to the No Server state with the saved servers after we're done
@@ -164,11 +161,11 @@ func (c *Client) Register(
 
 	// Check if we are able to fetch discovery, and log if something went wrong
 	if _, err := c.DiscoServers(); err != nil {
-		c.Logger.Warningf("Failed to get discovery servers: %v", err)
+		log.Logger.Warningf("Failed to get discovery servers: %v", err)
 	}
 
 	if _, err := c.DiscoOrganizations(); err != nil {
-		c.Logger.Warningf("Failed to get discovery organizations: %v", err)
+		log.Logger.Warningf("Failed to get discovery organizations: %v", err)
 	}
 
 	return nil
@@ -177,11 +174,11 @@ func (c *Client) Register(
 // Deregister 'deregisters' the client, meaning saving the log file and the config and emptying out the client struct.
 func (c *Client) Deregister() {
 	// Close the log file
-	_ = c.Logger.Close()
+	_ = log.Logger.Close()
 
 	// Save the config
 	if err := c.Config.Save(&c); err != nil {
-		c.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s", err.Error(), err.(*errors.Error).ErrorStack())
+		log.Logger.Infof("c.Config.Save failed: %s\nstacktrace:\n%s", err.Error(), err.(*errors.Error).ErrorStack())
 	}
 
 	// Empty out the state

@@ -2,6 +2,7 @@ package client
 
 import (
 	"github.com/eduvpn/eduvpn-common/internal/fsm"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/go-errors/errors"
 )
@@ -247,7 +248,7 @@ func (c *Client) SetConnected() error {
 func (c *Client) SetConnecting() error {
 	if c.InFSMState(StateConnecting) {
 		// already loading connection, show no error
-		c.Logger.Warningf("Already connecting")
+		log.Logger.Warningf("Already connecting")
 		return nil
 	}
 	if err := c.FSM.CheckTransition(StateConnecting); err != nil {
@@ -271,7 +272,7 @@ func (c *Client) SetConnecting() error {
 func (c *Client) SetDisconnecting() error {
 	if c.InFSMState(StateDisconnecting) {
 		// already disconnecting, show no error
-		c.Logger.Warningf("Already disconnecting")
+		log.Logger.Warningf("Already disconnecting")
 		return nil
 	}
 	if err := c.FSM.CheckTransition(StateDisconnecting); err != nil {
@@ -296,7 +297,7 @@ func (c *Client) SetDisconnecting() error {
 func (c *Client) SetDisconnected() error {
 	if c.InFSMState(StateDisconnected) {
 		// already disconnected, show no error
-		c.Logger.Warningf("Already disconnected")
+		log.Logger.Warningf("Already disconnected")
 		return nil
 	}
 	if err := c.FSM.CheckTransition(StateDisconnected); err != nil {
@@ -320,7 +321,7 @@ func (c *Client) goBackInternal() {
 	err := c.GoBack()
 	if err != nil {
 		// TODO(jwijenbergh): Bit suspicious - logging level INFO, yet stacktrace logged.
-		c.Logger.Infof("failed going back: %s\nstacktrace:\n%s", err.Error(), err.(*errors.Error).ErrorStack())
+		log.Logger.Infof("failed going back: %s\nstacktrace:\n%s", err.Error(), err.(*errors.Error).ErrorStack())
 	}
 }
 
