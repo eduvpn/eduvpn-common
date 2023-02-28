@@ -78,6 +78,7 @@ func TestServer(t *testing.T) {
 
 	registerErr := state.Register(
 		"org.letsconnect-vpn.app.linux",
+		"0.1.0-test",
 		"configstest",
 		"en",
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
@@ -111,6 +112,7 @@ func testConnectOAuthParameter(
 
 	registerErr := state.Register(
 		"org.letsconnect-vpn.app.linux",
+		"0.1.0-test",
 		configDirectory,
 		"en",
 		func(oldState FSMStateID, newState FSMStateID, data interface{}) bool {
@@ -241,6 +243,7 @@ func TestTokenExpired(t *testing.T) {
 
 	registerErr := state.Register(
 		"org.letsconnect-vpn.app.linux",
+		"0.1.0-test",
 		"configsexpired",
 		"en",
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
@@ -303,6 +306,7 @@ func TestInvalidProfileCorrected(t *testing.T) {
 
 	registerErr := state.Register(
 		"org.letsconnect-vpn.app.linux",
+		"0.1.0-test",
 		"configscancelprofile",
 		"en",
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
@@ -361,6 +365,7 @@ func TestPreferTCP(t *testing.T) {
 
 	registerErr := state.Register(
 		"org.letsconnect-vpn.app.linux",
+		"0.1.0-test",
 		"configsprefertcp",
 		"en",
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
@@ -422,6 +427,7 @@ func TestInvalidClientID(t *testing.T) {
 		state := &Client{}
 		registerErr := state.Register(
 			k,
+			"0.1.0-test",
 			"configsclientid",
 			"en",
 			func(old FSMStateID, new FSMStateID, data interface{}) bool {
