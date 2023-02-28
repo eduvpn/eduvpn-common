@@ -86,7 +86,6 @@ func userAgentName(clientID string) string {
 	default:
 		return "unknown"
 	}
-
 }
 
 // Client is the main struct for the VPN client.

@@ -2,7 +2,14 @@ from ctypes import CDLL, POINTER, c_void_p, cast
 from datetime import datetime
 from typing import List, Optional, Type
 
-from eduvpn_common.types import cConfig, cServer, cServerLocations, cServerProfiles, cServers, cToken
+from eduvpn_common.types import (
+    cConfig,
+    cServer,
+    cServerLocations,
+    cServerProfiles,
+    cServers,
+    cToken,
+)
 
 
 class Profile:
@@ -12,6 +19,7 @@ class Profile:
     :param: display_name: str: The display name of the profile
     :param: default_gateway: str: Whether or not this profile should have the default gateway set
     """
+
     def __init__(self, identifier: str, display_name: str, default_gateway: bool):
         self.identifier = identifier
         self.display_name = display_name
@@ -20,6 +28,7 @@ class Profile:
     def __str__(self):
         return self.display_name
 
+
 class Token:
     """The class that represents oauth Tokens
 
@@ -27,6 +36,7 @@ class Token:
     :param: refresh: str: The refresh token
     :param: expired: int: The expire unix time
     """
+
     def __init__(self, access: str, refresh: str, expired: int):
         self.access = access
         self.refresh = refresh
@@ -40,6 +50,7 @@ class Config:
     :param: config_type: str: The type of config, openvpn/wireguard
     :param: tokens: Optional[Token]: The tokens
     """
+
     def __init__(self, config: str, config_type: str, tokens: Optional[Token]):
         self.config = config
         self.config_type = config_type
@@ -55,6 +66,7 @@ class Profiles:
     :param: profiles: List[Profile]: A list of profiles
     :param: current: int: The current profile index
     """
+
     def __init__(self, profiles: List[Profile], current: int):
         self.profiles = profiles
         self.current_index = current
@@ -79,6 +91,7 @@ class Server:
     :param: profiles: Optional[Profiles]: The profiles if there are any already obtained, defaults to None
     :param: expire_time: int: The expiry time in a Unix timestamp, defaults to 0
     """
+
     def __init__(
         self,
         url: str,
@@ -113,6 +126,7 @@ class InstituteServer(Server):
     :param: profiles: Profiles: The profiles of the server
     :param: expire_time: int: The expiry time in a Unix timestamp
     """
+
     def __init__(
         self,
         url: str,
@@ -145,6 +159,7 @@ class SecureInternetServer(Server):
     :param: expire_time: int: The expiry time in a Unix timestamp
     :param: country_code: str: The country code of the server
     """
+
     def __init__(
         self,
         org_id: str,
@@ -396,15 +411,19 @@ def get_config(lib: CDLL, ptr: c_void_p) -> Optional[Config]:
         tokens = None
         if config.token:
             token_struct = config.token.contents
-            tokens = Token(token_struct.access.decode("utf-8"), token_struct.refresh.decode("utf-8"), token_struct.expired)
+            tokens = Token(
+                token_struct.access.decode("utf-8"),
+                token_struct.refresh.decode("utf-8"),
+                token_struct.expired,
+            )
 
         config_class = Config(cfg, cfg_type, tokens)
         lib.FreeConfig(ptr)
         return config_class
     return None
 
+
 def encode_tokens(arg: Optional[Token]) -> cToken:
     if arg is None:
         return cToken("".encode("utf-8"), "".encode("utf-8"), 0)
     return cToken(arg.access.encode("utf-8"), arg.refresh.encode("utf-8"), arg.expires)
-

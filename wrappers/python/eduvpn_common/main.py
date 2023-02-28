@@ -2,12 +2,34 @@ import threading
 from ctypes import cast, c_void_p, c_int, pointer
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
-from eduvpn_common.discovery import DiscoOrganizations, DiscoServers, get_disco_organizations, get_disco_servers
+from eduvpn_common.discovery import (
+    DiscoOrganizations,
+    DiscoServers,
+    get_disco_organizations,
+    get_disco_servers,
+)
 from eduvpn_common.event import EventHandler
 from eduvpn_common.loader import initialize_functions, load_lib
-from eduvpn_common.server import Profiles, Config, Token, encode_tokens, get_config, Server, get_transition_server, get_servers
+from eduvpn_common.server import (
+    Profiles,
+    Config,
+    Token,
+    encode_tokens,
+    get_config,
+    Server,
+    get_transition_server,
+    get_servers,
+)
 from eduvpn_common.state import State, StateType
-from eduvpn_common.types import VPNStateChange, ReadRxBytes, cToken, decode_res, encode_args, get_data_error, get_bool
+from eduvpn_common.types import (
+    VPNStateChange,
+    ReadRxBytes,
+    cToken,
+    decode_res,
+    encode_args,
+    get_data_error,
+    get_bool,
+)
 
 
 class EduVPN(object):
@@ -15,12 +37,15 @@ class EduVPN(object):
     It registers the client with the library and then calls the needed appropriate functions
 
     :param name: str: The name of the client. For commonly used names, see https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/ClientDb.php. E.g. org.eduvpn.app.linux, if this name has "letsconnect" in it, then it is a Let's Connect! variant
+    :param version: str: The version number of the client as a string, max 10 characters
     :param config_directory: str: The directory (absolute/relative) where to store the files
     :param language: str: The language of the client, e.g. en
 
     """
-    def __init__(self, name: str, config_directory: str, language: str):
+
+    def __init__(self, name: str, version: str, config_directory: str, language: str):
         self.name = name
+        self.version = version
         self.config_directory = config_directory
         self.language = language
 
@@ -59,7 +84,9 @@ class EduVPN(object):
             if self.location_event:
                 self.location_event.wait()
 
-    def go_function(self, func: Any, *args: Iterator, decode_func: Optional[Callable] = None) -> Any:
+    def go_function(
+        self, func: Any, *args: Iterator, decode_func: Optional[Callable] = None
+    ) -> Any:
         """Call an internal go function and properly forward the arguments.
         Also handles decoding the result
 
@@ -103,6 +130,7 @@ class EduVPN(object):
 
         register_err = self.go_function(
             self.lib.Register,
+            self.version,
             self.config_directory,
             self.language,
             state_callback,
@@ -213,7 +241,13 @@ class EduVPN(object):
         if remove_err:
             raise remove_err
 
-    def get_config(self, identifier: str, func: Any, prefer_tcp: bool = False, tokens: Optional[Token] = None) -> Optional[Config]:
+    def get_config(
+        self,
+        identifier: str,
+        func: Any,
+        prefer_tcp: bool = False,
+        tokens: Optional[Token] = None,
+    ) -> Optional[Config]:
         """Get an OpenVPN/WireGuard configuration from the server
 
         :param identifier: str: The identifier of the server, e.g. URL or ORG ID
@@ -233,7 +267,13 @@ class EduVPN(object):
         # The event is set in self.set_profile
         self.profile_event = threading.Event()
 
-        config, config_err = self.go_function(func, identifier, prefer_tcp, encode_tokens(tokens), decode_func=lambda lib, x: get_data_error(lib, x, get_config))
+        config, config_err = self.go_function(
+            func,
+            identifier,
+            prefer_tcp,
+            encode_tokens(tokens),
+            decode_func=lambda lib, x: get_data_error(lib, x, get_config),
+        )
 
         self.profile_event = None
         self.location_event = None
@@ -273,7 +313,9 @@ class EduVPN(object):
         :return: The configuration and configuration type ('openvpn' or 'wireguard')
         :rtype: Config
         """
-        return self.get_config(url, self.lib.GetConfigInstituteAccess, prefer_tcp, tokens)
+        return self.get_config(
+            url, self.lib.GetConfigInstituteAccess, prefer_tcp, tokens
+        )
 
     def get_config_secure_internet(
         self, org_id: str, prefer_tcp: bool = False, tokens: Optional[Token] = None
@@ -289,7 +331,9 @@ class EduVPN(object):
         :return: The configuration and configuration type ('openvpn' or 'wireguard')
         :rtype: Config
         """
-        return self.get_config(org_id, self.lib.GetConfigSecureInternet, prefer_tcp, tokens)
+        return self.get_config(
+            org_id, self.lib.GetConfigSecureInternet, prefer_tcp, tokens
+        )
 
     def go_back(self) -> None:
         """Go back in the FSM"""
@@ -338,7 +382,9 @@ class EduVPN(object):
         if cleanup_err:
             raise cleanup_err
 
-    def set_disconnected(self, ) -> None:
+    def set_disconnected(
+        self,
+    ) -> None:
         """Set the FSM to disconnected
 
         :param cleanup: bool:  (Default value = True): Whether or not to call /disconnect to the server. This invalidates the OpenVPN/WireGuard configuration
@@ -516,9 +562,14 @@ class EduVPN(object):
 
         return servers
 
-    def start_failover(self, gateway: str, wg_mtu: int, readrxbytes: ReadRxBytes) -> bool:
+    def start_failover(
+        self, gateway: str, wg_mtu: int, readrxbytes: ReadRxBytes
+    ) -> bool:
         dropped, dropped_err = self.go_function(
-            self.lib.StartFailover, gateway, wg_mtu, readrxbytes,
+            self.lib.StartFailover,
+            gateway,
+            wg_mtu,
+            readrxbytes,
             decode_func=lambda lib, x: get_data_error(lib, x, get_bool),
         )
         if dropped_err:
@@ -548,10 +599,13 @@ def state_callback(name: bytes, old_state: int, new_state: int, data: Any) -> in
     name_decoded = name.decode()
     if name_decoded not in eduvpn_objects:
         return 0
-    handled = eduvpn_objects[name_decoded].callback(State(old_state), State(new_state), data)
+    handled = eduvpn_objects[name_decoded].callback(
+        State(old_state), State(new_state), data
+    )
     if handled:
         return 1
     return 0
+
 
 def add_as_global_object(eduvpn: EduVPN) -> bool:
     """Add the provided parameter to the global objects lists so we can call the callback

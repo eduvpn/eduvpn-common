@@ -23,6 +23,7 @@ def class_state_transition(state: int, state_type: StateType) -> Callable:
 
     :meta private:
     """
+
     def wrapper(func):
         """
 
@@ -65,6 +66,7 @@ def convert_data(lib: CDLL, state: int, data: Any) -> None:
 
 class EventHandler(object):
     """The class that neatly handles event callbacks from the internal Go FSM"""
+
     def __init__(self, lib: CDLL):
         self.handlers: Dict[Tuple[int, StateType], List[Callable]] = {}
         self.lib = lib
@@ -134,6 +136,7 @@ class EventHandler(object):
 
         :meta private:
         """
+
         def wrapped_f(func):
             """
 

@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-errors/errors"
 	"github.com/eduvpn/eduvpn-common/internal/log"
+	"github.com/go-errors/errors"
 )
 
 // TokenResponse defines the OAuth response from the server that includes the tokens.

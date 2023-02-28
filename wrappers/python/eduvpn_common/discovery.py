@@ -16,7 +16,14 @@ class DiscoOrganization:
     :param: secure_internet_home: str: Indicating which server is the secure internet home server
     :param: keyword_list: The list of strings that the users gets to search on to find the server
     """
-    def __init__(self, display_name: str, org_id: str, secure_internet_home: str, keyword_list: List[str]):
+
+    def __init__(
+        self,
+        display_name: str,
+        org_id: str,
+        secure_internet_home: str,
+        keyword_list: List[str],
+    ):
         self.display_name = display_name
         self.org_id = org_id
         self.secure_internet_home = secure_internet_home
@@ -33,6 +40,7 @@ class DiscoOrganizations:
     :param: version: int: The version of the list as returned by Discovery
     :param: organizations: List[DiscoOrganization]: The actual list of discovery organizations
     """
+
     def __init__(self, version: int, organizations: List[DiscoOrganization]):
         self.version = version
         self.organizations = organizations
@@ -50,6 +58,7 @@ class DiscoServer:
     :param: server_type: str: The server type as a string
     :param: support_contacts: List[str]: The list of support contacts
     """
+
     def __init__(
         self,
         authentication_url_template: str,
@@ -81,6 +90,7 @@ class DiscoServers:
     :param: version: int: The version of the list as returned by Discovery
     :param: servers: List[DiscoServers]: The list of discovery servers
     """
+
     def __init__(self, version: int, servers: List[DiscoServer]):
         self.version = version
         self.servers = servers

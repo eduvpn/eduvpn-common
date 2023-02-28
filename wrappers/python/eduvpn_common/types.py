@@ -15,11 +15,13 @@ from typing import Any, Callable, Iterator, List, Optional, Tuple
 
 from eduvpn_common.error import WrappedError
 
+
 class cToken(Structure):
     """The C type that represents the Token as forwarded to the Go library
 
     :meta private:
     """
+
     _fields_ = [
         ("access", c_char_p),
         ("refresh", c_char_p),
@@ -32,13 +34,20 @@ class cConfig(Structure):
 
     :meta private:
     """
-    _fields_ = [("config", c_char_p), ("config_type", c_char_p), ("token", POINTER(cToken))]
+
+    _fields_ = [
+        ("config", c_char_p),
+        ("config_type", c_char_p),
+        ("token", POINTER(cToken)),
+    ]
+
 
 class cError(Structure):
     """The C type that represents the Error as returned by the Go library
 
     :meta private:
     """
+
     _fields_ = [
         ("traceback", c_char_p),
         ("cause", c_char_p),
@@ -50,6 +59,7 @@ class cServerLocations(Structure):
 
     :meta private:
     """
+
     _fields_ = [("locations", POINTER(c_char_p)), ("total_locations", c_size_t)]
 
 
@@ -58,6 +68,7 @@ class cDiscoveryOrganization(Structure):
 
     :meta private:
     """
+
     _fields_ = [
         ("display_name", c_char_p),
         ("org_id", c_char_p),
@@ -71,6 +82,7 @@ class cDiscoveryOrganizations(Structure):
 
     :meta private:
     """
+
     _fields_ = [
         ("version", c_ulonglong),
         ("organizations", POINTER(POINTER(cDiscoveryOrganization))),
@@ -83,6 +95,7 @@ class cDiscoveryServer(Structure):
 
     :meta private:
     """
+
     _fields_ = [
         ("authentication_url_template", c_char_p),
         ("base_url", c_char_p),
@@ -102,6 +115,7 @@ class cDiscoveryServers(Structure):
 
     :meta private:
     """
+
     _fields_ = [
         ("version", c_ulonglong),
         ("servers", POINTER(POINTER(cDiscoveryServer))),
@@ -114,6 +128,7 @@ class cServerProfile(Structure):
 
     :meta private:
     """
+
     _fields_ = [
         ("identifier", c_char_p),
         ("display_name", c_char_p),
@@ -126,6 +141,7 @@ class cServerProfiles(Structure):
 
     :meta private:
     """
+
     _fields_ = [
         ("current", c_int),
         ("profiles", POINTER(POINTER(cServerProfile))),
@@ -138,6 +154,7 @@ class cServer(Structure):
 
     :meta private:
     """
+
     _fields_ = [
         ("identifier", c_char_p),
         ("display_name", c_char_p),
@@ -156,6 +173,7 @@ class cServers(Structure):
 
     :meta private:
     """
+
     _fields_ = [
         ("custom_servers", POINTER(POINTER(cServer))),
         ("total_custom", c_size_t),
@@ -170,12 +188,14 @@ class DataError(Structure):
 
     :meta private:
     """
+
     _fields_ = [("data", c_void_p), ("error", c_void_p)]
 
 
 # The type for a Go state change callback
 VPNStateChange = CFUNCTYPE(c_int, c_char_p, c_int, c_int, c_void_p)
 ReadRxBytes = CFUNCTYPE(c_ulonglong)
+
 
 def encode_args(args: List[Any], types: List[Any]) -> Iterator[Any]:
     """Encode the arguments ready to be used by the Go library
@@ -271,9 +291,7 @@ def get_error(lib: CDLL, ptr: c_void_p) -> Optional[WrappedError]:
     if not ptr:
         return None
     err = cast(ptr, POINTER(cError)).contents
-    wrapped = WrappedError(
-        err.traceback.decode("utf-8"), err.cause.decode("utf-8")
-    )
+    wrapped = WrappedError(err.traceback.decode("utf-8"), err.cause.decode("utf-8"))
     lib.FreeError(ptr)
     return wrapped
 

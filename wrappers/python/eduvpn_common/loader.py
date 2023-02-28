@@ -108,6 +108,7 @@ def initialize_functions(lib: CDLL) -> None:
         c_char_p,
         c_char_p,
         c_char_p,
+        c_char_p,
         VPNStateChange,
         c_int,
     ], c_void_p
@@ -157,5 +158,10 @@ def initialize_functions(lib: CDLL) -> None:
         c_int,
     ], c_void_p
     lib.ShouldRenewButton.argtypes, lib.ShouldRenewButton.restype = [], int
-    lib.StartFailover.argtypes, lib.StartFailover.restype = [c_char_p, c_char_p, c_int, ReadRxBytes], DataError
+    lib.StartFailover.argtypes, lib.StartFailover.restype = [
+        c_char_p,
+        c_char_p,
+        c_int,
+        ReadRxBytes,
+    ], DataError
     lib.CancelFailover.argtypes, lib.CancelFailover.restype = [c_char_p], c_void_p
