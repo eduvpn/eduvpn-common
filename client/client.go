@@ -64,25 +64,25 @@ func isAllowedClientID(clientID string) bool {
 func userAgentName(clientID string) string {
 	switch clientID {
 	case "org.eduvpn.app.windows":
-		return "eduVPN Windows"
+		return "eduVPN for Windows"
 	case "org.eduvpn.app.android":
-		return "eduVPN Android"
+		return "eduVPN for Android"
 	case "org.eduvpn.app.ios":
-		return "eduVPN iOS"
+		return "eduVPN for iOS"
 	case "org.eduvpn.app.macos":
-		return "eduVPN MacOS"
+		return "eduVPN for macOS"
 	case "org.eduvpn.app.linux":
-		return "eduVPN Linux"
+		return "eduVPN for Linux"
 	case "org.letsconnect-vpn.app.windows":
-		return "Let's Connect! Windows"
+		return "Let's Connect! for Windows"
 	case "org.letsconnect-vpn.app.android":
-		return "Let's Connect! Android"
+		return "Let's Connect! for Android"
 	case "org.letsconnect-vpn.app.ios":
-		return "Let's Connect! iOS"
+		return "Let's Connect! for iOS"
 	case "org.letsconnect-vpn.app.macos":
-		return "Let's Connect! MacOS"
+		return "Let's Connect! for macOS"
 	case "org.letsconnect-vpn.app.linux":
-		return "Let's Connect! Linux"
+		return "Let's Connect! for Linux"
 	default:
 		return "unknown"
 	}
