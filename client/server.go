@@ -497,8 +497,8 @@ func (c *Client) askSecureLocation() error {
 
 	// The state has changed, meaning setting the secure location was not successful
 	if c.FSM.Current != StateAskLocation {
-		return errors.Errorf("fsm failed to transit; expected %v / actual %v",
-			StateAskLocation, c.FSM.Current)
+		log.Logger.Debugf("fsm failed to transit; expected %v / actual %v", GetStateName(StateAskLocation), GetStateName(c.FSM.Current))
+		return errors.New("failed loading secure internet location")
 	}
 	return nil
 }
