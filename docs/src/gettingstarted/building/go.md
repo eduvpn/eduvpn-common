@@ -70,3 +70,9 @@ Usually you won't need to do this, as changes in the library should automaticall
 Specify `CLEAN_ALL=1` to also remove downloaded dependencies for some wrappers. You can clean individual wrappers by
 executing clean in their directories, or specify `WRAPPERS=...`.
 
+## Note on releases
+Releases are build with the go tag "release" (add flag "-tags=release") to bundle the discovery JSON files and embed them in the shared library. See the [make_release](https://github.com/eduvpn/eduvpn-common/blob/main/make_release.sh) script on how we bundle the files. A full command without the Makefile to build this library is:
+
+```bash
+go build -o lib/libeduvpn_common-${VERSION}.so -tags=release -buildmode=c-shared ./exports
+```
