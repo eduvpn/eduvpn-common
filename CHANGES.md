@@ -1,3 +1,11 @@
+# 1.0.0 (2023-03-01)
+* Client:
+    - Modify user agent to be equal to upstream ClientID server values in https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/VpnClientDb.php
+	- Make sure we do not constrain the version field too much in the user agent by allowing 20 characters
+	- Fix unfriendly error message when a secure internet location cannot be loaded
+* Release:
+    - Add a script to release tarballs and sign them
+
 # 0.99.0 (2023-03-01)
 * Discovery:
     - Bundle on release using embed
