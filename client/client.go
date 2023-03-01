@@ -147,8 +147,8 @@ func (c *Client) Register(
 		return errors.Errorf("client ID is not allowed: '%v', see https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/VpnClientDb.php for a list of allowed IDs", name)
 	}
 
-	if len([]rune(version)) > 10 {
-		return errors.Errorf("version is not allowed: '%s', must be max 10 characters", version)
+	if len([]rune(version)) > 20 {
+		return errors.Errorf("version is not allowed: '%s', must be max 20 characters", version)
 	}
 
 	http.RegisterAgent(userAgentName(name), version)
