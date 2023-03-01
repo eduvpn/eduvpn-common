@@ -1,4 +1,4 @@
-# 1.0.0
+# 0.99.0 (2023-03-01)
 * Discovery:
     - Bundle on release using embed
     - Cache in the JSON

@@ -10,7 +10,7 @@ import sphinx_rtd_theme
 project = 'python-eduvpn-common'
 copyright = '2023, Jeroen Wijenbergh'
 author = 'Jeroen Wijenbergh'
-release = '1.0.0'
+release = '0.99.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
