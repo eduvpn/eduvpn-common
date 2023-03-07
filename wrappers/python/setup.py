@@ -65,8 +65,8 @@ def getlibpath(plat_name: str) -> typing.Union[str, None]:
 
     processed_os = os_map[plat_os]
     return (
-        f"{processed_os}/{arch_map[plat_arch]}/"
-        f"{lib_prefixes[processed_os]}{_libname}-{__version__}{lib_suffixes[processed_os]}"
+        processed_os + "/" + arch_map[plat_arch] + "/" + 
+        lib_prefixes[processed_os] + _libname + "-" + __version__ + lib_suffixes[processed_os]
     )
 
 
@@ -88,13 +88,13 @@ class bdist_wheel(_bdist_wheel):
 
         libpath = getlibpath(self.plat_name)
         if not libpath:
-            print(f"Unknown platform: {self.plat_name}")
+            print("Unknown platform:", self.plat_name)
             sys.exit(1)
 
-        print(f"Building wheel for platform {self.plat_name}")
+        print("Building wheel for platform:",self.plat_name)
 
         # setuptools will only use paths inside the package for package_data, so we copy the library
-        tmp_lib = shutil.copy(f"{self.exports_lib_path}/{libpath}", "eduvpn_common/lib/")
+        tmp_lib = shutil.copy(self.exports_lib_path + "/" + libpath, "eduvpn_common/lib/")
         _bdist_wheel.run(self)
         os.remove(tmp_lib)
 
@@ -105,6 +105,6 @@ setup(
     packages=["eduvpn_common"],
     python_requires=">=3.6",
     package_dir={"eduvpn_common": "eduvpn_common"},
-    package_data={"eduvpn_common": [f"lib/*{_libname}*", "py.typed"]},
+    package_data={"eduvpn_common": ["lib/*" + _libname + "*", "py.typed"]},
     cmdclass={"bdist_wheel": bdist_wheel},
 )
