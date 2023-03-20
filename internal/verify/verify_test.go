@@ -356,27 +356,27 @@ func compareResults(
 	if expectedErrPrefix == "" {
 		// we don't expect any error
 		if err != nil {
-			t.Errorf("error not expected but returned '%s'", err.Error())
+			t.Errorf("error not expected but returned '%s', callstr '%s'", err.Error(), callStr())
 		}
 		if !ret {
-			t.Errorf("error is nil and result is false")
+			t.Errorf("error is nil and result is false, callstr: '%s'", callStr())
 		}
 		return
 	}
 
 	if err == nil {
 		// we expect an error but received nil
-		t.Errorf("expected error prefix '%s' but received nil", expectedErrPrefix)
+		t.Errorf("expected error prefix '%s' but received nil, callstr: '%s'", expectedErrPrefix, callStr())
 		return
 	}
 
 	if !strings.HasPrefix(err.Error(), expectedErrPrefix) {
 		// wrong error
-		t.Errorf("expected error prefix '%s' for error '%s'", expectedErrPrefix, err.Error())
+		t.Errorf("expected error prefix '%s' for error '%s', callstr '%s'", expectedErrPrefix, err.Error(), callStr())
 		return
 	}
 
 	if ret {
-		t.Errorf("error is not nil and result is true")
+		t.Errorf("error is not nil and result is true, '%s'", callStr())
 	}
 }

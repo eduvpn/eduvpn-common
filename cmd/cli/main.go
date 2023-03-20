@@ -110,7 +110,7 @@ func sendProfile(state *client.Client, data interface{}) {
 	for k, v := range sps.Map {
 		ps += fmt.Sprintf("\n%d - %s", i+1, GetLanguageMatched(v.DisplayName, "en"))
 		options = append(options, k)
-		i += 1
+		i++
 	}
 
 	// Show the profiles
@@ -135,7 +135,7 @@ func sendProfile(state *client.Client, data interface{}) {
 // If OAuth is started we open the browser with the Auth URL
 // If we ask for a profile, we send the profile using command line input
 // Note that this has an additional argument, the vpn state which was wrapped into this callback function below.
-func stateCallback(state *client.Client, oldState client.FSMStateID, newState client.FSMStateID, data interface{}) {
+func stateCallback(state *client.Client, _ client.FSMStateID, newState client.FSMStateID, data interface{}) {
 	if newState == client.StateOAuthStarted {
 		openBrowser(data)
 	}
