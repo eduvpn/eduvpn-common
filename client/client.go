@@ -14,6 +14,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/types"
+	discotypes "github.com/eduvpn/eduvpn-common/types/discovery"
 	"github.com/eduvpn/eduvpn-common/types/protocol"
 	"github.com/go-errors/errors"
 )
@@ -237,7 +238,7 @@ func (c *Client) askProfile(srv server.Server) error {
 // If the list cannot be retrieved an error is returned.
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#organization-list.
-func (c *Client) DiscoOrganizations() (orgs *types.DiscoveryOrganizations, err error) {
+func (c *Client) DiscoOrganizations() (orgs *discotypes.Organizations, err error) {
 	defer func() {
 		if err != nil {
 			c.logError(err)
@@ -261,7 +262,7 @@ func (c *Client) DiscoOrganizations() (orgs *types.DiscoveryOrganizations, err e
 // If the list cannot be retrieved an error is returned.
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#server-list.
-func (c *Client) DiscoServers() (dss *types.DiscoveryServers, err error) {
+func (c *Client) DiscoServers() (dss *discotypes.Servers, err error) {
 	defer func() {
 		if err != nil {
 			c.logError(err)
