@@ -29,10 +29,7 @@ import (
 	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
 )
 
-var (
-	PStateCallback C.StateCB
-	VPNState       *client.Client
-)
+var VPNState *client.Client
 
 func getTokens(tokens *C.char) (t srvtypes.Tokens, err error) {
 	err = json.Unmarshal([]byte(C.GoString(tokens)), &t)
@@ -61,13 +58,11 @@ func getReturnData(data interface{}) (string, error) {
 }
 
 func StateCallback(
+	stateCallback C.StateCB,
 	oldState client.FSMStateID,
 	newState client.FSMStateID,
 	data interface{},
 ) bool {
-	if PStateCallback == nil {
-		return false
-	}
 	oldStateC := C.int(oldState)
 	newStateC := C.int(newState)
 	d, err := getReturnData(data)
@@ -75,7 +70,7 @@ func StateCallback(
 		return false
 	}
 	dataC := C.CString(d)
-	handled := C.call_callback(PStateCallback, oldStateC, newStateC, unsafe.Pointer(dataC))
+	handled := C.call_callback(stateCallback, oldStateC, newStateC, unsafe.Pointer(dataC))
 	FreeString(dataC)
 	return handled != C.int(0)
 }
@@ -87,6 +82,8 @@ func getVPNState() (*client.Client, error) {
 	return VPNState, nil
 }
 
+// Register creates a new client and also registers the FSM to go to the initial state
+//
 //export Register
 func Register(
 	name *C.char,
@@ -99,22 +96,31 @@ func Register(
 	if stateErr == nil {
 		return getCError(errors.New("failed to register, a VPN state is already present"))
 	}
-	state := &client.Client{}
-	registerErr := state.Register(
+	c, err := client.New(
 		C.GoString(name),
 		C.GoString(version),
 		C.GoString(configDirectory),
-		StateCallback,
+		func(old client.FSMStateID, new client.FSMStateID, data interface{}) bool {
+			return StateCallback(stateCallback, old, new, data)
+		},
 		debug != 0,
 	)
-	// Only update the VPN state if we get no error when registering
-	if registerErr == nil {
-		VPNState = state
-		PStateCallback = stateCallback
-		return nil
+	// Only update the state if we get no error
+	if err == nil {
+		// Update the global client such that other functions can retrieve it
+		// TODO: Use a sync.Once or return a CGO handler instead of a global state?
+		VPNState = c
+		// finally register the newly created client
+		err = c.Register()
+		if err != nil {
+			// Note: Registering can only fail for non-newly created clients
+			// We have obtained a fresh copy here
+			// This error is only there for the Go API where you can call register multiple times on an already client
+			panic(err)
+		}
 	}
 
-	return getCError(registerErr)
+	return getCError(err)
 }
 
 //export ExpiryTimes
@@ -166,7 +172,7 @@ func AddServer(_type C.int, id *C.char) *C.char {
 	var err error
 	switch t {
 	case int(srvtypes.TypeInstituteAccess):
-	     err = state.AddInstituteServer(C.GoString(id))
+		err = state.AddInstituteServer(C.GoString(id))
 	case int(srvtypes.TypeSecureInternet):
 		err = state.AddSecureInternetHomeServer(C.GoString(id))
 	case int(srvtypes.TypeCustom):
