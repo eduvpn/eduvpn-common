@@ -8,6 +8,7 @@ from eduvpn_common.types import (
     cToken,
     DataError,
     ReadRxBytes,
+    UpdateToken,
     VPNStateChange,
 )
 
@@ -68,6 +69,7 @@ def initialize_functions(lib: CDLL) -> None:
     ], c_void_p
     lib.Deregister.argtypes, lib.Deregister.restype = [c_char_p], None
     lib.FreeConfig.argtypes, lib.FreeConfig.restype = [c_void_p], None
+    lib.FreeTokens.argtypes, lib.FreeTokens.restype = [c_void_p], None
     lib.FreeDiscoOrganizations.argtypes, lib.FreeDiscoOrganizations.restype = [
         c_void_p
     ], None
@@ -111,6 +113,10 @@ def initialize_functions(lib: CDLL) -> None:
         c_char_p,
         VPNStateChange,
         c_int,
+    ], c_void_p
+    lib.SetTokenUpdater.argtypes, lib.SetTokenUpdater.restype = [
+        c_char_p,
+        UpdateToken,
     ], c_void_p
     lib.RemoveCustomServer.argtypes, lib.RemoveCustomServer.restype = [
         c_char_p,

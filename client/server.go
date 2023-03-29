@@ -108,6 +108,8 @@ func (c *Client) Cleanup(ct oauth.Token) error {
 	if server.NeedsRelogin(srv) {
 		server.UpdateTokens(srv, ct)
 	}
+	// update tokens to client
+	defer c.ForwardTokenUpdate(srv)
 	// Do the /disconnect API call
 	err = server.Disconnect(srv)
 	if err != nil {
@@ -260,6 +262,9 @@ func (c *Client) AddInstituteServer(url string) (srv server.Server, err error) {
 	}
 
 	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
+
+	// Also forward tokens using the callback
+	c.ForwardTokenUpdate(srv)
 	return srv, nil
 }
 
@@ -322,6 +327,9 @@ func (c *Client) AddSecureInternetHomeServer(orgID string) (srv server.Server, e
 		return nil, err
 	}
 	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
+
+	// Also forward tokens using the callback
+	c.ForwardTokenUpdate(srv)
 	return srv, nil
 }
 
@@ -369,6 +377,9 @@ func (c *Client) AddCustomServer(url string) (srv server.Server, err error) {
 	}
 
 	c.FSM.GoTransitionWithData(StateNoServer, c.Servers)
+
+	// Also forward tokens using the callback
+	c.ForwardTokenUpdate(srv)
 	return srv, nil
 }
 
@@ -408,6 +419,9 @@ func (c *Client) GetConfigInstituteAccess(url string, preferTCP bool, t oauth.To
 		c.goBackInternal()
 	}
 
+	// Also forward tokens using the callback
+	c.ForwardTokenUpdate(srv)
+
 	return cfg, err
 }
 
@@ -446,6 +460,9 @@ func (c *Client) GetConfigSecureInternet(orgID string, preferTCP bool, t oauth.T
 		c.goBackInternal()
 	}
 
+	// Also forward tokens using the callback
+	c.ForwardTokenUpdate(srv)
+
 	return cfg, err
 }
 
@@ -482,6 +499,9 @@ func (c *Client) GetConfigCustomServer(url string, preferTCP bool, t oauth.Token
 	if cfg, err = c.getConfig(srv, preferTCP, t); err != nil {
 		c.goBackInternal()
 	}
+
+	// Also forward tokens using the callback
+	c.ForwardTokenUpdate(srv)
 
 	return cfg, err
 }
@@ -543,7 +563,9 @@ func (c *Client) RenewSession() (err error) {
 	}
 
 	server.MarkTokensForRenew(srv)
-	return c.ensureLogin(srv, oauth.Token{})
+	c.ForwardTokenUpdate(srv)
+	err = c.ensureLogin(srv, oauth.Token{})
+	return err
 }
 
 // ShouldRenewButton returns true if the renew button should be shown
