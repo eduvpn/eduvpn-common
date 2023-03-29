@@ -1,5 +1,5 @@
 import threading
-from ctypes import cast, c_void_p, c_int, pointer
+from ctypes import POINTER, cast, c_void_p, c_int, pointer
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 from eduvpn_common.discovery import (
@@ -17,6 +17,7 @@ from eduvpn_common.server import (
     encode_tokens,
     get_config,
     Server,
+    get_tokens,
     get_transition_server,
     get_servers,
 )
@@ -24,7 +25,7 @@ from eduvpn_common.state import State, StateType
 from eduvpn_common.types import (
     VPNStateChange,
     ReadRxBytes,
-    cToken,
+    UpdateToken,
     decode_res,
     encode_args,
     get_data_error,
@@ -54,6 +55,7 @@ class EduVPN(object):
         initialize_functions(self.lib)
 
         self.event_handler = EventHandler(self.lib)
+        self.token_callback = None
 
         # Callbacks that need to wait for specific events
 
@@ -139,6 +141,16 @@ class EduVPN(object):
 
         if register_err:
             raise register_err
+
+    def set_token_updater(self, updater: Callable):
+        self.token_callback = updater
+        updater_err = self.go_function(
+            self.lib.SetTokenUpdater,
+            token_callback,
+        )
+
+        if updater_err:
+            raise updater_err
 
     def get_disco_servers(self) -> Optional[DiscoServers]:
         """Get the discovery servers
@@ -442,6 +454,11 @@ class EduVPN(object):
         """
         return self.event.run(old_state, new_state, data)
 
+    def token_calback(self, srv: Server, tok: Token):
+        if self.token_callback is None:
+            return
+        self.token_callback(srv, tok)
+
     def set_profile(self, profile_id: str) -> None:
         """Set the profile of the current server
 
@@ -583,6 +600,19 @@ class EduVPN(object):
 
 
 eduvpn_objects: Dict[str, EduVPN] = {}
+
+
+@UpdateToken
+def token_callback(name: bytes, srv, tok):
+    name_decoded = name.decode()
+    if name_decoded not in eduvpn_objects:
+        return 0
+    obj = eduvpn_objects[name_decoded]
+    srv_conv = get_transition_server(obj.lib, srv)
+    tok_conv = get_tokens(obj.lib, tok)
+    obj.token_callback(
+        srv_conv, tok_conv
+    )
 
 
 @VPNStateChange

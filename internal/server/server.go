@@ -177,7 +177,6 @@ func wireguardGetConfig(srv Server, preferTCP bool, openVPNSupport bool) (*Confi
 	}
 
 	t := oauth.Token{}
-
 	o := srv.OAuth()
 	if o != nil {
 		t = o.Token()

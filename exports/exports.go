@@ -3,6 +3,7 @@ package main
 /*
 #include <stdlib.h>
 #include "error.h"
+#include "server.h"
 
 typedef long long int (*ReadRxBytes)();
 typedef struct token {
@@ -10,6 +11,8 @@ typedef struct token {
     const char* refresh;
     unsigned long long int expired;
 } token;
+
+typedef void (*UpdateToken)(const char* name, server* srv, token* tok);
 
 typedef struct configData {
     const char* config;
@@ -23,6 +26,12 @@ static long long int get_read_rx_bytes(ReadRxBytes read)
 {
    return read();
 }
+
+static void update_token(UpdateToken func, const char* name, server* srv, token* tok)
+{
+   func(name, srv, tok);
+}
+
 static int call_callback(PythonCB callback, const char *name, int oldstate, int newstate, void* data)
 {
     return callback(name, oldstate, newstate, data);
@@ -34,6 +43,8 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/eduvpn/eduvpn-common/internal/log"
+	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/go-errors/errors"
 
@@ -143,6 +154,28 @@ func Register(
 		delete(VPNStates, nameStr)
 	}
 	return getError(registerErr)
+}
+
+//export SetTokenUpdater
+func SetTokenUpdater(name *C.char, updater C.UpdateToken) *C.error {
+	nameStr := C.GoString(name)
+	state, stateErr := GetVPNState(nameStr)
+	if stateErr != nil {
+		return getError(stateErr)
+	}
+	state.SetTokenUpdater(func(srv server.Server, tok oauth.Token) {
+		b, err := srv.Base()
+		if err != nil {
+			log.Logger.Warningf("No server base found for token updating with error: %v", err)
+			return
+		}
+		cName := C.CString(nameStr)
+		cSrv := getCPtrServer(state, b)
+		cTok := cToken(tok)
+		C.update_token(updater, cName, cSrv, cTok)
+		FreeString(cName)
+	})
+	return nil
 }
 
 //export Deregister
@@ -282,6 +315,13 @@ func cConfig(config *client.ConfigData) *C.configData {
 	cConf.config_type = C.CString(config.Type)
 	cConf.tokens = cToken(config.Tokens)
 	return cConf
+}
+
+//export FreeTokens
+func FreeTokens(tokens *C.token) {
+	C.free(unsafe.Pointer(tokens.access))
+	C.free(unsafe.Pointer(tokens.refresh))
+	C.free(unsafe.Pointer(tokens))
 }
 
 //export FreeConfig

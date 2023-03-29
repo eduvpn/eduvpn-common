@@ -11,6 +11,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/fsm"
 	"github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/log"
+	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/eduvpn/eduvpn-common/types"
@@ -116,6 +117,30 @@ type Client struct {
 
 	// The Failover monitor for the current VPN connection
 	Failover *failover.DroppedConMon `json:"-"`
+
+	// tokenCB is the token callback
+	tokenCB func(srv server.Server, tok oauth.Token)
+}
+
+func (c *Client) ForwardTokenUpdate(srv server.Server) {
+	if c.tokenCB == nil {
+		log.Logger.Debugf("No token update callback available")
+		return
+	}
+	t := oauth.Token{}
+	o := srv.OAuth()
+	if o != nil {
+		t = o.Token()
+	} else {
+		log.Logger.Debugf("OAuth was nil when forwarding token callback")
+	}
+	log.Logger.Debugf("Running token callback")
+	c.tokenCB(srv, t)
+}
+
+// SetTokenUpdater sets the token updater callback
+func (c *Client) SetTokenUpdater(updater func(srv server.Server, tok oauth.Token)) {
+	c.tokenCB = updater
 }
 
 // Register initializes the clientwith the following parameters:

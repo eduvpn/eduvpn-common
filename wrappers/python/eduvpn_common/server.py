@@ -392,6 +392,19 @@ def get_locations(lib: CDLL, ptr: c_void_p) -> Optional[List[str]]:
     return None
 
 
+def get_tokens(lib: CDLL, ptr: c_void_p) -> Optional[Token]:
+    if ptr:
+        toks = cast(ptr, POINTER(cToken)).contents
+        access = toks.access.decode("utf-8")
+        refresh = toks.refresh.decode("utf-8")
+        expired = toks.expired
+        lib.FreeTokens(ptr)
+        return Token(
+            access, refresh, expired
+        )
+    return None
+
+
 def get_config(lib: CDLL, ptr: c_void_p) -> Optional[Config]:
     """Get the config from the Go library as a C structure and return a Python usable structure
 
@@ -403,7 +416,6 @@ def get_config(lib: CDLL, ptr: c_void_p) -> Optional[Config]:
     :return: The configuration if there is any
     :rtype: Optional[Config]
     """
-    # TODO: FREE
     if ptr:
         config = cast(ptr, POINTER(cConfig)).contents
         cfg = config.config.decode("utf-8")

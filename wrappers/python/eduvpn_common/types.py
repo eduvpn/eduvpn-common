@@ -195,6 +195,7 @@ class DataError(Structure):
 # The type for a Go state change callback
 VPNStateChange = CFUNCTYPE(c_int, c_char_p, c_int, c_int, c_void_p)
 ReadRxBytes = CFUNCTYPE(c_ulonglong)
+UpdateToken = CFUNCTYPE(None, c_char_p, c_void_p, c_void_p)
 
 
 def encode_args(args: List[Any], types: List[Any]) -> Iterator[Any]:
