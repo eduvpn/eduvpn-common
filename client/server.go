@@ -694,7 +694,7 @@ func (c *Client) StartFailover(gateway string, wgMTU int, readRxBytes func() (in
 
 func (c *Client) CancelFailover() error {
 	if c.Failover == nil {
-		return errors.New("No failover process")
+		return errors.New("no failover process")
 	}
 	c.Failover.Cancel()
 	return nil
