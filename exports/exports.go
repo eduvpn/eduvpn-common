@@ -44,8 +44,8 @@ import (
 	"unsafe"
 
 	"github.com/eduvpn/eduvpn-common/internal/log"
-	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
+	"github.com/eduvpn/eduvpn-common/internal/server"
 	"github.com/go-errors/errors"
 
 	"github.com/eduvpn/eduvpn-common/client"
@@ -197,6 +197,11 @@ func getError(err error) *C.error {
 		C.malloc(C.size_t(unsafe.Sizeof(C.error{}))),
 	)
 	if err1, ok := err.(*errors.Error); ok {
+		if err1 == nil {
+			errorStruct.traceback = C.CString("N/A")
+			errorStruct.cause = C.CString("unknown error")
+			return errorStruct
+		}
 		errorStruct.traceback = C.CString(err1.ErrorStack())
 		if err1.Err == nil {
 			errorStruct.cause = C.CString(err1.Error())
