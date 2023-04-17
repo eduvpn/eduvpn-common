@@ -435,6 +435,8 @@ func (c *Client) GetConfigSecureInternet(orgID string, preferTCP bool, t oauth.T
 		}
 	}()
 
+	log.Logger.Debugf("getting config for secure internet server with org ID: '%s", orgID)
+
 	// Not supported with Let's Connect!
 	if c.isLetsConnect() {
 		return nil, errors.Errorf("discovery with Let's Connect is not supported")
