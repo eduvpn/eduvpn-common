@@ -491,6 +491,7 @@ func (c *Client) GetConfigCustomServer(url string, preferTCP bool, t oauth.Token
 
 	// Set the server as the current
 	if err = c.Servers.SetCustomServer(srv); err != nil {
+		c.goBackInternal()
 		return nil, err
 	}
 
