@@ -89,10 +89,19 @@ func (l *tokenLock) Access() (string, error) {
 		log.Logger.Debugf("No token response after refreshing")
 		return "", errors.New("No token response after refreshing")
 	}
+	// store the previous refresh token
+	pr := l.t.Refresh
+	// get the response as a non-pointer
 	r := *tr
 	e := s.Add(time.Second * time.Duration(r.Expires))
 	t := Token{Access: r.Access, Refresh: r.Refresh, ExpiredTimestamp: e}
 	l.updateInternal(t)
+	// set the previous refresh token if the new one is empty
+	// This is for 2.x servers
+	if l.t.Refresh == "" {
+		log.Logger.Debugf("The previous refresh token is set as the response had no refresh token")
+		l.t.Refresh = pr
+	}
 	return l.t.Access, nil
 }
 
