@@ -11,7 +11,7 @@ func (ss *Servers) SetCustomServer(server Server) error {
 	}
 
 	if b.Type != "custom_server" {
-		return errors.WrapPrefix(err, "not a custom server", 0)
+		return errors.New("not a custom server")
 	}
 
 	if _, ok := ss.CustomServers.Map[b.URL]; ok {
