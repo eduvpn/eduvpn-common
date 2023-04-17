@@ -176,6 +176,10 @@ func GetDiscoServers(name *C.char) (*C.discoveryServers, *C.error) {
 		return nil, getError(stateErr)
 	}
 	servers, serversErr := state.DiscoServers()
+	// if we get no servers then we return immediately
+	if servers == nil {
+		return nil, getError(serversErr)
+	}
 	returnedStruct := (*C.discoveryServers)(
 		C.malloc(C.size_t(unsafe.Sizeof(C.discoveryServers{}))),
 	)
@@ -195,6 +199,10 @@ func GetDiscoOrganizations(name *C.char) (*C.discoveryOrganizations, *C.error) {
 		return nil, getError(stateErr)
 	}
 	organizations, organizationsErr := state.DiscoOrganizations()
+	// if we get no organizations then we return immediately
+	if organizations == nil {
+		return nil, getError(organizationsErr)
+	}
 	returnedStruct := (*C.discoveryOrganizations)(
 		C.malloc(C.size_t(unsafe.Sizeof(C.discoveryOrganizations{}))),
 	)
