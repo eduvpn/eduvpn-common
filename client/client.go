@@ -251,10 +251,7 @@ func (c *Client) askProfile(srv server.Server) error {
 	if err != nil {
 		return err
 	}
-	if err = c.FSM.GoTransitionRequired(StateAskProfile, ps); err != nil {
-		return err
-	}
-	return nil
+	return c.FSM.GoTransitionRequired(StateAskProfile, ps)
 }
 
 // DiscoOrganizations gets the organizations list from the discovery server
