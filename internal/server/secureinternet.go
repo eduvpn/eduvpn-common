@@ -127,6 +127,11 @@ func (s *SecureInternetHomeServer) init(
 		return err
 	}
 
+	// Set the current location to the home location if there is none
+	if s.CurrentLocation == "" {
+		s.CurrentLocation = homeLoc.CountryCode
+	}
+
 	// Make sure oauth contains our endpoints
 	s.Auth.Init(b.URL, b.Endpoints.API.V3.Authorization, b.Endpoints.API.V3.Token)
 	return nil
