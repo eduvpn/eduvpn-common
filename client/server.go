@@ -303,14 +303,6 @@ func (c *Client) AddSecureInternetHomeServer(orgID string) (srv server.Server, e
 		return nil, err
 	}
 
-	// TODO(jwijenbergh): Does this call transfers execution flow to UI?
-	if err = c.askSecureLocation(); err != nil {
-		// Removing is the best effort
-		// This already goes back to the main screen
-		_ = c.RemoveSecureInternet()
-		return nil, err
-	}
-
 	// Set the server as the current so OAuth can be cancelled
 	if err = c.Servers.SetSecureInternet(srv); err != nil {
 		c.goBackInternal()
