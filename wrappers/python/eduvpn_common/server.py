@@ -123,7 +123,7 @@ class InstituteServer(Server):
     :param: url: str: The base URL of the Institute Access Server
     :param: display_name: str: The display name of the Institute Access Server
     :param: support_contact: List[str]: The list of support contacts
-    :param: profiles: Profiles: The profiles of the server
+    :param: profiles: Optional[Profiles]: The profiles of the server if there are any
     :param: expire_time: int: The expiry time in a Unix timestamp
     """
 
@@ -132,7 +132,7 @@ class InstituteServer(Server):
         url: str,
         display_name: str,
         support_contact: List[str],
-        profiles: Profiles,
+        profiles: Optional[Profiles],
         expire_time: int,
     ):
         super().__init__(url, display_name, profiles, expire_time)
@@ -155,7 +155,7 @@ class SecureInternetServer(Server):
     :param: display_name: str: The display name of the server
     :param: support_contact: List[str]: The list of support contacts of the server
     :param: locations: List[str]: The list of secure internet locations
-    :param: profiles: Profiles: The list of profiles that the server has
+    :param: profiles: Optional[Profiles]: The list of profiles if there are any
     :param: expire_time: int: The expiry time in a Unix timestamp
     :param: country_code: str: The country code of the server
     """
@@ -166,7 +166,7 @@ class SecureInternetServer(Server):
         display_name: str,
         support_contact: List[str],
         locations: List[str],
-        profiles: Profiles,
+        profiles: Optional[Profiles],
         expire_time: int,
         country_code: str,
     ):
