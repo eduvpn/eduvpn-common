@@ -566,8 +566,8 @@ func (c *Client) RenewSession() (err error) {
 	}
 
 	server.MarkTokensForRenew(srv)
-	c.ForwardTokenUpdate(srv)
 	err = c.ensureLogin(srv, oauth.Token{})
+	c.ForwardTokenUpdate(srv)
 	return err
 }
 
