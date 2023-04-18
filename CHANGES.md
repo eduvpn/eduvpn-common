@@ -1,3 +1,20 @@
+# 1.1.0 (2023-04-18)
+* Client:
+    - Implement a toker updater callback to notify client of any token updates
+    - Make sure we go back in the FSM when we have an error with setting a custom server
+    - Log current secure internet server we're getting a config for
+* Server:
+    - Fixed error wrapping when a server is not a custom server, it tried to wrap an empty error
+* OAuth
+    - Set previous refresh token if new refresh token is empty after refreshing. This is needed for 2.x servers
+* Exports
+    - Safeguard against nil servers and organizations. This should not happen in production due to it always being non-nil. But if clients do not check correctly if they're Let's Connect! or when building in non-release mode, this can be a problem. Now we return an error properly
+* Python:
+    - Make profiles optional in the server types
+* Misc:
+    - Use callStr in verify test code to get rid of linting errors
+    - Fix line numbers not showing up in linter workflows
+
 # 1.0.0 (2023-03-01)
 * Client:
     - Modify user agent to be equal to upstream ClientID server values in https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/VpnClientDb.php
