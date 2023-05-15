@@ -94,6 +94,7 @@ func (s *Server) Location(ctx context.Context, locSrv *discotypes.Server) error 
 // Initializes the home server and adds its own location.
 func (s *Server) Init(
 	ctx context.Context,
+	clientID string,
 	homeOrg *discotypes.Organization, homeLoc *discotypes.Server,
 ) error {
 	if s.HomeOrganizationID != homeOrg.OrgID {
@@ -120,7 +121,7 @@ func (s *Server) Init(
 	}
 
 	// Make sure oauth contains our endpoints
-	s.Auth.Init(b.URL, b.Endpoints.API.V3.Authorization, b.Endpoints.API.V3.Token)
+	s.Auth.Init(clientID, b.URL, b.Endpoints.API.V3.Authorization, b.Endpoints.API.V3.Token)
 	return nil
 }
 
