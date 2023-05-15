@@ -77,7 +77,7 @@ func CurrentProfile(srv Server) (*profile.Profile, error) {
 	return nil, errors.Errorf("profile not found: " + pID)
 }
 
-func ValidProfiles(srv Server, wireguardSupport bool) (*[]profile.Profile, error) {
+func ValidProfiles(srv Server, wireguardSupport bool) (*profile.Info, error) {
 	// No error wrapping here otherwise we wrap it too much
 	b, err := srv.Base()
 	if err != nil {
@@ -87,7 +87,12 @@ func ValidProfiles(srv Server, wireguardSupport bool) (*[]profile.Profile, error
 	if len(ps) == 0 {
 		return nil, errors.Errorf("no profiles found with supported protocols")
 	}
-	return &ps, nil
+	return &profile.Info{
+		Current: b.Profiles.Current,
+		Info: profile.ListInfo{
+			ProfileList: ps,
+		},
+	}, nil
 }
 
 func Profile(srv Server, id string) error {
@@ -190,6 +195,7 @@ func HasValidProfile(ctx context.Context, srv Server, wireguardSupport bool) (bo
 		}
 	}
 
+	// there are multiple profiles and no selection has been made
 	if len(b.Profiles.Info.ProfileList) != 1 && b.Profiles.Current == "" {
 		return false, nil
 	}
