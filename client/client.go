@@ -1,4 +1,4 @@
-//go:generate go run golang.org/x/text/cmd/gotext -srclang=en update -out=zgotext.go -lang=da,de,en,es,fr,it,nl,ukr
+//go:generate go run golang.org/x/text/cmd/gotext -srclang=en update -out=zgotext.go -lang=da,de,en,es,fr,it,nl,sl,ukr
 
 // Package client implements the public interface for creating eduVPN/Let's Connect! clients
 package client
