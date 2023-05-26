@@ -27,15 +27,15 @@ func (d *dictionary) Lookup(key string) (data string, ok bool) {
 
 func init() {
 	dict := map[string]catalog.Dictionary{
-		"da":  &dictionary{index: daIndex, data: daData},
-		"de":  &dictionary{index: deIndex, data: deData},
-		"dnk": &dictionary{index: dnkIndex, data: dnkData},
-		"en":  &dictionary{index: enIndex, data: enData},
-		"es":  &dictionary{index: esIndex, data: esData},
-		"fr":  &dictionary{index: frIndex, data: frData},
-		"it":  &dictionary{index: itIndex, data: itData},
-		"nl":  &dictionary{index: nlIndex, data: nlData},
-		"uk":  &dictionary{index: ukIndex, data: ukData},
+		"da": &dictionary{index: daIndex, data: daData},
+		"de": &dictionary{index: deIndex, data: deData},
+		"en": &dictionary{index: enIndex, data: enData},
+		"es": &dictionary{index: esIndex, data: esData},
+		"fr": &dictionary{index: frIndex, data: frData},
+		"it": &dictionary{index: itIndex, data: itData},
+		"nl": &dictionary{index: nlIndex, data: nlData},
+		"sl": &dictionary{index: slIndex, data: slData},
+		"uk": &dictionary{index: ukIndex, data: ukData},
 	}
 	fallback := language.MustParse("en")
 	cat, err := catalog.NewFromMap(dict, catalog.Fallback(fallback))
@@ -118,23 +118,6 @@ var deIndex = []uint32{ // 38 elements
 } // Size: 176 bytes
 
 const deData string = ""
-
-var dnkIndex = []uint32{ // 38 elements
-	// Entry 0 - 1F
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	// Entry 20 - 3F
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
-} // Size: 176 bytes
-
-const dnkData string = ""
 
 var enIndex = []uint32{ // 38 elements
 	// Entry 0 - 1F
@@ -252,6 +235,23 @@ var nlIndex = []uint32{ // 38 elements
 
 const nlData string = ""
 
+var slIndex = []uint32{ // 38 elements
+	// Entry 0 - 1F
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	// Entry 20 - 3F
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000,
+} // Size: 176 bytes
+
+const slData string = ""
+
 var ukIndex = []uint32{ // 38 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -269,4 +269,4 @@ var ukIndex = []uint32{ // 38 elements
 
 const ukData string = ""
 
-// Total table size 3665 bytes (3KiB); checksum: 21098CA7
+// Total table size 3665 bytes (3KiB); checksum: 26FA011B
