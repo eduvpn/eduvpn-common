@@ -237,17 +237,25 @@ func (c *Client) Register() error {
 	return nil
 }
 
-// Deregister 'deregisters' the client, meaning saving the log file and the config and emptying out the client struct.
-func (c *Client) Deregister() {
-	// First of all let's transition the state machine
-	_ = c.goTransition(StateDeregistered)
-	// Close the log file
-	_ = log.Logger.Close()
-
+// SaveState saves the internal state to the config
+func (c *Client) SaveState() {
+	log.Logger.Debugf("saving state configuration....")
 	// Save the config
 	if err := c.Config.Save(&c); err != nil {
 		log.Logger.Infof("failed saving state configuration: '%v'", err)
 	}
+}
+
+// Deregister 'deregisters' the client, meaning saving the log file and the config and emptying out the client struct.
+func (c *Client) Deregister() {
+	// First of all let's transition the state machine
+	_ = c.goTransition(StateDeregistered)
+
+	// SaveState saves the configuration
+	c.SaveState()
+
+	// Close the log file
+	_ = log.Logger.Close()
 
 	// Empty out the state
 	*c = Client{}
@@ -454,6 +462,8 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 	defer func() {
 		if err != nil {
 			_ = c.RemoveServer(identifier, _type) //nolint:errcheck
+		} else {
+			c.SaveState()
 		}
 		// If we must run callbacks, go to the previous state if we're not in it
 		if !ni && !c.FSM.InState(previousState) {
@@ -582,6 +592,7 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 	defer func() {
 		if err == nil {
 			c.FSM.GoTransition(StateGotConfig) //nolint:errcheck
+			c.SaveState()
 		} else if !c.FSM.InState(previousState) {
 			// go back to the previous state if an error occurred
 			c.FSM.GoTransition(previousState) //nolint:errcheck
@@ -664,6 +675,7 @@ func (c *Client) RemoveServer(identifier string, _type srvtypes.Type) (err error
 	if mErr != nil {
 		log.Logger.Debugf("failed to remove server with identifier: '%s' and type: '%d', error: %v", identifier, _type, mErr)
 	}
+	c.SaveState()
 	return nil
 }
 
@@ -800,7 +812,11 @@ func (c *Client) SetProfileID(pID string) (err error) {
 	if err != nil {
 		return err
 	}
-	return server.Profile(srv, pID)
+	err = server.Profile(srv, pID)
+	if err == nil {
+		c.SaveState()
+	}
+	return err
 }
 
 func (c *Client) Cleanup(ck *cookie.Cookie) (err error) {
@@ -809,6 +825,7 @@ func (c *Client) Cleanup(ck *cookie.Cookie) (err error) {
 	if err != nil {
 		return i18nerr.Wrap(err, "Failed to get the current server to cleanup the connection")
 	}
+	defer c.SaveState()
 	err = c.updateTokens(srv)
 	if err != nil {
 		log.Logger.Debugf("failed to update tokens for disconnect: %v", err)
@@ -838,7 +855,11 @@ func (c *Client) SetSecureLocation(ck *cookie.Cookie, countryCode string) (err e
 		return err
 	}
 
-	return c.Servers.SecureInternetHomeServer.Location(ck.Context(), dSrv)
+	err = c.Servers.SecureInternetHomeServer.Location(ck.Context(), dSrv)
+	if err == nil {
+		c.SaveState()
+	}
+	return err
 }
 
 func (c *Client) RenewSession(ck *cookie.Cookie) (err error) {
@@ -861,6 +882,7 @@ func (c *Client) RenewSession(ck *cookie.Cookie) (err error) {
 			log.Logger.Debugf("failed to forward tokens after renew: %v", terr)
 		}
 	}()
+	defer c.SaveState()
 	// TODO: Maybe this can be deleted because we force auth now
 	server.MarkTokensForRenew(srv)
 	// run the callbacks by forcing auth
