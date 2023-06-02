@@ -237,20 +237,49 @@ const nlData string = ""
 
 var slIndex = []uint32{ // 38 elements
 	// Entry 0 - 1F
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000021, 0x00000058, 0x0000008f,
+	0x000000cb, 0x000000eb, 0x00000125, 0x00000165,
+	0x000001a5, 0x000001e1, 0x00000211, 0x00000232,
+	0x0000025b, 0x0000028e, 0x000002ce, 0x000002ef,
+	0x00000347, 0x00000391, 0x000003e9, 0x00000437,
+	0x00000473, 0x000004a5, 0x000004c7, 0x000004ef,
+	0x00000512, 0x00000544, 0x0000057d, 0x000005ab,
+	0x000005ea, 0x0000062d, 0x00000666, 0x0000069c,
 	// Entry 20 - 3F
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
+	0x000006de, 0x00000720, 0x00000765, 0x000007b6,
+	0x000007c6, 0x000007d0,
 } // Size: 176 bytes
 
-const slData string = ""
+const slData string = "" + // Size: 2000 bytes
+	"\x02Napaka prehoda notranjega stanja\x02Odjemalec se je registriral z na" +
+	"pačnim ID-jem '%[1]v'\x02Odjemalec se je registriral z napačno verzijo '" +
+	"%[1]v'\x02Napaka pri vzpostavitvi datoteke dnevnika v imeniku '%[1]s'" +
+	"\x02Odjemalec ima neveljavno stanje\x02Let's Connect ne podpira kataloga" +
+	" strežnikov/organizacij\x02Pri nalaganju datotek kataloga organizacij je" +
+	" prišlo do napake\x02Pri nalaganju datotek kataloga strežnikov je prišlo" +
+	" do napake\x02Ugotavljanje preteka ne more določiti izbranega strežnika" +
+	"\x02Napaka pri nastavljanju lokacije za varni splet\x02Napaka pri postop" +
+	"ku avtorizacije\x02Ustreznih profilov ni bilo mogoče najti\x02Profila z " +
+	"ID-jem '%[1]s' ni bilo mogoče nastaviti\x02Profila z ID-jem '%[1]s' ni b" +
+	"ilo mogoče naložiti s strežnika\x02ID poslan knjižnici je napačen\x02Str" +
+	"ežnika z naslovom URL '%[1]s' za dostop do ustanove ni bilo možno najti " +
+	"v katalogu\x02Strežnika z naslovom '%[1]s' za dostop do ustanove ni bilo" +
+	" možno dodati\x02Strežnika za varni splet organizacije z ID-jem '%[1]s' " +
+	"ni bilo možno najti v katalogu\x02Strežnika za varni splet organizacije " +
+	"z ID-jem '%[1]s' ni bilo možno dodati\x02Svojega strežnika z naslovom '%" +
+	"[1]s' ni bilo možno dodati\x02Vrsta strežnika '%[1]v' ni veljavna za dod" +
+	"ajanje\x02Napaka pri prenosu nastavitev VPN\x02Izbranega profila ni bilo" +
+	" mogoče najti\x02%[1]v ni veljavna vrsta strežnika\x02ID '%[1]s' za stre" +
+	"žnik vrste '%[2]d' ni veljaven\x02Operacija za nalaganje nastavitev VPN" +
+	" je bila preklicana\x02Napaka pri izbiri strežnika z ID-jem '%[1]s'\x02I" +
+	"D '%[1]s' strežnika vrste '%[2]d' ni veljaven za odstranitev\x02Napaka p" +
+	"ri določanju izbranega strežnika za čiščenje povezave\x02Napaka pri čišč" +
+	"enju povezave VPN za izbrani strežnik\x02Let's Connect! ne podpira nasta" +
+	"vljanje varnega spleta\x02Za izbiro lokacije ni na voljo nobenega strežn" +
+	"ika za varni splet\x02Napaka pri ugotavljanju izbranega strežnika za pod" +
+	"aljšanje seje\x02Failover preko prehoda '%[1]s' in z MTU-jem '%[2]d' se " +
+	"ni zaključil\x02Prehod notranjega stanja iz %[1]s v %[2]s, ki ga je zaht" +
+	"eval odjemalec, ni uspel\x02čas je potekel\x02- razlog:"
 
 var ukIndex = []uint32{ // 38 elements
 	// Entry 0 - 1F
@@ -269,4 +298,4 @@ var ukIndex = []uint32{ // 38 elements
 
 const ukData string = ""
 
-// Total table size 3665 bytes (3KiB); checksum: 26FA011B
+// Total table size 5665 bytes (5KiB); checksum: 7F0E767B
