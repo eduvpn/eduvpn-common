@@ -871,9 +871,8 @@ func (c *Client) RenewSession(ck *cookie.Cookie) (err error) {
 	}
 	// The server has not been chosen yet, this means that we want to manually renew
 	// TODO: is this needed?
-	if !c.FSM.InState(StateChosenServer) {
+	if !c.FSM.InState(StateLoadingServer) {
 		c.FSM.GoTransition(StateLoadingServer) //nolint:errcheck
-		c.FSM.GoTransition(StateChosenServer) //nolint:errcheck
 	}
 	// update tokens in the end
 	defer func() {
