@@ -76,10 +76,11 @@ func TestServer(t *testing.T) {
 	serverURI := getServerURI(t)
 	ck := cookie.NewWithContext(context.Background())
 	defer ck.Cancel() //nolint:errcheck
+	dir := t.TempDir()
 	state, err := New(
 		"org.letsconnect-vpn.app.linux",
 		"0.1.0-test",
-		"configstest",
+		dir,
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
 			stateCallback(t, &ck, old, new, data)
 			return true
@@ -123,10 +124,11 @@ func TestTokenExpired(t *testing.T) {
 	// Get a vpn state
 	ck := cookie.NewWithContext(context.Background())
 	defer ck.Cancel() //nolint:errcheck
+	dir := t.TempDir()
 	state, err := New(
 		"org.letsconnect-vpn.app.linux",
 		"0.1.0-test",
-		"configsexpired",
+		dir,
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
 			stateCallback(t, &ck, old, new, data)
 			return true
@@ -186,13 +188,14 @@ func TestTokenExpired(t *testing.T) {
 
 // Test if an invalid profile will be corrected.
 func TestInvalidProfileCorrected(t *testing.T) {
+	dir := t.TempDir()
 	serverURI := getServerURI(t)
 	ck := cookie.NewWithContext(context.Background())
 	defer ck.Cancel() //nolint:errcheck
 	state, err := New(
 		"org.letsconnect-vpn.app.linux",
 		"0.1.0-test",
-		"configscancelprofile",
+		dir,
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
 			stateCallback(t, &ck, old, new, data)
 			return true
@@ -250,10 +253,11 @@ func TestPreferTCP(t *testing.T) {
 	serverURI := getServerURI(t)
 	ck := cookie.NewWithContext(context.Background())
 	defer ck.Cancel() //nolint:errcheck
+	dir := t.TempDir()
 	state, err := New(
 		"org.letsconnect-vpn.app.linux",
 		"0.1.0-test",
-		"configsprefertcp",
+		dir,
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
 			stateCallback(t, &ck, old, new, data)
 			return true
@@ -313,11 +317,12 @@ func TestInvalidClientID(t *testing.T) {
 		"org.letsconnect-vpn.app.macos": true,
 	}
 
+	dir := t.TempDir()
 	for k, v := range tests {
 		_, err := New(
 			k,
 			"0.1.0-test",
-			"configsclientid",
+			dir,
 			func(old FSMStateID, new FSMStateID, data interface{}) bool {
 				return true
 			},
