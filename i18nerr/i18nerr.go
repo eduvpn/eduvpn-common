@@ -46,7 +46,7 @@ func (e *Error) translated(t language.Tag) string {
 	once.Do(func() {
 		inititializeLangs()
 	})
-	msg := printerOrNew(t).Sprintf(e.key, e.args)
+	msg := printerOrNew(t).Sprintf(e.key, e.args...)
 	if e.wrapped != nil {
 		return msg + " " + printerOrNew(t).Sprintf("with cause:") + " " + e.wrapped.Error()
 	}
