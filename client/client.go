@@ -420,6 +420,7 @@ func (c *Client) profileCallback(ck *cookie.Cookie, srv server.Server) error {
 	vp, err := server.HasValidProfile(ck.Context(), srv, c.SupportsWireguard)
 	if err != nil {
 		log.Logger.Warningf("failed to determine whether the current protocol is valid with error: %v", err)
+		return err
 	}
 	if !vp {
 		vps, err := server.ValidProfiles(srv, c.SupportsWireguard)
