@@ -386,7 +386,7 @@ func (c *Client) callbacks(ck *cookie.Cookie, srv server.Server, forceauth bool)
 
 	err := c.goTransition(StateChosenServer)
 	if err != nil {
-		return err
+		log.Logger.Debugf("optional chosen server transition not possible: %v", err)
 	}
 	// oauth
 	// TODO: This should be ck.Context()
