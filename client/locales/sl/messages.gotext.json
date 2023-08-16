@@ -77,14 +77,59 @@
             "translation": "Ugotavljanje preteka ne more določiti izbranega strežnika"
         },
         {
+            "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
+            "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Namesrv",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "server.Name(srv)"
+                }
+            ]
+        },
+        {
             "id": "The secure internet location could not be set",
             "message": "The secure internet location could not be set",
             "translation": "Napaka pri nastavljanju lokacije za varni splet"
         },
         {
+            "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
+            "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Namesrv",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "server.Name(srv)"
+                }
+            ]
+        },
+        {
             "id": "The authorization procedure failed to complete",
             "message": "The authorization procedure failed to complete",
             "translation": "Napaka pri postopku avtorizacije"
+        },
+        {
+            "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
+            "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Namesrv",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "server.Name(srv)"
+                }
+            ]
         },
         {
             "id": "No suitable profiles could be found",
