@@ -99,7 +99,7 @@ func TestServer(t *testing.T) {
 	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
 	}
-	_, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false)
+	_, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
 	if configErr != nil {
 		t.Fatalf("Connect error: %v", configErr)
 	}
@@ -148,7 +148,7 @@ func TestTokenExpired(t *testing.T) {
 		t.Fatalf("Add error: %v", addErr)
 	}
 
-	_, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false)
+	_, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error before expired: %v", configErr)
@@ -169,7 +169,7 @@ func TestTokenExpired(t *testing.T) {
 	// Wait for TTL so that the tokens expire
 	time.Sleep(time.Duration(expiredInt) * time.Second)
 
-	_, configErr = state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false)
+	_, configErr = state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error after expiry: %v", configErr)
@@ -215,7 +215,7 @@ func TestInvalidProfileCorrected(t *testing.T) {
 		t.Fatalf("Add error: %v", addErr)
 	}
 
-	_, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false)
+	_, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
 
 	if configErr != nil {
 		t.Fatalf("First connect error: %v", configErr)
@@ -234,7 +234,7 @@ func TestInvalidProfileCorrected(t *testing.T) {
 	previousProfile := base.Profiles.Current
 	base.Profiles.Current = "IDONOTEXIST"
 
-	_, configErr = state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false)
+	_, configErr = state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
 	if configErr != nil {
 		t.Fatalf("Second connect error: %v", configErr)
 	}
@@ -246,6 +246,66 @@ func TestInvalidProfileCorrected(t *testing.T) {
 			previousProfile,
 		)
 	}
+}
+
+// TestConfigStartup tests if the 'startup' variable for getconfig behaves as expected
+func TestConfigStartup(t *testing.T) {
+	serverURI := getServerURI(t)
+	ck := cookie.NewWithContext(context.Background())
+	defer ck.Cancel() //nolint:errcheck
+	dir := t.TempDir()
+	state, err := New(
+		"org.letsconnect-vpn.app.linux",
+		"0.1.0-test",
+		dir,
+		func(old FSMStateID, new FSMStateID, data interface{}) bool {
+			stateCallback(t, &ck, old, new, data)
+			return true
+		},
+		false,
+	)
+	if err != nil {
+		t.Fatalf("Creating client error: %v", err)
+	}
+	err = state.Register()
+	if err != nil {
+		t.Fatalf("Failed to register with error: %v", err)
+	}
+	// we set true as last argument here such that no callbacks are ran
+	err = state.AddServer(&ck, serverURI, srvtypes.TypeCustom, true)
+	if err != nil {
+		t.Fatalf("Failed to add server for trying config startup: %v", err)
+	}
+	testTrue := func() {
+		// Now get config with setting startup to true
+		startup := true
+		_, err := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, startup)
+		// this should fail as we have not authorized yet/chosen profile and startup=true does not do these callbacks
+		if err == nil {
+			t.Fatal("Got no error after getting config with startup true")
+		}
+		if !strings.HasPrefix(err.Error(), "The client tried to autoconnect to the VPN server") {
+			t.Fatalf("GetConfig error for GetConfig with startup=true is not what we expect: %v", err)
+		}
+	}
+	testFalse := func() {
+		startup := false
+		// This should succeed
+		_, err := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, startup)
+		// this should fail as we have not authorized yet/chosen profile
+		if err != nil {
+			t.Fatalf("Got error after getting config with startup=false: %v", err)
+		}
+	}
+	testTrue()
+	testFalse()
+
+	// set invalid authorization and test again
+	// we cannot test by setting invalid profile because the server only has 1 profile
+	// TODO: support multiple profiles in the test server
+	state.Servers.CustomServers.Map[serverURI].OAuth().SetTokenRenew()
+	testTrue()
+	testFalse()
 }
 
 // Test if prefer tcp is handled correctly by checking the returned config and config type.
@@ -278,7 +338,7 @@ func TestPreferTCP(t *testing.T) {
 	}
 
 	// get a config with preferTCP set to true
-	config, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, true)
+	config, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, true, false)
 
 	// Test server should accept prefer TCP!
 	if config.Protocol != protocol.OpenVPN {
@@ -295,7 +355,7 @@ func TestPreferTCP(t *testing.T) {
 	}
 
 	// get a config with preferTCP set to false
-	config, configErr = state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false)
+	config, configErr = state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
 	if configErr != nil {
 		t.Fatalf("Config error: %v", configErr)
 	}

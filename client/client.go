@@ -375,9 +375,12 @@ func (c *Client) loginCallback(ck *cookie.Cookie, srv server.Server) error {
 	return nil
 }
 
-func (c *Client) callbacks(ck *cookie.Cookie, srv server.Server, forceauth bool) error {
+func (c *Client) callbacks(ck *cookie.Cookie, srv server.Server, forceauth bool, startup bool) error {
 	// location
 	if srv.NeedsLocation() {
+		if startup {
+			return i18nerr.Newf("The client tried to autoconnect to the VPN server: %s, but no secure internet location is found. Please manually connect again", server.Name(srv))
+		}
 		err := c.locationCallback(ck)
 		if err != nil {
 			return i18nerr.Wrap(err, "The secure internet location could not be set")
@@ -398,6 +401,9 @@ func (c *Client) callbacks(ck *cookie.Cookie, srv server.Server, forceauth bool)
 		log.Logger.Debugf("failed to get tokens from client: %v", err)
 	}
 	if server.NeedsRelogin(context.Background(), srv) || forceauth {
+		if startup {
+			return i18nerr.Newf("The client tried to autoconnect to the VPN server: %s, but you need to authorizate again. Please manually connect again", server.Name(srv))
+		}
 		// mark organizations as expired if the server is a secure internet server
 		b, berr := srv.Base()
 		if berr == nil && b.Type == srvtypes.TypeSecureInternet {
@@ -416,13 +422,16 @@ func (c *Client) callbacks(ck *cookie.Cookie, srv server.Server, forceauth bool)
 	return nil
 }
 
-func (c *Client) profileCallback(ck *cookie.Cookie, srv server.Server) error {
+func (c *Client) profileCallback(ck *cookie.Cookie, srv server.Server, startup bool) error {
 	vp, err := server.HasValidProfile(ck.Context(), srv, c.SupportsWireguard)
 	if err != nil {
 		log.Logger.Warningf("failed to determine whether the current protocol is valid with error: %v", err)
 		return err
 	}
 	if !vp {
+		if startup {
+			return i18nerr.Newf("The client tried to autoconnect to the VPN server: %s, but no valid profiles were found. Please manually connect again", server.Name(srv))
+		}
 		vps, err := server.ValidProfiles(srv, c.SupportsWireguard)
 		if err != nil {
 			return i18nerr.Wrapf(err, "No suitable profiles could be found")
@@ -527,7 +536,7 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 	}
 
 	// callbacks
-	err = c.callbacks(ck, srv, false)
+	err = c.callbacks(ck, srv, false, false)
 	// error is already UI wrapped
 	if err != nil {
 		return err
@@ -539,9 +548,9 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 	return nil
 }
 
-func (c *Client) config(ck *cookie.Cookie, srv server.Server, pTCP bool, forceAuth bool) (cfg *srvtypes.Configuration, err error) {
+func (c *Client) config(ck *cookie.Cookie, srv server.Server, pTCP bool, forceAuth bool, startup bool) (cfg *srvtypes.Configuration, err error) {
 	// do the callbacks to ensure valid profile, location and authorization
-	err = c.callbacks(ck, srv, forceAuth)
+	err = c.callbacks(ck, srv, forceAuth, startup)
 	if err != nil {
 		return nil, err
 	}
@@ -551,7 +560,7 @@ func (c *Client) config(ck *cookie.Cookie, srv server.Server, pTCP bool, forceAu
 		return nil, err
 	}
 
-	err = c.profileCallback(ck, srv)
+	err = c.profileCallback(ck, srv, startup)
 	if err != nil {
 		return nil, err
 	}
@@ -586,7 +595,7 @@ func (c *Client) server(identifier string, _type srvtypes.Type) (srv server.Serv
 }
 
 // GetConfig gets a VPN configuration
-func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.Type, pTCP bool) (cfg *srvtypes.Configuration, err error) {
+func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.Type, pTCP bool, startup bool) (cfg *srvtypes.Configuration, err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	previousState := c.FSM.Current
@@ -626,11 +635,11 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 	}
 
 	// get a config and retry with authorization if expired
-	cfg, err = c.config(ck, srv, pTCP, false)
+	cfg, err = c.config(ck, srv, pTCP, false, startup)
 	tErr := &oauth.TokensInvalidError{}
 	if err != nil && errors.As(err, &tErr) {
 		log.Logger.Debugf("the tokens were invalid, trying again...")
-		cfg, err = c.config(ck, srv, pTCP, true)
+		cfg, err = c.config(ck, srv, pTCP, true, startup)
 	}
 
 	// tokens might be updated, forward them
@@ -886,7 +895,7 @@ func (c *Client) RenewSession(ck *cookie.Cookie) (err error) {
 	// TODO: Maybe this can be deleted because we force auth now
 	server.MarkTokensForRenew(srv)
 	// run the callbacks by forcing auth
-	return c.callbacks(ck, srv, true)
+	return c.callbacks(ck, srv, true, false)
 }
 
 func (c *Client) StartFailover(ck *cookie.Cookie, gateway string, mtu int, readRxBytes func() (int64, error)) (bool, error) {

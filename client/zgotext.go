@@ -49,43 +49,46 @@ var messageKeyToIndex = map[string]int{
 	"An error occurred after getting the discovery files for the list of organizations": 6,
 	"An error occurred after getting the discovery files for the list of servers":       7,
 	"Client has an invalid state": 4,
-	"Could not retrieve institute access server with URL: '%s' from discovery":                    15,
-	"Failed internal state transition requested by the client from: '%s' to '%s'":                 34,
-	"Failed to cleanup the VPN connection for the current server":                                 29,
-	"Failed to get current server for renewing the session":                                       32,
-	"Failed to get the current server to cleanup the connection":                                  28,
-	"Failed to set the server with identifier: '%s' as the current":                               26,
-	"Failover failed to complete with gateway: '%s' and mtu: '%d'":                                33,
-	"Identifier: '%s' for server with type: '%d' is not valid":                                    24,
-	"Identifier: '%s' for server with type: '%d' is not valid for removal":                        27,
-	"Internal state transition error":                                                             0,
-	"No secure internet server available to set a location for":                                   31,
-	"No suitable profiles could be found":                                                         11,
-	"Not a valid server type: %v":                                                                 23,
-	"Profile with ID: '%s' could not be obtained from the server":                                 13,
-	"Profile with ID: '%s' could not be set":                                                      12,
-	"Server type: '%v' is not valid to be added":                                                  20,
-	"Server/organization discovery with Let's Connect is not supported":                           5,
-	"Setting a secure internet location with Let's Connect! is not supported":                     30,
-	"The VPN configuration could not be obtained":                                                 21,
-	"The authorization procedure failed to complete":                                              10,
-	"The client registered with an invalid client ID: '%v'":                                       1,
-	"The client registered with an invalid version: '%v'":                                         2,
-	"The current profile could not be found":                                                      22,
-	"The current server could not be found when getting it for expiry":                            8,
-	"The custom server with URL: '%s' could not be added":                                         19,
-	"The identifier that was passed to the library is incorrect":                                  14,
-	"The institute access server with URL: '%s' could not be added":                               16,
-	"The log file with directory: '%s' failed to initialize":                                      3,
-	"The operation for getting a VPN configuration was canceled":                                  25,
-	"The secure internet location could not be set":                                               9,
-	"The secure internet server with organisation ID: '%s' could not be added":                    18,
-	"The secure internet server with organisation ID: '%s' could not be retrieved from discovery": 17,
-	"timeout reached": 35,
-	"with cause:":     36,
+	"Could not retrieve institute access server with URL: '%s' from discovery":                                                       18,
+	"Failed internal state transition requested by the client from: '%s' to '%s'":                                                    37,
+	"Failed to cleanup the VPN connection for the current server":                                                                    32,
+	"Failed to get current server for renewing the session":                                                                          35,
+	"Failed to get the current server to cleanup the connection":                                                                     31,
+	"Failed to set the server with identifier: '%s' as the current":                                                                  29,
+	"Failover failed to complete with gateway: '%s' and mtu: '%d'":                                                                   36,
+	"Identifier: '%s' for server with type: '%d' is not valid":                                                                       27,
+	"Identifier: '%s' for server with type: '%d' is not valid for removal":                                                           30,
+	"Internal state transition error":                                                                                                0,
+	"No secure internet server available to set a location for":                                                                      34,
+	"No suitable profiles could be found":                                                                                            14,
+	"Not a valid server type: %v":                                                                                                    26,
+	"Profile with ID: '%s' could not be obtained from the server":                                                                    16,
+	"Profile with ID: '%s' could not be set":                                                                                         15,
+	"Server type: '%v' is not valid to be added":                                                                                     23,
+	"Server/organization discovery with Let's Connect is not supported":                                                              5,
+	"Setting a secure internet location with Let's Connect! is not supported":                                                        33,
+	"The VPN configuration could not be obtained":                                                                                    24,
+	"The authorization procedure failed to complete":                                                                                 12,
+	"The client registered with an invalid client ID: '%v'":                                                                          1,
+	"The client registered with an invalid version: '%v'":                                                                            2,
+	"The client tried to autoconnect to the VPN server: %s, but no secure internet location is found. Please manually connect again": 9,
+	"The client tried to autoconnect to the VPN server: %s, but no valid profiles were found. Please manually connect again":         13,
+	"The client tried to autoconnect to the VPN server: %s, but you need to authorizate again. Please manually connect again":        11,
+	"The current profile could not be found":                                                                                         25,
+	"The current server could not be found when getting it for expiry":                                                               8,
+	"The custom server with URL: '%s' could not be added":                                                                            22,
+	"The identifier that was passed to the library is incorrect":                                                                     17,
+	"The institute access server with URL: '%s' could not be added":                                                                  19,
+	"The log file with directory: '%s' failed to initialize":                                                                         3,
+	"The operation for getting a VPN configuration was canceled":                                                                     28,
+	"The secure internet location could not be set":                                                                                  10,
+	"The secure internet server with organisation ID: '%s' could not be added":                                                       21,
+	"The secure internet server with organisation ID: '%s' could not be retrieved from discovery":                                    20,
+	"timeout reached": 38,
+	"with cause:":     39,
 }
 
-var daIndex = []uint32{ // 38 elements
+var daIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -97,12 +100,13 @@ var daIndex = []uint32{ // 38 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
-} // Size: 176 bytes
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000,
+} // Size: 188 bytes
 
 const daData string = ""
 
-var deIndex = []uint32{ // 38 elements
+var deIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -114,27 +118,29 @@ var deIndex = []uint32{ // 38 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
-} // Size: 176 bytes
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000,
+} // Size: 188 bytes
 
 const deData string = ""
 
-var enIndex = []uint32{ // 38 elements
+var enIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000020, 0x00000059, 0x00000090,
 	0x000000ca, 0x000000e6, 0x00000128, 0x0000017a,
-	0x000001c6, 0x00000207, 0x00000235, 0x00000264,
-	0x00000288, 0x000002b2, 0x000002f1, 0x0000032c,
-	0x00000378, 0x000003b9, 0x00000418, 0x00000464,
-	0x0000049b, 0x000004c9, 0x000004f5, 0x0000051c,
-	0x0000053b, 0x0000057a, 0x000005b5, 0x000005f6,
-	0x00000641, 0x0000067c, 0x000006b8, 0x00000700,
+	0x000001c6, 0x00000207, 0x00000289, 0x000002b7,
+	0x00000332, 0x00000361, 0x000003db, 0x000003ff,
+	0x00000429, 0x00000468, 0x000004a3, 0x000004ef,
+	0x00000530, 0x0000058f, 0x000005db, 0x00000612,
+	0x00000640, 0x0000066c, 0x00000693, 0x000006b2,
+	0x000006f1, 0x0000072c, 0x0000076d, 0x000007b8,
 	// Entry 20 - 3F
-	0x0000073a, 0x00000770, 0x000007b3, 0x00000805,
-	0x00000815, 0x00000821,
-} // Size: 176 bytes
+	0x000007f3, 0x0000082f, 0x00000877, 0x000008b1,
+	0x000008e7, 0x0000092a, 0x0000097c, 0x0000098c,
+	0x00000998,
+} // Size: 188 bytes
 
-const enData string = "" + // Size: 2081 bytes
+const enData string = "" + // Size: 2456 bytes
 	"\x02Internal state transition error\x02The client registered with an inv" +
 	"alid client ID: '%[1]v'\x02The client registered with an invalid version" +
 	": '%[1]v'\x02The log file with directory: '%[1]s' failed to initialize" +
@@ -142,32 +148,37 @@ const enData string = "" + // Size: 2081 bytes
 	"t's Connect is not supported\x02An error occurred after getting the disc" +
 	"overy files for the list of organizations\x02An error occurred after get" +
 	"ting the discovery files for the list of servers\x02The current server c" +
-	"ould not be found when getting it for expiry\x02The secure internet loca" +
-	"tion could not be set\x02The authorization procedure failed to complete" +
-	"\x02No suitable profiles could be found\x02Profile with ID: '%[1]s' coul" +
-	"d not be set\x02Profile with ID: '%[1]s' could not be obtained from the " +
-	"server\x02The identifier that was passed to the library is incorrect\x02" +
-	"Could not retrieve institute access server with URL: '%[1]s' from discov" +
-	"ery\x02The institute access server with URL: '%[1]s' could not be added" +
-	"\x02The secure internet server with organisation ID: '%[1]s' could not b" +
-	"e retrieved from discovery\x02The secure internet server with organisati" +
-	"on ID: '%[1]s' could not be added\x02The custom server with URL: '%[1]s'" +
-	" could not be added\x02Server type: '%[1]v' is not valid to be added\x02" +
-	"The VPN configuration could not be obtained\x02The current profile could" +
-	" not be found\x02Not a valid server type: %[1]v\x02Identifier: '%[1]s' f" +
-	"or server with type: '%[2]d' is not valid\x02The operation for getting a" +
-	" VPN configuration was canceled\x02Failed to set the server with identif" +
-	"ier: '%[1]s' as the current\x02Identifier: '%[1]s' for server with type:" +
-	" '%[2]d' is not valid for removal\x02Failed to get the current server to" +
-	" cleanup the connection\x02Failed to cleanup the VPN connection for the " +
-	"current server\x02Setting a secure internet location with Let's Connect!" +
-	" is not supported\x02No secure internet server available to set a locati" +
-	"on for\x02Failed to get current server for renewing the session\x02Failo" +
-	"ver failed to complete with gateway: '%[1]s' and mtu: '%[2]d'\x02Failed " +
-	"internal state transition requested by the client from: '%[1]s' to '%[2]" +
-	"s'\x02timeout reached\x02with cause:"
+	"ould not be found when getting it for expiry\x02The client tried to auto" +
+	"connect to the VPN server: %[1]s, but no secure internet location is fou" +
+	"nd. Please manually connect again\x02The secure internet location could " +
+	"not be set\x02The client tried to autoconnect to the VPN server: %[1]s, " +
+	"but you need to authorizate again. Please manually connect again\x02The " +
+	"authorization procedure failed to complete\x02The client tried to autoco" +
+	"nnect to the VPN server: %[1]s, but no valid profiles were found. Please" +
+	" manually connect again\x02No suitable profiles could be found\x02Profil" +
+	"e with ID: '%[1]s' could not be set\x02Profile with ID: '%[1]s' could no" +
+	"t be obtained from the server\x02The identifier that was passed to the l" +
+	"ibrary is incorrect\x02Could not retrieve institute access server with U" +
+	"RL: '%[1]s' from discovery\x02The institute access server with URL: '%[1" +
+	"]s' could not be added\x02The secure internet server with organisation I" +
+	"D: '%[1]s' could not be retrieved from discovery\x02The secure internet " +
+	"server with organisation ID: '%[1]s' could not be added\x02The custom se" +
+	"rver with URL: '%[1]s' could not be added\x02Server type: '%[1]v' is not" +
+	" valid to be added\x02The VPN configuration could not be obtained\x02The" +
+	" current profile could not be found\x02Not a valid server type: %[1]v" +
+	"\x02Identifier: '%[1]s' for server with type: '%[2]d' is not valid\x02Th" +
+	"e operation for getting a VPN configuration was canceled\x02Failed to se" +
+	"t the server with identifier: '%[1]s' as the current\x02Identifier: '%[1" +
+	"]s' for server with type: '%[2]d' is not valid for removal\x02Failed to " +
+	"get the current server to cleanup the connection\x02Failed to cleanup th" +
+	"e VPN connection for the current server\x02Setting a secure internet loc" +
+	"ation with Let's Connect! is not supported\x02No secure internet server " +
+	"available to set a location for\x02Failed to get current server for rene" +
+	"wing the session\x02Failover failed to complete with gateway: '%[1]s' an" +
+	"d mtu: '%[2]d'\x02Failed internal state transition requested by the clie" +
+	"nt from: '%[1]s' to '%[2]s'\x02timeout reached\x02with cause:"
 
-var esIndex = []uint32{ // 38 elements
+var esIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -179,12 +190,13 @@ var esIndex = []uint32{ // 38 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
-} // Size: 176 bytes
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000,
+} // Size: 188 bytes
 
 const esData string = ""
 
-var frIndex = []uint32{ // 38 elements
+var frIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -196,12 +208,13 @@ var frIndex = []uint32{ // 38 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
-} // Size: 176 bytes
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000,
+} // Size: 188 bytes
 
 const frData string = ""
 
-var itIndex = []uint32{ // 38 elements
+var itIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -213,12 +226,13 @@ var itIndex = []uint32{ // 38 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
-} // Size: 176 bytes
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000,
+} // Size: 188 bytes
 
 const itData string = ""
 
-var nlIndex = []uint32{ // 38 elements
+var nlIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -230,25 +244,27 @@ var nlIndex = []uint32{ // 38 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
-} // Size: 176 bytes
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000,
+} // Size: 188 bytes
 
 const nlData string = ""
 
-var slIndex = []uint32{ // 38 elements
+var slIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000021, 0x00000058, 0x0000008f,
 	0x000000cb, 0x000000eb, 0x00000125, 0x00000165,
-	0x000001a5, 0x000001e1, 0x00000211, 0x00000232,
-	0x0000025b, 0x0000028e, 0x000002ce, 0x000002ef,
-	0x00000347, 0x00000391, 0x000003e9, 0x00000437,
-	0x00000473, 0x000004a5, 0x000004c7, 0x000004ef,
-	0x00000512, 0x00000544, 0x0000057d, 0x000005ab,
-	0x000005ea, 0x0000062d, 0x00000666, 0x0000069c,
+	0x000001a5, 0x000001e1, 0x000001e1, 0x00000211,
+	0x00000211, 0x00000232, 0x00000232, 0x0000025b,
+	0x0000028e, 0x000002ce, 0x000002ef, 0x00000347,
+	0x00000391, 0x000003e9, 0x00000437, 0x00000473,
+	0x000004a5, 0x000004c7, 0x000004ef, 0x00000512,
+	0x00000544, 0x0000057d, 0x000005ab, 0x000005ea,
 	// Entry 20 - 3F
-	0x000006de, 0x00000720, 0x00000765, 0x000007b6,
-	0x000007c6, 0x000007d0,
-} // Size: 176 bytes
+	0x0000062d, 0x00000666, 0x0000069c, 0x000006de,
+	0x00000720, 0x00000765, 0x000007b6, 0x000007c6,
+	0x000007d0,
+} // Size: 188 bytes
 
 const slData string = "" + // Size: 2000 bytes
 	"\x02Napaka prehoda notranjega stanja\x02Odjemalec se je registriral z na" +
@@ -281,7 +297,7 @@ const slData string = "" + // Size: 2000 bytes
 	"ni zaključil\x02Prehod notranjega stanja iz %[1]s v %[2]s, ki ga je zaht" +
 	"eval odjemalec, ni uspel\x02čas je potekel\x02- razlog:"
 
-var ukIndex = []uint32{ // 38 elements
+var ukIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -293,9 +309,10 @@ var ukIndex = []uint32{ // 38 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
-} // Size: 176 bytes
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000,
+} // Size: 188 bytes
 
 const ukData string = ""
 
-// Total table size 5665 bytes (5KiB); checksum: 7F0E767B
+// Total table size 6148 bytes (6KiB); checksum: 44229C2F
