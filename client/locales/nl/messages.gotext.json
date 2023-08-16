@@ -124,7 +124,7 @@
         {
             "id": "The identifier that was passed to the library is incorrect",
             "message": "The identifier that was passed to the library is incorrect",
-            "translation": ""
+            "translation": "De identieit die aan de library werd gegeven is niet correct"
         },
         {
             "id": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
@@ -214,7 +214,7 @@
         {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
-            "translation": "",
+            "translation": "De identiteit: '{Identifier}' voor server met type: '{Type}' is niet geldig",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -257,7 +257,7 @@
         {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
-            "translation": "",
+            "translation": "Identiteit: '{Identifier}' voor server met type: '{Type}' is niet geldig om verwijderd te worden",
             "placeholders": [
                 {
                     "id": "Identifier",

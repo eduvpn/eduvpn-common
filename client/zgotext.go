@@ -215,16 +215,16 @@ var nlIndex = []uint32{ // 33 elements
 	0x00000000, 0x0000003c, 0x00000084, 0x000000c7,
 	0x00000105, 0x00000105, 0x00000147, 0x00000147,
 	0x00000177, 0x00000177, 0x000001ab, 0x000001e5,
-	0x00000231, 0x00000231, 0x00000285, 0x000002cc,
-	0x00000326, 0x00000373, 0x000003a9, 0x000003d7,
-	0x00000403, 0x00000403, 0x00000443, 0x00000490,
-	0x00000490, 0x000004db, 0x00000507, 0x00000558,
-	0x0000059f, 0x0000059f, 0x000005f0, 0x000005fd,
+	0x00000231, 0x0000026e, 0x000002c2, 0x00000309,
+	0x00000363, 0x000003b0, 0x000003e6, 0x00000414,
+	0x00000440, 0x00000484, 0x000004c4, 0x00000511,
+	0x0000056a, 0x000005b5, 0x000005e1, 0x00000632,
+	0x00000679, 0x00000679, 0x000006ca, 0x000006d7,
 	// Entry 20 - 3F
-	0x000005fd,
+	0x000006d7,
 } // Size: 156 bytes
 
-const nlData string = "" + // Size: 1533 bytes
+const nlData string = "" + // Size: 1751 bytes
 	"\x02Het log bestand met pad: '%[1]s' kon niet aangemaakt worden\x02Er is" +
 	" een fout opgetreden met het ophalen van de lijst van organisaties\x02Er" +
 	" is een fout opgetreden met het ophalen van de lijst van servers\x02De h" +
@@ -233,37 +233,40 @@ const nlData string = "" + // Size: 1533 bytes
 	"orizatie proces kon niet vervuld worden\x02Er zijn geen profielen gevond" +
 	"en om mee te verbinden\x02Het profiel met identiteit: '%[1]s' kon niet g" +
 	"ezet worden\x02Het profiel met identiteit: '%[1]s' kon niet opgehaald wo" +
-	"rden van de server\x02De institute access server met URL: '%[1]s' kon ni" +
-	"et opgehaald worden van discovery\x02De institute access server met URL:" +
-	" '%[1]s' kon niet toegevoegd worden\x02De secure internet server met ide" +
-	"ntiteit: '%[1]s' kon niet opgehaald worden van discovery\x02De secure in" +
-	"ternet server met identiteit: '%[1]s' kon niet toegevoegd worden\x02De s" +
-	"erver met URL: '%[1]s' kon niet toegevoegd worden\x02De VPN configuratie" +
-	" kon niet opgehaald worden\x02Het huidig profiel kan niet gevonden worde" +
-	"n\x02De procedure om een VPN configuratie op te halen is geannuleerd\x02" +
-	"De server met identiteit: '%[1]s' kon niet als de hudige server gezet wo" +
-	"rden\x02De huidige server kon niet opgehaald worden om de connectie te v" +
-	"erwijderen\x02De VPN connectie is niet volledig opgeruimd\x02Er is geen " +
-	"\x22secure internet\x22 server beschikbaar om de locatie voor in te stel" +
-	"len\x02De huidige server kon niet opgehaald worden om de sessie te herni" +
-	"euwen\x02Er is een time-out opgetreden in de verbinding. Controleer uw i" +
-	"nternetverbinding\x02met oorzaak:"
+	"rden van de server\x02De identieit die aan de library werd gegeven is ni" +
+	"et correct\x02De institute access server met URL: '%[1]s' kon niet opgeh" +
+	"aald worden van discovery\x02De institute access server met URL: '%[1]s'" +
+	" kon niet toegevoegd worden\x02De secure internet server met identiteit:" +
+	" '%[1]s' kon niet opgehaald worden van discovery\x02De secure internet s" +
+	"erver met identiteit: '%[1]s' kon niet toegevoegd worden\x02De server me" +
+	"t URL: '%[1]s' kon niet toegevoegd worden\x02De VPN configuratie kon nie" +
+	"t opgehaald worden\x02Het huidig profiel kan niet gevonden worden\x02De " +
+	"identiteit: '%[1]s' voor server met type: '%[2]d' is niet geldig\x02De p" +
+	"rocedure om een VPN configuratie op te halen is geannuleerd\x02De server" +
+	" met identiteit: '%[1]s' kon niet als de hudige server gezet worden\x02I" +
+	"dentiteit: '%[1]s' voor server met type: '%[2]d' is niet geldig om verwi" +
+	"jderd te worden\x02De huidige server kon niet opgehaald worden om de con" +
+	"nectie te verwijderen\x02De VPN connectie is niet volledig opgeruimd\x02" +
+	"Er is geen \x22secure internet\x22 server beschikbaar om de locatie voor" +
+	" in te stellen\x02De huidige server kon niet opgehaald worden om de sess" +
+	"ie te hernieuwen\x02Er is een time-out opgetreden in de verbinding. Cont" +
+	"roleer uw internetverbinding\x02met oorzaak:"
 
 var slIndex = []uint32{ // 33 elements
 	// Entry 0 - 1F
 	0x00000000, 0x0000003c, 0x0000007c, 0x000000bc,
 	0x000000f8, 0x000000f8, 0x00000128, 0x00000128,
 	0x00000149, 0x00000149, 0x00000172, 0x000001a5,
-	0x000001e5, 0x000001e5, 0x0000023d, 0x00000287,
-	0x000002df, 0x0000032d, 0x00000369, 0x0000038b,
-	0x000003b3, 0x000003b3, 0x000003ec, 0x0000041a,
-	0x0000041a, 0x0000045d, 0x00000496, 0x000004d8,
-	0x0000051a, 0x0000051a, 0x0000052a, 0x00000534,
+	0x000001e5, 0x00000206, 0x0000025e, 0x000002a8,
+	0x00000300, 0x0000034e, 0x0000038a, 0x000003ac,
+	0x000003d4, 0x00000406, 0x0000043f, 0x0000046d,
+	0x000004ac, 0x000004ef, 0x00000528, 0x0000056a,
+	0x000005ac, 0x000005ac, 0x000005bc, 0x000005c6,
 	// Entry 20 - 3F
-	0x00000534,
+	0x000005c6,
 } // Size: 156 bytes
 
-const slData string = "" + // Size: 1332 bytes
+const slData string = "" + // Size: 1478 bytes
 	"\x02Napaka pri vzpostavitvi datoteke dnevnika v imeniku '%[1]s'\x02Pri n" +
 	"alaganju datotek kataloga organizacij je prišlo do napake\x02Pri nalagan" +
 	"ju datotek kataloga strežnikov je prišlo do napake\x02Ugotavljanje prete" +
@@ -271,19 +274,21 @@ const slData string = "" + // Size: 1332 bytes
 	"ije za varni splet\x02Napaka pri postopku avtorizacije\x02Ustreznih prof" +
 	"ilov ni bilo mogoče najti\x02Profila z ID-jem '%[1]s' ni bilo mogoče nas" +
 	"taviti\x02Profila z ID-jem '%[1]s' ni bilo mogoče naložiti s strežnika" +
-	"\x02Strežnika z naslovom URL '%[1]s' za dostop do ustanove ni bilo možno" +
-	" najti v katalogu\x02Strežnika z naslovom '%[1]s' za dostop do ustanove " +
-	"ni bilo možno dodati\x02Strežnika za varni splet organizacije z ID-jem '" +
-	"%[1]s' ni bilo možno najti v katalogu\x02Strežnika za varni splet organi" +
-	"zacije z ID-jem '%[1]s' ni bilo možno dodati\x02Svojega strežnika z nasl" +
-	"ovom '%[1]s' ni bilo možno dodati\x02Napaka pri prenosu nastavitev VPN" +
-	"\x02Izbranega profila ni bilo mogoče najti\x02Operacija za nalaganje nas" +
-	"tavitev VPN je bila preklicana\x02Napaka pri izbiri strežnika z ID-jem '" +
-	"%[1]s'\x02Napaka pri določanju izbranega strežnika za čiščenje povezave" +
-	"\x02Napaka pri čiščenju povezave VPN za izbrani strežnik\x02Za izbiro lo" +
-	"kacije ni na voljo nobenega strežnika za varni splet\x02Napaka pri ugota" +
-	"vljanju izbranega strežnika za podaljšanje seje\x02čas je potekel\x02; r" +
-	"azlog:"
+	"\x02ID poslan knjižnici je napačen\x02Strežnika z naslovom URL '%[1]s' z" +
+	"a dostop do ustanove ni bilo možno najti v katalogu\x02Strežnika z naslo" +
+	"vom '%[1]s' za dostop do ustanove ni bilo možno dodati\x02Strežnika za v" +
+	"arni splet organizacije z ID-jem '%[1]s' ni bilo možno najti v katalogu" +
+	"\x02Strežnika za varni splet organizacije z ID-jem '%[1]s' ni bilo možno" +
+	" dodati\x02Svojega strežnika z naslovom '%[1]s' ni bilo možno dodati\x02" +
+	"Napaka pri prenosu nastavitev VPN\x02Izbranega profila ni bilo mogoče na" +
+	"jti\x02ID '%[1]s' za strežnik vrste '%[2]d' ni veljaven\x02Operacija za " +
+	"nalaganje nastavitev VPN je bila preklicana\x02Napaka pri izbiri strežni" +
+	"ka z ID-jem '%[1]s'\x02ID '%[1]s' strežnika vrste '%[2]d' ni veljaven za" +
+	" odstranitev\x02Napaka pri določanju izbranega strežnika za čiščenje pov" +
+	"ezave\x02Napaka pri čiščenju povezave VPN za izbrani strežnik\x02Za izbi" +
+	"ro lokacije ni na voljo nobenega strežnika za varni splet\x02Napaka pri " +
+	"ugotavljanju izbranega strežnika za podaljšanje seje\x02čas je potekel" +
+	"\x02; razlog:"
 
 var ukIndex = []uint32{ // 33 elements
 	// Entry 0 - 1F
@@ -301,4 +306,4 @@ var ukIndex = []uint32{ // 33 elements
 
 const ukData string = ""
 
-// Total table size 6543 bytes (6KiB); checksum: A3622DD3
+// Total table size 6907 bytes (6KiB); checksum: EF5CC771
