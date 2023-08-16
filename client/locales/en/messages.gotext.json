@@ -95,6 +95,23 @@
             "fuzzy": true
         },
         {
+            "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
+            "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
+            "translation": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Namesrv",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "server.Name(srv)"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "The secure internet location could not be set",
             "message": "The secure internet location could not be set",
             "translation": "The secure internet location could not be set",
@@ -102,10 +119,44 @@
             "fuzzy": true
         },
         {
+            "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
+            "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
+            "translation": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Namesrv",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "server.Name(srv)"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "The authorization procedure failed to complete",
             "message": "The authorization procedure failed to complete",
             "translation": "The authorization procedure failed to complete",
             "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
+            "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
+            "translation": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Namesrv",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "server.Name(srv)"
+                }
+            ],
             "fuzzy": true
         },
         {
