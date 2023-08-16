@@ -12,7 +12,10 @@ The only support language is Python at the moment. Other languages will come wit
 The documentation for this library can be found at [GitHub pages](https://eduvpn.github.io/eduvpn-common).
 
 ## Contributing
-Contributions are welcome.
+Contributions are welcome. Helping with translations can be done on weblate:
+<a href="https://hosted.weblate.org/engage/eduvpn-common/">
+<img src="https://hosted.weblate.org/widget/eduvpn-common/eduvpn-common/multi-auto.svg" alt="Translation status" />
+</a>
 
 ## License
 [MIT](./LICENSE)
