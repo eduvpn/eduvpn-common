@@ -124,7 +124,7 @@
         {
             "id": "The identifier that was passed to the library is incorrect",
             "message": "The identifier that was passed to the library is incorrect",
-            "translation": ""
+            "translation": "ID poslan knjižnici je napačen"
         },
         {
             "id": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
@@ -214,7 +214,7 @@
         {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
-            "translation": "",
+            "translation": "ID '{Identifier}' za strežnik vrste '{Type}' ni veljaven",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -257,7 +257,7 @@
         {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
-            "translation": "",
+            "translation": "ID '{Identifier}' strežnika vrste '{Type}' ni veljaven za odstranitev",
             "placeholders": [
                 {
                     "id": "Identifier",
