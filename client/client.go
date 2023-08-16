@@ -161,7 +161,7 @@ func (c *Client) forwardTokens(srv server.Server) error {
 func (c *Client) goTransition(id fsm.StateID) error {
 	handled, err := c.FSM.GoTransition(id)
 	if err != nil {
-		return i18nerr.Wrapf(err, "Internal state transition error")
+		return i18nerr.WrapInternal(err, "state transition error")
 	}
 	if !handled {
 		log.Logger.Debugf("transition not handled by the client to internal state: '%s'", GetStateName(id))
@@ -181,11 +181,11 @@ func New(name string, version string, directory string, stateCallback func(FSMSt
 	c = &Client{}
 
 	if !isAllowedClientID(name) {
-		return nil, i18nerr.Newf("The client registered with an invalid client ID: '%v'", name)
+		return nil, i18nerr.NewInternalf("The client registered with an invalid client ID: '%v'", name)
 	}
 
 	if len([]rune(version)) > 20 {
-		return nil, i18nerr.Newf("The client registered with an invalid version: '%v'", version)
+		return nil, i18nerr.NewInternalf("The client registered with an invalid version: '%v'", version)
 	}
 
 	// Initialize the logger
@@ -228,7 +228,7 @@ func New(name string, version string, directory string, stateCallback func(FSMSt
 // Registering means updating the FSM to get to the initial state correctly
 func (c *Client) Register() error {
 	if !c.FSM.InState(StateDeregistered) {
-		return i18nerr.Wrapf(errors.New("The client tried to re-initialize without deregistering first"), "Client has an invalid state")
+		return i18nerr.NewInternal("The client tried to re-initialize without deregistering first")
 	}
 	err := c.goTransition(StateNoServer)
 	if err != nil {
@@ -268,7 +268,7 @@ func (c *Client) Deregister() {
 func (c *Client) DiscoOrganizations(ck *cookie.Cookie) (orgs *discotypes.Organizations, err error) {
 	// Not supported with Let's Connect!
 	if c.isLetsConnect() {
-		return nil, i18nerr.Newf("Server/organization discovery with Let's Connect is not supported")
+		return nil, i18nerr.NewInternal("Server/organization discovery with Let's Connect is not supported")
 	}
 
 	// Mark organizations as expired if we have not set an organization yet
@@ -290,7 +290,7 @@ func (c *Client) DiscoOrganizations(ck *cookie.Cookie) (orgs *discotypes.Organiz
 func (c *Client) DiscoServers(ck *cookie.Cookie) (dss *discotypes.Servers, err error) {
 	// Not supported with Let's Connect!
 	if c.isLetsConnect() {
-		return nil, i18nerr.Newf("Server/organization discovery with Let's Connect is not supported")
+		return nil, i18nerr.NewInternal("Server/organization discovery with Let's Connect is not supported")
 	}
 
 	dss, err = c.Discovery.Servers(ck.Context())
@@ -492,7 +492,7 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 	if _type != srvtypes.TypeSecureInternet {
 		identifier, err = http.EnsureValidURL(identifier, true)
 		if err != nil {
-			return i18nerr.Wrapf(err, "The identifier that was passed to the library is incorrect")
+			return i18nerr.Wrap(err, "The identifier that was passed to the library is incorrect")
 		}
 	}
 
@@ -527,7 +527,7 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 			return i18nerr.Wrapf(err, "The custom server with URL: '%s' could not be added", identifier)
 		}
 	default:
-		return i18nerr.Newf("Server type: '%v' is not valid to be added", _type)
+		return i18nerr.NewInternalf("Server type: '%v' is not valid to be added", _type)
 	}
 
 	// if we are non interactive, we run no callbacks
@@ -589,7 +589,7 @@ func (c *Client) server(identifier string, _type srvtypes.Type) (srv server.Serv
 		srv, err = c.Servers.CustomServer(identifier)
 		setter = c.Servers.SetCustom
 	default:
-		return nil, nil, i18nerr.Newf("Not a valid server type: %v", _type)
+		return nil, nil, i18nerr.NewInternalf("Not a valid server type: %v", _type)
 	}
 	return srv, setter, err
 }
@@ -680,7 +680,7 @@ func (c *Client) RemoveServer(identifier string, _type srvtypes.Type) (err error
 	case srvtypes.TypeCustom:
 		mErr = c.Servers.RemoveCustom(identifier)
 	default:
-		return i18nerr.Newf("Not a valid server type: %v", _type)
+		return i18nerr.NewInternalf("Not a valid server type: %v", _type)
 	}
 	if mErr != nil {
 		log.Logger.Debugf("failed to remove server with identifier: '%s' and type: '%d', error: %v", identifier, _type, mErr)
@@ -767,7 +767,7 @@ func (c *Client) pubServer(srv server.Server) (interface{}, error) {
 
 func (c *Client) ServerList() (*srvtypes.List, error) {
 	if c.FSM.InState(StateDeregistered) {
-		return nil, i18nerr.New("Client is not registered")
+		return nil, i18nerr.NewInternal("Client is not registered")
 	}
 	var customServers []srvtypes.Server
 	for _, v := range c.Servers.CustomServers.Map {
@@ -853,7 +853,7 @@ func (c *Client) Cleanup(ck *cookie.Cookie) (err error) {
 
 func (c *Client) SetSecureLocation(ck *cookie.Cookie, countryCode string) (err error) {
 	if c.isLetsConnect() {
-		return i18nerr.Newf("Setting a secure internet location with Let's Connect! is not supported")
+		return i18nerr.NewInternal("Setting a secure internet location with Let's Connect! is not supported")
 	}
 
 	if !c.Servers.HasSecureInternet() {
@@ -903,7 +903,7 @@ func (c *Client) StartFailover(ck *cookie.Cookie, gateway string, mtu int, readR
 
 	d, err := f.Start(ck.Context(), gateway, mtu)
 	if err != nil {
-		return d, i18nerr.Wrapf(err, "Failover failed to complete with gateway: '%s' and mtu: '%d'", gateway, mtu)
+		return d, i18nerr.Wrapf(err, "Failover failed to complete with gateway: '%s' and MTU: '%d'", gateway, mtu)
 	}
 	return d, nil
 }
@@ -919,7 +919,7 @@ func (c *Client) SetState(state FSMStateID) error {
 			log.Logger.Debugf("attempt an invalid self-transition: %s", c.FSM.GetStateName(state))
 			return nil
 		}
-		return i18nerr.Wrapf(err, "Failed internal state transition requested by the client from: '%s' to '%s'", GetStateName(curr), GetStateName(state))
+		return i18nerr.WrapInternalf(err, "Failed internal state transition requested by the client from: '%s' to '%s'", GetStateName(curr), GetStateName(state))
 	}
 	return nil
 }

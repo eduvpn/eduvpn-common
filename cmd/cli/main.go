@@ -11,7 +11,6 @@ import (
 	"github.com/eduvpn/eduvpn-common/client"
 	"github.com/eduvpn/eduvpn-common/types/cookie"
 	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
-	"github.com/go-errors/errors"
 
 	"github.com/pkg/browser"
 )
@@ -154,7 +153,7 @@ func getConfig(state *client.Client, url string, srvType srvtypes.Type) (*srvtyp
 func printConfig(url string, srvType srvtypes.Type) {
 	var c *client.Client
 	c, err := client.New(
-		"org.eduvpn.app.linux",
+		"org.letsconnect-vpn.app.linux",
 		"2.0.0-cli",
 		"configs",
 		func(old client.FSMStateID, new client.FSMStateID, data interface{}) bool {
@@ -173,10 +172,7 @@ func printConfig(url string, srvType srvtypes.Type) {
 
 	cfg, err := getConfig(c, url, srvType)
 	if err != nil {
-		err1 := err.(*errors.Error)
-		// Show the usage of tracebacks and causes
-		fmt.Fprintf(os.Stderr, "Error getting config: %s\nCause:\n%s\nStack trace:\n%s\n\n'",
-			err1.Error(), err1.Err, err1.ErrorStack())
+		fmt.Fprintf(os.Stderr, "failed getting a config: %v\n", err)
 		return
 	}
 
