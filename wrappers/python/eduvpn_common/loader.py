@@ -74,6 +74,7 @@ def initialize_functions(lib: CDLL) -> None:
         c_int,
         c_char_p,
         c_int,
+        c_int,
     ], DataError
     lib.AddServer.argtypes, lib.AddServer.restype = [
         c_int,

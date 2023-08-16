@@ -208,14 +208,18 @@ class EduVPN(object):
         return yes
 
     def get_config(
-        self, _type: ServerType, identifier: str, prefer_tcp: bool = False
+        self,
+        _type: ServerType,
+        identifier: str,
+        prefer_tcp: bool = False,
+        startup: bool = False,
     ) -> str:
         """Get an OpenVPN/WireGuard configuration from the server
 
         :param _type: ServerType: The type of server e.g. SERVER.INSTITUTE_ACCESS
         :param identifier: str: The identifier of the server, e.g. URL or ORG ID
         :param prefer_tcp: bool:  (Default value = False): Whether or not to prefer TCP
-        :param tokens: str  (Defualt value = ""): The OAuth tokens if available
+        :param startup: bool:  (Default value = False): Whether or not the client is just starting up
 
         :meta private:
 
@@ -232,6 +236,7 @@ class EduVPN(object):
             int(_type),
             identifier,
             prefer_tcp,
+            startup,
         )
 
         if config_err:
@@ -377,7 +382,9 @@ def state_callback(old_state: int, new_state: int, data: str) -> int:
     global global_object
     if global_object is None:
         return 0
-    handled = global_object.event_handler.run(State(old_state), State(new_state), data.decode("utf-8"))
+    handled = global_object.event_handler.run(
+        State(old_state), State(new_state), data.decode("utf-8")
+    )
     if handled:
         return 1
     return 0

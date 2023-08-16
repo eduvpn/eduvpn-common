@@ -32,6 +32,15 @@ type Server interface {
 	Public() (interface{}, error)
 }
 
+// Name gets the name for the server and falls back to a default of "Unknown Server"
+func Name(srv Server) string {
+	n := "Unknown Server"
+	if b, err := srv.Base(); err == nil {
+		n = b.URL
+	}
+	return n
+}
+
 func UpdateTokens(srv Server, t oauth.Token) {
 	srv.OAuth().UpdateTokens(t)
 }

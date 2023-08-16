@@ -147,7 +147,7 @@ func getConfig(state *client.Client, url string, srvType srvtypes.Type) (*srvtyp
 	if err != nil {
 		return nil, err
 	}
-	return state.GetConfig(&ck, url, srvType, false)
+	return state.GetConfig(&ck, url, srvType, false, false)
 }
 
 // Get a config for a single server, Institute Access or Secure Internet.

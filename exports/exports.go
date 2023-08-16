@@ -312,6 +312,8 @@ func ServerList() (*C.char, *C.char) {
 // - In case of custom server: The base URL
 // - In case of institute access: The base URL
 // pTCP is if we prefer TCP or not to get the configuration, non-zero means yes
+// startup is if the client is just starting up, set this to true (non-zero) if you autoconnect to a server on startup
+// If this startup value is true (non-zero) then any authorization or other callacks (profile/location) are not triggered
 // If the server cannot be added it returns the error as types/error/error.go Error
 // Note that the server is removed when an error has occured
 // The current state callbacks MUST be handled
@@ -349,7 +351,7 @@ func ServerList() (*C.char, *C.char) {
 // This is nil if an error is returned as types/error/error.go Error
 //
 //export GetConfig
-func GetConfig(c C.uintptr_t, _type C.int, id *C.char, pTCP C.int) (*C.char, *C.char) {
+func GetConfig(c C.uintptr_t, _type C.int, id *C.char, pTCP C.int, startup C.int) (*C.char, *C.char) {
 	state, stateErr := getVPNState()
 	if stateErr != nil {
 		return nil, getCError(stateErr)
@@ -359,7 +361,8 @@ func GetConfig(c C.uintptr_t, _type C.int, id *C.char, pTCP C.int) (*C.char, *C.
 		return nil, getCError(err)
 	}
 	preferTCPBool := pTCP != 0
-	cfg, err := state.GetConfig(ck, C.GoString(id), srvtypes.Type(_type), preferTCPBool)
+	startupBool := startup != 0
+	cfg, err := state.GetConfig(ck, C.GoString(id), srvtypes.Type(_type), preferTCPBool, startupBool)
 	if cfg != nil && err == nil {
 		d, err := getReturnData(cfg)
 		if err == nil {
