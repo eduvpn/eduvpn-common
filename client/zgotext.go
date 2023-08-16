@@ -242,21 +242,56 @@ const itData string = ""
 
 var nlIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x0000002e, 0x00000076, 0x000000ba,
+	0x000000f6, 0x00000119, 0x0000016f, 0x000001b7,
+	0x000001fa, 0x00000238, 0x00000238, 0x0000027a,
+	0x0000027a, 0x000002aa, 0x000002aa, 0x000002de,
+	0x00000318, 0x00000364, 0x000003a1, 0x000003f5,
+	0x0000043c, 0x00000496, 0x000004e3, 0x00000519,
+	0x0000054d, 0x0000057b, 0x000005a7, 0x000005cc,
+	0x00000610, 0x00000650, 0x0000069d, 0x000006f6,
 	// Entry 20 - 3F
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000,
+	0x00000741, 0x0000076d, 0x000007af, 0x00000800,
+	0x00000847, 0x0000089b, 0x000008e1, 0x00000932,
+	0x0000093f,
 } // Size: 188 bytes
 
-const nlData string = ""
+const nlData string = "" + // Size: 2367 bytes
+	"\x02Er is een fout opgetreden in de interne staat\x02De client heeft zic" +
+	"h geregistreerd met een onjuiste identiteit: '%[1]v'\x02De client heeft " +
+	"zich geregistreerd met een onjuiste versie: '%[1]v'\x02Het log bestand m" +
+	"et pad: '%[1]s' kon niet aangemaakt worden\x02De client heeft een onjuis" +
+	"te staat\x02Servers of organisaties verkrijgen met de Let's Connect clie" +
+	"nt wordt niet ondersteund\x02Er is een fout opgetreden met het ophalen v" +
+	"an de lijst van organisaties\x02Er is een fout opgetreden met het ophale" +
+	"n van de lijst van servers\x02De huidige VPN server kon niet worden gevo" +
+	"nden voor expiratie\x02De locatie voor de \x22secure internet\x22 server" +
+	" kon niet worden gezet\x02Het authorizatie proces kon niet vervuld worde" +
+	"n\x02Er zijn geen profielen gevonden om mee te verbinden\x02Het profiel " +
+	"met identiteit: '%[1]s' kon niet gezet worden\x02Het profiel met identit" +
+	"eit: '%[1]s' kon niet opgehaald worden van de server\x02De identieit die" +
+	" aan de library werd gegeven is niet correct\x02De institute access serv" +
+	"er met URL: '%[1]s' kon niet opgehaald worden van discovery\x02De instit" +
+	"ute access server met URL: '%[1]s' kon niet toegevoegd worden\x02De secu" +
+	"re internet server met identiteit: '%[1]s' kon niet opgehaald worden van" +
+	" discovery\x02De secure internet server met identiteit: '%[1]s' kon niet" +
+	" toegevoegd worden\x02De server met URL: '%[1]s' kon niet toegevoegd wor" +
+	"den\x02Het server type: '%[1]v' kan niet toegevoegd worden\x02De VPN con" +
+	"figuratie kon niet opgehaald worden\x02Het huidig profiel kan niet gevon" +
+	"den worden\x02%[1]v is niet een geldig server type\x02De identiteit: '%[" +
+	"1]s' voor server met type: '%[2]d' is niet geldig\x02De procedure om een" +
+	" VPN configuratie op te halen is geannuleerd\x02De server met identiteit" +
+	": '%[1]s' kon niet als de hudige server gezet worden\x02Identiteit: '%[1" +
+	"]s' voor server met type: '%[2]d' is niet geldig om verwijderd te worden" +
+	"\x02De huidige server kon niet opgehaald worden om de connectie te verwi" +
+	"jderen\x02De VPN connectie is niet volledig opgeruimd\x02Er kan geen loc" +
+	"atie ingesteld worden met de Let's Connect! client\x02Er is geen \x22sec" +
+	"ure internet\x22 server beschikbaar om de locatie voor in te stellen\x02" +
+	"De huidige server kon niet opgehaald worden om de sessie te hernieuwen" +
+	"\x02Het failovermechanisme kon niet vervuld worden met gateway: '%[1]s' " +
+	"en MTU: '%[2]d'\x02De interne staat kon niet bijgewerkt worden van: '%[1" +
+	"]s' naar '%[2]s'\x02Er is een time-out opgetreden in de verbinding. Cont" +
+	"roleer uw internetverbinding\x02met oorzaak:"
 
 var slIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
@@ -323,4 +358,4 @@ var ukIndex = []uint32{ // 41 elements
 
 const ukData string = ""
 
-// Total table size 6686 bytes (6KiB); checksum: 91410DAC
+// Total table size 9053 bytes (8KiB); checksum: DBDD93E6
