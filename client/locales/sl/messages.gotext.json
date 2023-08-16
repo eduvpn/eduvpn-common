@@ -386,7 +386,7 @@
         {
             "id": "with cause:",
             "message": "with cause:",
-            "translation": "- razlog:"
+            "translation": "; razlog:"
         }
     ]
 }

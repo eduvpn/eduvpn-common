@@ -180,21 +180,29 @@ const enData string = "" + // Size: 2456 bytes
 
 var esIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000028, 0x00000069, 0x000000a6,
+	0x000000f0, 0x00000116, 0x00000160, 0x000001c1,
+	0x0000021a, 0x0000021a, 0x0000021a, 0x0000021a,
+	0x0000021a, 0x0000021a, 0x0000021a, 0x0000021a,
+	0x0000021a, 0x0000021a, 0x0000021a, 0x0000021a,
+	0x0000021a, 0x0000021a, 0x0000021a, 0x0000021a,
+	0x0000021a, 0x0000021a, 0x0000021a, 0x0000021a,
+	0x0000021a, 0x0000021a, 0x0000021a, 0x0000021a,
 	// Entry 20 - 3F
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000,
+	0x0000021a, 0x0000021a, 0x0000021a, 0x0000021a,
+	0x0000021a, 0x0000021a, 0x0000021a, 0x0000021a,
+	0x0000021a,
 } // Size: 188 bytes
 
-const esData string = ""
+const esData string = "" + // Size: 538 bytes
+	"\x02Error de transición del estado interno\x02El cliente se registró con" +
+	" un ID de cliente no válido: '%[1]v'\x02El cliente se registró con una v" +
+	"ersión no válida: '%[1]v'\x02El archivo de registro con el directorio: '" +
+	"%[1]s' no se puede inicializar\x02El cliente tiene un estado no válido" +
+	"\x02No se admite la detección de servidores/organizaciones con Let's Con" +
+	"nect\x02Se ha producido un error al obtener los archivos de detección de" +
+	" la lista de las organizaciones\x02Se ha producido un error al obtener l" +
+	"os archivos de detección de la lista de servidores"
 
 var frIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
@@ -295,7 +303,7 @@ const slData string = "" + // Size: 2000 bytes
 	"ika za varni splet\x02Napaka pri ugotavljanju izbranega strežnika za pod" +
 	"aljšanje seje\x02Failover preko prehoda '%[1]s' in z MTU-jem '%[2]d' se " +
 	"ni zaključil\x02Prehod notranjega stanja iz %[1]s v %[2]s, ki ga je zaht" +
-	"eval odjemalec, ni uspel\x02čas je potekel\x02- razlog:"
+	"eval odjemalec, ni uspel\x02čas je potekel\x02; razlog:"
 
 var ukIndex = []uint32{ // 41 elements
 	// Entry 0 - 1F
@@ -315,4 +323,4 @@ var ukIndex = []uint32{ // 41 elements
 
 const ukData string = ""
 
-// Total table size 6148 bytes (6KiB); checksum: 44229C2F
+// Total table size 6686 bytes (6KiB); checksum: 91410DAC
