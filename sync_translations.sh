@@ -6,6 +6,6 @@ go generate ./...
 files=$(find client/locales -iname "out.gotext.json")
 for f in $files
 do
-    dir=$(dirname $f)
+    dir=$(dirname "$f")
     cp "$f" "$dir"/messages.gotext.json
 done
