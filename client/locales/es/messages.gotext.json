@@ -4,12 +4,12 @@
         {
             "id": "Internal state transition error",
             "message": "Internal state transition error",
-            "translation": ""
+            "translation": "Error de transición del estado interno"
         },
         {
             "id": "The client registered with an invalid client ID: '{Name}'",
             "message": "The client registered with an invalid client ID: '{Name}'",
-            "translation": "",
+            "translation": "El cliente se registró con un ID de cliente no válido: '{Name}'",
             "placeholders": [
                 {
                     "id": "Name",
@@ -24,7 +24,7 @@
         {
             "id": "The client registered with an invalid version: '{Version}'",
             "message": "The client registered with an invalid version: '{Version}'",
-            "translation": "",
+            "translation": "El cliente se registró con una versión no válida: '{Version}'",
             "placeholders": [
                 {
                     "id": "Version",
@@ -39,7 +39,7 @@
         {
             "id": "The log file with directory: '{Directory}' failed to initialize",
             "message": "The log file with directory: '{Directory}' failed to initialize",
-            "translation": "",
+            "translation": "El archivo de registro con el directorio: '{Directory}' no se puede inicializar",
             "placeholders": [
                 {
                     "id": "Directory",
@@ -54,22 +54,22 @@
         {
             "id": "Client has an invalid state",
             "message": "Client has an invalid state",
-            "translation": ""
+            "translation": "El cliente tiene un estado no válido"
         },
         {
             "id": "Server/organization discovery with Let's Connect is not supported",
             "message": "Server/organization discovery with Let's Connect is not supported",
-            "translation": ""
+            "translation": "No se admite la detección de servidores/organizaciones con Let's Connect"
         },
         {
             "id": "An error occurred after getting the discovery files for the list of organizations",
             "message": "An error occurred after getting the discovery files for the list of organizations",
-            "translation": ""
+            "translation": "Se ha producido un error al obtener los archivos de detección de la lista de las organizaciones"
         },
         {
             "id": "An error occurred after getting the discovery files for the list of servers",
             "message": "An error occurred after getting the discovery files for the list of servers",
-            "translation": ""
+            "translation": "Se ha producido un error al obtener los archivos de detección de la lista de servidores"
         },
         {
             "id": "The current server could not be found when getting it for expiry",
