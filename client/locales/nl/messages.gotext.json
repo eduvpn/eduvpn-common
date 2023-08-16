@@ -4,12 +4,12 @@
         {
             "id": "Internal state transition error",
             "message": "Internal state transition error",
-            "translation": ""
+            "translation": "Er is een fout opgetreden in de interne staat"
         },
         {
             "id": "The client registered with an invalid client ID: '{Name}'",
             "message": "The client registered with an invalid client ID: '{Name}'",
-            "translation": "",
+            "translation": "De client heeft zich geregistreerd met een onjuiste identiteit: '{Name}'",
             "placeholders": [
                 {
                     "id": "Name",
@@ -24,7 +24,7 @@
         {
             "id": "The client registered with an invalid version: '{Version}'",
             "message": "The client registered with an invalid version: '{Version}'",
-            "translation": "",
+            "translation": "De client heeft zich geregistreerd met een onjuiste versie: '{Version}'",
             "placeholders": [
                 {
                     "id": "Version",
@@ -39,7 +39,7 @@
         {
             "id": "The log file with directory: '{Directory}' failed to initialize",
             "message": "The log file with directory: '{Directory}' failed to initialize",
-            "translation": "",
+            "translation": "Het log bestand met pad: '{Directory}' kon niet aangemaakt worden",
             "placeholders": [
                 {
                     "id": "Directory",
@@ -54,27 +54,27 @@
         {
             "id": "Client has an invalid state",
             "message": "Client has an invalid state",
-            "translation": ""
+            "translation": "De client heeft een onjuiste staat"
         },
         {
             "id": "Server/organization discovery with Let's Connect is not supported",
             "message": "Server/organization discovery with Let's Connect is not supported",
-            "translation": ""
+            "translation": "Servers of organisaties verkrijgen met de Let's Connect client wordt niet ondersteund"
         },
         {
             "id": "An error occurred after getting the discovery files for the list of organizations",
             "message": "An error occurred after getting the discovery files for the list of organizations",
-            "translation": ""
+            "translation": "Er is een fout opgetreden met het ophalen van de lijst van organisaties"
         },
         {
             "id": "An error occurred after getting the discovery files for the list of servers",
             "message": "An error occurred after getting the discovery files for the list of servers",
-            "translation": ""
+            "translation": "Er is een fout opgetreden met het ophalen van de lijst van servers"
         },
         {
             "id": "The current server could not be found when getting it for expiry",
             "message": "The current server could not be found when getting it for expiry",
-            "translation": ""
+            "translation": "De huidige VPN server kon niet worden gevonden voor expiratie"
         },
         {
             "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
@@ -94,7 +94,7 @@
         {
             "id": "The secure internet location could not be set",
             "message": "The secure internet location could not be set",
-            "translation": ""
+            "translation": "De locatie voor de \"secure internet\" server kon niet worden gezet"
         },
         {
             "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
@@ -114,7 +114,7 @@
         {
             "id": "The authorization procedure failed to complete",
             "message": "The authorization procedure failed to complete",
-            "translation": ""
+            "translation": "Het authorizatie proces kon niet vervuld worden"
         },
         {
             "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
@@ -134,12 +134,12 @@
         {
             "id": "No suitable profiles could be found",
             "message": "No suitable profiles could be found",
-            "translation": ""
+            "translation": "Er zijn geen profielen gevonden om mee te verbinden"
         },
         {
             "id": "Profile with ID: '{PID}' could not be set",
             "message": "Profile with ID: '{PID}' could not be set",
-            "translation": "",
+            "translation": "Het profiel met identiteit: '{PID}' kon niet gezet worden",
             "placeholders": [
                 {
                     "id": "PID",
@@ -154,7 +154,7 @@
         {
             "id": "Profile with ID: '{PID}' could not be obtained from the server",
             "message": "Profile with ID: '{PID}' could not be obtained from the server",
-            "translation": "",
+            "translation": "Het profiel met identiteit: '{PID}' kon niet opgehaald worden van de server",
             "placeholders": [
                 {
                     "id": "PID",
@@ -169,12 +169,12 @@
         {
             "id": "The identifier that was passed to the library is incorrect",
             "message": "The identifier that was passed to the library is incorrect",
-            "translation": ""
+            "translation": "De identieit die aan de library werd gegeven is niet correct"
         },
         {
             "id": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
             "message": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
-            "translation": "",
+            "translation": "De institute access server met URL: '{Identifier}' kon niet opgehaald worden van discovery",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -189,7 +189,7 @@
         {
             "id": "The institute access server with URL: '{Identifier}' could not be added",
             "message": "The institute access server with URL: '{Identifier}' could not be added",
-            "translation": "",
+            "translation": "De institute access server met URL: '{Identifier}' kon niet toegevoegd worden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -204,7 +204,7 @@
         {
             "id": "The secure internet server with organisation ID: '{Identifier}' could not be retrieved from discovery",
             "message": "The secure internet server with organisation ID: '{Identifier}' could not be retrieved from discovery",
-            "translation": "",
+            "translation": "De secure internet server met identiteit: '{Identifier}' kon niet opgehaald worden van discovery",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -219,7 +219,7 @@
         {
             "id": "The secure internet server with organisation ID: '{Identifier}' could not be added",
             "message": "The secure internet server with organisation ID: '{Identifier}' could not be added",
-            "translation": "",
+            "translation": "De secure internet server met identiteit: '{Identifier}' kon niet toegevoegd worden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -234,7 +234,7 @@
         {
             "id": "The custom server with URL: '{Identifier}' could not be added",
             "message": "The custom server with URL: '{Identifier}' could not be added",
-            "translation": "",
+            "translation": "De server met URL: '{Identifier}' kon niet toegevoegd worden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -249,7 +249,7 @@
         {
             "id": "Server type: '{Type}' is not valid to be added",
             "message": "Server type: '{Type}' is not valid to be added",
-            "translation": "",
+            "translation": "Het server type: '{Type}' kan niet toegevoegd worden",
             "placeholders": [
                 {
                     "id": "Type",
@@ -264,17 +264,17 @@
         {
             "id": "The VPN configuration could not be obtained",
             "message": "The VPN configuration could not be obtained",
-            "translation": ""
+            "translation": "De VPN configuratie kon niet opgehaald worden"
         },
         {
             "id": "The current profile could not be found",
             "message": "The current profile could not be found",
-            "translation": ""
+            "translation": "Het huidig profiel kan niet gevonden worden"
         },
         {
             "id": "Not a valid server type: {Type}",
             "message": "Not a valid server type: {Type}",
-            "translation": "",
+            "translation": "{Type} is niet een geldig server type",
             "placeholders": [
                 {
                     "id": "Type",
@@ -289,7 +289,7 @@
         {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
-            "translation": "",
+            "translation": "De identiteit: '{Identifier}' voor server met type: '{Type}' is niet geldig",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -312,12 +312,12 @@
         {
             "id": "The operation for getting a VPN configuration was canceled",
             "message": "The operation for getting a VPN configuration was canceled",
-            "translation": ""
+            "translation": "De procedure om een VPN configuratie op te halen is geannuleerd"
         },
         {
             "id": "Failed to set the server with identifier: '{Identifier}' as the current",
             "message": "Failed to set the server with identifier: '{Identifier}' as the current",
-            "translation": "",
+            "translation": "De server met identiteit: '{Identifier}' kon niet als de hudige server gezet worden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -332,7 +332,7 @@
         {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
-            "translation": "",
+            "translation": "Identiteit: '{Identifier}' voor server met type: '{Type}' is niet geldig om verwijderd te worden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -355,32 +355,32 @@
         {
             "id": "Failed to get the current server to cleanup the connection",
             "message": "Failed to get the current server to cleanup the connection",
-            "translation": ""
+            "translation": "De huidige server kon niet opgehaald worden om de connectie te verwijderen"
         },
         {
             "id": "Failed to cleanup the VPN connection for the current server",
             "message": "Failed to cleanup the VPN connection for the current server",
-            "translation": ""
+            "translation": "De VPN connectie is niet volledig opgeruimd"
         },
         {
             "id": "Setting a secure internet location with Let's Connect! is not supported",
             "message": "Setting a secure internet location with Let's Connect! is not supported",
-            "translation": ""
+            "translation": "Er kan geen locatie ingesteld worden met de Let's Connect! client"
         },
         {
             "id": "No secure internet server available to set a location for",
             "message": "No secure internet server available to set a location for",
-            "translation": ""
+            "translation": "Er is geen \"secure internet\" server beschikbaar om de locatie voor in te stellen"
         },
         {
             "id": "Failed to get current server for renewing the session",
             "message": "Failed to get current server for renewing the session",
-            "translation": ""
+            "translation": "De huidige server kon niet opgehaald worden om de sessie te hernieuwen"
         },
         {
             "id": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
             "message": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
-            "translation": "",
+            "translation": "Het failovermechanisme kon niet vervuld worden met gateway: '{Gateway}' en MTU: '{Mtu}'",
             "placeholders": [
                 {
                     "id": "Gateway",
@@ -403,7 +403,7 @@
         {
             "id": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
             "message": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
-            "translation": "",
+            "translation": "De interne staat kon niet bijgewerkt worden van: '{StateNamecurr}' naar '{StateNamestate}'",
             "placeholders": [
                 {
                     "id": "StateNamecurr",
@@ -426,12 +426,12 @@
         {
             "id": "timeout reached",
             "message": "timeout reached",
-            "translation": ""
+            "translation": "Er is een time-out opgetreden in de verbinding. Controleer uw internetverbinding"
         },
         {
             "id": "with cause:",
             "message": "with cause:",
-            "translation": ""
+            "translation": "met oorzaak:"
         }
     ]
 }
