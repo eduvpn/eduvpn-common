@@ -2,47 +2,6 @@
     "language": "en",
     "messages": [
         {
-            "id": "Internal state transition error",
-            "message": "Internal state transition error",
-            "translation": "Internal state transition error",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "The client registered with an invalid client ID: '{Name}'",
-            "message": "The client registered with an invalid client ID: '{Name}'",
-            "translation": "The client registered with an invalid client ID: '{Name}'",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "name"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "The client registered with an invalid version: '{Version}'",
-            "message": "The client registered with an invalid version: '{Version}'",
-            "translation": "The client registered with an invalid version: '{Version}'",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Version",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "version"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "The log file with directory: '{Directory}' failed to initialize",
             "message": "The log file with directory: '{Directory}' failed to initialize",
             "translation": "The log file with directory: '{Directory}' failed to initialize",
@@ -57,20 +16,6 @@
                     "expr": "directory"
                 }
             ],
-            "fuzzy": true
-        },
-        {
-            "id": "Client has an invalid state",
-            "message": "Client has an invalid state",
-            "translation": "Client has an invalid state",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Server/organization discovery with Let's Connect is not supported",
-            "message": "Server/organization discovery with Let's Connect is not supported",
-            "translation": "Server/organization discovery with Let's Connect is not supported",
-            "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
@@ -293,23 +238,6 @@
             "fuzzy": true
         },
         {
-            "id": "Server type: '{Type}' is not valid to be added",
-            "message": "Server type: '{Type}' is not valid to be added",
-            "translation": "Server type: '{Type}' is not valid to be added",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Type",
-                    "string": "%[1]v",
-                    "type": "github.com/eduvpn/eduvpn-common/types/server.Type",
-                    "underlyingType": "int8",
-                    "argNum": 1,
-                    "expr": "_type"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "The VPN configuration could not be obtained",
             "message": "The VPN configuration could not be obtained",
             "translation": "The VPN configuration could not be obtained",
@@ -321,23 +249,6 @@
             "message": "The current profile could not be found",
             "translation": "The current profile could not be found",
             "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Not a valid server type: {Type}",
-            "message": "Not a valid server type: {Type}",
-            "translation": "Not a valid server type: {Type}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Type",
-                    "string": "%[1]v",
-                    "type": "github.com/eduvpn/eduvpn-common/types/server.Type",
-                    "underlyingType": "int8",
-                    "argNum": 1,
-                    "expr": "_type"
-                }
-            ],
             "fuzzy": true
         },
         {
@@ -429,13 +340,6 @@
             "fuzzy": true
         },
         {
-            "id": "Setting a secure internet location with Let's Connect! is not supported",
-            "message": "Setting a secure internet location with Let's Connect! is not supported",
-            "translation": "Setting a secure internet location with Let's Connect! is not supported",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "No secure internet server available to set a location for",
             "message": "No secure internet server available to set a location for",
             "translation": "No secure internet server available to set a location for",
@@ -450,9 +354,9 @@
             "fuzzy": true
         },
         {
-            "id": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
-            "message": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
-            "translation": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
+            "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
+            "message": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
+            "translation": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -475,31 +379,6 @@
             "fuzzy": true
         },
         {
-            "id": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
-            "message": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
-            "translation": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "StateNamecurr",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "GetStateName(curr)"
-                },
-                {
-                    "id": "StateNamestate",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "GetStateName(state)"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "timeout reached",
             "message": "timeout reached",
             "translation": "timeout reached",
@@ -510,6 +389,13 @@
             "id": "with cause:",
             "message": "with cause:",
             "translation": "with cause:",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "An internal error occurred",
+            "message": "An internal error occurred",
+            "translation": "An internal error occurred",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         }

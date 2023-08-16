@@ -4,6 +4,7 @@ package i18nerr
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/eduvpn/eduvpn-common/internal/log"
@@ -133,6 +134,26 @@ func Wrapf(err error, key message.Reference, args ...interface{}) *Error {
 	_ = printerOrNew(language.English).Sprintf(key, args...)
 	t, misc := TranslatedInner(err)
 	return &Error{key: key, args: args, wrapped: &Error{key: t, Misc: misc}, Misc: misc}
+}
+
+// NewInternalf creates an internal localised error from a display string
+func NewInternal(disp string) *Error {
+	return Wrap(errors.New(disp), "An internal error occurred")
+}
+
+// NewInternalf creates an internal localised error from a display string and arguments
+func NewInternalf(disp string, args...interface{}) *Error {
+	return NewInternal(fmt.Sprintf(disp, args...))
+}
+
+// WrapInternal wraps an error and a display string into a localised internal error
+func WrapInternal(err error, disp string) *Error {
+	return NewInternal(fmt.Sprintf("%s with internal cause: %v", disp, err))
+}
+
+// WrapInternalf wraps an error and a display string with args into a localised internal error
+func WrapInternalf(err error, disp string, args ...interface{}) *Error {
+	return WrapInternal(err, fmt.Sprintf(disp, args...))
 }
 
 // initializeLangs initializes the printers from the default catalog into the sync map

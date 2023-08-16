@@ -2,41 +2,6 @@
     "language": "nl",
     "messages": [
         {
-            "id": "Internal state transition error",
-            "message": "Internal state transition error",
-            "translation": "Er is een fout opgetreden in de interne staat"
-        },
-        {
-            "id": "The client registered with an invalid client ID: '{Name}'",
-            "message": "The client registered with an invalid client ID: '{Name}'",
-            "translation": "De client heeft zich geregistreerd met een onjuiste identiteit: '{Name}'",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "name"
-                }
-            ]
-        },
-        {
-            "id": "The client registered with an invalid version: '{Version}'",
-            "message": "The client registered with an invalid version: '{Version}'",
-            "translation": "De client heeft zich geregistreerd met een onjuiste versie: '{Version}'",
-            "placeholders": [
-                {
-                    "id": "Version",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "version"
-                }
-            ]
-        },
-        {
             "id": "The log file with directory: '{Directory}' failed to initialize",
             "message": "The log file with directory: '{Directory}' failed to initialize",
             "translation": "Het log bestand met pad: '{Directory}' kon niet aangemaakt worden",
@@ -50,16 +15,6 @@
                     "expr": "directory"
                 }
             ]
-        },
-        {
-            "id": "Client has an invalid state",
-            "message": "Client has an invalid state",
-            "translation": "De client heeft een onjuiste staat"
-        },
-        {
-            "id": "Server/organization discovery with Let's Connect is not supported",
-            "message": "Server/organization discovery with Let's Connect is not supported",
-            "translation": "Servers of organisaties verkrijgen met de Let's Connect client wordt niet ondersteund"
         },
         {
             "id": "An error occurred after getting the discovery files for the list of organizations",
@@ -169,7 +124,7 @@
         {
             "id": "The identifier that was passed to the library is incorrect",
             "message": "The identifier that was passed to the library is incorrect",
-            "translation": "De identieit die aan de library werd gegeven is niet correct"
+            "translation": ""
         },
         {
             "id": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
@@ -247,21 +202,6 @@
             ]
         },
         {
-            "id": "Server type: '{Type}' is not valid to be added",
-            "message": "Server type: '{Type}' is not valid to be added",
-            "translation": "Het server type: '{Type}' kan niet toegevoegd worden",
-            "placeholders": [
-                {
-                    "id": "Type",
-                    "string": "%[1]v",
-                    "type": "github.com/eduvpn/eduvpn-common/types/server.Type",
-                    "underlyingType": "int8",
-                    "argNum": 1,
-                    "expr": "_type"
-                }
-            ]
-        },
-        {
             "id": "The VPN configuration could not be obtained",
             "message": "The VPN configuration could not be obtained",
             "translation": "De VPN configuratie kon niet opgehaald worden"
@@ -272,24 +212,9 @@
             "translation": "Het huidig profiel kan niet gevonden worden"
         },
         {
-            "id": "Not a valid server type: {Type}",
-            "message": "Not a valid server type: {Type}",
-            "translation": "{Type} is niet een geldig server type",
-            "placeholders": [
-                {
-                    "id": "Type",
-                    "string": "%[1]v",
-                    "type": "github.com/eduvpn/eduvpn-common/types/server.Type",
-                    "underlyingType": "int8",
-                    "argNum": 1,
-                    "expr": "_type"
-                }
-            ]
-        },
-        {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
-            "translation": "De identiteit: '{Identifier}' voor server met type: '{Type}' is niet geldig",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -332,7 +257,7 @@
         {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
-            "translation": "Identiteit: '{Identifier}' voor server met type: '{Type}' is niet geldig om verwijderd te worden",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -363,11 +288,6 @@
             "translation": "De VPN connectie is niet volledig opgeruimd"
         },
         {
-            "id": "Setting a secure internet location with Let's Connect! is not supported",
-            "message": "Setting a secure internet location with Let's Connect! is not supported",
-            "translation": "Er kan geen locatie ingesteld worden met de Let's Connect! client"
-        },
-        {
             "id": "No secure internet server available to set a location for",
             "message": "No secure internet server available to set a location for",
             "translation": "Er is geen \"secure internet\" server beschikbaar om de locatie voor in te stellen"
@@ -378,9 +298,9 @@
             "translation": "De huidige server kon niet opgehaald worden om de sessie te hernieuwen"
         },
         {
-            "id": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
-            "message": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
-            "translation": "Het failovermechanisme kon niet vervuld worden met gateway: '{Gateway}' en MTU: '{Mtu}'",
+            "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
+            "message": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Gateway",
@@ -401,29 +321,6 @@
             ]
         },
         {
-            "id": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
-            "message": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
-            "translation": "De interne staat kon niet bijgewerkt worden van: '{StateNamecurr}' naar '{StateNamestate}'",
-            "placeholders": [
-                {
-                    "id": "StateNamecurr",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "GetStateName(curr)"
-                },
-                {
-                    "id": "StateNamestate",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "GetStateName(state)"
-                }
-            ]
-        },
-        {
             "id": "timeout reached",
             "message": "timeout reached",
             "translation": "Er is een time-out opgetreden in de verbinding. Controleer uw internetverbinding"
@@ -432,6 +329,11 @@
             "id": "with cause:",
             "message": "with cause:",
             "translation": "met oorzaak:"
+        },
+        {
+            "id": "An internal error occurred",
+            "message": "An internal error occurred",
+            "translation": ""
         }
     ]
 }

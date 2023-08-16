@@ -2,41 +2,6 @@
     "language": "sl",
     "messages": [
         {
-            "id": "Internal state transition error",
-            "message": "Internal state transition error",
-            "translation": "Napaka prehoda notranjega stanja"
-        },
-        {
-            "id": "The client registered with an invalid client ID: '{Name}'",
-            "message": "The client registered with an invalid client ID: '{Name}'",
-            "translation": "Odjemalec se je registriral z napačnim ID-jem '{Name}'",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "name"
-                }
-            ]
-        },
-        {
-            "id": "The client registered with an invalid version: '{Version}'",
-            "message": "The client registered with an invalid version: '{Version}'",
-            "translation": "Odjemalec se je registriral z napačno verzijo '{Version}'",
-            "placeholders": [
-                {
-                    "id": "Version",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "version"
-                }
-            ]
-        },
-        {
             "id": "The log file with directory: '{Directory}' failed to initialize",
             "message": "The log file with directory: '{Directory}' failed to initialize",
             "translation": "Napaka pri vzpostavitvi datoteke dnevnika v imeniku '{Directory}'",
@@ -50,16 +15,6 @@
                     "expr": "directory"
                 }
             ]
-        },
-        {
-            "id": "Client has an invalid state",
-            "message": "Client has an invalid state",
-            "translation": "Odjemalec ima neveljavno stanje"
-        },
-        {
-            "id": "Server/organization discovery with Let's Connect is not supported",
-            "message": "Server/organization discovery with Let's Connect is not supported",
-            "translation": "Let's Connect ne podpira kataloga strežnikov/organizacij"
         },
         {
             "id": "An error occurred after getting the discovery files for the list of organizations",
@@ -169,7 +124,7 @@
         {
             "id": "The identifier that was passed to the library is incorrect",
             "message": "The identifier that was passed to the library is incorrect",
-            "translation": "ID poslan knjižnici je napačen"
+            "translation": ""
         },
         {
             "id": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
@@ -247,21 +202,6 @@
             ]
         },
         {
-            "id": "Server type: '{Type}' is not valid to be added",
-            "message": "Server type: '{Type}' is not valid to be added",
-            "translation": "Vrsta strežnika '{Type}' ni veljavna za dodajanje",
-            "placeholders": [
-                {
-                    "id": "Type",
-                    "string": "%[1]v",
-                    "type": "github.com/eduvpn/eduvpn-common/types/server.Type",
-                    "underlyingType": "int8",
-                    "argNum": 1,
-                    "expr": "_type"
-                }
-            ]
-        },
-        {
             "id": "The VPN configuration could not be obtained",
             "message": "The VPN configuration could not be obtained",
             "translation": "Napaka pri prenosu nastavitev VPN"
@@ -272,24 +212,9 @@
             "translation": "Izbranega profila ni bilo mogoče najti"
         },
         {
-            "id": "Not a valid server type: {Type}",
-            "message": "Not a valid server type: {Type}",
-            "translation": "{Type} ni veljavna vrsta strežnika",
-            "placeholders": [
-                {
-                    "id": "Type",
-                    "string": "%[1]v",
-                    "type": "github.com/eduvpn/eduvpn-common/types/server.Type",
-                    "underlyingType": "int8",
-                    "argNum": 1,
-                    "expr": "_type"
-                }
-            ]
-        },
-        {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
-            "translation": "ID '{Identifier}' za strežnik vrste '{Type}' ni veljaven",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -332,7 +257,7 @@
         {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
-            "translation": "ID '{Identifier}' strežnika vrste '{Type}' ni veljaven za odstranitev",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -363,11 +288,6 @@
             "translation": "Napaka pri čiščenju povezave VPN za izbrani strežnik"
         },
         {
-            "id": "Setting a secure internet location with Let's Connect! is not supported",
-            "message": "Setting a secure internet location with Let's Connect! is not supported",
-            "translation": "Let's Connect! ne podpira nastavljanje varnega spleta"
-        },
-        {
             "id": "No secure internet server available to set a location for",
             "message": "No secure internet server available to set a location for",
             "translation": "Za izbiro lokacije ni na voljo nobenega strežnika za varni splet"
@@ -378,9 +298,9 @@
             "translation": "Napaka pri ugotavljanju izbranega strežnika za podaljšanje seje"
         },
         {
-            "id": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
-            "message": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
-            "translation": "Failover preko prehoda '{Gateway}' in z MTU-jem '{Mtu}' se ni zaključil",
+            "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
+            "message": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Gateway",
@@ -401,29 +321,6 @@
             ]
         },
         {
-            "id": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
-            "message": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
-            "translation": "Prehod notranjega stanja iz {StateNamecurr} v {StateNamestate}, ki ga je zahteval odjemalec, ni uspel",
-            "placeholders": [
-                {
-                    "id": "StateNamecurr",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "GetStateName(curr)"
-                },
-                {
-                    "id": "StateNamestate",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "GetStateName(state)"
-                }
-            ]
-        },
-        {
             "id": "timeout reached",
             "message": "timeout reached",
             "translation": "čas je potekel"
@@ -432,6 +329,11 @@
             "id": "with cause:",
             "message": "with cause:",
             "translation": "; razlog:"
+        },
+        {
+            "id": "An internal error occurred",
+            "message": "An internal error occurred",
+            "translation": ""
         }
     ]
 }

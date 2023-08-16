@@ -2,41 +2,6 @@
     "language": "de",
     "messages": [
         {
-            "id": "Internal state transition error",
-            "message": "Internal state transition error",
-            "translation": ""
-        },
-        {
-            "id": "The client registered with an invalid client ID: '{Name}'",
-            "message": "The client registered with an invalid client ID: '{Name}'",
-            "translation": "",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "name"
-                }
-            ]
-        },
-        {
-            "id": "The client registered with an invalid version: '{Version}'",
-            "message": "The client registered with an invalid version: '{Version}'",
-            "translation": "",
-            "placeholders": [
-                {
-                    "id": "Version",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "version"
-                }
-            ]
-        },
-        {
             "id": "The log file with directory: '{Directory}' failed to initialize",
             "message": "The log file with directory: '{Directory}' failed to initialize",
             "translation": "",
@@ -50,16 +15,6 @@
                     "expr": "directory"
                 }
             ]
-        },
-        {
-            "id": "Client has an invalid state",
-            "message": "Client has an invalid state",
-            "translation": ""
-        },
-        {
-            "id": "Server/organization discovery with Let's Connect is not supported",
-            "message": "Server/organization discovery with Let's Connect is not supported",
-            "translation": ""
         },
         {
             "id": "An error occurred after getting the discovery files for the list of organizations",
@@ -247,21 +202,6 @@
             ]
         },
         {
-            "id": "Server type: '{Type}' is not valid to be added",
-            "message": "Server type: '{Type}' is not valid to be added",
-            "translation": "",
-            "placeholders": [
-                {
-                    "id": "Type",
-                    "string": "%[1]v",
-                    "type": "github.com/eduvpn/eduvpn-common/types/server.Type",
-                    "underlyingType": "int8",
-                    "argNum": 1,
-                    "expr": "_type"
-                }
-            ]
-        },
-        {
             "id": "The VPN configuration could not be obtained",
             "message": "The VPN configuration could not be obtained",
             "translation": ""
@@ -270,21 +210,6 @@
             "id": "The current profile could not be found",
             "message": "The current profile could not be found",
             "translation": ""
-        },
-        {
-            "id": "Not a valid server type: {Type}",
-            "message": "Not a valid server type: {Type}",
-            "translation": "",
-            "placeholders": [
-                {
-                    "id": "Type",
-                    "string": "%[1]v",
-                    "type": "github.com/eduvpn/eduvpn-common/types/server.Type",
-                    "underlyingType": "int8",
-                    "argNum": 1,
-                    "expr": "_type"
-                }
-            ]
         },
         {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
@@ -363,11 +288,6 @@
             "translation": ""
         },
         {
-            "id": "Setting a secure internet location with Let's Connect! is not supported",
-            "message": "Setting a secure internet location with Let's Connect! is not supported",
-            "translation": ""
-        },
-        {
             "id": "No secure internet server available to set a location for",
             "message": "No secure internet server available to set a location for",
             "translation": ""
@@ -378,8 +298,8 @@
             "translation": ""
         },
         {
-            "id": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
-            "message": "Failover failed to complete with gateway: '{Gateway}' and mtu: '{Mtu}'",
+            "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
+            "message": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
             "translation": "",
             "placeholders": [
                 {
@@ -401,29 +321,6 @@
             ]
         },
         {
-            "id": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
-            "message": "Failed internal state transition requested by the client from: '{StateNamecurr}' to '{StateNamestate}'",
-            "translation": "",
-            "placeholders": [
-                {
-                    "id": "StateNamecurr",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "GetStateName(curr)"
-                },
-                {
-                    "id": "StateNamestate",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "GetStateName(state)"
-                }
-            ]
-        },
-        {
             "id": "timeout reached",
             "message": "timeout reached",
             "translation": ""
@@ -431,6 +328,11 @@
         {
             "id": "with cause:",
             "message": "with cause:",
+            "translation": ""
+        },
+        {
+            "id": "An internal error occurred",
+            "message": "An internal error occurred",
             "translation": ""
         }
     ]
