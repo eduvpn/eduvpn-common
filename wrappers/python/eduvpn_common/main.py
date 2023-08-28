@@ -24,7 +24,6 @@ class WrappedError(Exception):
         self.misc = misc
 
     def __str__(self) -> str:
-        print(self.translations)
         return self.translations[self.language]
 
 
