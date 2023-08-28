@@ -17,6 +17,7 @@ import (
 )
 
 type Server interface {
+	// OAuth returns the struct used for OAuth
 	OAuth() *oauth.OAuth
 
 	// TemplateAuth returns the authorization URL template function
@@ -227,14 +228,25 @@ func HasValidProfile(ctx context.Context, srv Server, wireguardSupport bool) (bo
 }
 
 func RefreshEndpoints(ctx context.Context, srv Server) error {
-	// Re-initialize the endpoints
-	// TODO: Make this a warning instead?
+	// Get the base struct
 	b, err := srv.Base()
 	if err != nil {
 		return err
 	}
 
-	return api.Endpoints(ctx, b)
+	// update the base struct
+	err = api.Endpoints(ctx, b)
+	if err != nil {
+		return err
+	}
+
+	// update OAuth
+	auth := srv.OAuth()
+	if auth != nil {
+		auth.BaseAuthorizationURL = b.Endpoints.API.V3.Authorization
+		auth.TokenURL = b.Endpoints.API.V3.Token
+	}
+	return nil
 }
 
 func Config(ctx context.Context, server Server, wireguardSupport bool, preferTCP bool) (*ConfigData, error) {
