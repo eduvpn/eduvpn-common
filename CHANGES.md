@@ -1,3 +1,7 @@
+# 1.1.1 (2023-08-29)
+* Server:
+    - Update OAuth endpoints when endpoints are refreshed from .well-known/vpn-user-portal
+
 # 1.1.0 (2023-04-18)
 * Client:
     - Implement a toker updater callback to notify client of any token updates
