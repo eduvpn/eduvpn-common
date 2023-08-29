@@ -253,13 +253,23 @@ func HasValidProfile(srv Server, wireguardSupport bool) (bool, error) {
 
 func RefreshEndpoints(srv Server) error {
 	// Re-initialize the endpoints
-	// TODO: Make this a warning instead?
 	b, err := srv.Base()
 	if err != nil {
 		return err
 	}
 
-	return b.InitializeEndpoints()
+	err = b.InitializeEndpoints()
+	if err != nil {
+		return err
+	}
+
+	// update OAuth
+	auth := srv.OAuth()
+	if auth != nil {
+		auth.BaseAuthorizationURL = b.Endpoints.API.V3.Authorization
+		auth.TokenURL = b.Endpoints.API.V3.Token
+	}
+	return nil
 }
 
 func Config(server Server, wireguardSupport bool, preferTCP bool) (*ConfigData, error) {
