@@ -1,3 +1,12 @@
+# 1.1.2 (2023-09-01)
+* Server:
+    - Update endpoints more frequently
+    - Update endpoints differently for secure internet: For the "home server" and the "current location" separately
+* Python:
+    - Change setup.py lib copying to fix pip building with manylinux
+* Deps:
+    - Update go.mod/go.sum
+
 # 1.1.1 (2023-08-29)
 * Server:
     - Update OAuth endpoints when endpoints are refreshed from .well-known/vpn-user-portal
