@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/eduvpn/eduvpn-common/internal/discovery"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/util"
 	"github.com/eduvpn/eduvpn-common/types"
@@ -134,5 +135,41 @@ func (s *SecureInternetHomeServer) init(
 
 	// Make sure oauth contains our endpoints
 	s.Auth.Init(b.URL, b.Endpoints.API.V3.Authorization, b.Endpoints.API.V3.Token)
+	return nil
+}
+
+func (s *SecureInternetHomeServer) RefreshEndpoints(disco *discovery.Discovery) error {
+	// update OAuth for home server
+	auth := s.OAuth()
+	if auth != nil && s.HomeOrganizationID != "" {
+		_, srv, err := disco.SecureHomeArgs(s.HomeOrganizationID)
+		if err != nil {
+			return err
+		}
+		if hb, ok := s.BaseMap[srv.CountryCode]; ok && hb != nil {
+			err := hb.InitializeEndpoints()
+			if err != nil {
+				return err
+			}
+			auth.BaseAuthorizationURL = hb.Endpoints.API.V3.Authorization
+			auth.TokenURL = hb.Endpoints.API.V3.Token
+		}
+		// already updated, return
+		if srv.CountryCode == s.CurrentLocation {
+			return nil
+		}
+	}
+
+	// refresh the current location endpoints
+	// Re-initialize the endpoints
+	b, err := s.Base()
+	if err != nil {
+		return err
+	}
+
+	err = b.InitializeEndpoints()
+	if err != nil {
+		return err
+	}
 	return nil
 }

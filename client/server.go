@@ -67,7 +67,7 @@ func (c *Client) getConfig(srv server.Server, preferTCP bool, t oauth.Token) (*C
 
 	// Refresh the server endpoints
 	// This is the best effort
-	err := server.RefreshEndpoints(srv)
+	err := srv.RefreshEndpoints(&c.Discovery)
 	if err != nil {
 		log.Logger.Warningf("failed to refresh server endpoints: %v", err)
 	}
@@ -102,6 +102,10 @@ func (c *Client) Cleanup(ct oauth.Token) error {
 	if err != nil {
 		c.logError(err)
 		return err
+	}
+	err = srv.RefreshEndpoints(&c.Discovery)
+	if err != nil {
+		log.Logger.Warningf("failed to refresh server endpoints: %v", err)
 	}
 
 	// If we need to relogin, update tokens
@@ -550,6 +554,11 @@ func (c *Client) RenewSession() (err error) {
 	var srv server.Server
 	if srv, err = c.Servers.GetCurrentServer(); err != nil {
 		return err
+	}
+
+	err = srv.RefreshEndpoints(&c.Discovery)
+	if err != nil {
+		log.Logger.Warningf("failed to refresh server endpoints: %v", err)
 	}
 
 	// The server has not been chosen yet, this means that we want to manually renew
