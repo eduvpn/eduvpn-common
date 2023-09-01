@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/eduvpn/eduvpn-common/internal/discovery"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/go-errors/errors"
 )
@@ -70,6 +71,27 @@ func (ias *InstituteAccessServer) Base() (*Base, error) {
 
 func (ias *InstituteAccessServer) OAuth() *oauth.OAuth {
 	return &ias.Auth
+}
+
+func (ias *InstituteAccessServer) RefreshEndpoints(_ *discovery.Discovery) error {
+	// Re-initialize the endpoints
+	b, err := ias.Base()
+	if err != nil {
+		return err
+	}
+
+	err = b.InitializeEndpoints()
+	if err != nil {
+		return err
+	}
+
+	// update OAuth
+	auth := ias.OAuth()
+	if auth != nil {
+		auth.BaseAuthorizationURL = b.Endpoints.API.V3.Authorization
+		auth.TokenURL = b.Endpoints.API.V3.Token
+	}
+	return nil
 }
 
 func (ias *InstituteAccessServer) init(

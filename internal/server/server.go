@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/eduvpn/eduvpn-common/internal/discovery"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/wireguard"
 	"github.com/go-errors/errors"
@@ -25,6 +26,9 @@ type Server interface {
 
 	// Base returns the server base
 	Base() (*Base, error)
+
+	// RefreshEndpoints
+	RefreshEndpoints(*discovery.Discovery) error
 }
 
 type EndpointList struct {
@@ -249,27 +253,6 @@ func HasValidProfile(srv Server, wireguardSupport bool) (bool, error) {
 		return false, nil
 	}
 	return true, nil
-}
-
-func RefreshEndpoints(srv Server) error {
-	// Re-initialize the endpoints
-	b, err := srv.Base()
-	if err != nil {
-		return err
-	}
-
-	err = b.InitializeEndpoints()
-	if err != nil {
-		return err
-	}
-
-	// update OAuth
-	auth := srv.OAuth()
-	if auth != nil {
-		auth.BaseAuthorizationURL = b.Endpoints.API.V3.Authorization
-		auth.TokenURL = b.Endpoints.API.V3.Token
-	}
-	return nil
 }
 
 func Config(server Server, wireguardSupport bool, preferTCP bool) (*ConfigData, error) {
