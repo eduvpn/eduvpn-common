@@ -124,7 +124,7 @@ func printConfig(url string, srvType ServerTypes) {
 
 	err := c.Register(
 		"org.eduvpn.app.linux",
-		"1.1.1-cli",
+		"1.1.2-cli",
 		"configs",
 		"en",
 		func(old client.FSMStateID, new client.FSMStateID, data interface{}) bool {
