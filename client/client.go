@@ -835,6 +835,19 @@ func (c *Client) Cleanup(ck *cookie.Cookie) (err error) {
 	if err != nil {
 		return i18nerr.Wrap(err, "Failed to get the current server to cleanup the connection")
 	}
+
+	err = srv.RefreshEndpoints(ck.Context(), &c.Discovery)
+
+	// If we get a canceled error, return that, otherwise just log the error
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return i18nerr.Wrap(err, "Cleanup was canceled")
+		}
+
+		log.Logger.Warningf("failed to refresh server endpoints: %v", err)
+	}
+
+
 	defer c.SaveState()
 	err = c.updateTokens(srv)
 	if err != nil {
@@ -884,6 +897,18 @@ func (c *Client) RenewSession(ck *cookie.Cookie) (err error) {
 	if !c.FSM.InState(StateLoadingServer) {
 		c.FSM.GoTransition(StateLoadingServer) //nolint:errcheck
 	}
+	err = srv.RefreshEndpoints(ck.Context(), &c.Discovery)
+
+	// If we get a canceled error, return that, otherwise just log the error
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return i18nerr.Wrap(err, "Renewing was canceled")
+		}
+
+		log.Logger.Warningf("failed to refresh server endpoints: %v", err)
+	}
+
+
 	// update tokens in the end
 	defer func() {
 		terr := c.forwardTokens(srv)
