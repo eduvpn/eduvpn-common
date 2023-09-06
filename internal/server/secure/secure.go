@@ -2,6 +2,7 @@ package secure
 
 import (
 	"context"
+	"github.com/eduvpn/eduvpn-common/internal/discovery"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server/api"
 	"github.com/eduvpn/eduvpn-common/internal/server/base"
@@ -56,6 +57,42 @@ func (s *Server) NeedsLocation() bool {
 		return true
 	}
 	return false
+}
+
+func (s *Server) RefreshEndpoints(ctx context.Context, disco *discovery.Discovery) error {
+	// update OAuth for home server
+	auth := s.OAuth()
+	if auth != nil && s.HomeOrganizationID != "" {
+		_, srv, err := disco.SecureHomeArgs(s.HomeOrganizationID)
+		if err != nil {
+			return err
+		}
+		if hb, ok := s.BaseMap[srv.CountryCode]; ok && hb != nil {
+			err := api.Endpoints(ctx, hb)
+			if err != nil {
+				return err
+			}
+			auth.BaseAuthorizationURL = hb.Endpoints.API.V3.Authorization
+			auth.TokenURL = hb.Endpoints.API.V3.Token
+		}
+		// already updated, return
+		if srv.CountryCode == s.CurrentLocation {
+			return nil
+		}
+	}
+
+	// refresh the current location endpoints
+	// Re-initialize the endpoints
+	b, err := s.Base()
+	if err != nil {
+		return err
+	}
+
+	err = api.Endpoints(ctx, b)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *Server) addLocation(ctx context.Context, locSrv *discotypes.Server) (*base.Base, error) {
