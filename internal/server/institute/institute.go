@@ -3,6 +3,7 @@ package institute
 import (
 	"context"
 
+	"github.com/eduvpn/eduvpn-common/internal/discovery"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server/api"
 	"github.com/eduvpn/eduvpn-common/internal/server/base"
@@ -96,6 +97,27 @@ func (s *Server) OAuth() *oauth.OAuth {
 
 func (s *Server) NeedsLocation() bool {
 	return false
+}
+
+func (s *Server) RefreshEndpoints(ctx context.Context, _ *discovery.Discovery) error {
+	// Re-initialize the endpoints
+	b, err := s.Base()
+	if err != nil {
+		return err
+	}
+
+	err = api.Endpoints(ctx, b)
+	if err != nil {
+		return err
+	}
+
+	// update OAuth
+	auth := s.OAuth()
+	if auth != nil {
+		auth.BaseAuthorizationURL = b.Endpoints.API.V3.Authorization
+		auth.TokenURL = b.Endpoints.API.V3.Token
+	}
+	return nil
 }
 
 func (s *Server) Public() (interface{}, error) {

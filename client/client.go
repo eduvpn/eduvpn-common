@@ -623,7 +623,7 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 		return nil, err
 	}
 	// refresh the server endpoints
-	err = server.RefreshEndpoints(ck.Context(), srv)
+	err = srv.RefreshEndpoints(ck.Context(), &c.Discovery)
 
 	// If we get a canceled error, return that, otherwise just log the error
 	if err != nil {

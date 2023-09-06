@@ -31,6 +31,9 @@ type Server interface {
 
 	// Public returns the representation that will be passed over the CGO barrier
 	Public() (interface{}, error)
+
+	// RefreshEndpoints refreshes the endpoints for the server
+	RefreshEndpoints(context.Context, *discovery.Discovery) error
 }
 
 // Name gets the name for the server and falls back to a default of "Unknown Server"
@@ -225,28 +228,6 @@ func HasValidProfile(ctx context.Context, srv Server, wireguardSupport bool) (bo
 		return false, nil
 	}
 	return true, nil
-}
-
-func RefreshEndpoints(ctx context.Context, srv Server) error {
-	// Get the base struct
-	b, err := srv.Base()
-	if err != nil {
-		return err
-	}
-
-	// update the base struct
-	err = api.Endpoints(ctx, b)
-	if err != nil {
-		return err
-	}
-
-	// update OAuth
-	auth := srv.OAuth()
-	if auth != nil {
-		auth.BaseAuthorizationURL = b.Endpoints.API.V3.Authorization
-		auth.TokenURL = b.Endpoints.API.V3.Token
-	}
-	return nil
 }
 
 func Config(ctx context.Context, server Server, wireguardSupport bool, preferTCP bool) (*ConfigData, error) {
