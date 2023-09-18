@@ -29,8 +29,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: Setup server
         run: |
-          git clone https://github.com/eduvpn/documentation
-          cd documentation
+          git clone https://codeberg.org/eduvpn/deploy
+          cd deploy
           sudo cp resources/repo+v3@eduvpn.org.asc /etc/apt/trusted.gpg.d/repo+v3@eduvpn.org.asc
           echo "deb https://repo.eduvpn.org/v3/deb jammy main" | sudo tee /etc/apt/sources.list.d/eduVPN_v3.list
           sudo apt-get -y update
