@@ -1,6 +1,6 @@
 FROM fedora:38
 
-# This dockerfile was adapted from https://github.com/eduvpn/documentation/blob/v3/deploy_fedora.sh
+# This dockerfile was adapted from https://codeberg.og/eduvpn/deploy/src/branch/v3/deploy_fedora.sh
 # DO NOT USE THIS IN PRODUCTION, ONLY FOR TESTING
 
 # Install git to clone the documentation repo
@@ -8,10 +8,10 @@ RUN dnf -y install git
 
 WORKDIR /eduvpn
 
-# Clone the documentation
-RUN git clone https://github.com/eduvpn/documentation
+# Clone the deploy
+RUN git clone https://codeberg.org/eduvpn/deploy
 
-WORKDIR /eduvpn/documentation
+WORKDIR /eduvpn/deploy
 
 # Checkout v3 branch
 RUN git checkout v3
