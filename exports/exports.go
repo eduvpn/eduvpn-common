@@ -368,7 +368,7 @@ func ServerList() (*C.char, *C.char) {
 //
 // - Parse the data to get the cookie and data
 //
-// - get the cookie,
+// - get the cookie
 //
 // - get the profiles from the data
 //
@@ -392,7 +392,7 @@ func ServerList() (*C.char, *C.char) {
 //
 //   - Parse the data to get the cookie and data
 //
-//   - get the cookie,
+//   - get the cookie
 //
 //   - get the list of locations from the data
 //
