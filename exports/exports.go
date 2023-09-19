@@ -130,11 +130,15 @@ func getVPNState() (*client.Client, error) {
 // `Version` is the version of the client. This version field is used for the user agent in all HTTP requests
 //
 // `cb` is the state callback. It takes three arguments: The old state, the new state and the data for the state as JSON
+//
 //   - Note that the states are defined in client/fsm.go, e.g. NO_SERVER (in Go: StateNoServer), ASK_PROFILE (in Go: StateAskProfile)
+//
 //   - This callback returns non-zero if the state transition is handled. This is used to check if the client handles the needed transitions
 //
 // debug, if non-zero, enables debugging mode for the library, this means:
+//
 //   - Log everything in debug mode, so you can get more detail of what is going on
+//
 //   - Write the state graph to a file in the configDirectory. This can be used to create a FSM png file with mermaid https://mermaid.js.org/
 //
 // After registering, the FSM is initialized and the state transition NO_SERVER should have been completed
@@ -363,8 +367,11 @@ func ServerList() (*C.char, *C.char) {
 // So a client would:
 //
 // - Parse the data to get the cookie and data
+//
 // - get the cookie,
+//
 // - get the profiles from the data
+//
 // - show it in the UI and then reply with CookieReply using the choice
 //
 // ### ASK_LOCATION
@@ -384,8 +391,11 @@ func ServerList() (*C.char, *C.char) {
 // So a client would:
 //
 //   - Parse the data to get the cookie and data
+//
 //   - get the cookie,
+//
 //   - get the list of locations from the data
+//
 //   - show it in the UI and then reply with CookieReply using the choice
 //
 // ### OAUTH_STARTED
@@ -691,6 +701,7 @@ func getCookie(c C.uintptr_t) (*cookie.Cookie, error) {
 // setter is the void function that sets tokens. It takes two arguments:
 //
 //   - The `server` for which to get the tokens for, marshalled as JSON and defined in types/server/server.go `Current`
+//
 //   - The `tokens`, defined in types/server/server.go `Tokens` marshalled as JSON
 //
 // It returns an error when the tokens cannot be set
@@ -759,6 +770,7 @@ func SetTokenHandler(getter C.TokenGetter, setter C.TokenSetter) *C.char {
 // This value has two purposes:
 //
 //   - Cancel a long running function
+//
 //   - Send a reply to a state transition (ASK_PROFILE and ASK_LOCATION)
 //
 // Functions that take a cookie have it as the first argument
@@ -774,6 +786,7 @@ func CookieNew() C.uintptr_t {
 // The data that is sent to the Go library is the second argument of this function
 //
 //   - `c` is the Cookie
+//
 //   - `data` is the data to send, e.g. a profile ID
 //
 //export CookieReply
