@@ -58,21 +58,32 @@ Signature:
  ```go
 func AddServer(c C.uintptr_t, _type C.int, id *C.char, ni C.int) *C.char
 ```
-AddServer adds a server to the eduvpn-common server list c is the cookie
+AddServer adds a server to the eduvpn-common server list `c` is the cookie
 that is used for cancellation. Create a cookie first with CookieNew.
-This same cookie is also used for replying to state transitions _type
-is the type of server that needs to be added. This type is defined in
-types/server/server.go Type id is the identifier of the string
+This same cookie is also used for replying to state transitions
+
+`_type` is the type of server that needs to be added. This type is defined
+in types/server/server.go Type
+
+`id` is the identifier of the string:
+
   - In case of secure internet: The organization ID
+
   - In case of custom server: The base URL
+
   - In case of institute access: The base URL
 
-ni stands for non-interactive. If non-zero, any state transitions will not
-be run. This ni flag is useful for preprovisioned servers. For normal usage,
-you want to set this to zero (meaning: False) If the server cannot be added
-it returns the error as types/error/error.go Error Note that the server
-is removed when an error has occured The following state callbacks are
-mandatory to handle:
+`ni` stands for non-interactive. If non-zero, any state transitions will not
+be run.
+
+This `ni` flag is useful for preprovisioned servers. For normal usage,
+you want to set this to zero (meaning: False)
+
+If the server cannot be added it returns the error as types/error/error.go
+Error
+
+Note that the server is removed when an error has occured The following
+state callbacks are mandatory to handle:
   - OAUTH_STARTED: This indicates that the OAuth procedure has been started,
     it returns the URL as the data. The client should open the webbrowser
     with this URL and continue the authorization process.
@@ -165,12 +176,15 @@ Signature:
  ```go
 func Deregister() *C.char
 ```
-Deregister cleans up the state for the client. If no client is available or
-deregistering fails, it returns an error This function SHOULD be called when
-the application exits such that the configuration file is saved correctly
-Note that saving of the configuration file also happens in other cases,
-such as after getting a VPN configuration Thus it is often not problematic
-if this function cannot be called due to a client crash
+Deregister cleans up the state for the client.
+
+# If no client is available or deregistering fails, it returns an error
+
+This function SHOULD be called when the application exits such that the
+configuration file is saved correctly. Note that saving of the configuration
+file also happens in other cases, such as after getting a VPN configuration.
+Thus it is often not problematic if this function cannot be called due to a
+client crash
 
 ## DiscoOrganizations
 Signature:
@@ -256,9 +270,10 @@ not triggered
 
 After getting a configuration, the FSM moves to the GOT_CONFIG state
 The return data is the configuration, marshalled as JSON and defined in
-types/server/server.go Configuration If the server cannot be added it
-returns the error as types/error/error.go Error. Note that the server is
-removed when an error has occured
+types/server/server.go Configuration
+
+If the config cannot be retrieved it returns an error as
+types/error/error.go Error.
 
 The current state callbacks MUST be handled:
 
@@ -283,7 +298,7 @@ So a client would:
 
 - Parse the data to get the cookie and data
 
-- get the cookie,
+- get the cookie
 
 - get the profiles from the data
 
@@ -310,7 +325,7 @@ So a client would:
 
   - Parse the data to get the cookie and data
 
-  - get the cookie,
+  - get the cookie
 
   - get the list of locations from the data
 
@@ -380,10 +395,14 @@ func RemoveServer(_type C.int, id *C.char) *C.char
 RemoveServer removes a server from the eduvpn-common server list
 
 `_type` is the type of server that needs to be added. This type is defined
-in types/server/server.go Type `id` is the identifier of the string
+in types/server/server.go Type
+
+`id` is the identifier of the string:
 
   - In case of secure internet: The organization ID
+
   - In case of custom server: The base URL
+
   - In case of institute access: The base URL
 
 If the server cannot be removed it returns the error types/error/error.go
