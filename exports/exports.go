@@ -247,7 +247,9 @@ func Deregister() *C.char {
 // If the server cannot be added it returns the error as types/error/error.go Error
 //
 // Note that the server is removed when an error has occured
+//
 // The following state callbacks are mandatory to handle:
+//
 //   - OAUTH_STARTED: This indicates that the OAuth procedure has been started, it returns the URL as the data.
 //     The client should open the webbrowser with this URL and continue the authorization process.
 //
@@ -279,6 +281,7 @@ func AddServer(c C.uintptr_t, _type C.int, id *C.char, ni C.int) *C.char {
 //   - In case of institute access: The base URL
 //
 // If the server cannot be removed it returns the error types/error/error.go Error
+//
 // Note that the server is not removed when an error has occured
 //
 //export RemoveServer
