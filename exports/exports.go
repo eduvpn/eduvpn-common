@@ -1017,10 +1017,16 @@ func SetTokenHandler(getter C.TokenGetter, setter C.TokenSetter) *C.char {
 			return nil
 		}
 
+		// no data found
+		if null == 0 {
+			log.Logger.Debugf("empty string returned when getting tokens")
+			return nil
+		}
+
 		var gotT srvtypes.Tokens
 		err = json.Unmarshal(d[:null], &gotT)
 		if err != nil {
-			log.Logger.Warningf("failed to get json data for getting tokens in exports: %v", err)
+			log.Logger.Warningf("failed to get JSON data for getting tokens in exports: %v", err)
 			return nil
 		}
 		return &gotT
