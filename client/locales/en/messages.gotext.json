@@ -333,6 +333,13 @@
             "fuzzy": true
         },
         {
+            "id": "The cleanup process was canceled",
+            "message": "The cleanup process was canceled",
+            "translation": "The cleanup process was canceled",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Failed to cleanup the VPN connection for the current server",
             "message": "Failed to cleanup the VPN connection for the current server",
             "translation": "Failed to cleanup the VPN connection for the current server",
@@ -350,6 +357,13 @@
             "id": "Failed to get current server for renewing the session",
             "message": "Failed to get current server for renewing the session",
             "translation": "Failed to get current server for renewing the session",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The renewing process was canceled",
+            "message": "The renewing process was canceled",
+            "translation": "The renewing process was canceled",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },

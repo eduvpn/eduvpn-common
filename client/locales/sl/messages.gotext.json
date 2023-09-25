@@ -283,6 +283,11 @@
             "translation": "Napaka pri določanju izbranega strežnika za čiščenje povezave"
         },
         {
+            "id": "The cleanup process was canceled",
+            "message": "The cleanup process was canceled",
+            "translation": ""
+        },
+        {
             "id": "Failed to cleanup the VPN connection for the current server",
             "message": "Failed to cleanup the VPN connection for the current server",
             "translation": "Napaka pri čiščenju povezave VPN za izbrani strežnik"
@@ -296,6 +301,11 @@
             "id": "Failed to get current server for renewing the session",
             "message": "Failed to get current server for renewing the session",
             "translation": "Napaka pri ugotavljanju izbranega strežnika za podaljšanje seje"
+        },
+        {
+            "id": "The renewing process was canceled",
+            "message": "The renewing process was canceled",
+            "translation": ""
         },
         {
             "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",

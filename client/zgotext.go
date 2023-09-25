@@ -49,7 +49,6 @@ var messageKeyToIndex = map[string]int{
 	"An error occurred after getting the discovery files for the list of organizations": 1,
 	"An error occurred after getting the discovery files for the list of servers":       2,
 	"An internal error occurred": 33,
-	"Cleanup was canceled":       25,
 	"Could not retrieve institute access server with URL: '%s' from discovery":                                                       13,
 	"Failed to cleanup the VPN connection for the current server":                                                                    26,
 	"Failed to get current server for renewing the session":                                                                          28,
@@ -62,9 +61,9 @@ var messageKeyToIndex = map[string]int{
 	"No suitable profiles could be found":                                                                                            9,
 	"Profile with ID: '%s' could not be obtained from the server":                                                                    11,
 	"Profile with ID: '%s' could not be set":                                                                                         10,
-	"Renewing was canceled":                                                                                                          29,
 	"The VPN configuration could not be obtained":                                                                                    18,
 	"The authorization procedure failed to complete":                                                                                 7,
+	"The cleanup process was canceled":                                                                                               25,
 	"The client tried to autoconnect to the VPN server: %s, but no secure internet location is found. Please manually connect again": 4,
 	"The client tried to autoconnect to the VPN server: %s, but no valid profiles were found. Please manually connect again":         8,
 	"The client tried to autoconnect to the VPN server: %s, but you need to authorizate again. Please manually connect again":        6,
@@ -75,6 +74,7 @@ var messageKeyToIndex = map[string]int{
 	"The institute access server with URL: '%s' could not be added":                                                                  14,
 	"The log file with directory: '%s' failed to initialize":                                                                         0,
 	"The operation for getting a VPN configuration was canceled":                                                                     21,
+	"The renewing process was canceled":                                                                                              29,
 	"The secure internet location could not be set":                                                                                  5,
 	"The secure internet server with organisation ID: '%s' could not be added":                                                       16,
 	"The secure internet server with organisation ID: '%s' could not be retrieved from discovery":                                    15,
@@ -122,13 +122,13 @@ var enIndex = []uint32{ // 35 elements
 	0x0000037a, 0x000003b5, 0x00000401, 0x00000442,
 	0x000004a1, 0x000004ed, 0x00000524, 0x00000550,
 	0x00000577, 0x000005b6, 0x000005f1, 0x00000632,
-	0x0000067d, 0x000006b8, 0x000006cd, 0x00000709,
-	0x00000743, 0x00000779, 0x0000078f, 0x000007d2,
+	0x0000067d, 0x000006b8, 0x000006d9, 0x00000715,
+	0x0000074f, 0x00000785, 0x000007a7, 0x000007ea,
 	// Entry 20 - 3F
-	0x000007e2, 0x000007ee, 0x00000809,
+	0x000007fa, 0x00000806, 0x00000821,
 } // Size: 164 bytes
 
-const enData string = "" + // Size: 2057 bytes
+const enData string = "" + // Size: 2081 bytes
 	"\x02The log file with directory: '%[1]s' failed to initialize\x02An erro" +
 	"r occurred after getting the discovery files for the list of organizatio" +
 	"ns\x02An error occurred after getting the discovery files for the list o" +
@@ -154,11 +154,12 @@ const enData string = "" + // Size: 2057 bytes
 	"led\x02Failed to set the server with identifier: '%[1]s' as the current" +
 	"\x02Identifier: '%[1]s' for server with type: '%[2]d' is not valid for r" +
 	"emoval\x02Failed to get the current server to cleanup the connection\x02" +
-	"Cleanup was canceled\x02Failed to cleanup the VPN connection for the cur" +
-	"rent server\x02No secure internet server available to set a location for" +
-	"\x02Failed to get current server for renewing the session\x02Renewing wa" +
-	"s canceled\x02Failover failed to complete with gateway: '%[1]s' and MTU:" +
-	" '%[2]d'\x02timeout reached\x02with cause:\x02An internal error occurred"
+	"The cleanup process was canceled\x02Failed to cleanup the VPN connection" +
+	" for the current server\x02No secure internet server available to set a " +
+	"location for\x02Failed to get current server for renewing the session" +
+	"\x02The renewing process was canceled\x02Failover failed to complete wit" +
+	"h gateway: '%[1]s' and MTU: '%[2]d'\x02timeout reached\x02with cause:" +
+	"\x02An internal error occurred"
 
 var esIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
@@ -341,4 +342,4 @@ var ukIndex = []uint32{ // 35 elements
 
 const ukData string = ""
 
-// Total table size 9324 bytes (9KiB); checksum: 48C4CF4E
+// Total table size 9348 bytes (9KiB); checksum: 31AC92B

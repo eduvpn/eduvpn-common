@@ -283,6 +283,11 @@
             "translation": "De huidige server kan niet opgehaald worden om de connectie te verwijderen"
         },
         {
+            "id": "The cleanup process was canceled",
+            "message": "The cleanup process was canceled",
+            "translation": ""
+        },
+        {
             "id": "Failed to cleanup the VPN connection for the current server",
             "message": "Failed to cleanup the VPN connection for the current server",
             "translation": "De VPN connectie is niet volledig opgeruimd"
@@ -296,6 +301,11 @@
             "id": "Failed to get current server for renewing the session",
             "message": "Failed to get current server for renewing the session",
             "translation": "De huidige server kan niet opgehaald worden om de sessie te hernieuwen"
+        },
+        {
+            "id": "The renewing process was canceled",
+            "message": "The renewing process was canceled",
+            "translation": ""
         },
         {
             "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
