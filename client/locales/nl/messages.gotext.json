@@ -285,7 +285,7 @@
         {
             "id": "The cleanup process was canceled",
             "message": "The cleanup process was canceled",
-            "translation": ""
+            "translation": "De opschoon procedure was afgebroken"
         },
         {
             "id": "Failed to cleanup the VPN connection for the current server",
@@ -305,7 +305,7 @@
         {
             "id": "The renewing process was canceled",
             "message": "The renewing process was canceled",
-            "translation": ""
+            "translation": "De hernieuw procedure was afgebroken"
         },
         {
             "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
