@@ -4,7 +4,7 @@
         {
             "id": "The log file with directory: '{Directory}' failed to initialize",
             "message": "The log file with directory: '{Directory}' failed to initialize",
-            "translation": "",
+            "translation": "Le fichier de registre du répertoire : '{Directory}' n'a pas pu être initialisé",
             "placeholders": [
                 {
                     "id": "Directory",
@@ -19,12 +19,12 @@
         {
             "id": "An error occurred after getting the discovery files for the list of organizations",
             "message": "An error occurred after getting the discovery files for the list of organizations",
-            "translation": ""
+            "translation": "Une erreur est survenue pendant la récupération des fichiers de détection de la liste des organisations"
         },
         {
             "id": "An error occurred after getting the discovery files for the list of servers",
             "message": "An error occurred after getting the discovery files for the list of servers",
-            "translation": ""
+            "translation": "Une erreur est survenue pendant la récupération des fichiers de détection de la liste des serveurs"
         },
         {
             "id": "The current server could not be found when getting it for expiry",
@@ -34,7 +34,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
             "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
-            "translation": "",
+            "translation": "Le client a essayé de se connecter automatiquement au serveur VPN : {Namesrv}, mais aucune localisation internet sécurisée n'a été trouvée. Veuillez vous connecter manuellement de nouveau",
             "placeholders": [
                 {
                     "id": "Namesrv",
@@ -49,7 +49,7 @@
         {
             "id": "The secure internet location could not be set",
             "message": "The secure internet location could not be set",
-            "translation": ""
+            "translation": "La localisation internet sécurisée n'a pas pu être définie"
         },
         {
             "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
@@ -74,7 +74,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
             "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
-            "translation": "",
+            "translation": "Le client a essayé de se connecter automatiquement au serveur VPN : {Namesrv}, mais aucun profil valide n'a été trouvé. Veuillez vous connecter manuellement de nouveau",
             "placeholders": [
                 {
                     "id": "Namesrv",
@@ -89,12 +89,12 @@
         {
             "id": "No suitable profiles could be found",
             "message": "No suitable profiles could be found",
-            "translation": ""
+            "translation": "Aucun profil adéquat n'a été trouvé"
         },
         {
             "id": "Profile with ID: '{PID}' could not be set",
             "message": "Profile with ID: '{PID}' could not be set",
-            "translation": "",
+            "translation": "Le profil avec l'ID : '{PID}' n'a pas pu être défini",
             "placeholders": [
                 {
                     "id": "PID",
@@ -109,7 +109,7 @@
         {
             "id": "Profile with ID: '{PID}' could not be obtained from the server",
             "message": "Profile with ID: '{PID}' could not be obtained from the server",
-            "translation": "",
+            "translation": "Le profil avec l'ID : '{PID}' n'a pas pu être obtenu du serveur",
             "placeholders": [
                 {
                     "id": "PID",
@@ -124,7 +124,7 @@
         {
             "id": "The identifier that was passed to the library is incorrect",
             "message": "The identifier that was passed to the library is incorrect",
-            "translation": ""
+            "translation": "L'identifiant envoyé à la librairie est incorrect"
         },
         {
             "id": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
@@ -174,7 +174,7 @@
         {
             "id": "The secure internet server with organisation ID: '{Identifier}' could not be added",
             "message": "The secure internet server with organisation ID: '{Identifier}' could not be added",
-            "translation": "",
+            "translation": "Le serveur internet sécurisé avec l'ID d'organisation : '{Identifier}' n'a pas pu être ajouté",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -189,7 +189,7 @@
         {
             "id": "The custom server with URL: '{Identifier}' could not be added",
             "message": "The custom server with URL: '{Identifier}' could not be added",
-            "translation": "",
+            "translation": "Le serveur personnalisé avec l'URL : '{Identifier}' n'a pas pu être ajouté",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -204,17 +204,17 @@
         {
             "id": "The VPN configuration could not be obtained",
             "message": "The VPN configuration could not be obtained",
-            "translation": ""
+            "translation": "La configuration VPN n'a pas pu être obtenue"
         },
         {
             "id": "The current profile could not be found",
             "message": "The current profile could not be found",
-            "translation": ""
+            "translation": "Le profil actuel n'a pas été trouvé"
         },
         {
             "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
             "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
-            "translation": "",
+            "translation": "L'identifiant : '{Identifier}' du serveur avec le type : '{Type}' n'est pas valide",
             "placeholders": [
                 {
                     "id": "Identifier",

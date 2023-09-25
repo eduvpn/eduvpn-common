@@ -48,19 +48,21 @@ func init() {
 var messageKeyToIndex = map[string]int{
 	"An error occurred after getting the discovery files for the list of organizations": 1,
 	"An error occurred after getting the discovery files for the list of servers":       2,
-	"An internal error occurred": 31,
+	"An internal error occurred": 33,
+	"Cleanup was canceled":       25,
 	"Could not retrieve institute access server with URL: '%s' from discovery":                                                       13,
-	"Failed to cleanup the VPN connection for the current server":                                                                    25,
-	"Failed to get current server for renewing the session":                                                                          27,
+	"Failed to cleanup the VPN connection for the current server":                                                                    26,
+	"Failed to get current server for renewing the session":                                                                          28,
 	"Failed to get the current server to cleanup the connection":                                                                     24,
 	"Failed to set the server with identifier: '%s' as the current":                                                                  22,
-	"Failover failed to complete with gateway: '%s' and MTU: '%d'":                                                                   28,
+	"Failover failed to complete with gateway: '%s' and MTU: '%d'":                                                                   30,
 	"Identifier: '%s' for server with type: '%d' is not valid":                                                                       20,
 	"Identifier: '%s' for server with type: '%d' is not valid for removal":                                                           23,
-	"No secure internet server available to set a location for":                                                                      26,
+	"No secure internet server available to set a location for":                                                                      27,
 	"No suitable profiles could be found":                                                                                            9,
 	"Profile with ID: '%s' could not be obtained from the server":                                                                    11,
 	"Profile with ID: '%s' could not be set":                                                                                         10,
+	"Renewing was canceled":                                                                                                          29,
 	"The VPN configuration could not be obtained":                                                                                    18,
 	"The authorization procedure failed to complete":                                                                                 7,
 	"The client tried to autoconnect to the VPN server: %s, but no secure internet location is found. Please manually connect again": 4,
@@ -76,11 +78,11 @@ var messageKeyToIndex = map[string]int{
 	"The secure internet location could not be set":                                                                                  5,
 	"The secure internet server with organisation ID: '%s' could not be added":                                                       16,
 	"The secure internet server with organisation ID: '%s' could not be retrieved from discovery":                                    15,
-	"timeout reached": 29,
-	"with cause:":     30,
+	"timeout reached": 31,
+	"with cause:":     32,
 }
 
-var daIndex = []uint32{ // 33 elements
+var daIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -91,12 +93,12 @@ var daIndex = []uint32{ // 33 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
-	0x00000000,
-} // Size: 156 bytes
+	0x00000000, 0x00000000, 0x00000000,
+} // Size: 164 bytes
 
 const daData string = ""
 
-var deIndex = []uint32{ // 33 elements
+var deIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -107,12 +109,12 @@ var deIndex = []uint32{ // 33 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
-	0x00000000,
-} // Size: 156 bytes
+	0x00000000, 0x00000000, 0x00000000,
+} // Size: 164 bytes
 
 const deData string = ""
 
-var enIndex = []uint32{ // 33 elements
+var enIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
 	0x00000000, 0x0000003a, 0x0000008c, 0x000000d8,
 	0x00000119, 0x0000019b, 0x000001c9, 0x00000244,
@@ -120,13 +122,13 @@ var enIndex = []uint32{ // 33 elements
 	0x0000037a, 0x000003b5, 0x00000401, 0x00000442,
 	0x000004a1, 0x000004ed, 0x00000524, 0x00000550,
 	0x00000577, 0x000005b6, 0x000005f1, 0x00000632,
-	0x0000067d, 0x000006b8, 0x000006f4, 0x0000072e,
-	0x00000764, 0x000007a7, 0x000007b7, 0x000007c3,
+	0x0000067d, 0x000006b8, 0x000006cd, 0x00000709,
+	0x00000743, 0x00000779, 0x0000078f, 0x000007d2,
 	// Entry 20 - 3F
-	0x000007de,
-} // Size: 156 bytes
+	0x000007e2, 0x000007ee, 0x00000809,
+} // Size: 164 bytes
 
-const enData string = "" + // Size: 2014 bytes
+const enData string = "" + // Size: 2057 bytes
 	"\x02The log file with directory: '%[1]s' failed to initialize\x02An erro" +
 	"r occurred after getting the discovery files for the list of organizatio" +
 	"ns\x02An error occurred after getting the discovery files for the list o" +
@@ -152,13 +154,13 @@ const enData string = "" + // Size: 2014 bytes
 	"led\x02Failed to set the server with identifier: '%[1]s' as the current" +
 	"\x02Identifier: '%[1]s' for server with type: '%[2]d' is not valid for r" +
 	"emoval\x02Failed to get the current server to cleanup the connection\x02" +
-	"Failed to cleanup the VPN connection for the current server\x02No secure" +
-	" internet server available to set a location for\x02Failed to get curren" +
-	"t server for renewing the session\x02Failover failed to complete with ga" +
-	"teway: '%[1]s' and MTU: '%[2]d'\x02timeout reached\x02with cause:\x02An " +
-	"internal error occurred"
+	"Cleanup was canceled\x02Failed to cleanup the VPN connection for the cur" +
+	"rent server\x02No secure internet server available to set a location for" +
+	"\x02Failed to get current server for renewing the session\x02Renewing wa" +
+	"s canceled\x02Failover failed to complete with gateway: '%[1]s' and MTU:" +
+	" '%[2]d'\x02timeout reached\x02with cause:\x02An internal error occurred"
 
-var esIndex = []uint32{ // 33 elements
+var esIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
 	0x00000000, 0x0000004a, 0x000000ab, 0x00000104,
 	0x00000104, 0x00000104, 0x00000104, 0x00000104,
@@ -169,8 +171,8 @@ var esIndex = []uint32{ // 33 elements
 	0x00000104, 0x00000104, 0x00000104, 0x00000104,
 	0x00000104, 0x00000104, 0x00000104, 0x00000104,
 	// Entry 20 - 3F
-	0x00000104,
-} // Size: 156 bytes
+	0x00000104, 0x00000104, 0x00000104,
+} // Size: 164 bytes
 
 const esData string = "" + // Size: 260 bytes
 	"\x02El archivo de registro con el directorio: '%[1]s' no se puede inicia" +
@@ -178,7 +180,41 @@ const esData string = "" + // Size: 260 bytes
 	"e la lista de las organizaciones\x02Se ha producido un error al obtener " +
 	"los archivos de detección de la lista de servidores"
 
-var frIndex = []uint32{ // 33 elements
+var frIndex = []uint32{ // 35 elements
+	// Entry 0 - 1F
+	0x00000000, 0x0000004f, 0x000000ba, 0x00000120,
+	0x00000120, 0x000001de, 0x0000021d, 0x0000021d,
+	0x0000021d, 0x000002c5, 0x000002ed, 0x00000324,
+	0x00000365, 0x00000399, 0x00000399, 0x00000399,
+	0x00000399, 0x000003f4, 0x0000043b, 0x00000469,
+	0x00000490, 0x000004db, 0x000004db, 0x000004db,
+	0x000004db, 0x000004db, 0x000004db, 0x000004db,
+	0x000004db, 0x000004db, 0x000004db, 0x000004db,
+	// Entry 20 - 3F
+	0x000004db, 0x000004db, 0x000004db,
+} // Size: 164 bytes
+
+const frData string = "" + // Size: 1243 bytes
+	"\x02Le fichier de registre du répertoire\u202f: '%[1]s' n'a pas pu être " +
+	"initialisé\x02Une erreur est survenue pendant la récupération des fichie" +
+	"rs de détection de la liste des organisations\x02Une erreur est survenue" +
+	" pendant la récupération des fichiers de détection de la liste des serve" +
+	"urs\x02Le client a essayé de se connecter automatiquement au serveur VPN" +
+	" : %[1]s, mais aucune localisation internet sécurisée n'a été trouvée. V" +
+	"euillez vous connecter manuellement de nouveau\x02La localisation intern" +
+	"et sécurisée n'a pas pu être définie\x02Le client a essayé de se connect" +
+	"er automatiquement au serveur VPN : %[1]s, mais aucun profil valide n'a " +
+	"été trouvé. Veuillez vous connecter manuellement de nouveau\x02Aucun pr" +
+	"ofil adéquat n'a été trouvé\x02Le profil avec l'ID : '%[1]s' n'a pas pu " +
+	"être défini\x02Le profil avec l'ID : '%[1]s' n'a pas pu être obtenu du " +
+	"serveur\x02L'identifiant envoyé à la librairie est incorrect\x02Le serve" +
+	"ur internet sécurisé avec l'ID d'organisation : '%[1]s' n'a pas pu être " +
+	"ajouté\x02Le serveur personnalisé avec l'URL : '%[1]s' n'a pas pu être a" +
+	"jouté\x02La configuration VPN n'a pas pu être obtenue\x02Le profil actue" +
+	"l n'a pas été trouvé\x02L'identifiant : '%[1]s' du serveur avec le type " +
+	": '%[2]d' n'est pas valide"
+
+var itIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -189,28 +225,12 @@ var frIndex = []uint32{ // 33 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
-	0x00000000,
-} // Size: 156 bytes
-
-const frData string = ""
-
-var itIndex = []uint32{ // 33 elements
-	// Entry 0 - 1F
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	// Entry 20 - 3F
-	0x00000000,
-} // Size: 156 bytes
+	0x00000000, 0x00000000, 0x00000000,
+} // Size: 164 bytes
 
 const itData string = ""
 
-var nlIndex = []uint32{ // 33 elements
+var nlIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
 	0x00000000, 0x0000003c, 0x00000084, 0x000000c7,
 	0x00000105, 0x00000105, 0x00000147, 0x00000147,
@@ -218,11 +238,11 @@ var nlIndex = []uint32{ // 33 elements
 	0x00000231, 0x0000026e, 0x000002c2, 0x00000309,
 	0x00000363, 0x000003b0, 0x000003e6, 0x00000414,
 	0x00000440, 0x00000484, 0x000004c4, 0x00000511,
-	0x0000056a, 0x000005b5, 0x000005e1, 0x00000632,
-	0x00000679, 0x00000679, 0x000006ca, 0x000006d7,
+	0x0000056a, 0x000005b5, 0x000005b5, 0x000005e1,
+	0x00000632, 0x00000679, 0x00000679, 0x00000679,
 	// Entry 20 - 3F
-	0x000006d7,
-} // Size: 156 bytes
+	0x000006ca, 0x000006d7, 0x000006d7,
+} // Size: 164 bytes
 
 const nlData string = "" + // Size: 1751 bytes
 	"\x02Het log bestand met pad: '%[1]s' kon niet aangemaakt worden\x02Er is" +
@@ -252,45 +272,53 @@ const nlData string = "" + // Size: 1751 bytes
 	"ie te hernieuwen\x02Er is een time-out opgetreden in de verbinding. Cont" +
 	"roleer uw internetverbinding\x02met oorzaak:"
 
-var slIndex = []uint32{ // 33 elements
+var slIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
 	0x00000000, 0x0000003c, 0x0000007c, 0x000000bc,
-	0x000000f8, 0x000000f8, 0x00000128, 0x00000128,
-	0x00000149, 0x00000149, 0x00000172, 0x000001a5,
-	0x000001e5, 0x00000206, 0x0000025e, 0x000002a8,
-	0x00000300, 0x0000034e, 0x0000038a, 0x000003ac,
-	0x000003d4, 0x00000406, 0x0000043f, 0x0000046d,
-	0x000004ac, 0x000004ef, 0x00000528, 0x0000056a,
-	0x000005ac, 0x000005ac, 0x000005bc, 0x000005c6,
+	0x000000f8, 0x0000019b, 0x000001cb, 0x00000264,
+	0x00000285, 0x00000325, 0x0000034e, 0x00000381,
+	0x000003c1, 0x000003e2, 0x0000043a, 0x00000484,
+	0x000004dc, 0x0000052a, 0x00000566, 0x00000588,
+	0x000005b0, 0x000005e2, 0x0000061b, 0x00000649,
+	0x00000688, 0x000006cb, 0x000006cb, 0x00000704,
+	0x00000746, 0x00000788, 0x00000788, 0x000007bf,
 	// Entry 20 - 3F
-	0x000005c6,
-} // Size: 156 bytes
+	0x000007cf, 0x000007d9, 0x000007f7,
+} // Size: 164 bytes
 
-const slData string = "" + // Size: 1478 bytes
+const slData string = "" + // Size: 2039 bytes
 	"\x02Napaka pri vzpostavitvi datoteke dnevnika v imeniku '%[1]s'\x02Pri n" +
 	"alaganju datotek kataloga organizacij je prišlo do napake\x02Pri nalagan" +
 	"ju datotek kataloga strežnikov je prišlo do napake\x02Ugotavljanje prete" +
-	"ka ne more določiti izbranega strežnika\x02Napaka pri nastavljanju lokac" +
-	"ije za varni splet\x02Napaka pri postopku avtorizacije\x02Ustreznih prof" +
-	"ilov ni bilo mogoče najti\x02Profila z ID-jem '%[1]s' ni bilo mogoče nas" +
-	"taviti\x02Profila z ID-jem '%[1]s' ni bilo mogoče naložiti s strežnika" +
-	"\x02ID poslan knjižnici je napačen\x02Strežnika z naslovom URL '%[1]s' z" +
-	"a dostop do ustanove ni bilo možno najti v katalogu\x02Strežnika z naslo" +
-	"vom '%[1]s' za dostop do ustanove ni bilo možno dodati\x02Strežnika za v" +
-	"arni splet organizacije z ID-jem '%[1]s' ni bilo možno najti v katalogu" +
-	"\x02Strežnika za varni splet organizacije z ID-jem '%[1]s' ni bilo možno" +
-	" dodati\x02Svojega strežnika z naslovom '%[1]s' ni bilo možno dodati\x02" +
-	"Napaka pri prenosu nastavitev VPN\x02Izbranega profila ni bilo mogoče na" +
-	"jti\x02ID '%[1]s' za strežnik vrste '%[2]d' ni veljaven\x02Operacija za " +
-	"nalaganje nastavitev VPN je bila preklicana\x02Napaka pri izbiri strežni" +
-	"ka z ID-jem '%[1]s'\x02ID '%[1]s' strežnika vrste '%[2]d' ni veljaven za" +
-	" odstranitev\x02Napaka pri določanju izbranega strežnika za čiščenje pov" +
-	"ezave\x02Napaka pri čiščenju povezave VPN za izbrani strežnik\x02Za izbi" +
-	"ro lokacije ni na voljo nobenega strežnika za varni splet\x02Napaka pri " +
-	"ugotavljanju izbranega strežnika za podaljšanje seje\x02čas je potekel" +
-	"\x02; razlog:"
+	"ka ne more določiti izbranega strežnika\x02Odjemalec je poskusil samodej" +
+	"no vzpostaviti povezavo s strežnikom VPN %[1]s, vendar ni našel nobene l" +
+	"okacije za varni splet. Ponovno vzpostavite povezavo ročno\x02Napaka pri" +
+	" nastavljanju lokacije za varni splet\x02Odjemalec je poskusil samodejno" +
+	" vzpostaviti povezavo s strežnikom VPN %[1]s, vendar ga morate ponovno a" +
+	"vtorizirati. Ponovno vzpostavite povezavo ročno\x02Napaka pri postopku a" +
+	"vtorizacije\x02Odjemalec je poskusil samodejno vzpostaviti povezavo s st" +
+	"režnikom VPN %[1]s, vendar ni našel nobenega veljavnega profila. Ponovno" +
+	" vzpostavite povezavo ročno\x02Ustreznih profilov ni bilo mogoče najti" +
+	"\x02Profila z ID-jem '%[1]s' ni bilo mogoče nastaviti\x02Profila z ID-je" +
+	"m '%[1]s' ni bilo mogoče naložiti s strežnika\x02ID poslan knjižnici je " +
+	"napačen\x02Strežnika z naslovom URL '%[1]s' za dostop do ustanove ni bil" +
+	"o možno najti v katalogu\x02Strežnika z naslovom '%[1]s' za dostop do us" +
+	"tanove ni bilo možno dodati\x02Strežnika za varni splet organizacije z I" +
+	"D-jem '%[1]s' ni bilo možno najti v katalogu\x02Strežnika za varni splet" +
+	" organizacije z ID-jem '%[1]s' ni bilo možno dodati\x02Svojega strežnika" +
+	" z naslovom '%[1]s' ni bilo možno dodati\x02Napaka pri prenosu nastavite" +
+	"v VPN\x02Izbranega profila ni bilo mogoče najti\x02ID '%[1]s' za strežni" +
+	"k vrste '%[2]d' ni veljaven\x02Operacija za nalaganje nastavitev VPN je " +
+	"bila preklicana\x02Napaka pri izbiri strežnika z ID-jem '%[1]s'\x02ID '%" +
+	"[1]s' strežnika vrste '%[2]d' ni veljaven za odstranitev\x02Napaka pri d" +
+	"oločanju izbranega strežnika za čiščenje povezave\x02Napaka pri čiščenju" +
+	" povezave VPN za izbrani strežnik\x02Za izbiro lokacije ni na voljo nobe" +
+	"nega strežnika za varni splet\x02Napaka pri ugotavljanju izbranega strež" +
+	"nika za podaljšanje seje\x02Preklop ni uspel s prehodom '%[1]s' in MTU-j" +
+	"em '%[2]d'\x02čas je potekel\x02; razlog:\x02Prišlo je do notranje napak" +
+	"e"
 
-var ukIndex = []uint32{ // 33 elements
+var ukIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -301,9 +329,9 @@ var ukIndex = []uint32{ // 33 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	// Entry 20 - 3F
-	0x00000000,
-} // Size: 156 bytes
+	0x00000000, 0x00000000, 0x00000000,
+} // Size: 164 bytes
 
 const ukData string = ""
 
-// Total table size 6907 bytes (6KiB); checksum: EF5CC771
+// Total table size 8826 bytes (8KiB); checksum: 6298D73C
