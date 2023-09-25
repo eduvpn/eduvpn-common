@@ -2,7 +2,7 @@
 //
 // Some notes:
 //
-// - Errors are returned as JSON c strings. The JSON type is defined in types/error/error.go Error. Free them using FreeString. Same is the case for other string types, you should also free them
+// - Errors are returned as JSON c strings. The JSON type is defined in types/error/error.go Error. Free them using FreeString. Same is the case for other string types, you should also free them. The errors are always localized
 //
 // - Types are converted from the Go representation to C using JSON strings
 //
@@ -144,6 +144,18 @@ func getVPNState() (*client.Client, error) {
 // After registering, the FSM is initialized and the state transition NO_SERVER should have been completed
 // If some error occurs during registering, it is returned as a types/error/error.go Error
 //
+// Example Input:
+// ```Register("org.eduvpn.app.linux", "0.0.1", "/tmp/eduvpn-common", myCallbackFunc, 1)```
+//
+// Example Output:
+//
+//    {
+//      "message": {
+//        "en": "failed to register, a VPN state is already present"
+//      },
+//      "misc": false
+//    }
+//
 //export Register
 func Register(
 	name *C.char,
@@ -191,6 +203,21 @@ func Register(
 // The expiry times structure is defined in types/server/server.go `Expiry`
 // If some error occurs, it is returned as types/error/error.go Error
 //
+// Example Input:
+// ```ExpiryTimes()```
+//
+// Example Output (1...4 are unix timestamps):
+//    {
+//         "start_time": 1,
+//         "end_time": 2,
+//         "button_time": 3,
+//         "countdown_time": 4,
+//         "notification_times": [
+//             1,
+//             2,
+//         ],
+//    }, null
+//
 //export ExpiryTimes
 func ExpiryTimes() (*C.char, *C.char) {
 	state, stateErr := getVPNState()
@@ -210,11 +237,24 @@ func ExpiryTimes() (*C.char, *C.char) {
 
 // Deregister cleans up the state for the client.
 //
-// If no client is available or deregistering fails, it returns an error
-//
 // This function SHOULD be called when the application exits such that the configuration file is saved correctly.
 // Note that saving of the configuration file also happens in other cases, such as after getting a VPN configuration.
 // Thus it is often not problematic if this function cannot be called due to a client crash
+//
+// If no client is available or deregistering fails, it returns an error.
+//
+// Example Input:
+// ```Deregister()```
+//
+// Example Output:
+//
+//    {
+//      "message": {
+//        "en": "failed to deregister"
+//      },
+//      "misc": false
+//    }
+//
 //
 //export Deregister
 func Deregister() *C.char {
@@ -244,14 +284,26 @@ func Deregister() *C.char {
 //
 // This `ni` flag is useful for preprovisioned servers. For normal usage, you want to set this to zero (meaning: False)
 //
-// If the server cannot be added it returns the error as types/error/error.go Error
-//
+// If the server cannot be added it returns the error as types/error/error.go Error.
 // Note that the server is removed when an error has occured
 //
 // The following state callbacks are mandatory to handle:
 //
 //   - OAUTH_STARTED: This indicates that the OAuth procedure has been started, it returns the URL as the data.
 //     The client should open the webbrowser with this URL and continue the authorization process.
+//
+// Example Input (3=custom server):
+// ```AddServer(mycookie, 3, "https://demo.eduvpn.nl", 0)```
+//
+// Example Output:
+//
+//    {
+//      "message": {
+//        "en": "failed to add server"
+//      },
+//      "misc": false
+//    }
+//
 //
 //export AddServer
 func AddServer(c C.uintptr_t, _type C.int, id *C.char, ni C.int) *C.char {
@@ -280,9 +332,19 @@ func AddServer(c C.uintptr_t, _type C.int, id *C.char, ni C.int) *C.char {
 //
 //   - In case of institute access: The base URL
 //
-// If the server cannot be removed it returns the error types/error/error.go Error
+// If the server cannot be removed it returns the error types/error/error.go Error.
 //
-// Note that the server is not removed when an error has occured
+// Example Input (3=custom server):
+// ```RemoveServer(3, "bogus")```
+//
+// Example Output:
+//
+//    {
+//      "message": {
+//        "en": "failed to remove server"
+//      },
+//      "misc": false
+//    }
 //
 //export RemoveServer
 func RemoveServer(_type C.int, id *C.char) *C.char {
@@ -301,6 +363,47 @@ func RemoveServer(_type C.int, id *C.char) *C.char {
 // It returns the server as JSON, defined in types/server/server.go Current
 //
 // If there is no current server or some other, e.g. there is no current state, an error is returned with a nil string
+//
+// Example Input:
+// ```CurrentServer()```
+//
+// Example Output:
+//    {
+//      "institute_access_server": {
+//        "display_name": {
+//          "en": "Demo"
+//        },
+//        "identifier": "https://demo.eduvpn.nl/",
+//        "profiles": {
+//          "map": {
+//            "internet": {
+//              "display_name": {
+//                "en": "Internet"
+//              },
+//              "supported_protocols": [
+//                1,
+//                2
+//              ]
+//            },
+//            "internet-split": {
+//              "display_name": {
+//                "en": "No rfc1918 routes"
+//              },
+//              "supported_protocols": [
+//                1,
+//                2
+//              ]
+//            }
+//          },
+//          "current": "internet"
+//        },
+//        "support_contacts": [
+//          "mailto:eduvpn@surf.nl"
+//        ],
+//        "delisted": false
+//      },
+//      "server_type": 1
+//    }, null
 //
 //export CurrentServer
 func CurrentServer() (*C.char, *C.char) {
@@ -323,9 +426,32 @@ func CurrentServer() (*C.char, *C.char) {
 //
 // This is NOT the discovery list, but the servers that have previously been added with `AddServer`
 //
-// It returns the server list as a JSON string defined in types/server/server.go List
-//
+// It returns the server list as a JSON string defined in types/server/server.go List.
 // If the server list cannot be retrieved it returns a nil string and an error
+//
+// Example Input:
+// ```ServerList()```
+//
+// Example Output (current profile here is empty as none has been chosen yet):
+//
+//    {
+//      "institute_access_servers": [
+//        {
+//          "display_name": {
+//            "en": "Demo"
+//          },
+//          "identifier": "https://demo.eduvpn.nl/",
+//          "profiles": {
+//            "current": ""
+//          },
+//          "support_contacts": [
+//            "mailto:eduvpn@surf.nl"
+//          ],
+//          "delisted": false
+//        }
+//      ]
+//    }, null
+//
 //
 //export ServerList
 func ServerList() (*C.char, *C.char) {
@@ -421,6 +547,17 @@ func ServerList() (*C.char, *C.char) {
 // The client should open the webbrowser with this URL and continue the authorization process.
 // This is only called if authorization needs to be retriggered
 //
+// Example Input (3=custom server):
+// ```GetConfig(myCookie, 3, "https://demo.eduvpn.nl/", 0, 0)```
+//
+// Example Output (2=WireGuard):
+//
+//    {
+//     "config": "https://demo.eduvpn.nl/\n# Profile: ...\n# Expires: ...\n\n[Interface]\nPrivateKey = ...\nAddress = ...\nDNS = ...\n\n[Peer]\nPublicKey = ...=\nAllowedIPs = 0.0.0.0/0,::/0\nEndpoint = ...",
+//     "protocol": 2,
+//     "default_gateway": true
+//    }
+//
 //export GetConfig
 func GetConfig(c C.uintptr_t, _type C.int, id *C.char, pTCP C.int, startup C.int) (*C.char, *C.char) {
 	state, stateErr := getVPNState()
@@ -449,7 +586,17 @@ func GetConfig(c C.uintptr_t, _type C.int, id *C.char, pTCP C.int, startup C.int
 //
 // `Data` is the profile ID
 //
-// It returns an error if unsuccessful
+// It returns an error if unsuccessful.
+// Example Input: ```SetProfileID("splittunnel")```
+//
+// Example Output:
+//
+//    {
+//      "message": {
+//        "en": "profile does not exist"
+//      },
+//      "misc": false
+//    }
 //
 //export SetProfileID
 func SetProfileID(data *C.char) *C.char {
@@ -470,7 +617,17 @@ func SetProfileID(data *C.char) *C.char {
 // `c` is the Cookie that needs to be passed. To create a cookie, first call `CookieNew`
 // `Data` is the location ID
 //
-// It returns an error if unsuccessful
+// It returns an error if unsuccessful.
+// Example Input: ```SetSecureLocation("nl")```
+//
+// Example Output:
+//
+//    {
+//      "message": {
+//        "en": "location does not exist"
+//      },
+//      "misc": false
+//    }
 //
 //export SetSecureLocation
 func SetSecureLocation(c C.uintptr_t, data *C.char) *C.char {
@@ -492,6 +649,32 @@ func SetSecureLocation(c C.uintptr_t, data *C.char) *C.char {
 //
 // If it was unsuccessful, it returns an error. Note that when the lib was built in release mode the data is almost always non-nil, even when an error has occurred
 // This means it has just returned the cached list
+//
+// Example Input: ```DiscoServers(myCookie)```
+//
+// Example Output:
+//
+//     {
+//      "v": 1695291170,
+//      "server_list": [
+//        {
+//          "base_url": "https://eduvpn.rash.al/",
+//          "country_code": "AL",
+//          "public_key_list": [
+//            "k7.pub.S4j5JJiTEz1fWMkI.hzU_xJasWzD6Da2WR7hgbobx9n3o4XSDeqFh03tgM-0"
+//          ],
+//          "server_type": "secure_internet",
+//          "support_contact": [
+//            "mailto:helpdesk@rash.al"
+//          ]
+//        },
+//        {
+//          "base_url": "https://eduvpn.deic.dk/",
+//          "country_code": "DK",
+//          "public_key_list": [
+//            "k7.pub.RNOJIYbemlfsE7EL.BxmV2l2UV7pCqz135ofBgyG9-xLg0R9rILQedZrfLtE"
+//          ], ..................
+//     } , null
 //
 //export DiscoServers
 func DiscoServers(c C.uintptr_t) (*C.char, *C.char) {
@@ -521,6 +704,36 @@ func DiscoServers(c C.uintptr_t) (*C.char, *C.char) {
 // If it was unsuccessful, it returns an error. Note that when the lib was built in release mode the data is almost always non-nil, even when an error has occurred
 // This means it has just returned the cached list
 //
+// Example Input: ```DiscoOrganizations(myCookie)```
+//
+// Example Output:
+//    {
+//     "v": 1695291170,
+//     "organization_list": [
+//       {
+//         "display_name": {
+//           "en": "Academic Network of Albania - RASH"
+//         },
+//         "org_id": "https://idp.rash.al/simplesaml/saml2/idp/metadata.php",
+//         "secure_internet_home": "https://eduvpn.rash.al/"
+//       },
+//       {
+//         "display_name": {
+//           "da": "Dansk Sprognævn",
+//           "en": "Danish Language Council"
+//         },
+//         "org_id": "http://idp.dsn.dk/adfs/services/trust",
+//         "secure_internet_home": "https://eduvpn.deic.dk/"
+//       },
+//       {
+//         "display_name": {
+//           "da": "Erhvervsakademi Aarhus",
+//           "en": "Business Academy Aarhus"
+//         },
+//         "org_id": "http://adfs.eaaa.dk/adfs/services/trust",
+//         "secure_inte .....................
+//    }, null
+//
 //export DiscoOrganizations
 func DiscoOrganizations(c C.uintptr_t) (*C.char, *C.char) {
 	state, stateErr := getVPNState()
@@ -547,8 +760,18 @@ func DiscoOrganizations(c C.uintptr_t) (*C.char, *C.char) {
 // This MUST be called when disconnecting, see https://docs.eduvpn.org/server/v3/api.html#application-flow
 // `c` is the Cookie that needs to be passed. Create a new Cookie using `CookieNew`
 //
-// If it was unsuccessful, it returns an error
+// If it was unsuccessful, it returns an error.
 //
+// Example Input: ```Cleanup(myCookie)```
+//
+// Example Output:
+//
+//    {
+//      "message": {
+//        "en": "cleanup was not successful"
+//      },
+//      "misc": false
+//    }
 //export Cleanup
 func Cleanup(c C.uintptr_t) *C.char {
 	state, stateErr := getVPNState()
@@ -569,7 +792,17 @@ func Cleanup(c C.uintptr_t) *C.char {
 // And it also possibly re-runs every state callback you need when getting a config.
 // So least you MUST handle the OAuth started transition
 //
-// It returns an error if unsuccessful
+// It returns an error if unsuccessful.
+// Example Input: ```RenewSession(myCookie)```
+//
+// Example Output:
+//
+//    {
+//      "message": {
+//        "en": "could not renew session"
+//      },
+//      "misc": false
+//    }
 //
 //export RenewSession
 func RenewSession(c C.uintptr_t) *C.char {
@@ -585,13 +818,15 @@ func RenewSession(c C.uintptr_t) *C.char {
 	return getCError(renewSessionErr)
 }
 
-// SetSupportWireguard enables or disables WireGuard for the client
+// SetSupportWireguard enables or disables WireGuard for the client.
+// *WARNING: This function will be removed*
 //
 // By default WireGuard support is enabled
 // To disable it you can pass a 0 int to this
 //
 // `support` thus indicates whether or not to enable WireGuard
 // An error is returned if this is not possible
+//
 //
 //export SetSupportWireguard
 func SetSupportWireguard(support C.int) *C.char {
@@ -614,8 +849,11 @@ func SetSupportWireguard(support C.int) *C.char {
 //   - `readRxBytes` is a function that returns the current rx bytes of the VPN interface, this should return a `long long int` in c
 //
 // It returns a boolean whether or not the common lib has determined that it cannot reach the gateway. Non-zero=dropped, zero=not dropped.
-//
 // It also returns an error, if it fails to indicate if it has dropped or not. In this case, dropped is also set to zero
+//
+// Example Input: ```StartFailover(myCookie, "10.10.10.1", 1400, myRxBytesReader)```
+//
+// Example Output: ```1, null```
 //
 //export StartFailover
 func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.ReadRxBytes) (C.int, *C.char) {
@@ -646,7 +884,10 @@ func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.Read
 
 // SetState sets the state of the statemachine
 //
-// Note: this transitions the FSM into the new state without passing any data to it
+// Note: this transitions the FSM into the new state without passing any data to it.
+// Example Input: ```SetState(5)```
+//
+// Example Output: ```null```
 //
 //export SetState
 func SetState(fsmState C.int) *C.char {
@@ -658,6 +899,10 @@ func SetState(fsmState C.int) *C.char {
 }
 
 // InState checks if the FSM is in `fsmState`
+//
+// Example Input: ```InState(5)```
+//
+// Example Output: ```1, null```
 //
 //export InState
 func InState(fsmState C.int) (C.int, *C.char) {
@@ -677,6 +922,8 @@ func InState(fsmState C.int) (C.int, *C.char) {
 // This happens when we return strings, such as errors from the Go lib back to the client.
 // The client MUST thus ensure that this memory is freed using this function.
 // Simply pass the pointer to the string in here
+//
+// Example Input: ```FreeString(strPtr)```
 //
 //export FreeString
 func FreeString(addr *C.char) {
@@ -720,7 +967,10 @@ func getCookie(c C.uintptr_t) (*cookie.Cookie, error) {
 //
 //   - The `tokens`, defined in types/server/server.go `Tokens` marshalled as JSON
 //
-// It returns an error when the tokens cannot be set
+// It returns an error when the tokens cannot be set.
+// Example Input: ```SetTokenHandler(getterFunc, setterFunc)```
+//
+// Example Output: ```null```
 //
 //export SetTokenHandler
 func SetTokenHandler(getter C.TokenGetter, setter C.TokenSetter) *C.char {
@@ -790,6 +1040,10 @@ func SetTokenHandler(getter C.TokenGetter, setter C.TokenSetter) *C.char {
 //   - Send a reply to a state transition (ASK_PROFILE and ASK_LOCATION)
 //
 // Functions that take a cookie have it as the first argument
+
+// Example Input: ```CookieNew()```
+//
+// Example Output: ```5```
 //
 //export CookieNew
 func CookieNew() C.uintptr_t {
@@ -805,6 +1059,10 @@ func CookieNew() C.uintptr_t {
 //
 //   - `data` is the data to send, e.g. a profile ID
 //
+// Example Input: ```CookieReply(myCookie, "split-tunnel-profile")```
+//
+// Example Output: ```null```
+//
 //export CookieReply
 func CookieReply(c C.uintptr_t, data *C.char) *C.char {
 	v, err := getCookie(c)
@@ -817,7 +1075,10 @@ func CookieReply(c C.uintptr_t, data *C.char) *C.char {
 
 // CookieDelete deletes the cookie by cancelling it and deleting the underlying cgo handle
 //
-// This function MUST be called when the cookie that is created using `CookieNew` is no longer needed
+// This function MUST be called when the cookie that is created using `CookieNew` is no longer needed.
+// Example Input: ```CookieDelete(myCookie)```
+//
+// Example Output: null
 //
 //export CookieDelete
 func CookieDelete(c C.uintptr_t) *C.char {
@@ -837,6 +1098,9 @@ func CookieDelete(c C.uintptr_t) *C.char {
 // The error cause is always context.Canceled for that cancelled function: https://pkg.go.dev/context#pkg-variables
 //
 // This CookieCancel function can also return an error if cancelling was unsuccessful
+// Example Input: ```CookieCancel(myCookie)```
+//
+// Example Output: null
 //
 //export CookieCancel
 func CookieCancel(c C.uintptr_t) *C.char {
