@@ -4,7 +4,7 @@
         {
             "id": "The log file with directory: '{Directory}' failed to initialize",
             "message": "The log file with directory: '{Directory}' failed to initialize",
-            "translation": "Het log bestand met pad: '{Directory}' kon niet aangemaakt worden",
+            "translation": "Het log bestand met pad: '{Directory}' kan niet aangemaakt worden",
             "placeholders": [
                 {
                     "id": "Directory",
@@ -29,12 +29,12 @@
         {
             "id": "The current server could not be found when getting it for expiry",
             "message": "The current server could not be found when getting it for expiry",
-            "translation": "De huidige VPN server kon niet worden gevonden voor expiratie"
+            "translation": "De huidige VPN server kon niet worden gevonden"
         },
         {
             "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
             "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
-            "translation": "",
+            "translation": "De client wilde automatisch verbinden met VPN server: {Namesrv}, maar de huidige locatie is niet gevonden. U moet opnieuw handmatig verbinden",
             "placeholders": [
                 {
                     "id": "Namesrv",
@@ -49,12 +49,12 @@
         {
             "id": "The secure internet location could not be set",
             "message": "The secure internet location could not be set",
-            "translation": "De locatie voor de \"secure internet\" server kon niet worden gezet"
+            "translation": "De locatie voor de secure internet server kon niet opgeslagen"
         },
         {
             "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
             "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
-            "translation": "",
+            "translation": "De client wilde automatisch verbinden met VPN server: {Namesrv}, maar authorizatie is nodig. U moet handmatig opnieuw verbinden",
             "placeholders": [
                 {
                     "id": "Namesrv",
@@ -69,12 +69,12 @@
         {
             "id": "The authorization procedure failed to complete",
             "message": "The authorization procedure failed to complete",
-            "translation": "Het authorizatie proces kon niet vervuld worden"
+            "translation": "Het authorizatie proces kon niet voltooid worden"
         },
         {
             "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
             "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
-            "translation": "",
+            "translation": "De client wilde automatisch verbinden met VPN server: {Namesrv}, maar er was geen geldig profiel gevinden. U moet handmatig opnieuw verbinden",
             "placeholders": [
                 {
                     "id": "Namesrv",
@@ -94,7 +94,7 @@
         {
             "id": "Profile with ID: '{PID}' could not be set",
             "message": "Profile with ID: '{PID}' could not be set",
-            "translation": "Het profiel met identiteit: '{PID}' kon niet gezet worden",
+            "translation": "Het profiel met identiteit: '{PID}' kon niet opgeslagen worden",
             "placeholders": [
                 {
                     "id": "PID",
@@ -124,12 +124,12 @@
         {
             "id": "The identifier that was passed to the library is incorrect",
             "message": "The identifier that was passed to the library is incorrect",
-            "translation": "De identieit die aan de library werd gegeven is niet correct"
+            "translation": "De identiteit die aan de library werd gegeven is niet correct"
         },
         {
             "id": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
             "message": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
-            "translation": "De institute access server met URL: '{Identifier}' kon niet opgehaald worden van discovery",
+            "translation": "De institute access server met URL: '{Identifier}' kan niet opgehaald worden van discovery",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -144,7 +144,7 @@
         {
             "id": "The institute access server with URL: '{Identifier}' could not be added",
             "message": "The institute access server with URL: '{Identifier}' could not be added",
-            "translation": "De institute access server met URL: '{Identifier}' kon niet toegevoegd worden",
+            "translation": "De institute access server met URL: '{Identifier}' kan niet toegevoegd worden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -159,7 +159,7 @@
         {
             "id": "The secure internet server with organisation ID: '{Identifier}' could not be retrieved from discovery",
             "message": "The secure internet server with organisation ID: '{Identifier}' could not be retrieved from discovery",
-            "translation": "De secure internet server met identiteit: '{Identifier}' kon niet opgehaald worden van discovery",
+            "translation": "De secure internet server met identiteit: '{Identifier}' kan niet opgehaald worden van discovery",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -174,7 +174,7 @@
         {
             "id": "The secure internet server with organisation ID: '{Identifier}' could not be added",
             "message": "The secure internet server with organisation ID: '{Identifier}' could not be added",
-            "translation": "De secure internet server met identiteit: '{Identifier}' kon niet toegevoegd worden",
+            "translation": "De secure internet server met identiteit: '{Identifier}' kan niet toegevoegd worden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -189,7 +189,7 @@
         {
             "id": "The custom server with URL: '{Identifier}' could not be added",
             "message": "The custom server with URL: '{Identifier}' could not be added",
-            "translation": "De server met URL: '{Identifier}' kon niet toegevoegd worden",
+            "translation": "De server met URL: '{Identifier}' kan niet toegevoegd worden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -204,7 +204,7 @@
         {
             "id": "The VPN configuration could not be obtained",
             "message": "The VPN configuration could not be obtained",
-            "translation": "De VPN configuratie kon niet opgehaald worden"
+            "translation": "De VPN configuratie kan niet opgehaald worden"
         },
         {
             "id": "The current profile could not be found",
@@ -237,12 +237,12 @@
         {
             "id": "The operation for getting a VPN configuration was canceled",
             "message": "The operation for getting a VPN configuration was canceled",
-            "translation": "De procedure om een VPN configuratie op te halen is geannuleerd"
+            "translation": "De procedure om een VPN configuratie op te halen is verbroken"
         },
         {
             "id": "Failed to set the server with identifier: '{Identifier}' as the current",
             "message": "Failed to set the server with identifier: '{Identifier}' as the current",
-            "translation": "De server met identiteit: '{Identifier}' kon niet als de hudige server gezet worden",
+            "translation": "De server met identiteit: '{Identifier}' kan niet als de hudige server gezet worden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -280,7 +280,7 @@
         {
             "id": "Failed to get the current server to cleanup the connection",
             "message": "Failed to get the current server to cleanup the connection",
-            "translation": "De huidige server kon niet opgehaald worden om de connectie te verwijderen"
+            "translation": "De huidige server kan niet opgehaald worden om de connectie te verwijderen"
         },
         {
             "id": "Failed to cleanup the VPN connection for the current server",
@@ -295,12 +295,12 @@
         {
             "id": "Failed to get current server for renewing the session",
             "message": "Failed to get current server for renewing the session",
-            "translation": "De huidige server kon niet opgehaald worden om de sessie te hernieuwen"
+            "translation": "De huidige server kan niet opgehaald worden om de sessie te hernieuwen"
         },
         {
             "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
             "message": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
-            "translation": "",
+            "translation": "Het 'failover' proces kan niet voltooid worden. Gateway: '{Gateway}' en MTU: '{Mtu}'",
             "placeholders": [
                 {
                     "id": "Gateway",
@@ -333,7 +333,7 @@
         {
             "id": "An internal error occurred",
             "message": "An internal error occurred",
-            "translation": ""
+            "translation": "Een interne fout is opgetreden"
         }
     ]
 }

@@ -233,44 +233,51 @@ const itData string = ""
 var nlIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
 	0x00000000, 0x0000003c, 0x00000084, 0x000000c7,
-	0x00000105, 0x00000105, 0x00000147, 0x00000147,
-	0x00000177, 0x00000177, 0x000001ab, 0x000001e5,
-	0x00000231, 0x0000026e, 0x000002c2, 0x00000309,
-	0x00000363, 0x000003b0, 0x000003e6, 0x00000414,
-	0x00000440, 0x00000484, 0x000004c4, 0x00000511,
-	0x0000056a, 0x000005b5, 0x000005b5, 0x000005e1,
-	0x00000632, 0x00000679, 0x00000679, 0x00000679,
+	0x000000f6, 0x00000180, 0x000001be, 0x0000023a,
+	0x0000026b, 0x000002f5, 0x00000329, 0x00000368,
+	0x000003b4, 0x000003f2, 0x00000446, 0x0000048d,
+	0x000004e7, 0x00000534, 0x0000056a, 0x00000598,
+	0x000005c4, 0x00000608, 0x00000646, 0x00000693,
+	0x000006ec, 0x00000737, 0x00000737, 0x00000763,
+	0x000007b4, 0x000007fb, 0x000007fb, 0x0000084c,
 	// Entry 20 - 3F
-	0x000006ca, 0x000006d7, 0x000006d7,
+	0x0000089d, 0x000008aa, 0x000008c9,
 } // Size: 164 bytes
 
-const nlData string = "" + // Size: 1751 bytes
-	"\x02Het log bestand met pad: '%[1]s' kon niet aangemaakt worden\x02Er is" +
+const nlData string = "" + // Size: 2249 bytes
+	"\x02Het log bestand met pad: '%[1]s' kan niet aangemaakt worden\x02Er is" +
 	" een fout opgetreden met het ophalen van de lijst van organisaties\x02Er" +
 	" is een fout opgetreden met het ophalen van de lijst van servers\x02De h" +
-	"uidige VPN server kon niet worden gevonden voor expiratie\x02De locatie " +
-	"voor de \x22secure internet\x22 server kon niet worden gezet\x02Het auth" +
-	"orizatie proces kon niet vervuld worden\x02Er zijn geen profielen gevond" +
-	"en om mee te verbinden\x02Het profiel met identiteit: '%[1]s' kon niet g" +
-	"ezet worden\x02Het profiel met identiteit: '%[1]s' kon niet opgehaald wo" +
-	"rden van de server\x02De identieit die aan de library werd gegeven is ni" +
-	"et correct\x02De institute access server met URL: '%[1]s' kon niet opgeh" +
-	"aald worden van discovery\x02De institute access server met URL: '%[1]s'" +
-	" kon niet toegevoegd worden\x02De secure internet server met identiteit:" +
-	" '%[1]s' kon niet opgehaald worden van discovery\x02De secure internet s" +
-	"erver met identiteit: '%[1]s' kon niet toegevoegd worden\x02De server me" +
-	"t URL: '%[1]s' kon niet toegevoegd worden\x02De VPN configuratie kon nie" +
-	"t opgehaald worden\x02Het huidig profiel kan niet gevonden worden\x02De " +
-	"identiteit: '%[1]s' voor server met type: '%[2]d' is niet geldig\x02De p" +
-	"rocedure om een VPN configuratie op te halen is geannuleerd\x02De server" +
-	" met identiteit: '%[1]s' kon niet als de hudige server gezet worden\x02I" +
-	"dentiteit: '%[1]s' voor server met type: '%[2]d' is niet geldig om verwi" +
-	"jderd te worden\x02De huidige server kon niet opgehaald worden om de con" +
-	"nectie te verwijderen\x02De VPN connectie is niet volledig opgeruimd\x02" +
-	"Er is geen \x22secure internet\x22 server beschikbaar om de locatie voor" +
-	" in te stellen\x02De huidige server kon niet opgehaald worden om de sess" +
-	"ie te hernieuwen\x02Er is een time-out opgetreden in de verbinding. Cont" +
-	"roleer uw internetverbinding\x02met oorzaak:"
+	"uidige VPN server kon niet worden gevonden\x02De client wilde automatisc" +
+	"h verbinden met VPN server: %[1]s, maar de huidige locatie is niet gevon" +
+	"den. U moet opnieuw handmatig verbinden\x02De locatie voor de secure int" +
+	"ernet server kon niet opgeslagen\x02De client wilde automatisch verbinde" +
+	"n met VPN server: %[1]s, maar authorizatie is nodig. U moet handmatig op" +
+	"nieuw verbinden\x02Het authorizatie proces kon niet voltooid worden\x02D" +
+	"e client wilde automatisch verbinden met VPN server: %[1]s, maar er was " +
+	"geen geldig profiel gevinden. U moet handmatig opnieuw verbinden\x02Er z" +
+	"ijn geen profielen gevonden om mee te verbinden\x02Het profiel met ident" +
+	"iteit: '%[1]s' kon niet opgeslagen worden\x02Het profiel met identiteit:" +
+	" '%[1]s' kon niet opgehaald worden van de server\x02De identiteit die aa" +
+	"n de library werd gegeven is niet correct\x02De institute access server " +
+	"met URL: '%[1]s' kan niet opgehaald worden van discovery\x02De institute" +
+	" access server met URL: '%[1]s' kan niet toegevoegd worden\x02De secure " +
+	"internet server met identiteit: '%[1]s' kan niet opgehaald worden van di" +
+	"scovery\x02De secure internet server met identiteit: '%[1]s' kan niet to" +
+	"egevoegd worden\x02De server met URL: '%[1]s' kan niet toegevoegd worden" +
+	"\x02De VPN configuratie kan niet opgehaald worden\x02Het huidig profiel " +
+	"kan niet gevonden worden\x02De identiteit: '%[1]s' voor server met type:" +
+	" '%[2]d' is niet geldig\x02De procedure om een VPN configuratie op te ha" +
+	"len is verbroken\x02De server met identiteit: '%[1]s' kan niet als de hu" +
+	"dige server gezet worden\x02Identiteit: '%[1]s' voor server met type: '%" +
+	"[2]d' is niet geldig om verwijderd te worden\x02De huidige server kan ni" +
+	"et opgehaald worden om de connectie te verwijderen\x02De VPN connectie i" +
+	"s niet volledig opgeruimd\x02Er is geen \x22secure internet\x22 server b" +
+	"eschikbaar om de locatie voor in te stellen\x02De huidige server kan nie" +
+	"t opgehaald worden om de sessie te hernieuwen\x02Het 'failover' proces k" +
+	"an niet voltooid worden. Gateway: '%[1]s' en MTU: '%[2]d'\x02Er is een t" +
+	"ime-out opgetreden in de verbinding. Controleer uw internetverbinding" +
+	"\x02met oorzaak:\x02Een interne fout is opgetreden"
 
 var slIndex = []uint32{ // 35 elements
 	// Entry 0 - 1F
@@ -334,4 +341,4 @@ var ukIndex = []uint32{ // 35 elements
 
 const ukData string = ""
 
-// Total table size 8826 bytes (8KiB); checksum: 6298D73C
+// Total table size 9324 bytes (9KiB); checksum: 48C4CF4E
