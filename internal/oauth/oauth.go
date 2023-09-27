@@ -446,7 +446,7 @@ func (oauth *OAuth) ListenerPort() (int, error) {
 }
 
 // AuthURL gets the authorization url to start the OAuth procedure.
-func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (string, error) {
+func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string, cr string) (string, error) {
 	// Update the client ID
 	oauth.ClientID = name
 
@@ -478,10 +478,14 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 		return "", errors.WrapPrefix(err, "oauth.setupListener error", 0)
 	}
 
-	// Get the listener port
-	port, err := oauth.ListenerPort()
-	if err != nil {
-		return "", errors.WrapPrefix(err, "oauth.ListenerPort error", 0)
+	red := cr
+	if cr == "" {
+		// Get the listener port
+		port, err := oauth.ListenerPort()
+		if err != nil {
+			return "", errors.WrapPrefix(err, "oauth.ListenerPort error", 0)
+		}
+		red = fmt.Sprintf("http://127.0.0.1:%d/callback", port)
 	}
 
 	params := map[string]string{
@@ -491,7 +495,7 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 		"response_type":         "code",
 		"scope":                 "config",
 		"state":                 state,
-		"redirect_uri":          fmt.Sprintf("http://127.0.0.1:%d/callback", port),
+		"redirect_uri":          red,
 	}
 
 	p, err := url.Parse(oauth.BaseAuthorizationURL)
@@ -510,12 +514,24 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 	return postProcessAuth(u), nil
 }
 
+func (oauth *OAuth) tokensWithURI(ctx context.Context, uri string) error {
+	// parse URI
+	p, err := url.Parse(uri)
+	if err != nil {
+		return err
+	}
+	return oauth.tokenHandler(ctx, p)
+}
+
 // Exchange starts the OAuth exchange by getting the tokens with the redirect callback
 // If it was unsuccessful it returns an error.
-func (oauth *OAuth) Exchange(ctx context.Context) error {
+func (oauth *OAuth) Exchange(ctx context.Context, uri string) error {
 	// If there is no HTTP client defined, create a new one
 	if oauth.httpClient == nil {
 		oauth.httpClient = httpw.NewClient()
+	}
+	if uri != "" {
+		return oauth.tokensWithURI(ctx, uri)
 	}
 	return oauth.tokensWithCallback(ctx)
 }

@@ -290,7 +290,8 @@ func Deregister() *C.char {
 // The following state callbacks are mandatory to handle:
 //
 //   - OAUTH_STARTED: This indicates that the OAuth procedure has been started, it returns the URL as the data.
-//     The client should open the webbrowser with this URL and continue the authorization process.
+//     The client should open the webbrowser with this URL and continue the authorization process. Note: For mobile platforms this returns a Cookie and data (json: {"cookie": x, "data": url}).
+//     This `url` should also be opened in the browser like desktop platforms. But these platforms also need to reply to the library to give back the full authorization code URI with CookieReply(x, uri) that the apps get back when the user clicks approve. For this, apps need to register an app url or sorts. For the valid values for app URLs, see the redirect URIs for mobile platforms here https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/VpnClientDb.php
 //
 // Example Input (3=custom server):
 // ```AddServer(mycookie, 3, "https://demo.eduvpn.nl", 0)```
@@ -542,7 +543,9 @@ func ServerList() (*C.char, *C.char) {
 //
 // ### OAUTH_STARTED
 //
-// This indicates that the OAuth procedure has been started, it returns the URL as the data.
+//   - OAUTH_STARTED: This indicates that the OAuth procedure has been started, it returns the URL as the data.
+//     The client should open the webbrowser with this URL and continue the authorization process. Note: For mobile platforms this returns a Cookie and data (json: {"cookie": x, "data": url}).
+//     This `url` should also be opened in the browser like desktop platforms. But these platforms also need to reply to the library to give back the full authorization code URI with CookieReply(x, uri) that the apps get back when the user clicks approve. For this, apps need to register an app url or sorts. For the valid values for app URLs, see the redirect URIs for mobile platforms here https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/VpnClientDb.php
 //
 // The client should open the webbrowser with this URL and continue the authorization process.
 // This is only called if authorization needs to be retriggered
