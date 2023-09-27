@@ -49,12 +49,12 @@ func UpdateTokens(srv Server, t oauth.Token) {
 	srv.OAuth().UpdateTokens(t)
 }
 
-func OAuthURL(srv Server, name string) (string, error) {
-	return srv.OAuth().AuthURL(name, srv.TemplateAuth())
+func OAuthURL(srv Server, name string, cr string) (string, error) {
+	return srv.OAuth().AuthURL(name, srv.TemplateAuth(), cr)
 }
 
-func OAuthExchange(ctx context.Context, srv Server) error {
-	return srv.OAuth().Exchange(ctx)
+func OAuthExchange(ctx context.Context, srv Server, uri string) error {
+	return srv.OAuth().Exchange(ctx, uri)
 }
 
 func HeaderToken(ctx context.Context, srv Server) (string, error) {

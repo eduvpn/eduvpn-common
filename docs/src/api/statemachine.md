@@ -171,7 +171,7 @@ For the explanation of what all the different states mean, see the [client docum
 
 In eduvpn-common, there are certain states that require attention from the client.
 
-- OAuth Started: A state that must be handled by the client. How a client can 'handle' this state, we will see in the next section. In this state, the client must open the webbrowser with the authorization URL to complete to OAuth process
+- OAuth Started: A state that must be handled by the client. How a client can 'handle' this state, we will see in the next section. In this state, the client must open the webbrowser with the authorization URL to complete to OAuth process. Note that on mobile platforms, you also need to reply with the authorization URI as these platforms do not support a local callback server using 127.0.0.1
 - Ask Profile: The state that asks for a profile selection to the client. Reply to this state by using a "cookie" and the CookieReply function. What this means will be discussed in the Python client example too
 - Ask Location: Same for ask profile but for selecting a secure internet location. Only called if one must be chosen, e.g. due to a selection that is no longer valid
 
