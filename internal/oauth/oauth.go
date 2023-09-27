@@ -366,11 +366,12 @@ func writeResponseHTML(w http.ResponseWriter, title string, message string) erro
 func (s *exchangeSession) Authcode(url *url.URL) (string, error) {
 	// ISS: https://www.rfc-editor.org/rfc/rfc9207.html
 	q := url.Query()
+
+	// first check ISS
 	iss := q.Get("iss")
 	if s.ISS != iss {
 		return "", errors.Errorf("failed matching ISS; expected '%s' got '%s'", s.ISS, iss)
 	}
-
 	// Make sure the state is present and matches to protect against cross-site request forgeries
 	// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-7.15
 	state := q.Get("state")
@@ -380,6 +381,16 @@ func (s *exchangeSession) Authcode(url *url.URL) (string, error) {
 	// The state is the first entry
 	if state != s.State {
 		return "", errors.Errorf("failed matching state; expected '%s' got '%s'", s.State, state)
+	}
+
+	// check if an error is present
+	// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-09#name-authorization-response (error response)
+	errc := q.Get("error")
+	if errc != "" {
+		// these are optional but let's include them
+		errdesc := q.Get("error_description")
+		erruri := q.Get("error_uri")
+		return "", errors.Errorf("failed obtaining oauthorization code, error code '%s', error description '%s', error uri '%s'", errc, errdesc, erruri)
 	}
 
 	// No authorization code
