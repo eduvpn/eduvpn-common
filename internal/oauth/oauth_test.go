@@ -3,7 +3,6 @@ package oauth
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/url"
 	"strings"
 	"testing"
@@ -169,7 +168,7 @@ func Test_AuthURL(t *testing.T) {
 	s, err := o.AuthURL(id, func(s string) string {
 		// We do nothing here are this function is for skipping WAYF
 		return s
-	})
+	}, "")
 	if err != nil {
 		t.Fatalf("Error in getting OAuth URL: %v", err)
 	}
@@ -196,11 +195,6 @@ func Test_AuthURL(t *testing.T) {
 		t.Fatalf("Returned Auth URL cannot be parsed with error: %v", err)
 	}
 
-	port, err := o.ListenerPort()
-	if err != nil {
-		t.Fatalf("Listener port cannot be found with error: %v", err)
-	}
-
 	c := []struct {
 		query string
 		want  string
@@ -209,7 +203,7 @@ func Test_AuthURL(t *testing.T) {
 		{query: "code_challenge_method", want: "S256"},
 		{query: "response_type", want: "code"},
 		{query: "scope", want: "config"},
-		{query: "redirect_uri", want: fmt.Sprintf("http://127.0.0.1:%d/callback", port)},
+		{query: "redirect_uri", want: o.session.RedirectURI},
 	}
 
 	q := u.Query()
