@@ -112,22 +112,6 @@ type Client struct {
 	mu sync.Mutex
 }
 
-func (c *Client) NeedsMobileRedirect() bool {
-	splitted := strings.Split(c.Name, ".")
-	last := splitted[len(splitted)-1]
-	return last == "android" || last == "ios"
-}
-
-func (c *Client) MobileRedirect() string {
-	vals := map[string]string{
-		"org.letsconnect-vpn.app.ios": "org.letsconnect-vpn.app.ios:/api/callback",
-		"org.letsconnect-vpn.app.android": "org.letsconnect-vpn.app:/api/callback",
-		"org.eduvpn.app.ios": "org.eduvpn.app.ios:/api/callback",
-		"org.eduvpn.app.android": "org.eduvpn.app:/api/callback",
-	}
-	return vals[c.Name]
-}
-
 func (c *Client) updateTokens(srv server.Server) error {
 	if c.TokenGetter == nil {
 		return errors.New("no token getter defined")
@@ -377,16 +361,13 @@ func (c *Client) locationCallback(ck *cookie.Cookie) error {
 
 func (c *Client) loginCallback(ck *cookie.Cookie, srv server.Server) error {
 	// get a custom redirect
-	cr := ""
-	if c.NeedsMobileRedirect() {
-		cr = c.MobileRedirect()
-	}
+	cr := CustomRedirect(c.Name)
 	url, err := server.OAuthURL(srv, c.Name, cr)
 	if err != nil {
 		return err
 	}
 	authCodeURI := ""
-	if c.NeedsMobileRedirect() {
+	if cr != "" {
 		errChan := make(chan error)
 		go func() {
 			err := c.FSM.GoTransitionRequired(StateOAuthStarted, &srvtypes.RequiredAskTransition{
