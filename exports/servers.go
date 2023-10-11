@@ -27,6 +27,9 @@ func getCPtrProfile(profile *server.Profile) *C.serverProfile {
 	} else {
 		cProfile.default_gateway = C.int(0)
 	}
+	cProfile.total_dns_search_domains, cProfile.dns_search_domains = getCPtrListStrings(
+		profile.DNSSearchDomains,
+	)
 
 	return cProfile
 }
@@ -71,6 +74,7 @@ func FreeProfiles(profiles *C.serverProfiles) {
 		for i := C.size_t(0); i < profiles.total_profiles; i++ {
 			C.free(unsafe.Pointer(profilesSlice[i].id))
 			C.free(unsafe.Pointer(profilesSlice[i].display_name))
+			freeCListStrings(profilesSlice[i].dns_search_domains, profilesSlice[i].total_dns_search_domains)
 			C.free(unsafe.Pointer(profilesSlice[i]))
 		}
 		// Free the inner profiles struct

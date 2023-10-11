@@ -5,6 +5,7 @@ type Profile struct {
 	DisplayName    string   `json:"display_name"`
 	VPNProtoList   []string `json:"vpn_proto_list"`
 	DefaultGateway bool     `json:"default_gateway"`
+	DNSSearchDomains []string `json:"dns_search_domain_list"`
 }
 
 type ProfileListInfo struct {

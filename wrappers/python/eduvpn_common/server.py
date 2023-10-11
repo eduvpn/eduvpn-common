@@ -18,12 +18,14 @@ class Profile:
     :param: identifier: str: The identifier (id) of the profile
     :param: display_name: str: The display name of the profile
     :param: default_gateway: str: Whether or not this profile should have the default gateway set
+    :param: search_domains: List[str]: The list of DNS search domains
     """
 
-    def __init__(self, identifier: str, display_name: str, default_gateway: bool):
+    def __init__(self, identifier: str, display_name: str, default_gateway: bool, dns_search_domains: List[str]):
         self.identifier = identifier
         self.display_name = display_name
         self.default_gateway = default_gateway
+        self.dns_search_domains = dns_search_domains
 
     def __str__(self):
         return self.display_name
@@ -241,11 +243,15 @@ def get_profiles(ptr) -> Optional[Profiles]:
         if not _profiles.profiles[i]:
             continue
         profile = _profiles.profiles[i].contents
+        dns_search_domains = []
+        for j in range(profile.total_dns_search_domains):
+            dns_search_domains.append(profile.dns_search_domains[j].decode("utf-8"))
         profiles.append(
             Profile(
                 profile.identifier.decode("utf-8"),
                 profile.display_name.decode("utf-8"),
                 profile.default_gateway == 1,
+                dns_search_domains,
             )
         )
     return Profiles(profiles, current_profile)

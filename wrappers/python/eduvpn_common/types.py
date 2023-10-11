@@ -133,6 +133,8 @@ class cServerProfile(Structure):
         ("identifier", c_char_p),
         ("display_name", c_char_p),
         ("default_gateway", c_int),
+        ("dns_search_domains", POINTER(c_char_p)),
+        ("total_dns_search_domains", c_size_t),
     ]
 
 

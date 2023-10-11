@@ -5,8 +5,9 @@
 typedef struct serverProfile {
   const char* id;
   const char* display_name;
-  //const char* proto_list;
   int default_gateway;
+  const char** dns_search_domains;
+  size_t total_dns_search_domains;
 } serverProfile;
 
 // The struct for all server profiles
