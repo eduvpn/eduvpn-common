@@ -10,6 +10,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/client"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/server"
+	"github.com/eduvpn/eduvpn-common/internal/version"
 	"github.com/go-errors/errors"
 )
 
@@ -124,7 +125,7 @@ func printConfig(url string, srvType ServerTypes) {
 
 	err := c.Register(
 		"org.eduvpn.app.linux",
-		"1.1.2-cli",
+		fmt.Sprintf("%s-cli", version.Version),
 		"configs",
 		"en",
 		func(old client.FSMStateID, new client.FSMStateID, data interface{}) bool {

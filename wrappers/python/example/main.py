@@ -1,3 +1,4 @@
+from eduvpn_common import __version__ as commonver
 import eduvpn_common.main as eduvpn
 from eduvpn_common.state import State, StateType
 from eduvpn_common.server import Config, Profiles
@@ -98,7 +99,7 @@ def do_secure_internet(edu: eduvpn.EduVPN) -> Optional[Config]:
 
 # The main entry point
 if __name__ == "__main__":
-    _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", "1.1.2-cli-py", "configs", "en")
+    _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", f"{commonver}-cli-py", "configs", "en")
     setup_callbacks(_eduvpn)
 
     # Register with the eduVPN-common library

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-errors/errors"
+	"github.com/eduvpn/eduvpn-common/internal/version"
 )
 
 // UserAgent is the user agent that is used for requests
@@ -247,6 +248,6 @@ func (e *StatusError) Error() string {
 }
 
 // RegisterAgent registers the user agent for client and version
-func RegisterAgent(client string, version string) {
-	UserAgent = fmt.Sprintf("%s/%s %s", client, version, "eduvpn-common/1.1.2")
+func RegisterAgent(client string, verApp string) {
+	UserAgent = fmt.Sprintf("%s/%s eduvpn-common/%s", client, verApp, version.Version)
 }
