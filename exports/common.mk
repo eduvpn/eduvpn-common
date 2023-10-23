@@ -18,8 +18,11 @@ LIB_PREFIX ?= lib
 LIB_SUFFIX ?= .so
 endif
 
+# Get relative exports/ directory when included from a wrapper, without trailing slash
+override EXPORTS_PATH = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+
 # Current version
-VERSION := $(shell grep -o 'const Version = "[^"]*' ../internal/version/version.go | cut -d '"' -f 2)
+VERSION := $(shell grep -o 'const Version = "[^"]*' $(EXPORTS_PATH)/../internal/version/version.go | cut -d '"' -f 2)
 
 # Library name without prefixes/suffixes
 LIB_NAME ?= eduvpn_common
@@ -27,8 +30,6 @@ LIB_NAME_VERSION ?= $(LIB_NAME)-$(VERSION)
 # Library file name
 LIB_FILE ?= $(LIB_PREFIX)$(LIB_NAME_VERSION)$(LIB_SUFFIX)
 
-# Get relative exports/ directory when included from a wrapper, without trailing slash
-override EXPORTS_PATH = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
 EXPORTS_LIB_PATH ?= $(EXPORTS_PATH)/lib
 EXPORTS_LIB_SUBFOLDER_PATH ?= $(EXPORTS_LIB_PATH)/$(GOOS)/$(GOARCH)
