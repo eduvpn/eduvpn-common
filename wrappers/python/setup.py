@@ -12,6 +12,7 @@ from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 _libname = "eduvpn_common"
 __version__ = "1.1.2"
 
+
 def getlibpath(plat_name: str) -> typing.Union[str, None]:
     """Get library path for plat_name relative to exports/lib/ folder."""
 
@@ -65,8 +66,15 @@ def getlibpath(plat_name: str) -> typing.Union[str, None]:
 
     processed_os = os_map[plat_os]
     return (
-        processed_os + "/" + arch_map[plat_arch] + "/" + 
-        lib_prefixes[processed_os] + _libname + "-" + __version__ + lib_suffixes[processed_os]
+        processed_os
+        + "/"
+        + arch_map[plat_arch]
+        + "/"
+        + lib_prefixes[processed_os]
+        + _libname
+        + "-"
+        + __version__
+        + lib_suffixes[processed_os]
     )
 
 
@@ -91,14 +99,16 @@ class bdist_wheel(_bdist_wheel):
             print("Unknown platform:", self.plat_name)
             sys.exit(1)
 
-        print("Building wheel for platform:",self.plat_name)
+        print("Building wheel for platform:", self.plat_name)
 
         # setuptools will only use paths inside the package for package_data, so we copy the library
         p = "eduvpn_common/lib"
         if os.path.isdir(p):
             shutil.rmtree(p)
         os.makedirs(p)
-        shutil.copyfile(self.exports_lib_path + "/" + libpath, p+"/"+libpath.split("/")[-1])
+        shutil.copyfile(
+            self.exports_lib_path + "/" + libpath, p + "/" + libpath.split("/")[-1]
+        )
         _bdist_wheel.run(self)
         shutil.rmtree("eduvpn_common/lib/")
 

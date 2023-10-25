@@ -18,7 +18,9 @@ from selenium_eduvpn import login_eduvpn
 
 class ConfigTests(unittest.TestCase):
     def testConfig(self):
-        _eduvpn = eduvpn.EduVPN("org.letsconnect-vpn.app.linux", "0.1.0", "testconfigs", "en")
+        _eduvpn = eduvpn.EduVPN(
+            "org.letsconnect-vpn.app.linux", "0.1.0", "testconfigs", "en"
+        )
         # This can throw an exception
         _eduvpn.register()
 
@@ -40,7 +42,9 @@ class ConfigTests(unittest.TestCase):
         _eduvpn.deregister()
 
     def testDoubleRegister(self):
-        _eduvpn = eduvpn.EduVPN("org.letsconnect-vpn.app.linux", "0.1.0", "testconfigs", "en")
+        _eduvpn = eduvpn.EduVPN(
+            "org.letsconnect-vpn.app.linux", "0.1.0", "testconfigs", "en"
+        )
         # This can throw an exception
         _eduvpn.register()
         # This should throw

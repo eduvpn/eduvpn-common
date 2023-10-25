@@ -610,9 +610,7 @@ def token_callback(name: bytes, srv, tok):
     obj = eduvpn_objects[name_decoded]
     srv_conv = get_transition_server(obj.lib, srv)
     tok_conv = get_tokens(obj.lib, tok)
-    obj.token_callback(
-        srv_conv, tok_conv
-    )
+    obj.token_callback(srv_conv, tok_conv)
 
 
 @VPNStateChange

@@ -21,7 +21,13 @@ class Profile:
     :param: search_domains: List[str]: The list of DNS search domains
     """
 
-    def __init__(self, identifier: str, display_name: str, default_gateway: bool, dns_search_domains: List[str]):
+    def __init__(
+        self,
+        identifier: str,
+        display_name: str,
+        default_gateway: bool,
+        dns_search_domains: List[str],
+    ):
         self.identifier = identifier
         self.display_name = display_name
         self.default_gateway = default_gateway
@@ -405,9 +411,7 @@ def get_tokens(lib: CDLL, ptr: c_void_p) -> Optional[Token]:
         refresh = toks.refresh.decode("utf-8")
         expired = toks.expired
         lib.FreeTokens(ptr)
-        return Token(
-            access, refresh, expired
-        )
+        return Token(access, refresh, expired)
     return None
 
 

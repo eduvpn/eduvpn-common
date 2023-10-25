@@ -13,6 +13,7 @@ from eduvpn_common.types import get_ptr_string
 # The attribute that callback functions get
 EDUVPN_CALLBACK_PROPERTY = "_eduvpn_property_callback"
 
+
 # A state transition decorator for classes
 # To use this, make sure to register the class with `register_class_callbacks`
 def class_state_transition(state: int, state_type: StateType) -> Callable:
