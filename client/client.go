@@ -39,6 +39,12 @@ func isAllowedClientID(clientID string) bool {
 		"org.letsconnect-vpn.app.ios",
 		"org.letsconnect-vpn.app.macos",
 		"org.letsconnect-vpn.app.linux",
+		// govVPN
+		"org.govvpn.app.windows",
+		"org.govvpn.app.android",
+		"org.govvpn.app.ios",
+		"org.govvpn.app.macos",
+		"org.govvpn.app.linux",
 	}
 	for _, x := range allowList {
 		if x == clientID {
@@ -70,14 +76,24 @@ func userAgentName(clientID string) string {
 		return "Let's Connect! for macOS"
 	case "org.letsconnect-vpn.app.linux":
 		return "Let's Connect! for Linux"
+	case "org.govvpn.app.windows":
+		return "govVPN for Windows"
+	case "org.govvpn.app.android":
+		return "govVPN for Android"
+	case "org.govvpn.app.ios":
+		return "govVPN for iOS"
+	case "org.govvpn.app.macos":
+		return "govVPN for macOS"
+	case "org.govvpn.app.linux":
+		return "govVPN for Linux"
 	default:
 		return "unknown"
 	}
 }
 
-func (c *Client) isLetsConnect() bool {
+func (c *Client) hasDiscovery() bool {
 	// see https://git.sr.ht/~fkooman/vpn-user-portal/tree/v3/item/src/OAuth/VpnClientDb.php
-	return strings.HasPrefix(c.Name, "org.letsconnect-vpn.app")
+	return strings.HasPrefix(c.Name, "org.eduvpn.app")
 }
 
 // Client is the main struct for the VPN client.
@@ -266,9 +282,9 @@ func (c *Client) Deregister() {
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#organization-list.
 func (c *Client) DiscoOrganizations(ck *cookie.Cookie) (orgs *discotypes.Organizations, err error) {
-	// Not supported with Let's Connect!
-	if c.isLetsConnect() {
-		return nil, i18nerr.NewInternal("Server/organization discovery with Let's Connect is not supported")
+	// Not supported with Let's Connect! & govVPN
+	if !c.hasDiscovery() {
+		return nil, i18nerr.NewInternal("Server/organization discovery with this client ID is not supported")
 	}
 
 	// Mark organizations as expired if we have not set an organization yet
@@ -288,9 +304,9 @@ func (c *Client) DiscoOrganizations(ck *cookie.Cookie) (orgs *discotypes.Organiz
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#server-list.
 func (c *Client) DiscoServers(ck *cookie.Cookie) (dss *discotypes.Servers, err error) {
-	// Not supported with Let's Connect!
-	if c.isLetsConnect() {
-		return nil, i18nerr.NewInternal("Server/organization discovery with Let's Connect is not supported")
+	// Not supported with Let's Connect! & govVPN
+	if !c.hasDiscovery() {
+		return nil, i18nerr.NewInternal("Server/organization discovery with this client ID is not supported")
 	}
 
 	dss, err = c.Discovery.Servers(ck.Context())
@@ -886,8 +902,9 @@ func (c *Client) Cleanup(ck *cookie.Cookie) (err error) {
 }
 
 func (c *Client) SetSecureLocation(ck *cookie.Cookie, countryCode string) (err error) {
-	if c.isLetsConnect() {
-		return i18nerr.NewInternal("Setting a secure internet location with Let's Connect! is not supported")
+	// not supported with Let's Connect! & govVPN
+	if !c.hasDiscovery() {
+		return i18nerr.NewInternal("Setting a secure internet location with this client ID is not supported")
 	}
 
 	if !c.Servers.HasSecureInternet() {
