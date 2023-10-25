@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-errors/errors"
 	"github.com/eduvpn/eduvpn-common/internal/version"
+	"github.com/go-errors/errors"
 )
 
 // UserAgent is the user agent that is used for requests

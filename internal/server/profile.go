@@ -1,10 +1,10 @@
 package server
 
 type Profile struct {
-	ID             string   `json:"profile_id"`
-	DisplayName    string   `json:"display_name"`
-	VPNProtoList   []string `json:"vpn_proto_list"`
-	DefaultGateway bool     `json:"default_gateway"`
+	ID               string   `json:"profile_id"`
+	DisplayName      string   `json:"display_name"`
+	VPNProtoList     []string `json:"vpn_proto_list"`
+	DefaultGateway   bool     `json:"default_gateway"`
 	DNSSearchDomains []string `json:"dns_search_domain_list"`
 }
 

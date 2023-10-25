@@ -107,7 +107,6 @@ func Test_accessToken(t *testing.T) {
 		t.Fatalf("Access token not equal, Got: %v, Want: %v", got, want)
 	}
 
-
 	// Set the tokens as expired
 	o.SetTokenExpired()
 	want = "test3"
