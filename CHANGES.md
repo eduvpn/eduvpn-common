@@ -1,3 +1,18 @@
+# 1.1.99.0 (1.2 pre-release) (2023-10-25)
+* Version:
+    - Make it easier to update
+* Makefile:
+    - Remove unused packaging targets
+* CI/Docker (cherry-picked from main branch):
+    - Use https://codeberg.org/eduvpn/deploy instead of https://codeberg.org/eduvpn/documentation for the deployment scripts
+    - Update Fedora 36 to 38
+* go.mod/go.sum:
+    - Update dependencies
+* Release scripts:
+    - Add `prepare_release.sh` script that formats the code and changes version numbers automatically
+    - Change `make_release.sh` to automatically add artifacts
+    - Support development GPG key for pre-releases
+
 # 1.1.2 (2023-09-01)
 * Server:
     - Update endpoints more frequently
