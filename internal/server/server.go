@@ -174,10 +174,6 @@ func wireguardGetConfig(srv Server, preferTCP bool, openVPNSupport bool) (*Confi
 	b.EndTime = exp
 
 	if proto == "wireguard" {
-		// This needs the go code a way to identify a connection
-		// Use the uuid of the connection e.g. on Linux
-		// This needs the client code to call the go code
-
 		cfg = wireguard.ConfigAddKey(cfg, key)
 	}
 
