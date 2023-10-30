@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/discovery"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/oauth"
 	"github.com/eduvpn/eduvpn-common/internal/wireguard"
 	"github.com/go-errors/errors"
@@ -53,8 +54,8 @@ type Endpoints struct {
 func ShouldRenewButton(srv Server) bool {
 	b, err := srv.Base()
 	if err != nil {
-		// FIXME: Log error here?
-		return false
+		log.Logger.Warningf("Cannot get server base for renew, with error :%v", err)
+		return true
 	}
 
 	// Get current time
