@@ -43,6 +43,10 @@ func New(
 	API := b.Endpoints.API.V3
 
 	s := &Server{Basic: b}
+
+	if url == "" {
+		return nil, errors.New("URL passed to OAuth is empty")
+	}
 	s.Auth.Init(clientID, url, API.Authorization, API.Token)
 	return s, nil
 }

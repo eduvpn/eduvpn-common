@@ -369,7 +369,7 @@ func (s *exchangeSession) Authcode(url *url.URL) (string, error) {
 
 	// first check ISS
 	iss := q.Get("iss")
-	if s.ISS != iss {
+	if s.ISS != "" && s.ISS != iss {
 		return "", errors.Errorf("failed matching ISS; expected '%s' got '%s'", s.ISS, iss)
 	}
 	// Make sure the state is present and matches to protect against cross-site request forgeries
