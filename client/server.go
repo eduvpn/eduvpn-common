@@ -1,6 +1,8 @@
 package client
 
 import (
+	"time"
+
 	"github.com/eduvpn/eduvpn-common/internal/failover"
 	"github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/log"
@@ -632,6 +634,10 @@ func (c *Client) ensureLogin(srv server.Server, ct oauth.Token) (err error) {
 		c.goBackInternal()
 	}
 	c.FSM.GoTransition(StateAuthorized)
+	b, berr := srv.Base()
+	if berr == nil {
+		b.StartTimeOAuth = time.Now()
+	}
 
 	return err
 }

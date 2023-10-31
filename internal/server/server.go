@@ -66,9 +66,12 @@ func ShouldRenewButton(srv Server) bool {
 		return true
 	}
 
-	// 30 minutes have not passed
-	if !now.After(b.StartTime.Add(30 * time.Minute)) {
-		return false
+	// 30 minutes have not passed since the start of OAuth
+	// If the start time is not known we do not take this into account
+	if !b.StartTimeOAuth.IsZero() {
+		if !now.After(b.StartTimeOAuth.Add(30 * time.Minute)) {
+			return false
+		}
 	}
 
 	// Session will not expire today

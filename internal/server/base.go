@@ -14,6 +14,7 @@ type Base struct {
 	Endpoints      Endpoints         `json:"endpoints"`
 	Profiles       ProfileInfo       `json:"profiles"`
 	StartTime      time.Time         `json:"start_time"`
+	StartTimeOAuth time.Time         `json:"start_time_oauth"`
 	EndTime        time.Time         `json:"expire_time"`
 	Type           string            `json:"server_type"`
 	httpClient     *http.Client
