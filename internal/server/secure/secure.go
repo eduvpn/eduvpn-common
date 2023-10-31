@@ -157,6 +157,10 @@ func (s *Server) Init(
 		return err
 	}
 
+	if b.URL == "" {
+		return errors.New("URL passed to OAuth is empty")
+	}
+
 	// Make sure oauth contains our endpoints
 	s.Auth.Init(clientID, b.URL, b.Endpoints.API.V3.Authorization, b.Endpoints.API.V3.Token)
 	return nil

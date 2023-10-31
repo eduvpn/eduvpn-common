@@ -32,6 +32,8 @@ func New(ctx context.Context, clientID string, u string) (*Server, error) {
 	API := b.Endpoints.API.V3
 
 	s := &Server{Basic: b}
-	s.Auth.Init(clientID, u, API.Authorization, API.Token)
+	// we set ISS to empty here as we do not want to have ISS enabled for custom servers
+	// Otherwise we would have to normalise the URL which the user has entered which is error prone
+	s.Auth.Init(clientID, "", API.Authorization, API.Token)
 	return s, nil
 }
