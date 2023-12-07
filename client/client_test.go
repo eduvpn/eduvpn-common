@@ -191,7 +191,6 @@ func TestConnectOAuthParameters(t *testing.T) {
 	const (
 		callbackParameterErrorPrefix  = "failed retrieving parameter '"
 		callbackStateMatchErrorPrefix = "failed matching state"
-		callbackISSMatchErrorPrefix   = "failed matching ISS"
 	)
 
 	serverURI := getServerURI(t)
@@ -208,12 +207,7 @@ func TestConnectOAuthParameters(t *testing.T) {
 		// invalid state
 		{
 			callbackStateMatchErrorPrefix,
-			httpw.URLParameters{"iss": iss, "code": "42", "state": "21"},
-		},
-		// invalid iss
-		{
-			callbackISSMatchErrorPrefix,
-			httpw.URLParameters{"iss": "37", "code": "42", "state": "21"},
+			httpw.URLParameters{"code": "42", "state": "21"},
 		},
 	}
 
