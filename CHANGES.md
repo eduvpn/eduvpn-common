@@ -1,3 +1,12 @@
+# 1.2.0 (2023-12-08)
+* OAuth:
+    - Disable all ISS checks
+* API:
+    - Only validate that the scheme is HTTPS in well-known. Hostname checking should be handled by ISS properly in the future
+* Renew:
+    - Base showing renew button time on 30 minutes since authorization start time correctly
+    - Add docker files for building pip packages
+
 # 1.1.99.0 (1.2 pre-release) (2023-10-25)
 * Version:
     - Make it easier to update
