@@ -10,7 +10,7 @@ set -e
 
 # change these to your liking
 BRANCH=v1
-IS_PRERELEASE=true
+IS_PRERELEASE=false
 REPO="eduvpn/eduvpn-common"
 
 # make a fresh clone
