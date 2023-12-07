@@ -27,17 +27,14 @@ func validateEndpoints(endpoints Endpoints) error {
 	if err != nil {
 		return errors.WrapPrefix(err, "failed to parse API token endpoint", 0)
 	}
+	if pAPI.Scheme != "https" {
+		return errors.Errorf("API scheme: '%v', is not equal to 'https'", pAPI.Scheme)
+	}
 	if pAPI.Scheme != pAuth.Scheme {
 		return errors.Errorf("API scheme: '%v', is not equal to authorization scheme: '%v'", pAPI.Scheme, pAuth.Scheme)
 	}
 	if pAPI.Scheme != pToken.Scheme {
 		return errors.Errorf("API scheme: '%v', is not equal to token scheme: '%v'", pAPI.Scheme, pToken.Scheme)
-	}
-	if pAPI.Host != pAuth.Host {
-		return errors.Errorf("API host: '%v', is not equal to authorization host: '%v'", pAPI.Host, pAuth.Host)
-	}
-	if pAPI.Host != pToken.Host {
-		return errors.Errorf("API host: '%v', is not equal to token host: '%v'", pAPI.Host, pToken.Host)
 	}
 	return nil
 }
