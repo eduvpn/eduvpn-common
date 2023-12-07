@@ -109,6 +109,6 @@ func (ias *InstituteAccessServer) init(
 		return err
 	}
 	API := ias.Basic.Endpoints.API.V3
-	ias.Auth.Init(url, API.Authorization, API.Token)
+	ias.Auth.Init(API.Authorization, API.Token)
 	return nil
 }

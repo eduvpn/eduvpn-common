@@ -159,11 +159,10 @@ func Test_secretJSON(t *testing.T) {
 }
 
 func Test_AuthURL(t *testing.T) {
-	iss := "local"
 	auth := "https://127.0.0.1/auth"
 	token := "https://127.0.0.1/token"
 	id := "client_id"
-	o := OAuth{ISS: iss, BaseAuthorizationURL: auth, TokenURL: token}
+	o := OAuth{BaseAuthorizationURL: auth, TokenURL: token}
 	s, err := o.AuthURL(id, func(s string) string {
 		// We do nothing here are this function is for skipping WAYF
 		return s
@@ -175,9 +174,6 @@ func Test_AuthURL(t *testing.T) {
 	// Check if the OAuth session has valid values
 	if o.session.ClientID != id {
 		t.Fatalf("OAuth ClientID not equal, want: %v, got: %v", o.session.ClientID, id)
-	}
-	if o.session.ISS != iss {
-		t.Fatalf("OAuth ISS not equal, want: %v, got: %v", o.session.ISS, iss)
 	}
 	if o.session.State == "" {
 		t.Fatal("No OAuth session state paremeter found")

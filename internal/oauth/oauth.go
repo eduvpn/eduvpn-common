@@ -2,7 +2,6 @@
 // However, we try to follow some recommendations from the v2.1 oauth draft RFC
 // Some specific things we implement here:
 // - PKCE (RFC 7636)
-// - ISS (RFC 9207)
 package oauth
 
 import (
@@ -82,9 +81,6 @@ type OAuth struct {
 	// The HTTP client that is used
 	httpClient *httpw.Client
 
-	// ISS indicates the issuer identifier of the authorization server as defined in RFC 9207
-	ISS string `json:"iss"`
-
 	// BaseAuthorizationURL is the URL where authorization should take place
 	BaseAuthorizationURL string `json:"base_authorization_url"`
 
@@ -103,9 +99,6 @@ type OAuth struct {
 type exchangeSession struct {
 	// ClientID is the ID of the OAuth client
 	ClientID string
-
-	// ISS indicates the issuer identifier
-	ISS string
 
 	// State is the expected URL state parameter
 	State string
@@ -365,12 +358,7 @@ func writeResponseHTML(w http.ResponseWriter, title string, message string) erro
 // Authcode gets the authorization code from the url
 // It returns the code and an error if there is one
 func (s *exchangeSession) Authcode(url *url.URL) (string, error) {
-	// ISS: https://www.rfc-editor.org/rfc/rfc9207.html
 	q := url.Query()
-	iss := q.Get("iss")
-	if s.ISS != iss {
-		return "", errors.Errorf("failed matching ISS; expected '%s' got '%s'", s.ISS, iss)
-	}
 
 	// Make sure the state is present and matches to protect against cross-site request forgeries
 	// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-7.15
@@ -423,11 +411,9 @@ func (oauth *OAuth) Handler(w http.ResponseWriter, req *http.Request) {
 }
 
 // Init initializes OAuth with the following parameters:
-// - OAuth server issuer identification
 // - The URL used for authorization
 // - The URL to obtain new tokens.
-func (oauth *OAuth) Init(iss string, baseAuthorizationURL string, tokenURL string) {
-	oauth.ISS = iss
+func (oauth *OAuth) Init(baseAuthorizationURL string, tokenURL string) {
 	oauth.BaseAuthorizationURL = baseAuthorizationURL
 	oauth.TokenURL = tokenURL
 }
@@ -464,7 +450,6 @@ func (oauth *OAuth) AuthURL(name string, postProcessAuth func(string) string) (s
 	// Fill the struct with the necessary fields filled for the next call to getting the HTTP client
 	oauth.session = exchangeSession{
 		ClientID: name,
-		ISS:      oauth.ISS,
 		State:    state,
 		Verifier: v,
 		ErrChan:  make(chan error),
