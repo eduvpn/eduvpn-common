@@ -99,7 +99,7 @@ class EduVPN(object):
         Also handles decoding the result
 
         :param func: Any: The Go function to call from the shared library
-        :param \*args: Iterator: The arguments to call the function with
+        :param args: Iterator: The arguments to call the function with
 
         :meta private:
         """
