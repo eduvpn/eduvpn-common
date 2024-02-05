@@ -8,3 +8,4 @@
 /docs/book/
 /cmd/cli/configs/
 /ci/docker/selfsigned/
+/docker/pip/out/
