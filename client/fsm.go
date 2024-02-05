@@ -1,7 +1,11 @@
 package client
 
 import (
+	"fmt"
+
+	"github.com/eduvpn/eduvpn-common/i18nerr"
 	"github.com/eduvpn/eduvpn-common/internal/fsm"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 )
 
 type (
@@ -12,87 +16,71 @@ type (
 )
 
 const (
-	// StateDeregistered means the app is not registered with the wrapper.
+	// StateDeregistered is the state where we are deregistered
 	StateDeregistered FSMStateID = iota
 
-	// StateNoServer means the user has not chosen a server yet.
-	StateNoServer
+	// StateMain is the main state
+	StateMain
 
-	// StateAskLocation means the user selected a Secure Internet server but needs to choose a location.
-	StateAskLocation
+	// StateAddingServer is the state where a server is being added
+	StateAddingServer
 
-	// StateChosenLocation means the user has selected a Secure Internet location
-	StateChosenLocation
-
-	// StateLoadingServer means we are loading the server details.
-	StateLoadingServer
-
-	// StateChosenServer means the user has chosen a server to connect to and the server is initialized.
-	StateChosenServer
-
-	// StateOAuthStarted means the OAuth process has started.
+	// StateOAuthStarted means the state where the OAuth procedure is triggered
 	StateOAuthStarted
 
-	// StateAuthorized means the OAuth process has finished and the user is now authorized with the server.
-	StateAuthorized
+	// StateGettingConfig is the state a VPN config is being obtained
+	StateGettingConfig
 
-	// StateRequestConfig means the user has requested a config for connecting.
-	StateRequestConfig
+	// StateAskLocation is the state where a secure internet location is being asked
+	StateAskLocation
 
-	// StateAskProfile means the go code is asking for a profile selection from the UI.
+	// StateAskProfile is the state where a profile is being asked for
 	StateAskProfile
 
-	// StateChosenProfile means a profile has been chosen
-	StateChosenProfile
-
-	// StateGotConfig means a VPN configuration has been obtained
+	// StateGotConfig is the state where a config is obtained
 	StateGotConfig
 
-	// The following states are only here for clients that want to use them
-	// StateConnecting means the VPN is connecting
+	// StateConnecting is the state where the VPN is connecting
 	StateConnecting
 
-	// StateDisconnecting means the VPN is disconnecting
+	// StateConnected is the state where the VPN is connected
+	StateConnected
+
+	// StateDisconnecting is the state where the VPN is disconnecting
 	StateDisconnecting
 
-	// StateConnected means the VPN is connected
-	StateConnected
+	// StateDisconnected is the state where the VPN is disconnected
+	StateDisconnected
 )
 
 func GetStateName(s FSMStateID) string {
 	switch s {
 	case StateDeregistered:
 		return "Deregistered"
-	case StateNoServer:
-		return "No_Server"
-	case StateAskLocation:
-		return "Ask_Location"
-	case StateLoadingServer:
-		return "Loading_Server"
-	case StateChosenServer:
-		return "Chosen_Server"
-	case StateChosenLocation:
-		return "Chosen_Location"
+	case StateMain:
+		return "Main"
+	case StateAddingServer:
+		return "AddingServer"
 	case StateOAuthStarted:
-		return "OAuth_Started"
-	case StateRequestConfig:
-		return "Request_Config"
+		return "OAuthStarted"
+	case StateGettingConfig:
+		return "GettingConfig"
+	case StateAskLocation:
+		return "AskLocation"
 	case StateAskProfile:
-		return "Ask_Profile"
-	case StateChosenProfile:
-		return "Chosen_Profile"
-	case StateAuthorized:
-		return "Authorized"
+		return "AskProfile"
 	case StateGotConfig:
-		return "Got_Config"
+		return "GotConfig"
 	case StateConnecting:
 		return "Connecting"
-	case StateDisconnecting:
-		return "Disconnecting"
 	case StateConnected:
 		return "Connected"
+	case StateDisconnecting:
+		return "Disconnecting"
+	case StateDisconnected:
+		return "Disconnected"
 	default:
-		panic("unknown conversion of state to string")
+		panic(fmt.Sprintf("unknown conversion of state: %d to string", s))
 	}
 }
 
@@ -103,115 +91,99 @@ func newFSM(
 ) fsm.FSM {
 	states := FSMStates{
 		StateDeregistered: FSMState{
-			Transitions: []FSMTransition{{To: StateNoServer, Description: "Client registers"}},
-		},
-		StateNoServer: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateNoServer, Description: "Reload list"},
-				{To: StateAskLocation, Description: "The client wants to ask for a location on the main screen"},
-				{To: StateLoadingServer, Description: "User clicks a server in the UI"},
-				{To: StateConnected, Description: "The VPN is still active"},
+				{To: StateMain, Description: "Register"},
 			},
 		},
-		StateAskLocation: FSMState{
+		StateMain: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateChosenLocation, Description: "Location chosen"},
-				{To: StateNoServer, Description: "Go back or Error"},
-				{To: StateGotConfig, Description: "Go back or Error"},
+				{To: StateDeregistered, Description: "Deregister"},
+				{To: StateAddingServer, Description: "Add a server"},
+				{To: StateGettingConfig, Description: "Get a VPN config"},
+				{To: StateConnected, Description: "Already connected"},
 			},
 		},
-		StateChosenLocation: FSMState{
+		StateAddingServer: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateChosenServer, Description: "Server has been chosen"},
-				{To: StateNoServer, Description: "Go back or Error"},
-				{To: StateGotConfig, Description: "Go back or Error"},
-			},
-		},
-		StateLoadingServer: FSMState{
-			Transitions: []FSMTransition{
-				{To: StateChosenServer, Description: "Server info loaded"},
-				{
-					To:          StateAskLocation,
-					Description: "User chooses a Secure Internet server but no location is configured",
-				},
-				{To: StateNoServer, Description: "Go back or Error"},
-				{To: StateGotConfig, Description: "Go back or Error"},
-			},
-		},
-		StateChosenServer: FSMState{
-			Transitions: []FSMTransition{
-				{To: StateAuthorized, Description: "Found tokens in config"},
-				{To: StateOAuthStarted, Description: "No tokens found in config"},
-				{To: StateNoServer, Description: "Go back or Error"},
-				{To: StateGotConfig, Description: "Go back or Error"},
+				{To: StateOAuthStarted, Description: "Authorize"},
 			},
 		},
 		StateOAuthStarted: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateAuthorized, Description: "User authorizes with browser"},
-				{To: StateNoServer, Description: "Go back or Error"},
-				{To: StateGotConfig, Description: "Go back or Error"},
+				{To: StateMain, Description: "Authorized"},
 			},
 		},
-		StateAuthorized: FSMState{
+		StateGettingConfig: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateOAuthStarted, Description: "Re-authorize with OAuth"},
-				{To: StateRequestConfig, Description: "Client requests a config"},
-				{To: StateLoadingServer, Description: "Load the server again"},
-				{To: StateNoServer, Description: "Go back or Error"},
-				{To: StateGotConfig, Description: "Go back or Error"},
+				{To: StateAskLocation, Description: "Invalid location"},
+				{To: StateAskProfile, Description: "Invalid or no profile"},
+				{To: StateGotConfig, Description: "Successfully got a configuration"},
+				{To: StateOAuthStarted, Description: "Authorize"},
 			},
 		},
-		StateRequestConfig: FSMState{
+		StateAskLocation: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateAskProfile, Description: "Multiple profiles found and no profile chosen"},
-				{To: StateChosenProfile, Description: "Only one profile or profile already chosen"},
-				{To: StateOAuthStarted, Description: "Re-authorize"},
-				{To: StateNoServer, Description: "Go back or Error"},
-				{To: StateGotConfig, Description: "Go back or Error"},
+				{To: StateGettingConfig, Description: "Location chosen"},
 			},
 		},
 		StateAskProfile: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateNoServer, Description: "Cancel or Error"},
-				{To: StateChosenProfile, Description: "Profile has been chosen"},
-				{To: StateNoServer, Description: "Go back or Error"},
-				{To: StateGotConfig, Description: "Go back or Error"},
-			},
-		},
-		StateChosenProfile: FSMState{
-			Transitions: []FSMTransition{
-				{To: StateGotConfig, Description: "Config has been obtained"},
-				{To: StateNoServer, Description: "Go back or Error"},
-				{To: StateGotConfig, Description: "Go back or Error"},
+				{To: StateGettingConfig, Description: "Profile chosen"},
 			},
 		},
 		StateGotConfig: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateNoServer, Description: "Choose a new server"},
-				{To: StateLoadingServer, Description: "Get a new configuration"},
+				{To: StateGettingConfig, Description: "Get a VPN config again"},
 				{To: StateConnecting, Description: "VPN is connecting"},
 			},
 		},
 		StateConnecting: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateGotConfig, Description: "Go back or Error"},
-				{To: StateConnected, Description: "Done connecting"},
+				{To: StateConnected, Description: "VPN is connected"},
+				{To: StateDisconnecting, Description: "Cancel connecting"},
 			},
 		},
 		StateConnected: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateDisconnecting, Description: "The VPN is disconnecting"},
+				{To: StateDisconnecting, Description: "VPN is disconnecting"},
 			},
 		},
 		StateDisconnecting: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateGotConfig, Description: "Done disconnecting"},
-				{To: StateConnected, Description: "Go back or Error"},
+				{To: StateDisconnected, Description: "VPN is disconnected"},
+				{To: StateConnected, Description: "Cancel disconnecting"},
+			},
+		},
+		StateDisconnected: FSMState{
+			Transitions: []FSMTransition{
+				{To: StateGettingConfig, Description: "Connect again"},
+				{To: StateOAuthStarted, Description: "Renew"},
 			},
 		},
 	}
 	returnedFSM := fsm.FSM{}
-	returnedFSM.Init(StateDeregistered, states, callback, directory, GetStateName, debug)
+	returnedFSM.Init(StateMain, states, callback, directory, GetStateName, debug)
 	return returnedFSM
+}
+
+func (c *Client) SetState(state FSMStateID) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	curr := c.FSM.Current
+	_, err := c.FSM.GoTransition(state)
+	if err != nil {
+		// self-transitions are only debug errors
+		if c.FSM.InState(state) {
+			log.Logger.Debugf("attempt an invalid self-transition: %s", c.FSM.GetStateName(state))
+			return nil
+		}
+		return i18nerr.WrapInternalf(err, "Failed internal state transition requested by the client from: '%s' to '%s'", GetStateName(curr), GetStateName(state))
+	}
+	return nil
+}
+
+func (c *Client) InState(state FSMStateID) bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.FSM.InState(state)
 }
