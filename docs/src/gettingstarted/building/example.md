@@ -23,6 +23,7 @@ make -C wrappers/python
 
 5. Install the wheel using pip
 ```bash
-pip install wrappers/python/dist/eduvpncommon-2.0.0-py3-none-linux_x86_64.whl
+# x.x.x is the version here
+pip install wrappers/python/dist/eduvpncommon-x.x.x-py3-none-linux_x86_64.whl
 ```
 Note that the name of your wheel changes on the platform and version.
