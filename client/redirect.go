@@ -8,11 +8,11 @@ var customRedirects = map[string]string{
 	// TODO: change to org.letsconnect-vpn.app.android:/api/callback once most servers have commit:
 	// https://git.sr.ht/~fkooman/vpn-user-portal/commit/9c0463103c61a55668fff800e83f77a7b6d26e4f#src/OAuth/VpnClientDb.php
 	"org.letsconnect-vpn.app.android": "org.letsconnect-vpn.app:/api/callback",
-	"org.eduvpn.app.ios": "org.eduvpn.app.ios:/api/callback",
+	"org.eduvpn.app.ios":              "org.eduvpn.app.ios:/api/callback",
 	// TODO: change to org.eduvpn.app.android:/api/callback once most servers have commit:
 	// https://git.sr.ht/~fkooman/vpn-user-portal/commit/9c0463103c61a55668fff800e83f77a7b6d26e4f#src/OAuth/VpnClientDb.php
 	"org.eduvpn.app.android": "org.eduvpn.app:/api/callback",
-	"org.govvpn.app.ios": "org.govvpn.app.ios:/api/callback",
+	"org.govvpn.app.ios":     "org.govvpn.app.ios:/api/callback",
 	"org.govvpn.app.android": "org.govvpn.app.android:/api/callback",
 }
 
