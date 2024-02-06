@@ -86,8 +86,6 @@ type Profile struct {
 	// E.g. {"en": "Default Profile"}
 	// If this is empty, the field is omitted from the JSON
 	DisplayName map[string]string `json:"display_name,omitempty"`
-	// Protocols is the list of protocols that this profile supports
-	Protocols []protocol.Protocol `json:"supported_protocols"`
 }
 
 // Profiles is the map of profiles with the current defined
