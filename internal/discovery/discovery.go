@@ -34,7 +34,7 @@ var DiscoURL = "https://disco.eduvpn.org/v2/"
 func (discovery *Discovery) file(ctx context.Context, jsonFile string, previousVersion uint64, structure interface{}) error {
 	// No HTTP client present, create one
 	if discovery.httpClient == nil {
-		discovery.httpClient = http.NewClient()
+		discovery.httpClient = http.NewClient(nil)
 	}
 
 	// Get json data
