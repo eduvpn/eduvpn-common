@@ -115,7 +115,9 @@ func optionalHeaders(req *http.Request, opts *OptionalParams) {
 	// Add headers
 	if opts != nil && req != nil && opts.Headers != nil {
 		for k, v := range opts.Headers {
-			req.Header.Add(k, v[0])
+			for _, cv := range v {
+				req.Header.Add(k, cv)
+			}
 		}
 	}
 }
