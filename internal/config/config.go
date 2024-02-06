@@ -7,61 +7,78 @@ import (
 	"os"
 	"path"
 
+	"github.com/eduvpn/eduvpn-common/internal/config/v1"
+	"github.com/eduvpn/eduvpn-common/internal/config/v2"
+	"github.com/eduvpn/eduvpn-common/internal/discovery"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/util"
-	"github.com/go-errors/errors"
 )
 
-// Config represents a configuration that saves the client's struct as JSON.
+const stateFile = "state.json"
+
 type Config struct {
-	// Directory represents the path to where the data is saved
-	Directory string
-
-	// Name defines the name of file excluding the .json extension
-	Name string
+	directory string
+	V2        *v2.V2
 }
 
-type Format struct {
-	Data interface{} `json:"v1"`
-}
-
-// Init initializes the configuration using the provided directory and name.
-func (c *Config) Init(directory string, name string) {
-	c.Directory = directory
-	c.Name = name
-}
-
-// filename returns the filename of the configuration as a full path.
 func (c *Config) filename() string {
-	return path.Join(c.Directory, c.Name) + ".json"
+	return path.Join(c.directory, stateFile)
 }
 
-// Save saves a structure 'readStruct' to the configuration
-// If it was unsuccessful, an error is returned.
-func (c *Config) Save(readStruct interface{}) error {
-	if err := util.EnsureDirectory(c.Directory); err != nil {
+func (c *Config) Discovery() *discovery.Discovery {
+	return &c.V2.Discovery
+}
+
+func (c *Config) Save() error {
+	if err := util.EnsureDirectory(c.directory); err != nil {
 		return err
 	}
-	cf := &Format{Data: readStruct}
-	cfg, err := json.Marshal(cf)
+
+	join := Versioned{V2: c.V2}
+	cfg, err := json.Marshal(join)
 	if err != nil {
-		return errors.WrapPrefix(err, "json.Marshal failed", 0)
+		return err
 	}
 	if err = os.WriteFile(c.filename(), cfg, 0o600); err != nil {
-		return errors.WrapPrefix(err, "os.WriteFile failed", 0)
+		return err
 	}
 	return nil
 }
 
-// Load loads the configuration and writes the structure to 'writeStruct'
-// If it was unsuccessful, an error is returned.
-func (c *Config) Load(writeStruct interface{}) error {
+func (c *Config) Load() error {
 	bts, err := os.ReadFile(c.filename())
 	if err != nil {
-		return errors.WrapPrefix(err, "failed loading configuration", 0)
+		return err
 	}
-	cf := Format{Data: writeStruct}
-	if err = json.Unmarshal(bts, &cf); err != nil {
-		return errors.WrapPrefix(err, "json.Unmarshal failed", 0)
+	var buf Versioned
+	if err = json.Unmarshal(bts, &buf); err != nil {
+		return err
+	}
+	if buf.V2 != nil {
+		c.V2 = buf.V2
+		return nil
+	}
+	if buf.V1 != nil {
+		c.V2 = v2.FromV1(buf.V1)
 	}
 	return nil
+}
+
+type Versioned struct {
+	V1 *v1.V1 `json:"v1,omitempty"`
+	V2 *v2.V2 `json:"v2,omitempty"`
+}
+
+func NewFromDirectory(dir string) *Config {
+	cfg := Config{
+		directory: dir,
+	}
+	err := cfg.Load()
+	if err != nil {
+		log.Logger.Debugf("failed to load configuration: %v", err)
+	}
+	if cfg.V2 == nil {
+		cfg.V2 = &v2.V2{}
+	}
+	return &cfg
 }
