@@ -104,7 +104,7 @@ type Tokens struct {
 	// Refresh is the refresh token
 	Refresh string `json:"refresh_token"`
 	// Expires is the Unix timestamp when the token expires
-	Expires int64 `json:"expires_in"`
+	Expires int64 `json:"expires_at"`
 }
 
 // Server is the basic type for a server. This is the base for secure internet and institute access. Custom servers are equal to this type
