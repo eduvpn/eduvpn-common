@@ -2,22 +2,11 @@
 package util
 
 import (
-	"crypto/rand"
 	"fmt"
 	"net/url"
 	"os"
 	"strings"
 )
-
-// MakeRandomByteSlice creates a cryptographically random bytes slice of `size`
-// It returns the byte slice (or nil if error) and an error if it could not be generated.
-func MakeRandomByteSlice(n int) ([]byte, error) {
-	bs := make([]byte, n)
-	if _, err := rand.Read(bs); err != nil {
-		return nil, errors.WrapPrefix(err, "failed reading random", 0)
-	}
-	return bs, nil
-}
 
 // EnsureDirectory creates a directory with permission 700.
 func EnsureDirectory(dir string) error {
