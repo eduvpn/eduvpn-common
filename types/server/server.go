@@ -92,6 +92,8 @@ type Profile struct {
 type Profiles struct {
 	// Map, the map of profiles from profile ID to the profile contents
 	// If this is empty, the field is omitted from the JSON
+	// Note that it can be empty if the profiles have not been initialized
+	// This could happen if a config is not obtained yet
 	Map map[string]Profile `json:"map,omitempty"`
 	// Current is the current profile ID that is defined
 	Current string `json:"current"`
