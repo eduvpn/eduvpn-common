@@ -278,15 +278,16 @@ class EduVPN(object):
         if profile_err:
             forwardError(profile_err)
 
-    def set_secure_location(self, country_code: str) -> None:
+    def set_secure_location(self, org_id: str, country_code: str) -> None:
         """Set the secure location
 
+        :param org_id: str: The organisation ID
         :param country_code: str: The country code of the new location
 
         :raises WrappedError: An error by the Go library
         """
         # Set the location by country code
-        location_err = self.go_cookie_function(self.lib.SetSecureLocation, country_code)
+        location_err = self.go_function(self.lib.SetSecureLocation, org_id, country_code)
 
         # If there is a location event, set it so that the wait callback finishes
         # And so that the Go code can move to the next state
