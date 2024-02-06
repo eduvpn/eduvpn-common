@@ -33,12 +33,14 @@ func (srv *Server) Client() (*httpw.Client, error) {
 			certs.AddCert(root)
 		}
 	}
-	// Override the client such that it only trusts the test server cert
-	client := httpw.NewClient()
-	client.Client.Transport = &http.Transport{
-		TLSClientConfig: &tls.Config{
-			RootCAs: certs,
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: certs,
+			},
 		},
 	}
-	return client, nil
+	// Override the client such that it only trusts the test server cert
+	httpC := httpw.NewClient(client)
+	return httpC, nil
 }
