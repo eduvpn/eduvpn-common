@@ -1047,7 +1047,7 @@ func SetTokenHandler(getter C.TokenGetter, setter C.TokenSetter) *C.char {
 //export CookieNew
 func CookieNew() C.uintptr_t {
 	c := cookie.NewWithContext(context.Background())
-	return C.uintptr_t(cgo.NewHandle(&c))
+	return C.uintptr_t(cgo.NewHandle(c))
 }
 
 // CookieReply replies to a state transition using the cookie

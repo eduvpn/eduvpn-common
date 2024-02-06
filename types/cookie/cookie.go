@@ -19,11 +19,21 @@ type Cookie struct {
 	H         cgo.Handle
 }
 
+type contextt int8
+
+const CONTEXTK contextt = 0
+
 // NewWithContext creates a new cookie with a context
 // It stores the cancel and channel inside of the struct
-func NewWithContext(ctx context.Context) Cookie {
+func NewWithContext(ctx context.Context) *Cookie {
+	// if the context already has a handle, return that cookie
+	if h, ok := ctx.Value(CONTEXTK).(cgo.Handle); ok {
+		if ck, ok := h.Value().(*Cookie); ok {
+			return ck
+		}
+	}
 	ctx, cancel := context.WithCancel(ctx)
-	return Cookie{
+	return &Cookie{
 		c:         make(chan string),
 		ctx:       ctx,
 		ctxCancel: cancel,
@@ -77,5 +87,5 @@ func (c *Cookie) Send(data string) error {
 
 // Context gets the underlying context of the cookie
 func (c *Cookie) Context() context.Context {
-	return c.ctx
+	return context.WithValue(c.ctx, CONTEXTK, c.H)
 }
