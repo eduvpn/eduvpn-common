@@ -264,6 +264,6 @@ func (e *StatusError) Error() string {
 }
 
 // RegisterAgent registers the user agent for client and version
-func RegisterAgent(client string, version string) {
-	UserAgent = fmt.Sprintf("%s/%s %s", client, version, "eduvpn-common/2.0.0")
+func RegisterAgent(client string, verApp string) {
+	UserAgent = fmt.Sprintf("%s/%s eduvpn-common/%s", client, verApp, version.Version)
 }
