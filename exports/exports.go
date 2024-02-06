@@ -50,8 +50,6 @@ import (
 	"runtime/cgo"
 	"unsafe"
 
-	"github.com/go-errors/errors"
-
 	"github.com/eduvpn/eduvpn-common/client"
 	"github.com/eduvpn/eduvpn-common/i18nerr"
 	"github.com/eduvpn/eduvpn-common/internal/log"
@@ -118,7 +116,7 @@ func stateCallback(
 
 func getVPNState() (*client.Client, error) {
 	if VPNState == nil {
-		return nil, errors.New("No state available, did you register the client?")
+		return nil, i18nerr.NewInternal("No state available, did you register the client?")
 	}
 	return VPNState, nil
 }
@@ -166,7 +164,7 @@ func Register(
 ) *C.char {
 	_, stateErr := getVPNState()
 	if stateErr == nil {
-		return getCError(errors.New("failed to register, a VPN state is already present"))
+		return getCError(i18nerr.NewInternal("failed to register, a VPN state is already present"))
 	}
 	c, err := client.New(
 		C.GoString(name),
@@ -873,7 +871,7 @@ func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.Read
 	dropped, droppedErr := state.StartFailover(ck, C.GoString(gateway), int(mtu), func() (int64, error) {
 		rxBytes := int64(C.get_read_rx_bytes(readRxBytes))
 		if rxBytes < 0 {
-			return 0, errors.New("client gave an invalid rx bytes value")
+			return 0, i18nerr.NewInternal("client gave an invalid rx bytes value")
 		}
 		return rxBytes, nil
 	})
@@ -937,12 +935,12 @@ func FreeString(addr *C.char) {
 
 func getCookie(c C.uintptr_t) (*cookie.Cookie, error) {
 	if c == 0 {
-		return nil, errors.New("cookie is nil")
+		return nil, i18nerr.NewInternal("cookie is nil")
 	}
 	h := cgo.Handle(c)
 	v, ok := h.Value().(*cookie.Cookie)
 	if !ok {
-		return nil, errors.New("value is not a cookie")
+		return nil, i18nerr.NewInternal("value is not a cookie")
 	}
 	// the cookie itself has a reference to the handle
 	// such that we can return the same exact handle in callbacks

@@ -10,7 +10,6 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/verify"
 	discotypes "github.com/eduvpn/eduvpn-common/types/discovery"
-	"github.com/go-errors/errors"
 )
 
 // HasCache denotes whether or not we have an embedded cache available
@@ -76,8 +75,7 @@ func (discovery *Discovery) file(ctx context.Context, jsonFile string, previousV
 
 	// Parse JSON to extract version and list
 	if err = json.Unmarshal(body, structure); err != nil {
-		return errors.WrapPrefix(err,
-			fmt.Sprintf("failed parsing discovery file: %s from the server", jsonFile), 0)
+		return fmt.Errorf("failed parsing discovery file: '%s' from the server with error: %w", jsonFile, err)
 	}
 
 	return nil
@@ -122,7 +120,15 @@ func (discovery *Discovery) ServerByURL(
 			return &currentServer, nil
 		}
 	}
-	return nil, errors.Errorf("no server of type '%s' at URL '%s'", srvType, baseURL)
+	return nil, fmt.Errorf("no server of type '%s' at URL '%s'", srvType, baseURL)
+}
+
+type CountryNotFoundError struct {
+	CountryCode string
+}
+
+func (cnf *CountryNotFoundError) Error() string {
+	return fmt.Sprintf("no secure internet server with country code: '%s'", cnf.CountryCode)
 }
 
 // ServerByCountryCode returns the discovery server by the country code
@@ -133,7 +139,7 @@ func (discovery *Discovery) ServerByCountryCode(countryCode string) (*discotypes
 			return &srv, nil
 		}
 	}
-	return nil, errors.Errorf("no server of type 'secure_internet' with country code '%s'", countryCode)
+	return nil, &CountryNotFoundError{CountryCode: countryCode}
 }
 
 // orgByID returns the discovery organization by the organization ID
@@ -144,7 +150,7 @@ func (discovery *Discovery) orgByID(orgID string) (*discotypes.Organization, err
 			return &org, nil
 		}
 	}
-	return nil, errors.Errorf("no secure internet home found in organization '%s'", orgID)
+	return nil, fmt.Errorf("no secure internet home found in organization '%s'", orgID)
 }
 
 // SecureHomeArgs returns the secure internet home server arguments:
@@ -189,7 +195,7 @@ func (discovery *Discovery) previousOrganizations() (*discotypes.Organizations, 
 	// We do not have a cached struct, this we need to get it using the embedded JSON
 	var eo discotypes.Organizations
 	if err := json.Unmarshal(eOrganizations, &eo); err != nil {
-		return nil, errors.WrapPrefix(err, "failed parsing discovery organizations from the embedded cache", 0)
+		return nil, fmt.Errorf("failed parsing discovery organizations from the embedded cache with error: %w", err)
 	}
 	discovery.OrganizationList = eo
 	return &eo, nil
@@ -205,7 +211,7 @@ func (discovery *Discovery) previousServers() (*discotypes.Servers, error) {
 	// We do not have a cached struct, this we need to get it using the embedded JSON
 	var es discotypes.Servers
 	if err := json.Unmarshal(eServers, &es); err != nil {
-		return nil, errors.WrapPrefix(err, "failed parsing discovery servers from the embedded cache", 0)
+		return nil, fmt.Errorf("failed parsing discovery servers from the embedded cache with error: %w", err)
 	}
 	discovery.ServerList = es
 	return &es, nil

@@ -4,7 +4,6 @@ package verify
 import (
 	"fmt"
 
-	"github.com/go-errors/errors"
 	"github.com/jedisct1/go-minisign"
 )
 
@@ -63,19 +62,19 @@ func verifyWithKeys(
 	case "server_list.json", "organization_list.json":
 		break
 	default:
-		return false, errors.Errorf(
+		return false, fmt.Errorf(
 			"invalid filename '%s'; expected 'server_list.json' or 'organization_list.json'",
 			filename)
 	}
 
 	sig, err := minisign.DecodeSignature(signatureFileContent)
 	if err != nil {
-		return false, errors.WrapPrefix(err, "invalid signature format", 0)
+		return false, fmt.Errorf("invalid signature format with error: %w", err)
 	}
 
 	// Check if signature is prehashed, see https://jedisct1.github.io/minisign/#signature-format
 	if forcePrehash && sig.SignatureAlgorithm != [2]byte{'E', 'D'} {
-		return false, errors.Errorf(
+		return false, fmt.Errorf(
 			"invalid signature algorithm '%s'; expected `ED (BLAKE2b-prehashed EdDSA)`",
 			sig.SignatureAlgorithm[:])
 	}
@@ -85,7 +84,7 @@ func verifyWithKeys(
 		key, err := minisign.NewPublicKey(keyStr)
 		if err != nil {
 			// Should only happen if Verify is wrong or extraKey is invalid
-			return false, errors.WrapPrefix(err, fmt.Sprintf("failed to create public key '%s'", keyStr), 0)
+			return false, fmt.Errorf("failed to create public key '%s' and error: %w", keyStr, err)
 		}
 
 		if sig.KeyId != key.KeyId {
@@ -94,7 +93,7 @@ func verifyWithKeys(
 
 		valid, err := key.Verify(signedJSON, sig)
 		if !valid {
-			return false, errors.WrapPrefix(err, "invalid signature", 0)
+			return false, fmt.Errorf("invalid signature with error: %w", err)
 		}
 
 		// Parse trusted comment
@@ -108,21 +107,21 @@ func verifyWithKeys(
 			&sigFileName,
 		)
 		if err != nil {
-			return false, errors.WrapPrefix(err, fmt.Sprintf("invalid trusted comment '%s'", sig.TrustedComment), 0)
+			return false, fmt.Errorf("invalid trusted comment '%s' with error: %w", sig.TrustedComment, err)
 		}
 
 		if sigFileName != filename {
-			return false, errors.Errorf("wrong filename '%s'; expected filename '%s' for signature",
+			return false, fmt.Errorf("wrong filename '%s'; expected filename '%s' for signature",
 				filename, sigFileName)
 		}
 
 		if signTime < minSignTime {
-			return false, errors.Errorf("sign time %d is before sign tim: %d", signTime, minSignTime)
+			return false, fmt.Errorf("sign time %d is before sign tim: %d", signTime, minSignTime)
 		}
 
 		return true, nil
 	}
 
 	// No matching allowed key found
-	return false, errors.Errorf("signature for filename '%s' was created with an unknown key", filename)
+	return false, fmt.Errorf("signature for filename '%s' was created with an unknown key", filename)
 }

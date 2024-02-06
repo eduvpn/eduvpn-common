@@ -9,7 +9,6 @@ import (
 	"path"
 
 	"github.com/eduvpn/eduvpn-common/internal/util"
-	"github.com/go-errors/errors"
 )
 
 // FileLogger defines the type of logger that this package implements
@@ -80,7 +79,7 @@ func (logger *FileLogger) Init(lvl Level, dir string) error {
 		0o666,
 	)
 	if err != nil {
-		return errors.WrapPrefix(err, "failed creating log", 0)
+		return fmt.Errorf("failed creating log: %w", err)
 	}
 	multi := io.MultiWriter(os.Stdout, f)
 	log.SetOutput(multi)

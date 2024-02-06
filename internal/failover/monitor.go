@@ -1,11 +1,12 @@
 package failover
 
 import (
+	"fmt"
 	"context"
+	"errors"
 	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/log"
-	"github.com/go-errors/errors"
 )
 
 // The DroppedConMon is a connection monitor that checks for an increase in rx bytes in certain intervals
@@ -91,7 +92,7 @@ func (m *DroppedConMon) Start(ctx context.Context, gateway string, mtuSize int) 
 		case <-ticker.C:
 			continue
 		case <-ctx.Done():
-			return false, errors.WrapPrefix(context.Canceled, "failover was stopped", 0)
+			return false, fmt.Errorf("failover was stopped with error: %w", context.Canceled)
 		}
 	}
 
