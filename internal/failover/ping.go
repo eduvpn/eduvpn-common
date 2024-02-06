@@ -8,8 +8,6 @@ import (
 
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
-
-	"github.com/go-errors/errors"
 )
 
 // mtuOverhead defines the total MTU overhead for an ICMP ECHO message: 20 bytes IP header + 8 bytes ICMP header
@@ -41,7 +39,7 @@ func (p Pinger) Read(deadline time.Time) error {
 	case ipv4.ICMPTypeEchoReply:
 		return nil
 	default:
-		return errors.Errorf("Not a ping echo reply, got %+v", got)
+		return fmt.Errorf("not a ping echo reply, got: %+v", got)
 	}
 }
 
@@ -58,12 +56,12 @@ func (p Pinger) Send(seq int) error {
 	// Marshal the message to bytes
 	b, err := m.Marshal(nil)
 	if err != nil {
-		return errors.WrapPrefix(err, errorMessage, 0)
+		return fmt.Errorf("%s with error: %w", errorMessage, err)
 	}
 	// And send it to the gateway IP!
 	_, err = p.listener.WriteTo(b, p.gateway)
 	if err != nil {
-		return errors.WrapPrefix(err, errorMessage, 0)
+		return fmt.Errorf("%s with error: %w", errorMessage, err)
 	}
 
 	return nil

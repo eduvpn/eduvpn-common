@@ -5,11 +5,11 @@
 package cookie
 
 import (
+	"fmt"
 	"context"
+	"errors"
 	"encoding/json"
 	"runtime/cgo"
-
-	"github.com/go-errors/errors"
 )
 
 type Cookie struct {
@@ -47,7 +47,7 @@ func (c *Cookie) Receive(errchan chan error) (string, error) {
 	case e := <-errchan:
 		return "", e
 	case <-c.ctx.Done():
-		return "", errors.WrapPrefix(context.Canceled, "receive cookie", 0)
+		return "", fmt.Errorf("receive cookie done: %w", context.Canceled)
 	}
 }
 
@@ -65,7 +65,7 @@ func (c *Cookie) Cancel() error {
 func (c *Cookie) Send(data string) error {
 	select {
 	case <-c.ctx.Done():
-		return errors.WrapPrefix(context.Canceled, "send cookie", 0)
+		return fmt.Errorf("send cookie done: %w", context.Canceled)
 	default:
 		if c.c == nil {
 			return errors.New("channel is nil")

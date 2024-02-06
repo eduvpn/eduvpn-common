@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/go-errors/errors"
 )
 
 type Server struct {
@@ -28,7 +27,7 @@ func (srv *Server) Client() (*httpw.Client, error) {
 	for _, c := range srv.TLS.Certificates {
 		roots, err := x509.ParseCertificates(c.Certificate[len(c.Certificate)-1])
 		if err != nil {
-			return nil, errors.WrapPrefix(err, "failed to parse root certificate", 0)
+			return nil, err
 		}
 		for _, root := range roots {
 			certs.AddCert(root)

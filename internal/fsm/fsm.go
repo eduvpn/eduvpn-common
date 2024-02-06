@@ -7,8 +7,6 @@ import (
 	"os"
 	"path"
 	"sort"
-
-	"github.com/go-errors/errors"
 )
 
 type (
@@ -108,7 +106,7 @@ func (fsm *FSM) CheckTransition(desired StateID) error {
 			return nil
 		}
 	}
-	return errors.Errorf("fsm invalid transition attempt from '%s' to '%s'", fsm.GetStateName(fsm.Current), fsm.GetStateName(desired))
+	return fmt.Errorf("fsm invalid transition attempt from '%s' to '%s'", fsm.GetStateName(fsm.Current), fsm.GetStateName(desired))
 }
 
 // graphFilename gets the full path to the graph filename including the .graph extension.
@@ -146,7 +144,7 @@ func (fsm *FSM) GoTransitionRequired(newState StateID, data interface{}) error {
 	}
 	// transition is not handled
 	if !handled {
-		return errors.Errorf("fsm failed transition from '%v' to '%v', is this required transition handled?", fsm.GetStateName(oldState), fsm.GetStateName(newState))
+		return fmt.Errorf("fsm failed transition from '%s' to '%s', is this required transition handled?", fsm.GetStateName(oldState), fsm.GetStateName(newState))
 	}
 	return nil
 }
@@ -163,7 +161,6 @@ func (fsm *FSM) GoTransitionWithData(newState StateID, data interface{}) (bool, 
 	if fsm.Generate {
 		fsm.writeGraph()
 	}
-
 	return fsm.StateCallback(prev, newState, data), nil
 }
 
