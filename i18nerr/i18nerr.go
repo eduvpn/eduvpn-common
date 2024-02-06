@@ -7,15 +7,17 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/log"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
 
-var printers sync.Map
-var once sync.Once
-
+var (
+	printers sync.Map
+	once     sync.Once
+)
 
 // TranslatedInner defines errors that are used as inner causes but are still translated because they can happen frequently
 func TranslatedInner(inner error) (string, bool) {
@@ -24,9 +26,10 @@ func TranslatedInner(inner error) (string, bool) {
 		unwrapped = errors.Unwrap(unwrapped)
 	}
 
+	var tErr *http.TimeoutError
 	switch {
-	case errors.Is(inner, context.DeadlineExceeded):
-		return printerOrNew(language.English).Sprintf("timeout reached"), false
+	case errors.As(inner, &tErr):
+		return printerOrNew(language.English).Sprintf("timeout reached for URL: '%s' and HTTP method: '%s'", tErr.URL, tErr.Method), false
 	case errors.Is(inner, context.Canceled):
 		return unwrapped.Error(), true
 	}
@@ -37,10 +40,10 @@ func TranslatedInner(inner error) (string, bool) {
 // This translation key is later used to lookup translation
 // The inner error always consists of the translation key and some formatting
 type Error struct {
-	key message.Reference
-	args []interface{}
+	key     message.Reference
+	args    []interface{}
 	wrapped *Error
-	Misc bool
+	Misc    bool
 }
 
 func (e *Error) translated(t language.Tag) string {
@@ -80,7 +83,6 @@ func (e *Error) Translations() map[string]string {
 	}
 	return translations
 }
-
 
 // Unwrap returns the unwrapped error
 // it does this by unwrapping the inner error
@@ -142,7 +144,7 @@ func NewInternal(disp string) *Error {
 }
 
 // NewInternalf creates an internal localised error from a display string and arguments
-func NewInternalf(disp string, args...interface{}) *Error {
+func NewInternalf(disp string, args ...interface{}) *Error {
 	return NewInternal(fmt.Sprintf(disp, args...))
 }
 

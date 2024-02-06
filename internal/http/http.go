@@ -201,8 +201,10 @@ func (c *Client) Do(ctx context.Context, method string, urlStr string, opts *Opt
 	// Do request
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, nil, errors.WrapPrefix(err,
-			fmt.Sprintf("failed HTTP request with method %s and url %s", method, urlStr), 0)
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, nil, &TimeoutError{URL: urlStr, Method: method}
+		}
+		return nil, nil, fmt.Errorf("failed HTTP request with method: '%s', url: '%s' and error: %w", method, urlStr, err)
 	}
 
 	// Request successful, make sure body is closed at the end
@@ -227,6 +229,21 @@ func (c *Client) Do(ctx context.Context, method string, urlStr string, opts *Opt
 
 	// Return the body in bytes and signal the status error if there was one
 	return res.Header, body, nil
+}
+
+// TimeoutError indicates that we have gotten a timeout
+type TimeoutError struct {
+	URL    string
+	Method string
+}
+
+// Error returns the TimeoutError as an error string.
+func (e *TimeoutError) Error() string {
+	return fmt.Sprintf(
+		"timeout in obtaining HTTP resource: '%s' with method: '%s'",
+		e.URL,
+		e.Method,
+	)
 }
 
 // StatusError indicates that we have received a HTTP status error.
