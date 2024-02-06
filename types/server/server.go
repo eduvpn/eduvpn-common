@@ -165,6 +165,8 @@ type Configuration struct {
 	Protocol protocol.Protocol `json:"protocol"`
 	// DefaultGateway is a boolean that indicates whether or not this configuration should be configured as a default gateway
 	DefaultGateway bool `json:"default_gateway"`
+	// DNSSearchDomains are the list of dns search domains
+	DNSSearchDomains []string `json:"dns_search_domains,omitempty"`
 }
 
 // Current is the struct that defines the current server
