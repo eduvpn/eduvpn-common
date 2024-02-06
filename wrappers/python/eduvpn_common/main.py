@@ -38,6 +38,14 @@ class ServerType(IntEnum):
     SECURE_INTERNET = 2
     CUSTOM = 3
 
+    def __str__(self) -> str:
+        if self == ServerType.INSTITUTE_ACCESS:
+            return "Institute Access Server"
+        if self == ServerType.CUSTOM:
+            return "Custom Server"
+        if self == ServerType.SECURE_INTERNET:
+            return "Secure Internet Server"
+        return "Unknown Server"
 
 class Jar(object):
     """A cookie jar"""
