@@ -615,13 +615,11 @@ func SetProfileID(data *C.char) *C.char {
 //
 // This MUST only be called if the user/client wishes to manually set a location instead of the common lib asking for one using a transition
 //
-// Because this does network requests to initialize the location, there is a cookie again :)
-//
-// `c` is the Cookie that needs to be passed. To create a cookie, first call `CookieNew`
-// `Data` is the location ID
+// `orgID` is the organisation ID for the secure internet server
+// `cc` is the location ID/country code
 //
 // It returns an error if unsuccessful.
-// Example Input: ```SetSecureLocation("nl")```
+// Example Input: ```SetSecureLocation("http://idp.geant.org/", "nl")```
 //
 // Example Output:
 //
@@ -633,16 +631,12 @@ func SetProfileID(data *C.char) *C.char {
 //    }
 //
 //export SetSecureLocation
-func SetSecureLocation(c C.uintptr_t, data *C.char) *C.char {
+func SetSecureLocation(orgID *C.char, cc *C.char) *C.char {
 	state, stateErr := getVPNState()
 	if stateErr != nil {
 		return getCError(stateErr)
 	}
-	ck, err := getCookie(c)
-	if err != nil {
-		return getCError(err)
-	}
-	locationErr := state.SetSecureLocation(ck, C.GoString(data))
+	locationErr := state.SetSecureLocation(C.GoString(orgID), C.GoString(cc))
 	return getCError(locationErr)
 }
 
