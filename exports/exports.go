@@ -21,8 +21,8 @@ typedef long long int (*ReadRxBytes)();
 
 typedef int (*StateCB)(int oldstate, int newstate, void* data);
 
-typedef void (*TokenGetter)(const char* server, char* out, size_t len);
-typedef void (*TokenSetter)(const char* server, const char* tokens);
+typedef void (*TokenGetter)(const char* server_id, int server_type, char* out, size_t len);
+typedef void (*TokenSetter)(const char* server_id, int server_type, const char* tokens);
 
 static long long int get_read_rx_bytes(ReadRxBytes read)
 {
@@ -32,13 +32,13 @@ static int call_callback(StateCB callback, int oldstate, int newstate, void* dat
 {
     return callback(oldstate, newstate, data);
 }
-static void call_token_getter(TokenGetter getter, const char* server, char* out, size_t len)
+static void call_token_getter(TokenGetter getter, const char* server_id, int server_type, char* out, size_t len)
 {
-   getter(server, out, len);
+   getter(server_id, server_type, out, len);
 }
-static void call_token_setter(TokenSetter setter, const char* server, const char* tokens)
+static void call_token_setter(TokenSetter setter, const char* server_id, int server_type, const char* tokens)
 {
-   setter(server, tokens);
+   setter(server_id, server_type, tokens);
 }
 */
 import "C"
@@ -983,36 +983,26 @@ func SetTokenHandler(getter C.TokenGetter, setter C.TokenSetter) *C.char {
 	if stateErr != nil {
 		return getCError(stateErr)
 	}
-	state.TokenSetter = func(c srvtypes.Current, t srvtypes.Tokens) {
-		cJSON, err := getReturnData(c)
-		if err != nil {
-			log.Logger.Warningf("failed to get current server for setting tokens in exports: %v", err)
-			return
-		}
+	state.TokenSetter = func(sid string, stype srvtypes.Type, t srvtypes.Tokens) {
 		tJSON, err := getReturnData(t)
 		if err != nil {
 			log.Logger.Warningf("failed to get tokens for setting tokens in exports: %v", err)
 			return
 		}
-		c1 := C.CString(cJSON)
+		c1 := C.CString(sid)
 		c2 := C.CString(tJSON)
-		C.call_token_setter(setter, c1, c2)
+		C.call_token_setter(setter, c1, C.int(stype), c2)
 		FreeString(c1)
 		FreeString(c2)
 	}
 
-	state.TokenGetter = func(c srvtypes.Current) *srvtypes.Tokens {
-		cJSON, err := getReturnData(c)
-		if err != nil {
-			log.Logger.Warningf("failed to get current server for getting tokens in exports: %v", err)
-			return nil
-		}
-		c1 := C.CString(cJSON)
+	state.TokenGetter = func(sid string, stype srvtypes.Type) *srvtypes.Tokens {
 		// create an output buffer with size 2048
 		// In my testing tokens seem to be ~1033 bytes marshalled as JSON
 		d := make([]byte, 2048)
 
-		C.call_token_getter(getter, c1, (*C.char)(unsafe.Pointer(&d[0])), C.size_t(len(d)))
+		c1 := C.CString(sid)
+		C.call_token_getter(getter, c1, C.int(stype), (*C.char)(unsafe.Pointer(&d[0])), C.size_t(len(d)))
 		FreeString(c1)
 
 		// get null pointer index as unmarshalling wants it without
@@ -1029,7 +1019,7 @@ func SetTokenHandler(getter C.TokenGetter, setter C.TokenSetter) *C.char {
 		}
 
 		var gotT srvtypes.Tokens
-		err = json.Unmarshal(d[:null], &gotT)
+		err := json.Unmarshal(d[:null], &gotT)
 		if err != nil {
 			log.Logger.Warningf("failed to get JSON data for getting tokens in exports: %v", err)
 			return nil

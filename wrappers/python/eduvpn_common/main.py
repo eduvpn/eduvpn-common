@@ -344,23 +344,23 @@ global_object: Optional[EduVPN] = None
 
 
 @TokenSetter
-def token_setter(server: ctypes.c_char_p, tokens: ctypes.c_char_p):
+def token_setter(server_id: ctypes.c_char_p, server_type: ctypes.c_int, tokens: ctypes.c_char_p):
     global global_object
     if global_object is None:
         return
     if global_object.token_setter is None:
         return 0
-    global_object.token_setter(server.decode(), tokens.decode())
+    global_object.token_setter(server_id.decode(), server_type, tokens.decode())
 
 
 @TokenGetter
-def token_getter(server: ctypes.c_char_p, buf: ctypes.c_char_p, size: ctypes.c_size_t):
+def token_getter(server_id: ctypes.c_char_p, server_type: ctypes.c_int, buf: ctypes.c_char_p, size: ctypes.c_size_t):
     global global_object
     if global_object is None:
         return
     if global_object.token_getter is None:
         return
-    got = global_object.token_getter(server.decode())
+    got = global_object.token_getter(server_id.decode(), server_type)
     if got is None:
         return
 
