@@ -2,280 +2,227 @@ package server
 
 import (
 	"context"
+	"errors"
 	"os"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/discovery"
-	"github.com/eduvpn/eduvpn-common/internal/oauth"
-	"github.com/eduvpn/eduvpn-common/internal/server/api"
-	"github.com/eduvpn/eduvpn-common/internal/server/base"
-	"github.com/eduvpn/eduvpn-common/internal/server/profile"
-	"github.com/eduvpn/eduvpn-common/internal/wireguard"
+	"github.com/eduvpn/eduvpn-common/internal/api"
+	"github.com/eduvpn/eduvpn-common/internal/api/profiles"
+	v2 "github.com/eduvpn/eduvpn-common/internal/config/v2"
 	"github.com/eduvpn/eduvpn-common/types/protocol"
 	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
-	"github.com/go-errors/errors"
 )
 
-type Server interface {
-	// OAuth returns the struct used for OAuth
-	OAuth() *oauth.OAuth
-
-	// TemplateAuth returns the authorization URL template function
-	TemplateAuth() func(string) string
-
-	// Base returns the server base
-	Base() (*base.Base, error)
-
-	// NeedsLocation checks if the server needs a secure internet location
-	NeedsLocation() bool
-
-	// Public returns the representation that will be passed over the CGO barrier
-	Public() (interface{}, error)
-
-	// RefreshEndpoints refreshes the endpoints for the server
-	RefreshEndpoints(context.Context, *discovery.Discovery) error
+type Server struct {
+	identifier string
+	t          srvtypes.Type
+	apiw       *api.API
+	storage    *v2.V2
 }
 
-// Name gets the name for the server and falls back to a default of "Unknown Server"
-func Name(srv Server) string {
-	n := "Unknown Server"
-	if b, err := srv.Base(); err == nil {
-		n = b.URL
+var ErrInvalidProfile = errors.New("invalid profile")
+
+func (s *Servers) NewServer(identifier string, t srvtypes.Type, api *api.API) Server {
+	return Server{
+		identifier: identifier,
+		t:          t,
+		apiw:       api,
+		storage:    s.config,
 	}
-	return n
 }
 
-func UpdateTokens(srv Server, t oauth.Token) {
-	srv.OAuth().UpdateTokens(t)
-}
-
-func OAuthURL(srv Server, name string, cr string) (string, error) {
-	return srv.OAuth().AuthURL(name, srv.TemplateAuth(), cr)
-}
-
-func OAuthExchange(ctx context.Context, srv Server, uri string) error {
-	return srv.OAuth().Exchange(ctx, uri)
-}
-
-func HeaderToken(ctx context.Context, srv Server) (string, error) {
-	return srv.OAuth().AccessToken(ctx)
-}
-
-func MarkTokenExpired(srv Server) {
-	srv.OAuth().SetTokenExpired()
-}
-
-func MarkTokensForRenew(srv Server) {
-	srv.OAuth().SetTokenRenew()
-}
-
-func NeedsRelogin(ctx context.Context, srv Server) bool {
-	// TODO: this error can be a context cancel
-	_, err := HeaderToken(ctx, srv)
-	return err != nil
-}
-
-func CurrentProfile(srv Server) (*profile.Profile, error) {
-	b, err := srv.Base()
+// Profiles gets the profiles for the server
+// It only does a /info network request if the profiles have not been cached
+// force indicates whether or not the profiles should be fetched fresh
+func (s *Server) Profiles(ctx context.Context) (*profiles.Info, error) {
+	a, err := s.api()
 	if err != nil {
 		return nil, err
 	}
-	pID := b.Profiles.Current
-	for _, profile := range b.Profiles.Info.ProfileList {
-		if profile.ID == pID {
-			return &profile, nil
+	// Otherwise get fresh profiles and set the cache
+	prfs, err := a.Info(ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = s.SetProfileList(prfs.Public())
+	if err != nil {
+		return nil, err
+	}
+	return prfs, nil
+}
+
+func (s *Server) api() (*api.API, error) {
+	if s.apiw == nil {
+		return nil, errors.New("no API object found")
+	}
+	return s.apiw, nil
+}
+
+func (s *Server) findProfile(ctx context.Context, wgSupport bool) (*profiles.Profile, error) {
+	// Get the profiles by ignoring the cache
+	prfs, err := s.Profiles(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// No profiles available
+	if prfs.Len() == 0 {
+		return nil, errors.New("the server has no available profiles for your account")
+	}
+
+	// No WireGuard support, we have to filter the profiles that only have WireGuard
+	if !wgSupport {
+		prfs = prfs.FilterWireGuard()
+	}
+
+	var chosenP profiles.Profile
+
+	n := prfs.Len()
+	switch n {
+	// If we now get no profiles then that means a profile with only WireGuard was removed
+	case 0:
+		return nil, errors.New("the server has only WireGuard profiles but the client does not support WireGuard")
+	case 1:
+		// Only one profile, make sure it is set
+		chosenP = prfs.MustIndex(0)
+	default:
+		// Profile doesn't exist
+		prID, err := s.ProfileID()
+		if err != nil {
+			return nil, err
+		}
+		v := prfs.Get(prID)
+		if v == nil {
+			return nil, ErrInvalidProfile
+		}
+		chosenP = *v
+	}
+	return &chosenP, nil
+}
+
+func (s *Server) connect(ctx context.Context, wgSupport bool, pTCP bool) (*srvtypes.Configuration, error) {
+	a, err := s.api()
+	if err != nil {
+		return nil, err
+	}
+
+	// find a suitable profile to connect
+	chosenP, err := s.findProfile(ctx, wgSupport)
+	if err != nil {
+		return nil, err
+	}
+	err = s.SetProfileID(chosenP.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	protos := []protocol.Protocol{protocol.OpenVPN}
+	if wgSupport {
+		protos = append(protos, protocol.WireGuard)
+	}
+	// If the client supports WireGuard and the profile supports both protocols we remove openvpn from client support if EDUVPN_PREFER_WG is set to "1"
+	// This also only happens if prefer TCP is set to false
+	// TODO: remove the prefer TCP check when we have implemented proxyguard
+	if wgSupport && os.Getenv("EDUVPN_PREFER_WG") == "1" {
+		if chosenP.HasWireGuard() && chosenP.HasOpenVPN() {
+			protos = []protocol.Protocol{protocol.WireGuard}
 		}
 	}
-
-	return nil, errors.Errorf("profile not found: " + pID)
-}
-
-func ValidProfiles(srv Server, wireguardSupport bool) (*profile.Info, error) {
-	// No error wrapping here otherwise we wrap it too much
-	b, err := srv.Base()
+	// SAFETY: chosenP is guaranteed to be non-nil
+	apicfg, err := a.Connect(ctx, *chosenP, protos, pTCP)
 	if err != nil {
 		return nil, err
 	}
-	ps := b.Profiles.Supported(wireguardSupport)
-	if len(ps) == 0 {
-		return nil, errors.Errorf("no profiles found with supported protocols")
+	err = s.SetExpireTime(apicfg.Expires)
+	if err != nil {
+		return nil, err
 	}
-	return &profile.Info{
-		Current: b.Profiles.Current,
-		Info: profile.ListInfo{
-			ProfileList: ps,
-		},
+	var proxy *srvtypes.Proxy
+	if apicfg.Proxy != nil {
+		proxy = &srvtypes.Proxy{
+			SourcePort: apicfg.Proxy.SourcePort,
+			Listen:     apicfg.Proxy.Listen,
+			Peer:       apicfg.Proxy.Peer,
+		}
+	}
+	return &srvtypes.Configuration{
+		VPNConfig:        apicfg.Configuration,
+		Protocol:         apicfg.Protocol,
+		DefaultGateway:   chosenP.DefaultGateway,
+		DNSSearchDomains: chosenP.DNSSearchDomains,
+		Proxy:            proxy,
 	}, nil
 }
 
-func Profile(srv Server, id string) error {
-	b, err := srv.Base()
+func (s *Server) Disconnect(ctx context.Context) error {
+	a, err := s.api()
 	if err != nil {
 		return err
 	}
-	if !b.Profiles.Has(id) {
-		return errors.Errorf("no profile available with id: %s", id)
+	return a.Disconnect(ctx)
+}
+
+func (s *Server) cfgServer() (*v2.Server, error) {
+	if s.storage == nil {
+		return nil, errors.New("cannot get server, no configuration passed")
 	}
-	b.Profiles.Current = id
+	return s.storage.GetServer(s.identifier, s.t)
+}
+
+func (s *Server) SetProfileID(id string) error {
+	cs, err := s.cfgServer()
+	if err != nil {
+		return err
+	}
+	cs.Profiles.Current = id
 	return nil
 }
 
-type ConfigData struct {
-	// The configuration
-	Config string
-
-	// The type of configuration
-	Type string
-}
-
-// Public gets the public data from the types package
-// dg specifies if this config is default gateway
-func (c *ConfigData) Public(dg bool) srvtypes.Configuration {
-	return srvtypes.Configuration{
-		VPNConfig:      c.Config,
-		Protocol:       protocol.New(c.Type),
-		DefaultGateway: dg,
-	}
-}
-
-func wireguardGetConfig(ctx context.Context, srv Server, preferTCP bool, openVPNSupport bool) (*ConfigData, error) {
-	b, err := srv.Base()
-	if err != nil {
-		return nil, err
-	}
-
-	pID := b.Profiles.Current
-	key, err := wireguard.GenerateKey()
-	if err != nil {
-		return nil, err
-	}
-
-	pub := key.PublicKey().String()
-	cfg, proto, exp, err := api.ConnectWireguard(ctx, b, srv.OAuth(), pID, pub, preferTCP, openVPNSupport)
-	if err != nil {
-		return nil, err
-	}
-
-	// Store start and end time
-	b.StartTime = time.Now()
-	b.EndTime = exp
-
-	if proto == "wireguard" {
-		// This needs the go code a way to identify a connection
-		// Use the uuid of the connection e.g. on Linux
-		// This needs the client code to call the go code
-
-		cfg = wireguard.ConfigAddKey(cfg, key)
-	}
-
-	return &ConfigData{Config: cfg, Type: proto}, nil
-}
-
-func openVPNGetConfig(ctx context.Context, srv Server, preferTCP bool) (*ConfigData, error) {
-	b, err := srv.Base()
-	if err != nil {
-		return nil, err
-	}
-	pid := b.Profiles.Current
-	cfg, exp, err := api.ConnectOpenVPN(ctx, b, srv.OAuth(), pid, preferTCP)
-	if err != nil {
-		return nil, err
-	}
-
-	// Store start and end time
-	b.StartTime = time.Now()
-	b.EndTime = exp
-
-	return &ConfigData{Config: cfg, Type: "openvpn"}, nil
-}
-
-func HasValidProfile(ctx context.Context, srv Server, wireguardSupport bool) (bool, error) {
-	b, err := srv.Base()
-	if err != nil {
-		return false, err
-	}
-	// Get new profiles using the info call
-	// This does not override the current profile
-	err = api.Info(ctx, b, srv.OAuth())
-	if err != nil {
-		return false, err
-	}
-
-	// If there was a profile chosen and it doesn't exist anymore, reset it
-	if b.Profiles.Current != "" {
-		if _, err = CurrentProfile(srv); err != nil {
-			b.Profiles.Current = ""
-		}
-	}
-
-	// there are multiple profiles and no selection has been made
-	if len(b.Profiles.Info.ProfileList) != 1 && b.Profiles.Current == "" {
-		return false, nil
-	}
-
-	// Set the current profile if there is only one profile or profile is already selected
-	// Set the first profile if none is selected
-	if b.Profiles.Current == "" {
-		b.Profiles.Current = b.Profiles.Info.ProfileList[0].ID
-	}
-	p, err := CurrentProfile(srv)
-	// shouldn't happen
-	if err != nil {
-		return false, err
-	}
-	// Profile does not support OpenVPN but the client also doesn't support WireGuard
-	if !p.SupportsOpenVPN() && !wireguardSupport {
-		return false, nil
-	}
-	return true, nil
-}
-
-func Config(ctx context.Context, server Server, wireguardSupport bool, preferTCP bool) (*ConfigData, error) {
-	p, err := CurrentProfile(server)
-	if err != nil {
-		return nil, err
-	}
-
-	ovpn := p.SupportsOpenVPN()
-	wg := p.SupportsWireguard() && wireguardSupport
-
-	// If we don't prefer TCP and this profile and client supports wireguard,
-	// we disable openvpn if the EDUVPN_PREFER_WG environment variable is set
-	// This is useful to force WireGuard if the profile supports both OpenVPN and WireGuard but the server still prefers OpenVPN
-	if !preferTCP && wg {
-		if os.Getenv("EDUVPN_PREFER_WG") == "1" {
-			ovpn = false
-		}
-	}
-
-	var cfg *ConfigData
-
-	switch {
-	// The config supports wireguard and optionally openvpn
-	case wg:
-		// A wireguard connect call needs to generate a wireguard key and add it to the config
-		// Also the server could send back an OpenVPN config if it supports OpenVPN
-		cfg, err = wireguardGetConfig(ctx, server, preferTCP, ovpn)
-	//  The config only supports OpenVPN
-	case ovpn:
-		cfg, err = openVPNGetConfig(ctx, server, preferTCP)
-		// The config supports no available protocol because the profile only supports WireGuard but the client doesn't
-	default:
-		return nil, errors.New("no supported protocol found")
-	}
-
-	// Add script security 0 to disable OpenVPN scripts
-	// The client may override this but we provide the default protection here
-	if err == nil && cfg.Type == "openvpn" {
-		cfg.Config += "\nscript-security 0"
-	}
-	return cfg, err
-}
-
-func Disconnect(ctx context.Context, server Server) error {
-	b, err := server.Base()
+func (s *Server) SetProfileList(prfs srvtypes.Profiles) error {
+	cs, err := s.cfgServer()
 	if err != nil {
 		return err
 	}
-	return api.Disconnect(ctx, b, server.OAuth())
+	cs.Profiles.Map = prfs.Map
+	return nil
+}
+
+func (s *Server) SetExpireTime(et time.Time) error {
+	cs, err := s.cfgServer()
+	if err != nil {
+		return err
+	}
+	cs.ExpireTime = et
+	return nil
+}
+
+func (s *Server) ProfileID() (string, error) {
+	cs, err := s.cfgServer()
+	if err != nil {
+		return "", err
+	}
+	return cs.Profiles.Current, nil
+}
+
+func (s *Server) SetLocation(loc string) error {
+	if s.t != srvtypes.TypeSecureInternet {
+		return errors.New("changing secure internet location is only possible when the server is a secure location")
+	}
+	cs, err := s.cfgServer()
+	if err != nil {
+		return err
+	}
+	cs.CountryCode = loc
+	return nil
+}
+
+func (s *Server) SetCurrent() error {
+	if s.storage == nil {
+		return errors.New("no storage available")
+	}
+	s.storage.LastChosen = &v2.ServerType{
+		ID: s.identifier,
+		T:  s.t,
+	}
+	return nil
 }
