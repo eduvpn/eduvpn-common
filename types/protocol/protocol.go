@@ -11,6 +11,8 @@ const (
 	OpenVPN
 	// WireGuard indicates that the protocol is WireGuard
 	WireGuard
+	// WireGuardTCP indicates that the protocol is WireGuard with a TCP proxy
+	WireGuardTCP
 )
 
 // New creates a new protocol type from a string

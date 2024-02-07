@@ -345,6 +345,16 @@ class EduVPN(object):
             forwardError(dropped_err)
         return dropped
 
+    def start_proxyguard(self, listen: str, source_port: int, peer: str):
+        proxy_err = self.go_cookie_function(
+            self.lib.StartProxyguard,
+            listen,
+            source_port,
+            peer,
+        )
+        if proxy_err:
+            forwardError(proxy_err)
+
     def cancel(self):
         self.jar.cancel()
 

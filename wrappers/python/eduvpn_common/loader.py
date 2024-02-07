@@ -125,3 +125,9 @@ def initialize_functions(lib: CDLL) -> None:
         c_int,
         ReadRxBytes,
     ], BoolError
+    lib.StartProxyguard.argtypes, lib.StartProxyguard.restype = [
+        c_int,
+        c_char_p,
+        c_int,
+        c_char_p,
+    ], c_void_p
