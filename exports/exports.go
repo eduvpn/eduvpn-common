@@ -831,7 +831,8 @@ func SetSupportWireguard(support C.int) *C.char {
 	if stateErr != nil {
 		return getCError(stateErr)
 	}
-	state.SupportsWireguard = support != 0
+	// TODO: Do not do any nested struct member here
+	state.Servers.WGSupport = support != 0
 	return nil
 }
 
