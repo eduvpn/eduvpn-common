@@ -150,7 +150,7 @@ func (s *Server) connect(ctx context.Context, wgSupport bool, pTCP bool) (*srvty
 		Protocol:         apicfg.Protocol,
 		DefaultGateway:   chosenP.DefaultGateway,
 		DNSSearchDomains: chosenP.DNSSearchDomains,
-		ShouldFailover: chosenP.ShouldFailover(),
+		ShouldFailover:   chosenP.ShouldFailover(),
 		Proxy:            proxy,
 	}, nil
 }

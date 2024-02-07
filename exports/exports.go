@@ -147,12 +147,12 @@ func getVPNState() (*client.Client, error) {
 //
 // Example Output:
 //
-//    {
-//      "message": {
-//        "en": "failed to register, a VPN state is already present"
-//      },
-//      "misc": false
-//    }
+//	{
+//	  "message": {
+//	    "en": "failed to register, a VPN state is already present"
+//	  },
+//	  "misc": false
+//	}
 //
 //export Register
 func Register(
@@ -205,16 +205,17 @@ func Register(
 // ```ExpiryTimes()```
 //
 // Example Output (1...4 are unix timestamps):
-//    {
-//         "start_time": 1,
-//         "end_time": 2,
-//         "button_time": 3,
-//         "countdown_time": 4,
-//         "notification_times": [
-//             1,
-//             2,
-//         ],
-//    }, null
+//
+//	{
+//	     "start_time": 1,
+//	     "end_time": 2,
+//	     "button_time": 3,
+//	     "countdown_time": 4,
+//	     "notification_times": [
+//	         1,
+//	         2,
+//	     ],
+//	}, null
 //
 //export ExpiryTimes
 func ExpiryTimes() (*C.char, *C.char) {
@@ -246,13 +247,12 @@ func ExpiryTimes() (*C.char, *C.char) {
 //
 // Example Output:
 //
-//    {
-//      "message": {
-//        "en": "failed to deregister"
-//      },
-//      "misc": false
-//    }
-//
+//	{
+//	  "message": {
+//	    "en": "failed to deregister"
+//	  },
+//	  "misc": false
+//	}
 //
 //export Deregister
 func Deregister() *C.char {
@@ -297,13 +297,12 @@ func Deregister() *C.char {
 //
 // Example Output:
 //
-//    {
-//      "message": {
-//        "en": "failed to add server"
-//      },
-//      "misc": false
-//    }
-//
+//	{
+//	  "message": {
+//	    "en": "failed to add server"
+//	  },
+//	  "misc": false
+//	}
 //
 //export AddServer
 func AddServer(c C.uintptr_t, _type C.int, id *C.char, ni C.int) *C.char {
@@ -339,12 +338,12 @@ func AddServer(c C.uintptr_t, _type C.int, id *C.char, ni C.int) *C.char {
 //
 // Example Output:
 //
-//    {
-//      "message": {
-//        "en": "failed to remove server"
-//      },
-//      "misc": false
-//    }
+//	{
+//	  "message": {
+//	    "en": "failed to remove server"
+//	  },
+//	  "misc": false
+//	}
 //
 //export RemoveServer
 func RemoveServer(_type C.int, id *C.char) *C.char {
@@ -368,42 +367,43 @@ func RemoveServer(_type C.int, id *C.char) *C.char {
 // ```CurrentServer()```
 //
 // Example Output:
-//    {
-//      "institute_access_server": {
-//        "display_name": {
-//          "en": "Demo"
-//        },
-//        "identifier": "https://demo.eduvpn.nl/",
-//        "profiles": {
-//          "map": {
-//            "internet": {
-//              "display_name": {
-//                "en": "Internet"
-//              },
-//              "supported_protocols": [
-//                1,
-//                2
-//              ]
-//            },
-//            "internet-split": {
-//              "display_name": {
-//                "en": "No rfc1918 routes"
-//              },
-//              "supported_protocols": [
-//                1,
-//                2
-//              ]
-//            }
-//          },
-//          "current": "internet"
-//        },
-//        "support_contacts": [
-//          "mailto:eduvpn@surf.nl"
-//        ],
-//        "delisted": false
-//      },
-//      "server_type": 1
-//    }, null
+//
+//	{
+//	  "institute_access_server": {
+//	    "display_name": {
+//	      "en": "Demo"
+//	    },
+//	    "identifier": "https://demo.eduvpn.nl/",
+//	    "profiles": {
+//	      "map": {
+//	        "internet": {
+//	          "display_name": {
+//	            "en": "Internet"
+//	          },
+//	          "supported_protocols": [
+//	            1,
+//	            2
+//	          ]
+//	        },
+//	        "internet-split": {
+//	          "display_name": {
+//	            "en": "No rfc1918 routes"
+//	          },
+//	          "supported_protocols": [
+//	            1,
+//	            2
+//	          ]
+//	        }
+//	      },
+//	      "current": "internet"
+//	    },
+//	    "support_contacts": [
+//	      "mailto:eduvpn@surf.nl"
+//	    ],
+//	    "delisted": false
+//	  },
+//	  "server_type": 1
+//	}, null
 //
 //export CurrentServer
 func CurrentServer() (*C.char, *C.char) {
@@ -434,24 +434,23 @@ func CurrentServer() (*C.char, *C.char) {
 //
 // Example Output (current profile here is empty as none has been chosen yet):
 //
-//    {
-//      "institute_access_servers": [
-//        {
-//          "display_name": {
-//            "en": "Demo"
-//          },
-//          "identifier": "https://demo.eduvpn.nl/",
-//          "profiles": {
-//            "current": ""
-//          },
-//          "support_contacts": [
-//            "mailto:eduvpn@surf.nl"
-//          ],
-//          "delisted": false
-//        }
-//      ]
-//    }, null
-//
+//	{
+//	  "institute_access_servers": [
+//	    {
+//	      "display_name": {
+//	        "en": "Demo"
+//	      },
+//	      "identifier": "https://demo.eduvpn.nl/",
+//	      "profiles": {
+//	        "current": ""
+//	      },
+//	      "support_contacts": [
+//	        "mailto:eduvpn@surf.nl"
+//	      ],
+//	      "delisted": false
+//	    }
+//	  ]
+//	}, null
 //
 //export ServerList
 func ServerList() (*C.char, *C.char) {
@@ -555,11 +554,11 @@ func ServerList() (*C.char, *C.char) {
 //
 // Example Output (2=WireGuard):
 //
-//    {
-//     "config": "https://demo.eduvpn.nl/\n# Profile: ...\n# Expires: ...\n\n[Interface]\nPrivateKey = ...\nAddress = ...\nDNS = ...\n\n[Peer]\nPublicKey = ...=\nAllowedIPs = 0.0.0.0/0,::/0\nEndpoint = ...",
-//     "protocol": 2,
-//     "default_gateway": true
-//    }
+//	{
+//	 "config": "https://demo.eduvpn.nl/\n# Profile: ...\n# Expires: ...\n\n[Interface]\nPrivateKey = ...\nAddress = ...\nDNS = ...\n\n[Peer]\nPublicKey = ...=\nAllowedIPs = 0.0.0.0/0,::/0\nEndpoint = ...",
+//	 "protocol": 2,
+//	 "default_gateway": true
+//	}
 //
 //export GetConfig
 func GetConfig(c C.uintptr_t, _type C.int, id *C.char, pTCP C.int, startup C.int) (*C.char, *C.char) {
@@ -594,12 +593,12 @@ func GetConfig(c C.uintptr_t, _type C.int, id *C.char, pTCP C.int, startup C.int
 //
 // Example Output:
 //
-//    {
-//      "message": {
-//        "en": "profile does not exist"
-//      },
-//      "misc": false
-//    }
+//	{
+//	  "message": {
+//	    "en": "profile does not exist"
+//	  },
+//	  "misc": false
+//	}
 //
 //export SetProfileID
 func SetProfileID(data *C.char) *C.char {
@@ -623,12 +622,12 @@ func SetProfileID(data *C.char) *C.char {
 //
 // Example Output:
 //
-//    {
-//      "message": {
-//        "en": "location does not exist"
-//      },
-//      "misc": false
-//    }
+//	{
+//	  "message": {
+//	    "en": "location does not exist"
+//	  },
+//	  "misc": false
+//	}
 //
 //export SetSecureLocation
 func SetSecureLocation(orgID *C.char, cc *C.char) *C.char {
@@ -651,27 +650,27 @@ func SetSecureLocation(orgID *C.char, cc *C.char) *C.char {
 //
 // Example Output:
 //
-//     {
-//      "v": 1695291170,
-//      "server_list": [
-//        {
-//          "base_url": "https://eduvpn.rash.al/",
-//          "country_code": "AL",
-//          "public_key_list": [
-//            "k7.pub.S4j5JJiTEz1fWMkI.hzU_xJasWzD6Da2WR7hgbobx9n3o4XSDeqFh03tgM-0"
-//          ],
-//          "server_type": "secure_internet",
-//          "support_contact": [
-//            "mailto:helpdesk@rash.al"
-//          ]
-//        },
-//        {
-//          "base_url": "https://eduvpn.deic.dk/",
-//          "country_code": "DK",
-//          "public_key_list": [
-//            "k7.pub.RNOJIYbemlfsE7EL.BxmV2l2UV7pCqz135ofBgyG9-xLg0R9rILQedZrfLtE"
-//          ], ..................
-//     } , null
+//	{
+//	 "v": 1695291170,
+//	 "server_list": [
+//	   {
+//	     "base_url": "https://eduvpn.rash.al/",
+//	     "country_code": "AL",
+//	     "public_key_list": [
+//	       "k7.pub.S4j5JJiTEz1fWMkI.hzU_xJasWzD6Da2WR7hgbobx9n3o4XSDeqFh03tgM-0"
+//	     ],
+//	     "server_type": "secure_internet",
+//	     "support_contact": [
+//	       "mailto:helpdesk@rash.al"
+//	     ]
+//	   },
+//	   {
+//	     "base_url": "https://eduvpn.deic.dk/",
+//	     "country_code": "DK",
+//	     "public_key_list": [
+//	       "k7.pub.RNOJIYbemlfsE7EL.BxmV2l2UV7pCqz135ofBgyG9-xLg0R9rILQedZrfLtE"
+//	     ], ..................
+//	} , null
 //
 //export DiscoServers
 func DiscoServers(c C.uintptr_t) (*C.char, *C.char) {
@@ -704,32 +703,33 @@ func DiscoServers(c C.uintptr_t) (*C.char, *C.char) {
 // Example Input: ```DiscoOrganizations(myCookie)```
 //
 // Example Output:
-//    {
-//     "v": 1695291170,
-//     "organization_list": [
-//       {
-//         "display_name": {
-//           "en": "Academic Network of Albania - RASH"
-//         },
-//         "org_id": "https://idp.rash.al/simplesaml/saml2/idp/metadata.php",
-//         "secure_internet_home": "https://eduvpn.rash.al/"
-//       },
-//       {
-//         "display_name": {
-//           "da": "Dansk Sprognævn",
-//           "en": "Danish Language Council"
-//         },
-//         "org_id": "http://idp.dsn.dk/adfs/services/trust",
-//         "secure_internet_home": "https://eduvpn.deic.dk/"
-//       },
-//       {
-//         "display_name": {
-//           "da": "Erhvervsakademi Aarhus",
-//           "en": "Business Academy Aarhus"
-//         },
-//         "org_id": "http://adfs.eaaa.dk/adfs/services/trust",
-//         "secure_inte .....................
-//    }, null
+//
+//	{
+//	 "v": 1695291170,
+//	 "organization_list": [
+//	   {
+//	     "display_name": {
+//	       "en": "Academic Network of Albania - RASH"
+//	     },
+//	     "org_id": "https://idp.rash.al/simplesaml/saml2/idp/metadata.php",
+//	     "secure_internet_home": "https://eduvpn.rash.al/"
+//	   },
+//	   {
+//	     "display_name": {
+//	       "da": "Dansk Sprognævn",
+//	       "en": "Danish Language Council"
+//	     },
+//	     "org_id": "http://idp.dsn.dk/adfs/services/trust",
+//	     "secure_internet_home": "https://eduvpn.deic.dk/"
+//	   },
+//	   {
+//	     "display_name": {
+//	       "da": "Erhvervsakademi Aarhus",
+//	       "en": "Business Academy Aarhus"
+//	     },
+//	     "org_id": "http://adfs.eaaa.dk/adfs/services/trust",
+//	     "secure_inte .....................
+//	}, null
 //
 //export DiscoOrganizations
 func DiscoOrganizations(c C.uintptr_t) (*C.char, *C.char) {
@@ -763,12 +763,13 @@ func DiscoOrganizations(c C.uintptr_t) (*C.char, *C.char) {
 //
 // Example Output:
 //
-//    {
-//      "message": {
-//        "en": "cleanup was not successful"
-//      },
-//      "misc": false
-//    }
+//	{
+//	  "message": {
+//	    "en": "cleanup was not successful"
+//	  },
+//	  "misc": false
+//	}
+//
 //export Cleanup
 func Cleanup(c C.uintptr_t) *C.char {
 	state, stateErr := getVPNState()
@@ -794,12 +795,12 @@ func Cleanup(c C.uintptr_t) *C.char {
 //
 // Example Output:
 //
-//    {
-//      "message": {
-//        "en": "could not renew session"
-//      },
-//      "misc": false
-//    }
+//	{
+//	  "message": {
+//	    "en": "could not renew session"
+//	  },
+//	  "misc": false
+//	}
 //
 //export RenewSession
 func RenewSession(c C.uintptr_t) *C.char {
@@ -823,7 +824,6 @@ func RenewSession(c C.uintptr_t) *C.char {
 //
 // `support` thus indicates whether or not to enable WireGuard
 // An error is returned if this is not possible
-//
 //
 //export SetSupportWireguard
 func SetSupportWireguard(support C.int) *C.char {

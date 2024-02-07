@@ -1,9 +1,9 @@
 package failover
 
 import (
-	"fmt"
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/log"
