@@ -246,9 +246,7 @@ func (a *API) Connect(ctx context.Context, prof profiles.Profile, protos []proto
 			// Set the public key
 			pubkey := wgKey.PublicKey()
 			uv.Set("public_key", pubkey.String())
-			if !pTCP {
-				hdrs.Add("accept", "application/x-wireguard-profile")
-			}
+			hdrs.Add("accept", "application/x-wireguard-profile")
 			hdrs.Add("accept", "application/x-wireguard+tcp-profile")
 		case protocol.OpenVPN:
 			hdrs.Add("accept", "application/x-openvpn-profile")
