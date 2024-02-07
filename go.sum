@@ -1,8 +1,10 @@
-github.com/go-errors/errors v1.5.1 h1:ZwEMSLRCapFLflTpT7NKaAc7ukJ8ZPEjzlxt8rPN8bk=
-github.com/go-errors/errors v1.5.1/go.mod h1:sIVyrIiJhuEF+Pj9Ebtd6P/rEYROXFi3BopGUQ5a5Og=
+codeberg.org/eduVPN/proxyguard v0.0.0-20240205164155-9d29686c075b h1:hAyBAwMp6a7h3BkW22Tc1DnEfisnQoVnHNYIza9dDv8=
+codeberg.org/eduVPN/proxyguard v0.0.0-20240205164155-9d29686c075b/go.mod h1:fc7DsdgdLmrO7DN45HNp+ekVewlRcikSOkAvUeGUvWk=
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
 github.com/jedisct1/go-minisign v0.0.0-20230811132847-661be99b8267 h1:TMtDYDHKYY15rFihtRfck/bfFqNfvcabqvXAFQfAUpY=
 github.com/jedisct1/go-minisign v0.0.0-20230811132847-661be99b8267/go.mod h1:h1nSAbGFqGVzn6Jyl1R/iCcBUHN4g+gW1u9CoBTrb9E=
+github.com/jwijenbergh/eduoauth-go v0.0.0-20240117121747-dc6367875133 h1:kQh66Onvw9hAVBsSMLKIeKOgOtdQIwwGd2F8wVuUPRA=
+github.com/jwijenbergh/eduoauth-go v0.0.0-20240117121747-dc6367875133/go.mod h1:HidfCfBBI7U0edu2f0tNM/4/kkm4pD+nrp6IlANo214=
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c h1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c/go.mod h1:7rwL4CYBLnjLxUqIJNnCWiEdr3bn6IUYi15bNlnbCCU=
 golang.org/x/crypto v0.18.0 h1:PGVlW0xEltQnzFZ55hkuX5+KLyrMYhHld1YHO4AKcdc=
