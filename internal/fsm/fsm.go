@@ -98,7 +98,9 @@ func (fsm *FSM) InState(check StateID) bool {
 }
 
 func (fsm *FSM) CheckTransition(desired StateID) error {
-	if desired == fsm.initial {
+	// initial or begin state is fine
+	// 0 = deregistered
+	if desired == fsm.initial || desired == 0 {
 		return nil
 	}
 	for _, ts := range fsm.States[fsm.Current].Transitions {
