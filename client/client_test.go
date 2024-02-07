@@ -14,6 +14,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/types/cookie"
 	"github.com/eduvpn/eduvpn-common/types/protocol"
 	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
+	"github.com/jwijenbergh/eduoauth-go"
 )
 
 func getServerURI(t *testing.T) string {
@@ -56,7 +57,6 @@ func loginOAuthSelenium(ck *cookie.Cookie, url string) {
 }
 
 func stateCallback(
-	t *testing.T,
 	ck *cookie.Cookie,
 	_ FSMStateID,
 	newState FSMStateID,
@@ -66,7 +66,7 @@ func stateCallback(
 		url, ok := data.(string)
 
 		if !ok {
-			t.Fatalf("data is not a string for OAuth URL")
+			panic("data is not a string for OAuth URL")
 		}
 		loginOAuthSelenium(ck, url)
 	}
@@ -82,7 +82,7 @@ func TestServer(t *testing.T) {
 		"0.1.0-test",
 		dir,
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
-			stateCallback(t, &ck, old, new, data)
+			go stateCallback(ck, old, new, data)
 			return true
 		},
 		false,
@@ -95,11 +95,11 @@ func TestServer(t *testing.T) {
 		t.Fatalf("Registering error: %v", err)
 	}
 
-	addErr := state.AddServer(&ck, serverURI, srvtypes.TypeCustom, false)
+	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, false)
 	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
 	}
-	_, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
+	_, configErr := state.GetConfig(ck, serverURI, srvtypes.TypeCustom, false, false)
 	if configErr != nil {
 		t.Fatalf("Connect error: %v", configErr)
 	}
@@ -130,7 +130,7 @@ func TestTokenExpired(t *testing.T) {
 		"0.1.0-test",
 		dir,
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
-			stateCallback(t, &ck, old, new, data)
+			go stateCallback(ck, old, new, data)
 			return true
 		},
 		false,
@@ -143,45 +143,37 @@ func TestTokenExpired(t *testing.T) {
 		t.Fatalf("Registering error: %v", err)
 	}
 
-	addErr := state.AddServer(&ck, serverURI, srvtypes.TypeCustom, false)
+	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, false)
 	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
 	}
 
-	_, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
+	_, configErr := state.GetConfig(ck, serverURI, srvtypes.TypeCustom, false, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error before expired: %v", configErr)
 	}
 
-	currentServer, serverErr := state.Servers.Current()
-	if serverErr != nil {
-		t.Fatalf("No server found")
-	}
-
-	serverOAuth := currentServer.OAuth()
-
-	accessToken, accessTokenErr := serverOAuth.AccessToken(ck.Context())
-	if accessTokenErr != nil {
-		t.Fatalf("Failed to get token: %v", accessTokenErr)
+	// get token before
+	tb, err := state.retrieveTokens(serverURI, srvtypes.TypeCustom)
+	if err != nil {
+		t.Fatalf("No tokens found: %v", err)
 	}
 
 	// Wait for TTL so that the tokens expire
 	time.Sleep(time.Duration(expiredInt) * time.Second)
 
-	_, configErr = state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
+	_, configErr = state.GetConfig(ck, serverURI, srvtypes.TypeCustom, false, false)
 
 	if configErr != nil {
 		t.Fatalf("Connect error after expiry: %v", configErr)
 	}
 
-	// Check if tokens have changed
-	accessTokenAfter, accessTokenAfterErr := serverOAuth.AccessToken(ck.Context())
-	if accessTokenAfterErr != nil {
-		t.Fatalf("Failed to get token: %v", accessTokenAfterErr)
+	ta, err := state.retrieveTokens(serverURI, srvtypes.TypeCustom)
+	if err != nil {
+		t.Fatalf("No tokens found after: %v", err)
 	}
-
-	if accessToken == accessTokenAfter {
+	if tb.Access == ta.Access {
 		t.Errorf("Access token is the same after refresh")
 	}
 }
@@ -197,7 +189,7 @@ func TestInvalidProfileCorrected(t *testing.T) {
 		"0.1.0-test",
 		dir,
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
-			stateCallback(t, &ck, old, new, data)
+			go stateCallback(ck, old, new, data)
 			return true
 		},
 		false,
@@ -210,40 +202,35 @@ func TestInvalidProfileCorrected(t *testing.T) {
 		t.Fatalf("Registering error: %v", err)
 	}
 
-	addErr := state.AddServer(&ck, serverURI, srvtypes.TypeCustom, false)
+	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, false)
 	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
 	}
 
-	_, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
+	_, configErr := state.GetConfig(ck, serverURI, srvtypes.TypeCustom, false, false)
 
 	if configErr != nil {
 		t.Fatalf("First connect error: %v", configErr)
 	}
 
-	currentServer, serverErr := state.Servers.Current()
-	if serverErr != nil {
-		t.Fatalf("No server found")
+	s, err := state.Servers.CurrentServer()
+	if err != nil {
+		t.Fatalf("Got error when getting current server: %v", err)
 	}
+	// set invalid profile
+	invp := "IDONOTEXIST"
+	s.Profiles.Current = invp
 
-	base, baseErr := currentServer.Base()
-	if baseErr != nil {
-		t.Fatalf("No base found")
-	}
-
-	previousProfile := base.Profiles.Current
-	base.Profiles.Current = "IDONOTEXIST"
-
-	_, configErr = state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
+	_, configErr = state.GetConfig(ck, serverURI, srvtypes.TypeCustom, false, false)
 	if configErr != nil {
 		t.Fatalf("Second connect error: %v", configErr)
 	}
 
-	if base.Profiles.Current != previousProfile {
+	if s.Profiles.Current == invp {
 		t.Fatalf(
 			"Profiles do no match: current %s and previous %s",
-			base.Profiles.Current,
-			previousProfile,
+			s.Profiles.Current,
+			invp,
 		)
 	}
 }
@@ -259,7 +246,7 @@ func TestConfigStartup(t *testing.T) {
 		"0.1.0-test",
 		dir,
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
-			stateCallback(t, &ck, old, new, data)
+			go stateCallback(ck, old, new, data)
 			return true
 		},
 		false,
@@ -272,14 +259,14 @@ func TestConfigStartup(t *testing.T) {
 		t.Fatalf("Failed to register with error: %v", err)
 	}
 	// we set true as last argument here such that no callbacks are ran
-	err = state.AddServer(&ck, serverURI, srvtypes.TypeCustom, true)
+	err = state.AddServer(ck, serverURI, srvtypes.TypeCustom, true)
 	if err != nil {
 		t.Fatalf("Failed to add server for trying config startup: %v", err)
 	}
 	testTrue := func() {
 		// Now get config with setting startup to true
 		startup := true
-		_, err := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, startup)
+		_, err := state.GetConfig(ck, serverURI, srvtypes.TypeCustom, false, startup)
 		// this should fail as we have not authorized yet/chosen profile and startup=true does not do these callbacks
 		if err == nil {
 			t.Fatal("Got no error after getting config with startup true")
@@ -290,9 +277,7 @@ func TestConfigStartup(t *testing.T) {
 	}
 	testFalse := func() {
 		startup := false
-		// This should succeed
-		_, err := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, startup)
-		// this should fail as we have not authorized yet/chosen profile
+		_, err := state.GetConfig(ck, serverURI, srvtypes.TypeCustom, false, startup)
 		if err != nil {
 			t.Fatalf("Got error after getting config with startup=false: %v", err)
 		}
@@ -302,8 +287,10 @@ func TestConfigStartup(t *testing.T) {
 
 	// set invalid authorization and test again
 	// we cannot test by setting invalid profile because the server only has 1 profile
-	// TODO: support multiple profiles in the test server
-	state.Servers.CustomServers.Map[serverURI].OAuth().SetTokenRenew()
+	err = state.tokCacher.Set(serverURI, srvtypes.TypeCustom, eduoauth.Token{})
+	if err != nil {
+		t.Fatalf("Failed to set token cache: %v", err)
+	}
 	testTrue()
 	testFalse()
 }
@@ -319,7 +306,7 @@ func TestPreferTCP(t *testing.T) {
 		"0.1.0-test",
 		dir,
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
-			stateCallback(t, &ck, old, new, data)
+			go stateCallback(ck, old, new, data)
 			return true
 		},
 		false,
@@ -332,13 +319,13 @@ func TestPreferTCP(t *testing.T) {
 		t.Fatalf("Registering error: %v", err)
 	}
 
-	addErr := state.AddServer(&ck, serverURI, srvtypes.TypeCustom, false)
+	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, false)
 	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
 	}
 
 	// get a config with preferTCP set to true
-	config, configErr := state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, true, false)
+	config, configErr := state.GetConfig(ck, serverURI, srvtypes.TypeCustom, true, false)
 
 	// Test server should accept prefer TCP!
 	if config.Protocol != protocol.OpenVPN {
@@ -355,7 +342,7 @@ func TestPreferTCP(t *testing.T) {
 	}
 
 	// get a config with preferTCP set to false
-	config, configErr = state.GetConfig(&ck, serverURI, srvtypes.TypeCustom, false, false)
+	config, configErr = state.GetConfig(ck, serverURI, srvtypes.TypeCustom, false, false)
 	if configErr != nil {
 		t.Fatalf("Config error: %v", configErr)
 	}
