@@ -879,6 +879,23 @@ func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.Read
 	return droppedC, nil
 }
 
+// StartProxyguard starts the 'proxyguard' procedure in eduvpn-common
+//
+//export StartProxyguard
+func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char) *C.char {
+	state, stateErr := getVPNState()
+	if stateErr != nil {
+		return getCError(stateErr)
+	}
+	ck, err := getCookie(c)
+	if err != nil {
+		return getCError(err)
+	}
+
+	proxyErr := state.StartProxyguard(ck, C.GoString(listen), int(tcpsp), C.GoString(peer))
+	return getCError(proxyErr)
+}
+
 // SetState sets the state of the statemachine
 //
 // Note: this transitions the FSM into the new state without passing any data to it.

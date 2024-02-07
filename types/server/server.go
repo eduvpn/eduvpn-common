@@ -157,6 +157,12 @@ type List struct {
 	Custom []Server `json:"custom_servers,omitempty"`
 }
 
+type Proxy struct {
+	SourcePort int    `json:"source_port"`
+	Listen     string `json:"listen"`
+	Peer       string `json:"peer"`
+}
+
 // Configuration is the configuration that you get back when you call the get config function
 type Configuration struct {
 	// VPNConfig is the VPN Configuration, a WireGuard or OpenVPN Configuration
@@ -169,6 +175,9 @@ type Configuration struct {
 	DefaultGateway bool `json:"default_gateway"`
 	// DNSSearchDomains are the list of dns search domains
 	DNSSearchDomains []string `json:"dns_search_domains,omitempty"`
+	// Proxy returns information for proxied VPN connections
+	// If this is non-nil a proxy must be started using StartProxyguard
+	Proxy *Proxy `json:"proxy,omitempty"`
 }
 
 // Current is the struct that defines the current server
