@@ -160,11 +160,11 @@ type List struct {
 // Proxy defines the structure with the arguments that should be passed to start proxyguard
 type Proxy struct {
 	// SourcePort is the source port for the client TCP connection
-	SourcePort int    `json:"source_port"`
+	SourcePort int `json:"source_port"`
 	// Listen is the ip:port for the client UDP connection, this is the value that is replaced in the config
-	Listen     string `json:"listen"`
+	Listen string `json:"listen"`
 	// Peer is the ip:port of the upstream server
-	Peer       string `json:"peer"`
+	Peer string `json:"peer"`
 }
 
 // Configuration is the configuration that you get back when you call the get config function
