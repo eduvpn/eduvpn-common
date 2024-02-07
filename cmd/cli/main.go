@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/eduvpn/eduvpn-common/client"
+	"github.com/eduvpn/eduvpn-common/internal/version"
 	"github.com/eduvpn/eduvpn-common/types/cookie"
 	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
 
@@ -23,11 +24,13 @@ func openBrowser(data interface{}) {
 	}
 	fmt.Printf("OAuth: Authorization URL: %s\n", str)
 	fmt.Println("Opening browser...")
-	err := browser.OpenURL(str)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to open browser with error:", err)
-		fmt.Println("Please open your browser manually")
-	}
+	go func() {
+		err := browser.OpenURL(str)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "failed to open browser with error:", err)
+			fmt.Println("Please open your browser manually")
+		}
+	}()
 }
 
 // GetLanguageMatched uses a map from language tags to strings to extract the right language given the tag
@@ -142,19 +145,19 @@ func getConfig(state *client.Client, url string, srvType srvtypes.Type) (*srvtyp
 	}
 	ck := cookie.NewWithContext(context.Background())
 	defer ck.Cancel() //nolint:errcheck
-	err := state.AddServer(&ck, url, srvType, false)
+	err := state.AddServer(ck, url, srvType, false)
 	if err != nil {
 		return nil, err
 	}
-	return state.GetConfig(&ck, url, srvType, false, false)
+	return state.GetConfig(ck, url, srvType, false, false)
 }
 
 // Get a config for a single server, Institute Access or Secure Internet.
 func printConfig(url string, srvType srvtypes.Type) {
 	var c *client.Client
 	c, err := client.New(
-		"org.letsconnect-vpn.app.linux",
-		"2.0.0-cli",
+		"org.eduvpn.app.linux",
+		fmt.Sprintf("%s-cli", version.Version),
 		"configs",
 		func(old client.FSMStateID, new client.FSMStateID, data interface{}) bool {
 			stateCallback(c, old, new, data)
@@ -168,6 +171,16 @@ func printConfig(url string, srvType srvtypes.Type) {
 	}
 	_ = c.Register()
 
+	ck := cookie.NewWithContext(context.Background())
+	_, err = c.DiscoOrganizations(ck)
+	if err != nil {
+		panic(err)
+	}
+	_, err = c.DiscoServers(ck)
+	if err != nil {
+		panic(err)
+	}
+
 	defer c.Deregister()
 
 	cfg, err := getConfig(c, url, srvType)
@@ -175,7 +188,7 @@ func printConfig(url string, srvType srvtypes.Type) {
 		fmt.Fprintf(os.Stderr, "failed getting a config: %v\n", err)
 		return
 	}
-
+	fmt.Println(cfg.Protocol)
 	fmt.Println("Obtained config:", cfg.VPNConfig)
 }
 
