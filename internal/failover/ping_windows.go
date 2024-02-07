@@ -1,6 +1,7 @@
 package failover
 
 import (
+	"fmt"
 	"net"
 
 	"golang.org/x/net/icmp"
