@@ -8,20 +8,20 @@ import (
 )
 
 func TestShouldSkip(t *testing.T) {
-	cases := []struct{
-		in string
+	cases := []struct {
+		in   string
 		want bool
 	}{
 		{
-			in: "test",
+			in:   "test",
 			want: false,
 		},
 		{
-			in: "#test",
+			in:   "#test",
 			want: true,
 		},
 		{
-			in: "",
+			in:   "",
 			want: true,
 		},
 	}
@@ -35,25 +35,25 @@ func TestShouldSkip(t *testing.T) {
 }
 
 func TestIsSection(t *testing.T) {
-	cases := []struct{
-		in string
+	cases := []struct {
+		in   string
 		want bool
 	}{
 		{
-			in: "[test]",
+			in:   "[test]",
 			want: true,
 		},
 		{
-			in: "#test",
+			in:   "#test",
 			want: false,
 		},
 		{
-			in: "key=val",
+			in:   "key=val",
 			want: false,
 		},
 		// sections with empty names will be ignored later
 		{
-			in: "[]",
+			in:   "[]",
 			want: true,
 		},
 	}
@@ -67,24 +67,24 @@ func TestIsSection(t *testing.T) {
 }
 
 func TestSectionName(t *testing.T) {
-	cases := []struct{
-		in string
+	cases := []struct {
+		in   string
 		want string
 	}{
 		{
-			in: "[test]",
+			in:   "[test]",
 			want: "test",
 		},
 		{
-			in: "[            spaces ]",
+			in:   "[            spaces ]",
 			want: "spaces",
 		},
 		{
-			in: "[]",
+			in:   "[]",
 			want: "",
 		},
 		{
-			in: "",
+			in:   "",
 			want: "",
 		},
 	}
@@ -98,52 +98,52 @@ func TestSectionName(t *testing.T) {
 }
 
 func TestKeyValue(t *testing.T) {
-	cases := []struct{
-		in string
-		wantk string
-		wantv string
+	cases := []struct {
+		in      string
+		wantk   string
+		wantv   string
 		wanterr string
 	}{
 		{
-			in: "bla",
-			wantk: "",
-			wantv: "",
+			in:      "bla",
+			wantk:   "",
+			wantv:   "",
 			wanterr: "no key/value found",
 		},
 		{
-			in: "foo=bar",
-			wantk: "foo",
-			wantv: "bar",
+			in:      "foo=bar",
+			wantk:   "foo",
+			wantv:   "bar",
 			wanterr: "",
 		},
 		{
-			in: " foo   = bar ",
-			wantk: "foo",
-			wantv: "bar",
+			in:      " foo   = bar ",
+			wantk:   "foo",
+			wantv:   "bar",
 			wanterr: "",
 		},
 		{
-			in: "foo   = bar",
-			wantk: "foo",
-			wantv: "bar",
+			in:      "foo   = bar",
+			wantk:   "foo",
+			wantv:   "bar",
 			wanterr: "",
 		},
 		{
-			in: "",
-			wantk: "",
-			wantv: "",
+			in:      "",
+			wantk:   "",
+			wantv:   "",
 			wanterr: "no key/value found",
 		},
 		{
-			in: "=",
-			wantk: "",
-			wantv: "",
+			in:      "=",
+			wantk:   "",
+			wantv:   "",
 			wanterr: "key cannot be empty",
 		},
 		{
-			in: "empty=",
-			wantk: "empty",
-			wantv: "",
+			in:      "empty=",
+			wantk:   "empty",
+			wantv:   "",
 			wanterr: "",
 		},
 	}
@@ -161,30 +161,30 @@ func TestKeyValue(t *testing.T) {
 }
 
 func TestOrderedKeysFind(t *testing.T) {
-	cases := []struct{
-		v OrderedKeys
+	cases := []struct {
+		v  OrderedKeys
 		in string
-		w int
+		w  int
 	}{
 		{
-			v: []string{""},
+			v:  []string{""},
 			in: "test",
-			w: -1,
+			w:  -1,
 		},
 		{
-			v: []string{"bla"},
+			v:  []string{"bla"},
 			in: "bla",
-			w: 0,
+			w:  0,
 		},
 		{
-			v: []string{"ha"},
+			v:  []string{"ha"},
 			in: "bla",
-			w: -1,
+			w:  -1,
 		},
 		{
-			v: []string{"ha", "ga"},
+			v:  []string{"ha", "ga"},
 			in: "ga",
-			w: 1,
+			w:  1,
 		},
 	}
 
@@ -197,23 +197,23 @@ func TestOrderedKeysFind(t *testing.T) {
 }
 
 func TestOrderedKeysRemove(t *testing.T) {
-	cases := []struct{
-		v OrderedKeys
+	cases := []struct {
+		v   OrderedKeys
 		rem string
 		out OrderedKeys
 	}{
 		{
-			v: []string{"bla"},
+			v:   []string{"bla"},
 			rem: "test",
 			out: []string{"bla"},
 		},
 		{
-			v: []string{"bla"},
+			v:   []string{"bla"},
 			rem: "bla",
 			out: []string{},
 		},
 		{
-			v: []string{"ha", "ga"},
+			v:   []string{"ha", "ga"},
 			rem: "ga",
 			out: []string{"ha"},
 		},

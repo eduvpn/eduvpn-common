@@ -13,62 +13,62 @@ func errorString(err error) string {
 }
 
 func TestServerUnmarshal(t *testing.T) {
-	cases := []struct{
-		want Type
+	cases := []struct {
+		want    Type
 		wantErr string
 		payload string
 	}{
 		{
-			want: TypeUnknown,
+			want:    TypeUnknown,
 			wantErr: "invalid server type: a",
 			payload: `{"value": "a"}`,
 		},
 		{
-			want: TypeInstituteAccess,
+			want:    TypeInstituteAccess,
 			wantErr: "",
 			payload: `{"value": "institute_access"}`,
 		},
 		{
-			want: TypeCustom,
+			want:    TypeCustom,
 			wantErr: "",
 			payload: `{"value": "custom_server"}`,
 		},
 		{
-			want: TypeSecureInternet,
+			want:    TypeSecureInternet,
 			wantErr: "",
 			payload: `{"value": "secure_internet"}`,
 		},
 		{
-			want: TypeUnknown,
+			want:    TypeUnknown,
 			wantErr: "",
 			payload: `{"value": 0}`,
 		},
 		{
-			want: TypeInstituteAccess,
+			want:    TypeInstituteAccess,
 			wantErr: "",
 			payload: `{"value": 1}`,
 		},
 		{
-			want: TypeSecureInternet,
+			want:    TypeSecureInternet,
 			wantErr: "",
 			payload: `{"value": 2}`,
 		},
 		{
-			want: TypeCustom,
+			want:    TypeCustom,
 			wantErr: "",
 			payload: `{"value": 3}`,
 		},
 		// Values that are outside the range will be error checked too
 		// This is thus even more strict than a regular type unmarshal/marshal
 		{
-			want: TypeUnknown,
+			want:    TypeUnknown,
 			wantErr: "invalid server type: 25",
 			payload: `{"value": 25}`,
 		},
 	}
 
 	for _, c := range cases {
-		var got struct{
+		var got struct {
 			Value Type `json:"value"`
 		}
 		err := json.Unmarshal([]byte(c.payload), &got)
@@ -79,5 +79,4 @@ func TestServerUnmarshal(t *testing.T) {
 			t.Fatalf("server unmarshal value is not equal to want, got: %v, want: %v", got.Value, c.want)
 		}
 	}
-		
 }

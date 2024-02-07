@@ -6,12 +6,12 @@ import (
 )
 
 type Profile struct {
-	ID               string   `json:"profile_id"`
-	DisplayName      string   `json:"display_name"`
-	VPNProtoList     []string `json:"vpn_proto_list"`
+	ID                    string   `json:"profile_id"`
+	DisplayName           string   `json:"display_name"`
+	VPNProtoList          []string `json:"vpn_proto_list"`
 	VPNProtoTransportList []string `json:"vpn_proto_transport_list"`
-	DefaultGateway   bool     `json:"default_gateway"`
-	DNSSearchDomains []string `json:"dns_search_domain_list"`
+	DefaultGateway        bool     `json:"default_gateway"`
+	DNSSearchDomains      []string `json:"dns_search_domain_list"`
 }
 
 type ListInfo struct {
