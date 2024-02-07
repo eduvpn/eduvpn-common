@@ -27,6 +27,7 @@ This document was automatically generated from the exports/exports.go file
     * [SetSupportWireguard](#setsupportwireguard)
     * [SetTokenHandler](#settokenhandler)
     * [StartFailover](#startfailover)
+    * [StartProxyguard](#startproxyguard)
 
 # About the API
 package main implements the main exported API to be used by other languages
@@ -701,7 +702,7 @@ Example Output:
 ## SetSecureLocation
 Signature:
  ```go
-func SetSecureLocation(c C.uintptr_t, data *C.char) *C.char
+func SetSecureLocation(orgID *C.char, cc *C.char) *C.char
 ```
 SetSecureLocation sets the location for the secure internet server if it
 exists
@@ -709,14 +710,11 @@ exists
 This MUST only be called if the user/client wishes to manually set a
 location instead of the common lib asking for one using a transition
 
-Because this does network requests to initialize the location, there is a
-cookie again :)
-
-`c` is the Cookie that needs to be passed. To create a cookie, first call
-`CookieNew` `Data` is the location ID
+`orgID` is the organisation ID for the secure internet server `cc` is the
+location ID/country code
 
 It returns an error if unsuccessful. Example Input:
-```SetSecureLocation("nl")```
+```SetSecureLocation("http://idp.geant.org/", "nl")```
 
 Example Output:
 
@@ -819,4 +817,21 @@ Example Input: ```StartFailover(myCookie, "10.10.10.1", 1400,
 myRxBytesReader)```
 
 Example Output: ```1, null```
+
+## StartProxyguard
+Signature:
+ ```go
+func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char) *C.char
+```
+StartProxyguard starts the 'proxyguard' procedure in eduvpn-common. This
+proxies WireGuard UDP connections over TCP. These input variables can be
+gotten from the configuration that is retrieved using the `proxy` json key
+
+  - `c` is the cookie
+  - `listen` is the ip:port of the local udp connection, this is what is set
+    to the WireGuard endpoint
+  - `tcpsp` is the TCP source port
+  - `peer` is the ip:port of the remote server
+
+If the proxy cannot be started it returns an error
 
