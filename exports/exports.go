@@ -880,7 +880,16 @@ func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.Read
 	return droppedC, nil
 }
 
-// StartProxyguard starts the 'proxyguard' procedure in eduvpn-common
+// StartProxyguard starts the 'proxyguard' procedure in eduvpn-common.
+// This proxies WireGuard UDP connections over TCP.
+// These input variables can be gotten from the configuration that is retrieved using the `proxy` JSON key
+//
+//     - `c` is the cookie
+//     - `listen` is the ip:port of the local udp connection, this is what is set to the WireGuard endpoint
+//     - `tcpsp` is the TCP source port
+//     - `peer` is the ip:port of the remote server
+//
+// If the proxy cannot be started it returns an error
 //
 //export StartProxyguard
 func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char) *C.char {
