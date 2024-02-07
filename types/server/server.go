@@ -175,6 +175,8 @@ type Configuration struct {
 	DefaultGateway bool `json:"default_gateway"`
 	// DNSSearchDomains are the list of dns search domains
 	DNSSearchDomains []string `json:"dns_search_domains,omitempty"`
+	// ShouldFailover returns whether or not the client should attempt to failover
+	ShouldFailover bool `json:"should_failover"`
 	// Proxy returns information for proxied VPN connections
 	// If this is non-nil a proxy must be started using StartProxyguard
 	Proxy *Proxy `json:"proxy,omitempty"`
