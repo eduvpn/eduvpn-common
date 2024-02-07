@@ -4,8 +4,9 @@ import unittest
 import eduvpn_common.main as eduvpn
 import eduvpn_common.event as event
 from eduvpn_common.state import State, StateType
-import sys
 import os
+import sys
+import threading
 
 # Import project root directory where the selenium python utility is
 sys.path.append(
@@ -18,7 +19,8 @@ from selenium_eduvpn import login_eduvpn
 class Handler:
     @event.class_state_transition(State.OAUTH_STARTED, StateType.ENTER)
     def on_oauth(self, old_state: State, data: str):
-        login_eduvpn(data)
+        t1 = threading.Thread(target=login_eduvpn, args=(data,))
+        t1.start()
 
 
 class ConfigTests(unittest.TestCase):
