@@ -160,6 +160,7 @@ func (discovery *Discovery) orgByID(orgID string) (*discotypes.Organization, err
 func (discovery *Discovery) SecureHomeArgs(orgID string) (*discotypes.Organization, *discotypes.Server, error) {
 	org, err := discovery.orgByID(orgID)
 	if err != nil {
+		discovery.MarkOrganizationsExpired()
 		return nil, nil, err
 	}
 
