@@ -373,6 +373,8 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 
 	defer func() {
 		if err == nil {
+			// it could be that we are not in getting config yet if we have just done authorization
+			c.FSM.GoTransition(StateGettingConfig) //nolint:errcheck
 			c.FSM.GoTransition(StateGotConfig) //nolint:errcheck
 		} else if !c.FSM.InState(previousState) {
 			// go back to the previous state if an error occurred
