@@ -28,6 +28,7 @@ func RenewButtonTime(st time.Time, et time.Time) int64 {
 	return t.Unix()
 }
 
+// CountdownTime returns the time when the countdown timer should be shown
 func CountdownTime(st time.Time, et time.Time) int64 {
 	d := et.Sub(st)
 
@@ -44,6 +45,8 @@ func CountdownTime(st time.Time, et time.Time) int64 {
 	return t.Unix()
 }
 
+// NotificationTimes returns the list when the app should
+// show a notification when the VPN is (about to) expire(d)
 func NotificationTimes(st time.Time, et time.Time) []int64 {
 	last := []time.Duration{
 		time.Duration(0),

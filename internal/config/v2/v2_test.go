@@ -36,7 +36,7 @@ func TestLoad(t *testing.T) {
 }
 `,
 			want: &V2{
-				List: map[ServerType]*Server{
+				List: map[ServerKey]*Server{
 					{ID: "a", T: server.TypeInstituteAccess}: {
 						Profiles: server.Profiles{
 							Map: map[string]server.Profile{
@@ -103,7 +103,7 @@ func TestLoad(t *testing.T) {
 }
 `,
 			want: &V2{
-				List: map[ServerType]*Server{
+				List: map[ServerKey]*Server{
 					{ID: "a", T: server.TypeInstituteAccess}: {
 						Profiles: server.Profiles{
 							Map: map[string]server.Profile{

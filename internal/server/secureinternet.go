@@ -13,6 +13,11 @@ import (
 	"github.com/jwijenbergh/eduoauth-go"
 )
 
+// AddSecure adds a secure internet server
+// `ctx` is the context used for cancellation
+// `disco` are the discovery servers
+// `orgID` is the organiztaion ID
+// `na` specifies whether or not authorization should be triggered when adding
 func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, orgID string, na bool) (*Server, error) {
 	if s.config.HasSecureInternet() {
 		return nil, errors.New("a secure internet server already exists")
@@ -54,6 +59,12 @@ func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, org
 	return &sec, nil
 }
 
+// GetSecure gets a secure internet server
+// `ctx` is the context used for cancellation
+// `orgID` is the organization ID that identifies the server
+// `disco` are the discovery servers
+// `tok` are the tokens such that the server can be found without triggering auth
+// `disableAuth` is set to true when authorization should not be triggered
 func (s *Servers) GetSecure(ctx context.Context, orgID string, disco *discovery.Discovery, tok *eduoauth.Token, disableAuth bool) (*Server, error) {
 	srv, err := s.config.GetServer(orgID, server.TypeSecureInternet)
 	if err != nil {

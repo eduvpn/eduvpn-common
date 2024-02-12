@@ -16,14 +16,17 @@ type (
 	StateIDSlice []StateID
 )
 
+// Len is defined here such that we can sort the slice
 func (v StateIDSlice) Len() int {
 	return len(v)
 }
 
+// Less is defined here such that we can sort the slice
 func (v StateIDSlice) Less(i, j int) bool {
 	return v[i] < v[j]
 }
 
+// Swap is defined here such that we can sort the slice
 func (v StateIDSlice) Swap(i, j int) {
 	v[i], v[j] = v[j], v[i]
 }
@@ -36,9 +39,8 @@ type Transition struct {
 	Description string
 }
 
-type (
-	States map[StateID]State
-)
+// States is the map from state identifier to the state itself
+type States map[StateID]State
 
 // State represents a single node in the graph.
 type State struct {
@@ -97,6 +99,8 @@ func (fsm *FSM) InState(check StateID) bool {
 	return check == fsm.Current
 }
 
+// CheckTransition returns an error whether or not a transition to
+// state `desired` is possible
 func (fsm *FSM) CheckTransition(desired StateID) error {
 	// initial or begin state is fine
 	// 0 = deregistered

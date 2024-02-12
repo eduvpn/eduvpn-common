@@ -11,12 +11,14 @@ type HandlerSet struct {
 	handler http.Handler
 }
 
+// SetHandler sets the handler to `handler`
 func (hs *HandlerSet) SetHandler(handler http.Handler) {
 	hs.mu.Lock()
 	hs.handler = handler
 	hs.mu.Unlock()
 }
 
+// ServeHTTP serves HTTP using the handler
 func (hs *HandlerSet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	hs.mu.Lock()
 	handler := hs.handler

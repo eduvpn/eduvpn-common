@@ -36,12 +36,17 @@ func availableUDPPort() (int, error) {
 	return ludp.LocalAddr().(*net.UDPAddr).Port, nil
 }
 
+// Proxy is the proxyguard information
 type Proxy struct {
+	// SourcePort is the source port of the TCP socket
 	SourcePort int
-	Listen     string
-	Peer       string
+	// Listen is the IP:PORT of the udp listener
+	Listen string
+	// Peer is the hostname/ip:port of the WireGuard peer
+	Peer string
 }
 
+// Config gets a wireguard config with API config `cfg`, wg key `key` and prefer tcp `tcp`
 func Config(cfg string, key *wgtypes.Key, tcp bool) (string, *Proxy, error) {
 	// the key is nil if the client does not accept WireGuard
 	if key == nil {

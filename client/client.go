@@ -55,6 +55,9 @@ type Client struct {
 	mu sync.Mutex
 }
 
+// GettingConfig is defined here to satisfy the server.Callbacks interface
+// It is called when internally we are getting a config
+// We go to the GettingConfig state
 func (c *Client) GettingConfig() error {
 	if c.FSM.InState(StateGettingConfig) {
 		return nil
@@ -63,6 +66,9 @@ func (c *Client) GettingConfig() error {
 	return err
 }
 
+// InvalidProfile is defined here to satisfy the server.Callbacks interface
+// It is called when a profile is invalid
+// Here we call the AskProfile transition
 func (c *Client) InvalidProfile(ctx context.Context, srv *server.Server) (string, error) {
 	// TODO: should this have profiles as a parameter
 	ck := cookie.NewWithContext(ctx)
@@ -157,6 +163,8 @@ func New(name string, version string, directory string, stateCallback func(FSMSt
 	return c, nil
 }
 
+// TriggerAuth is called when authorization is triggered
+// This function satisfies the server.Callbacks interface
 func (c *Client) TriggerAuth(ctx context.Context, url string, wait bool) (string, error) {
 	// Get a reply from the client
 	if wait {
@@ -185,6 +193,8 @@ func (c *Client) TriggerAuth(ctx context.Context, url string, wait bool) (string
 	return "", nil
 }
 
+// AuthDone is called when authorization is done
+// This is defined to satisfy the server.Callbacks interface
 func (c *Client) AuthDone(id string, t srvtypes.Type) {
 	srv, err := c.Servers.GetServer(id, t)
 	if err == nil {
@@ -198,6 +208,9 @@ func (c *Client) AuthDone(id string, t srvtypes.Type) {
 	}
 }
 
+// TokensUpdated is called when tokens are updated
+// It updates the cache map and the client tokens
+// This is defined to satisfy the server.Callbacks interface
 func (c *Client) TokensUpdated(id string, t srvtypes.Type, tok eduoauth.Token) {
 	if tok.Access == "" {
 		return
@@ -219,7 +232,7 @@ func (c *Client) TokensUpdated(id string, t srvtypes.Type, tok eduoauth.Token) {
 	})
 }
 
-// Registering means updating the FSM to get to the initial state correctly
+// Register means updating the FSM to get to the initial state correctly
 func (c *Client) Register() error {
 	err := c.goTransition(StateMain)
 	if err != nil {
@@ -289,6 +302,8 @@ func (c *Client) locationCallback(ck *cookie.Cookie, orgID string) error {
 	return nil
 }
 
+// TrySave tries to save the internal state file
+// If an error occurs it logs it
 func (c *Client) TrySave() {
 	err := c.cfg.Save()
 	if err != nil {
@@ -375,7 +390,7 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 		if err == nil {
 			// it could be that we are not in getting config yet if we have just done authorization
 			c.FSM.GoTransition(StateGettingConfig) //nolint:errcheck
-			c.FSM.GoTransition(StateGotConfig) //nolint:errcheck
+			c.FSM.GoTransition(StateGotConfig)     //nolint:errcheck
 		} else if !c.FSM.InState(previousState) {
 			// go back to the previous state if an error occurred
 			c.FSM.GoTransition(previousState) //nolint:errcheck
@@ -402,7 +417,7 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 	case srvtypes.TypeSecureInternet:
 		srv, err = c.Servers.GetSecure(ck.Context(), identifier, c.cfg.Discovery(), tok, startup)
 
-		var cErr *discovery.CountryNotFoundError
+		var cErr *discovery.ErrCountryNotFound
 		if errors.As(err, &cErr) {
 			err = c.locationCallback(ck, identifier)
 			if err == nil {
@@ -431,6 +446,7 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 	return cfg, nil
 }
 
+// RemoveServer removes a server
 func (c *Client) RemoveServer(identifier string, _type srvtypes.Type) (err error) {
 	identifier, err = c.convertIdentifier(identifier, _type)
 	if err != nil {
@@ -443,6 +459,7 @@ func (c *Client) RemoveServer(identifier string, _type srvtypes.Type) (err error
 	return nil
 }
 
+// CurrentServer gets the current server that is configured
 func (c *Client) CurrentServer() (*srvtypes.Current, error) {
 	curr, err := c.Servers.PublicCurrent(c.cfg.Discovery())
 	if err != nil {
@@ -451,6 +468,7 @@ func (c *Client) CurrentServer() (*srvtypes.Current, error) {
 	return curr, nil
 }
 
+// SetProfileID set the profile ID `pID` for the current server
 func (c *Client) SetProfileID(pID string) error {
 	srv, err := c.Servers.CurrentServer()
 	if err != nil {
@@ -481,12 +499,13 @@ func (c *Client) retrieveTokens(sid string, t srvtypes.Type) (*eduoauth.Token, e
 	}, nil
 }
 
+// Cleanup cleans up the VPN connection by sending a /disconnect
 func (c *Client) Cleanup(ck *cookie.Cookie) error {
 	srv, err := c.Servers.CurrentServer()
 	if err != nil {
 		return i18nerr.Wrap(err, "The current server was not found when cleaning up the connection")
 	}
-	tok, err := c.retrieveTokens(srv.T.ID, srv.T.T)
+	tok, err := c.retrieveTokens(srv.Key.ID, srv.Key.T)
 	if err != nil {
 		return i18nerr.Wrap(err, "No OAuth tokens were found when cleaning up the connection")
 	}
@@ -501,6 +520,8 @@ func (c *Client) Cleanup(ck *cookie.Cookie) error {
 	return nil
 }
 
+// SetSecureLocation sets a secure internet location for
+// organization ID `orgID` with country code `countryCode`
 func (c *Client) SetSecureLocation(orgID string, countryCode string) error {
 	// not supported with Let's Connect! & govVPN
 	if !c.hasDiscovery() {
@@ -514,6 +535,8 @@ func (c *Client) SetSecureLocation(orgID string, countryCode string) error {
 	return nil
 }
 
+// RenewSession is called when the user clicks on the renew session button
+// It re-authorized the server by getting a server without passing tokens
 func (c *Client) RenewSession(ck *cookie.Cookie) error {
 	// getting the current serving with nil tokens means re-authorize
 	srv, err := c.Servers.CurrentServer()
@@ -529,6 +552,7 @@ func (c *Client) RenewSession(ck *cookie.Cookie) error {
 	return nil
 }
 
+// StartFailover starts the failover procedure
 func (c *Client) StartFailover(ck *cookie.Cookie, gateway string, mtu int, readRxBytes func() (int64, error)) (bool, error) {
 	f := failover.New(readRxBytes)
 
@@ -540,6 +564,7 @@ func (c *Client) StartFailover(ck *cookie.Cookie, gateway string, mtu int, readR
 	return d, nil
 }
 
+// ServerList gets the list of servers
 func (c *Client) ServerList() (*srvtypes.List, error) {
 	g := c.cfg.V2.PublicList(c.cfg.Discovery())
 	return g, nil

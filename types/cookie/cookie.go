@@ -1,4 +1,4 @@
-// package cookie implements a specialized version of a context
+// Package cookie implements a specialized version of a context
 // - It is cancellable
 // - It has a channel associated with it to reply to state callbacks
 // - It can be marshalled by having a cgo Handle attached to it
@@ -12,6 +12,8 @@ import (
 	"runtime/cgo"
 )
 
+// Cookie is the cookie which is just a context with some other data associated with it
+// We could potentially only uses contexts with values, but this is nicer for type checking
 type Cookie struct {
 	c         chan string
 	ctx       context.Context
@@ -19,8 +21,10 @@ type Cookie struct {
 	H         cgo.Handle
 }
 
+// contextt is the context type for the value
 type contextt int8
 
+// CONTEXTK is the key of the cookie
 const CONTEXTK contextt = 0
 
 // NewWithContext creates a new cookie with a context

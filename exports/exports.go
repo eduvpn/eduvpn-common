@@ -26,7 +26,7 @@ typedef void (*TokenSetter)(const char* server_id, int server_type, const char* 
 
 static long long int get_read_rx_bytes(ReadRxBytes read)
 {
-   return read();
+    return read();
 }
 static int call_callback(StateCB callback, int oldstate, int newstate, void* data)
 {
@@ -34,11 +34,12 @@ static int call_callback(StateCB callback, int oldstate, int newstate, void* dat
 }
 static void call_token_getter(TokenGetter getter, const char* server_id, int server_type, char* out, size_t len)
 {
-   getter(server_id, server_type, out, len);
+    getter(server_id, server_type, out, len);
 }
 static void call_token_setter(TokenSetter setter, const char* server_id, int server_type, const char* tokens)
 {
-   setter(server_id, server_type, tokens);
+    setter(server_id, server_type, tokens);
+}
 }
 */
 import "C"
@@ -58,6 +59,7 @@ import (
 	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
 )
 
+// VPNState is the current state of the library
 var VPNState *client.Client
 
 func getCError(err error) *C.char {
@@ -884,10 +886,10 @@ func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.Read
 // This proxies WireGuard UDP connections over TCP.
 // These input variables can be gotten from the configuration that is retrieved using the `proxy` JSON key
 //
-//     - `c` is the cookie
-//     - `listen` is the ip:port of the local udp connection, this is what is set to the WireGuard endpoint
-//     - `tcpsp` is the TCP source port
-//     - `peer` is the ip:port of the remote server
+//   - `c` is the cookie
+//   - `listen` is the ip:port of the local udp connection, this is what is set to the WireGuard endpoint
+//   - `tcpsp` is the TCP source port
+//   - `peer` is the ip:port of the remote server
 //
 // If the proxy cannot be started it returns an error
 //
@@ -1059,8 +1061,8 @@ func SetTokenHandler(getter C.TokenGetter, setter C.TokenSetter) *C.char {
 //
 //   - Send a reply to a state transition (ASK_PROFILE and ASK_LOCATION)
 //
-// Functions that take a cookie have it as the first argument
-
+// # Functions that take a cookie have it as the first argument
+//
 // Example Input: ```CookieNew()```
 //
 // Example Output: ```5```

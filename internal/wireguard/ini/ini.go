@@ -1,4 +1,4 @@
-// package ini implements an opinionated ini parser that only implements what we exactly need for WireGuard configs
+// Package ini implements an opinionated ini parser that only implements what we exactly need for WireGuard configs
 // - key/values MUST live under a section
 // - empty section names are NOT allowed
 // - comments are indicated with a #

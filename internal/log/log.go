@@ -24,6 +24,7 @@ type FileLogger struct {
 // Logger is the global logger instance
 var Logger *FileLogger
 
+// Level is the level of log, e.g. debug
 type Level int8
 
 const (
@@ -88,7 +89,7 @@ func (logger *FileLogger) Init(lvl Level, dir string) error {
 	return nil
 }
 
-// Inheritf logs an error with a message and params using the error level verbosity of the error.
+// Inherit logs an error with a message and params using the error level verbosity of the error.
 // The message is always prefixed with the error.
 func (logger *FileLogger) Inherit(err error, msg string) {
 	if err == nil {

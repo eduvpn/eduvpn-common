@@ -16,19 +16,23 @@ import (
 
 const stateFile = "state.json"
 
+// Config represents the config state file
 type Config struct {
 	directory string
-	V2        *v2.V2
+	// V2 indicates we are version 2
+	V2 *v2.V2
 }
 
 func (c *Config) filename() string {
 	return path.Join(c.directory, stateFile)
 }
 
+// Discovery gets the discovery list from the state file
 func (c *Config) Discovery() *discovery.Discovery {
 	return &c.V2.Discovery
 }
 
+// Save saves the state file to disk
 func (c *Config) Save() error {
 	if err := util.EnsureDirectory(c.directory); err != nil {
 		return err
@@ -45,6 +49,7 @@ func (c *Config) Save() error {
 	return nil
 }
 
+// Load loads the state file from disk
 func (c *Config) Load() error {
 	bts, err := os.ReadFile(c.filename())
 	if err != nil {
@@ -64,11 +69,16 @@ func (c *Config) Load() error {
 	return nil
 }
 
+// Versioned is the final top-level state file that is written to disk
 type Versioned struct {
+	// V1 is the version 1 state file that is no longer used but converted from
 	V1 *v1.V1 `json:"v1,omitempty"`
+	// V2 is the version 2 state file
 	V2 *v2.V2 `json:"v2,omitempty"`
 }
 
+// NewFromDirectory creates a new config struct from a directory
+// It does this by loading the JSON file from disk
 func NewFromDirectory(dir string) *Config {
 	cfg := Config{
 		directory: dir,

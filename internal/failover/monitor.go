@@ -20,6 +20,10 @@ type DroppedConMon struct {
 	readRxBytes func() (int64, error)
 }
 
+// NewDroppedMonitor creates a new failover monitor
+// `pingInterval` is the interval in which to send pings
+// `pDropped` is how many pings we need to send before we deem it is dropped
+// `readRxBytes` is a function that gets the rx bytes from the client
 func NewDroppedMonitor(pingInterval time.Duration, pDropped int, readRxBytes func() (int64, error)) *DroppedConMon {
 	return &DroppedConMon{pInterval: pingInterval, pDropped: pDropped, readRxBytes: readRxBytes}
 }

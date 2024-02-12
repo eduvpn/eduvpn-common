@@ -10,13 +10,14 @@ import (
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
 )
 
+// Server wraps a HTTP test server
 type Server struct {
 	*httptest.Server
 }
 
+// NewServer creates a new test server
 func NewServer(handler http.Handler) *Server {
 	s := httptest.NewTLSServer(handler)
-
 	return &Server{s}
 }
 

@@ -1,4 +1,4 @@
-// package i18nerr implements errors with internationalization using gotext
+// Package i18nerr implements errors with internationalization using gotext
 package i18nerr
 
 import (
@@ -138,7 +138,7 @@ func Wrapf(err error, key message.Reference, args ...interface{}) *Error {
 	return &Error{key: key, args: args, wrapped: &Error{key: t, Misc: misc}, Misc: misc}
 }
 
-// NewInternalf creates an internal localised error from a display string
+// NewInternal creates an internal localised error from a display string
 func NewInternal(disp string) *Error {
 	return Wrap(errors.New(disp), "An internal error occurred")
 }

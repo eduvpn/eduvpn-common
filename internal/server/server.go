@@ -1,3 +1,4 @@
+// Package server implements functions that have to deal with server interaction
 package server
 
 import (
@@ -13,6 +14,7 @@ import (
 	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
 )
 
+// Server is the struct for a single server
 type Server struct {
 	identifier string
 	t          srvtypes.Type
@@ -20,8 +22,10 @@ type Server struct {
 	storage    *v2.V2
 }
 
+// ErrInvalidProfile is an error that is returned when an invalid profile has been chosen
 var ErrInvalidProfile = errors.New("invalid profile")
 
+// NewServer creates a new server
 func (s *Servers) NewServer(identifier string, t srvtypes.Type, api *api.API) Server {
 	return Server{
 		identifier: identifier,
@@ -155,6 +159,7 @@ func (s *Server) connect(ctx context.Context, wgSupport bool, pTCP bool) (*srvty
 	}, nil
 }
 
+// Disconnect sends an API /disconnect to the server
 func (s *Server) Disconnect(ctx context.Context) error {
 	a, err := s.api()
 	if err != nil {
@@ -170,6 +175,7 @@ func (s *Server) cfgServer() (*v2.Server, error) {
 	return s.storage.GetServer(s.identifier, s.t)
 }
 
+// SetProfileID sets the profile id `id` for the server
 func (s *Server) SetProfileID(id string) error {
 	cs, err := s.cfgServer()
 	if err != nil {
@@ -179,6 +185,7 @@ func (s *Server) SetProfileID(id string) error {
 	return nil
 }
 
+// SetProfileList sets the profile list `prfs` for the server
 func (s *Server) SetProfileList(prfs srvtypes.Profiles) error {
 	cs, err := s.cfgServer()
 	if err != nil {
@@ -188,6 +195,7 @@ func (s *Server) SetProfileList(prfs srvtypes.Profiles) error {
 	return nil
 }
 
+// SetExpireTime sets the time `et` when the VPN expires
 func (s *Server) SetExpireTime(et time.Time) error {
 	cs, err := s.cfgServer()
 	if err != nil {
@@ -197,6 +205,7 @@ func (s *Server) SetExpireTime(et time.Time) error {
 	return nil
 }
 
+// ProfileID gets the profile ID for the server
 func (s *Server) ProfileID() (string, error) {
 	cs, err := s.cfgServer()
 	if err != nil {
@@ -205,6 +214,7 @@ func (s *Server) ProfileID() (string, error) {
 	return cs.Profiles.Current, nil
 }
 
+// SetLocation sets the secure internet location for the server
 func (s *Server) SetLocation(loc string) error {
 	if s.t != srvtypes.TypeSecureInternet {
 		return errors.New("changing secure internet location is only possible when the server is a secure location")
@@ -217,11 +227,12 @@ func (s *Server) SetLocation(loc string) error {
 	return nil
 }
 
+// SetCurrent sets the current server in the state file to this one
 func (s *Server) SetCurrent() error {
 	if s.storage == nil {
 		return errors.New("no storage available")
 	}
-	s.storage.LastChosen = &v2.ServerType{
+	s.storage.LastChosen = &v2.ServerKey{
 		ID: s.identifier,
 		T:  s.t,
 	}
