@@ -221,8 +221,8 @@ func protocolFromCT(ct string) (protocol.Protocol, error) {
 	switch ct {
 	case "application/x-wireguard-profile":
 		return protocol.WireGuard, nil
-	case "application/x-wireguard+tcp-profile":
-		return protocol.WireGuardTCP, nil
+	case "application/x-wireguard+proxy-profile":
+		return protocol.WireGuardProxy, nil
 	case "application/x-openvpn-profile":
 		return protocol.OpenVPN, nil
 	}
@@ -301,7 +301,7 @@ func (a *API) Connect(ctx context.Context, prof profiles.Profile, protos []proto
 		}, nil
 	}
 
-	vpnCfg, proxy, err := wireguard.Config(vpnCfg, wgKey, proto == protocol.WireGuardTCP)
+	vpnCfg, proxy, err := wireguard.Config(vpnCfg, wgKey, proto == protocol.WireGuardProxy)
 	if err != nil {
 		return nil, err
 	}

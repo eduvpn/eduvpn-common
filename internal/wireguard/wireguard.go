@@ -46,18 +46,18 @@ type Proxy struct {
 	Peer string
 }
 
-// Config gets a wireguard config with API config `cfg`, wg key `key` and prefer tcp `tcp`
-func Config(cfg string, key *wgtypes.Key, tcp bool) (string, *Proxy, error) {
+// Config gets a wireguard config with API config `cfg`, wg key `key` and whether to use proxyguard `proxy`
+func Config(cfg string, key *wgtypes.Key, proxy bool) (string, *Proxy, error) {
 	// the key is nil if the client does not accept WireGuard
 	if key == nil {
 		return "", nil, errors.New("the server sent us a WireGuard profile but the client does not accept WireGuard")
 	}
 
 	var tcpp int
-	var proxy string
+	var plisten string
 	var err error
 
-	if tcp {
+	if proxy {
 		tcpp, err = availableTCPPort()
 		if err != nil {
 			return "", nil, err
@@ -66,18 +66,18 @@ func Config(cfg string, key *wgtypes.Key, tcp bool) (string, *Proxy, error) {
 		if err != nil {
 			return "", nil, err
 		}
-		proxy = fmt.Sprintf("127.0.0.1:%d", udpp)
+		plisten = fmt.Sprintf("127.0.0.1:%d", udpp)
 	}
 
-	rcfg, peer, err := configReplace(cfg, *key, proxy)
+	rcfg, peer, err := configReplace(cfg, *key, plisten)
 	if err != nil {
 		return "", nil, err
 	}
 	var retP *Proxy
-	if tcp {
+	if proxy {
 		retP = &Proxy{
 			SourcePort: tcpp,
-			Listen:     proxy,
+			Listen:     plisten,
 			Peer:       peer,
 		}
 	}
@@ -105,7 +105,7 @@ func configReplace(cfg string, key wgtypes.Key, proxy string) (string, string, e
 		if err != nil {
 			return "", "", err
 		}
-		peer, err = ps.RemoveKey("TCPEndpoint")
+		peer, err = ps.RemoveKey("ProxyEndpoint")
 		if err != nil {
 			return "", "", err
 		}
