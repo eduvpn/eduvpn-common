@@ -12,23 +12,31 @@ import (
 	"github.com/jwijenbergh/eduoauth-go"
 )
 
+// Callbacks defines the interface for doing certain callback operations
 type Callbacks interface {
+	// api.Callbacks is the API callback interface
 	api.Callbacks
+	// GettingConfig is called when the config is obtained
 	GettingConfig() error
+	// InvalidProfile is called when an invalid profile is found
 	InvalidProfile(context.Context, *Server) (string, error)
 }
 
+// Servers is the main struct that contains information for configuring the servers
 type Servers struct {
-	clientID  string
-	cb        Callbacks
+	clientID string
+	cb       Callbacks
+	// WGSupport defines whether or not wireguard support is enabled
 	WGSupport bool
 	config    *v2.V2
 }
 
+// Remove removes a server with id `identifier` and type `t`
 func (s *Servers) Remove(identifier string, t srvtypes.Type) error {
 	return s.config.RemoveServer(identifier, t)
 }
 
+// NewServers creates a new servers struct
 func NewServers(name string, cb Callbacks, wgSupport bool, cfg *v2.V2) Servers {
 	return Servers{
 		clientID:  name,
@@ -38,25 +46,31 @@ func NewServers(name string, cb Callbacks, wgSupport bool, cfg *v2.V2) Servers {
 	}
 }
 
+// CurrentServer contains the information for the current active server
 type CurrentServer struct {
+	// it embeds the state file server
 	*v2.Server
-	T    v2.ServerType
+	// Key is the server key
+	Key v2.ServerKey
+	// srvs refers to the original servers manager
 	srvs *Servers
 }
 
+// ServerWithCallbacks gets the current server as a server struct and triggers callbacks as needed
 func (cs *CurrentServer) ServerWithCallbacks(ctx context.Context, disco *discovery.Discovery, tokens *eduoauth.Token, disableAuth bool) (*Server, error) {
-	switch cs.T.T {
+	switch cs.Key.T {
 	case srvtypes.TypeInstituteAccess:
-		return cs.srvs.GetInstitute(ctx, cs.T.ID, disco, tokens, disableAuth)
+		return cs.srvs.GetInstitute(ctx, cs.Key.ID, disco, tokens, disableAuth)
 	case srvtypes.TypeSecureInternet:
-		return cs.srvs.GetSecure(ctx, cs.T.ID, disco, tokens, disableAuth)
+		return cs.srvs.GetSecure(ctx, cs.Key.ID, disco, tokens, disableAuth)
 	case srvtypes.TypeCustom:
-		return cs.srvs.GetCustom(ctx, cs.T.ID, tokens, disableAuth)
+		return cs.srvs.GetCustom(ctx, cs.Key.ID, tokens, disableAuth)
 	default:
-		return nil, fmt.Errorf("no such server type: %d", cs.T.T)
+		return nil, fmt.Errorf("no such server type: %d", cs.Key.T)
 	}
 }
 
+// GetServer gets a server from the state file
 func (s *Servers) GetServer(id string, t srvtypes.Type) (*v2.Server, error) {
 	if s.config == nil {
 		return nil, errors.New("no configuration available")
@@ -64,6 +78,7 @@ func (s *Servers) GetServer(id string, t srvtypes.Type) (*v2.Server, error) {
 	return s.config.GetServer(id, t)
 }
 
+// CurrentServer gets the current server from the state file and wraps it into a neat type
 func (s *Servers) CurrentServer() (*CurrentServer, error) {
 	curr, k, err := s.config.CurrentServer()
 	if err != nil {
@@ -71,15 +86,18 @@ func (s *Servers) CurrentServer() (*CurrentServer, error) {
 	}
 	return &CurrentServer{
 		Server: curr,
-		T:      *k,
+		Key:    *k,
 		srvs:   s,
 	}, nil
 }
 
+// PublicCurrent gets the current server into a type that we can return to the client
 func (s *Servers) PublicCurrent(disco *discovery.Discovery) (*srvtypes.Current, error) {
 	return s.config.PublicCurrent(disco)
 }
 
+// ConnectWithCallbacks handles the /connect flow
+// It calls callbacks as needed
 func (s *Servers) ConnectWithCallbacks(ctx context.Context, srv *Server, pTCP bool) (*srvtypes.Configuration, error) {
 	err := srv.SetCurrent()
 	if err != nil {

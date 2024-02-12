@@ -1,4 +1,4 @@
-// package discovery defines the public types that have to deal with discovery
+// Package discovery defines the public types that have to deal with discovery
 package discovery
 
 import (
@@ -70,7 +70,7 @@ type Server struct {
 // This library always marshals the data as a map and then makes sure unmarshalling also gives a map
 type MapOrString map[string]string
 
-// The display name can either be a map or a string in the server list
+// UnmarshalJSON unmarshals the display name. It can either be a map or a string in the server list
 // Unmarshal it by first trying a string and then the map.
 func (displayName *MapOrString) UnmarshalJSON(data []byte) error {
 	var displayNameString string

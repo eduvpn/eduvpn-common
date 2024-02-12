@@ -1,3 +1,4 @@
+// Package err defines public error types that are returned to clients
 package err
 
 // Translated defines the type for translated strings

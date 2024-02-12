@@ -370,7 +370,7 @@ func TestInvalidClientID(t *testing.T) {
 			k,
 			"0.1.0-test",
 			dir,
-			func(old FSMStateID, new FSMStateID, data interface{}) bool {
+			func(_ FSMStateID, _ FSMStateID, _ interface{}) bool {
 				return true
 			},
 			false,

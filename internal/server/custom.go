@@ -10,6 +10,10 @@ import (
 	"github.com/jwijenbergh/eduoauth-go"
 )
 
+// AddCustom adds a custom server to the internal server list
+// `ctx` is the context used for cancellation
+// `id` is the identifier of the server, the base URL
+// `na` specifies whether or not we want to add the server without doing authorization now
 func (s *Servers) AddCustom(ctx context.Context, id string, na bool) (*Server, error) {
 	sd := api.ServerData{
 		ID:         id,
@@ -39,6 +43,11 @@ func (s *Servers) AddCustom(ctx context.Context, id string, na bool) (*Server, e
 	return &cust, nil
 }
 
+// GetCustom gets a custom server
+// `ctx` is the context for cancellation
+// `id` is the identifier of the server
+// `tok` are the tokens such that we can initialize the API
+// `disableAuth` is set to True when authorization should not be triggered
 func (s *Servers) GetCustom(ctx context.Context, id string, tok *eduoauth.Token, disableAuth bool) (*Server, error) {
 	sd := api.ServerData{
 		ID:               id,

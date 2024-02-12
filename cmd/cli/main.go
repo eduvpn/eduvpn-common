@@ -1,3 +1,4 @@
+// Package main implements an example CLI client
 package main
 
 import (

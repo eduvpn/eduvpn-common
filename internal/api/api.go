@@ -1,3 +1,4 @@
+// Package api implements version 3 of the eduVPN api: https://docs.eduvpn.org/server/v3/api.html
 package api
 
 import (
@@ -21,12 +22,18 @@ import (
 	"github.com/eduvpn/eduvpn-common/types/server"
 )
 
+// Callbacks is the API callback interface
+// It is used to trigger authorization and forward token updates
 type Callbacks interface {
+	// TriggerAuth is called when authorization should be triggered
 	TriggerAuth(context.Context, string, bool) (string, error)
+	// AuthDone is called when authorization has just completed
 	AuthDone(string, server.Type)
+	// TokensUpdates is called when tokens are updated
 	TokensUpdated(string, server.Type, eduoauth.Token)
 }
 
+// ServerData is the data for a server that is passed to the API struct
 type ServerData struct {
 	// ID is the identifier for the server
 	ID string
@@ -44,6 +51,7 @@ type ServerData struct {
 	DisableAuthorize bool
 }
 
+// API is the top-level struct that each method is defined on
 type API struct {
 	cb Callbacks
 	// oauth is the oauth object
@@ -91,6 +99,7 @@ func NewAPI(ctx context.Context, clientID string, sd ServerData, cb Callbacks, t
 	return api, nil
 }
 
+// ErrAuthorizeDisabled is returned when authorization is disabled but is needed to complete
 var ErrAuthorizeDisabled = errors.New("cannot authorize as re-authorization is disabled")
 
 func (a *API) authorize(ctx context.Context) (err error) {
@@ -168,11 +177,14 @@ func (a *API) authorizedRetry(ctx context.Context, method string, endpoint strin
 	return h, body, err
 }
 
+// Disconnect disconnects a client from the server by sending a /disconnect API call
+// This cleans up resources such as WireGuard IP allocation
 func (a *API) Disconnect(ctx context.Context) error {
 	_, _, err := a.authorized(ctx, http.MethodPost, "/disconnect", &httpw.OptionalParams{Timeout: 5 * time.Second})
 	return err
 }
 
+// Info does the /info API call
 func (a *API) Info(ctx context.Context) (*profiles.Info, error) {
 	_, body, err := a.authorizedRetry(ctx, http.MethodGet, "/info", nil)
 	if err != nil {
@@ -185,16 +197,16 @@ func (a *API) Info(ctx context.Context) (*profiles.Info, error) {
 	return &p, nil
 }
 
-type Proxy struct {
-	Listen string
-	Peer   string
-}
-
+// ConnectData is the data that is returned when the /connect call completes without error
 type ConnectData struct {
+	// Configuration is the VPN configuration
 	Configuration string
-	Protocol      protocol.Protocol
-	Expires       time.Time
-	Proxy         *wireguard.Proxy
+	// Protocol tells us what protocol it is, OpenVPN or WireGuard (proxied or not)
+	Protocol protocol.Protocol
+	// Expires tells us when this configuration expires
+	Expires time.Time
+	// Proxy is filled when WireGuard is proxied
+	Proxy *wireguard.Proxy
 }
 
 // see https://github.com/eduvpn/documentation/blob/v3/API.md#request-1
@@ -345,12 +357,16 @@ func refreshEndpoints(ctx context.Context, sd ServerData) (*endpoints.List, *end
 	return &ep.API.V3, &epauth.API.V3, err
 }
 
+// OAuthLogger is defined here to update the internal logger
+// for the eduoauth library
 type OAuthLogger struct{}
 
+// Logf logs a message with parameters
 func (ol *OAuthLogger) Logf(msg string, params ...interface{}) {
 	log.Logger.Debugf(msg, params...)
 }
 
+// Log logs a message
 func (ol *OAuthLogger) Log(msg string) {
 	log.Logger.Debugf("%s", msg)
 }

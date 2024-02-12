@@ -9,9 +9,13 @@ import (
 )
 
 type (
-	FSMStateID    = fsm.StateID
-	FSMStates     = fsm.States
-	FSMState      = fsm.State
+	// FSMStateID is an alias to the fsm state ID type
+	FSMStateID = fsm.StateID
+	// FSMStates is an alias to the fsm states type
+	FSMStates = fsm.States
+	// FSMState is an alias to the fsm state type
+	FSMState = fsm.State
+	// FSMTransition is an alias to the fsm transition type
 	FSMTransition = fsm.Transition
 )
 
@@ -53,6 +57,7 @@ const (
 	StateDisconnected
 )
 
+// GetStateName gets the State name for state `s`
 func GetStateName(s FSMStateID) string {
 	switch s {
 	case StateDeregistered:
@@ -166,6 +171,7 @@ func newFSM(
 	return returnedFSM
 }
 
+// SetState sets the state for the client FSM to `state`
 func (c *Client) SetState(state FSMStateID) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -182,6 +188,7 @@ func (c *Client) SetState(state FSMStateID) error {
 	return nil
 }
 
+// InState returns whether or not the client is in state `state`
 func (c *Client) InState(state FSMStateID) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()

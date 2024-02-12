@@ -27,6 +27,7 @@ type Discovery struct {
 	ServerList discotypes.Servers `json:"servers"`
 }
 
+// DiscoURL is the URL used for fetching the discovery files and signatures
 var DiscoURL = "https://disco.eduvpn.org/v2/"
 
 // file is a helper function that gets a disco JSON and fills the structure with it
@@ -123,11 +124,12 @@ func (discovery *Discovery) ServerByURL(
 	return nil, fmt.Errorf("no server of type '%s' at URL '%s'", srvType, baseURL)
 }
 
-type CountryNotFoundError struct {
+// ErrCountryNotFound is used when the secure internet country cannot be found
+type ErrCountryNotFound struct {
 	CountryCode string
 }
 
-func (cnf *CountryNotFoundError) Error() string {
+func (cnf *ErrCountryNotFound) Error() string {
 	return fmt.Sprintf("no secure internet server with country code: '%s'", cnf.CountryCode)
 }
 
@@ -139,7 +141,7 @@ func (discovery *Discovery) ServerByCountryCode(countryCode string) (*discotypes
 			return &srv, nil
 		}
 	}
-	return nil, &CountryNotFoundError{CountryCode: countryCode}
+	return nil, &ErrCountryNotFound{CountryCode: countryCode}
 }
 
 // orgByID returns the discovery organization by the organization ID

@@ -9,6 +9,7 @@ import (
 	"golang.org/x/net/icmp"
 )
 
+// NewPinger creates a new pinger with gateway `gateway` and size `size`
 func NewPinger(gateway string, size int) (*Pinger, error) {
 	l, err := icmp.ListenPacket("udp4", "0.0.0.0")
 	if err != nil {

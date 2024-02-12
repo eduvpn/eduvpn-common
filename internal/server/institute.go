@@ -11,6 +11,11 @@ import (
 	"github.com/jwijenbergh/eduoauth-go"
 )
 
+// AddInstitute adds an institute access server
+// `ctx` is the context used for cancellation
+// `disco` are the discovery servers
+// `id` is the identifier for the server, the base url
+// `na` is true when authorization should not be triggered
 func (s *Servers) AddInstitute(ctx context.Context, disco *discovery.Discovery, id string, na bool) (*Server, error) {
 	// This is basically done to double check if the server is part of the institute access section of disco
 	dsrv, err := disco.ServerByURL(id, "institute_access")
@@ -43,6 +48,12 @@ func (s *Servers) AddInstitute(ctx context.Context, disco *discovery.Discovery, 
 	return &inst, nil
 }
 
+// GetInstitute gets an institute access server
+// `ctx` is the context used for cancellation
+// `id` is the identifier for the server, the base url
+// `disco` are the discovery servers
+// `tok` are the tokens such that we do not have to trigger auth
+// `disableAuth` is true when auth should never be triggered
 func (s *Servers) GetInstitute(ctx context.Context, id string, disco *discovery.Discovery, tok *eduoauth.Token, disableAuth bool) (*Server, error) {
 	// This is basically done to double check if the server is part of the institute access section of disco
 	dsrv, err := disco.ServerByURL(id, "institute_access")

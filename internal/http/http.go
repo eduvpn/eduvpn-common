@@ -146,7 +146,7 @@ type Client struct {
 	Timeout time.Duration
 }
 
-// Returns a HTTP client with some default settings
+// NewClient returns a HTTP client with some default settings
 func NewClient(client *http.Client) *Client {
 	c := client
 	if c == nil {
@@ -169,7 +169,7 @@ func (c *Client) PostWithOpts(ctx context.Context, url string, opts *OptionalPar
 	return c.Do(ctx, http.MethodPost, url, opts)
 }
 
-// MethodWithOpts Do send a HTTP request using a method (e.g. GET, POST), an url and optional parameters
+// Do sends a HTTP request using a method (e.g. GET, POST), an url and optional parameters
 // It returns the HTTP headers, the body and an error if there is one.
 func (c *Client) Do(ctx context.Context, method string, urlStr string, opts *OptionalParams) (http.Header, []byte, error) {
 	// Make sure the url contains all the parameters

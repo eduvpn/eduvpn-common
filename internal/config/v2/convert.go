@@ -15,11 +15,11 @@ func v1AuthTime(st time.Time, ost time.Time) time.Time {
 	return ost
 }
 
-func convertV1Server(list v1.InstituteServers, iscurrent bool, t server.Type) (map[ServerType]*Server, *ServerType) {
-	ret := make(map[ServerType]*Server)
-	var lc *ServerType
+func convertV1Server(list v1.InstituteServers, iscurrent bool, t server.Type) (map[ServerKey]*Server, *ServerKey) {
+	ret := make(map[ServerKey]*Server)
+	var lc *ServerKey
 	for k, v := range list.Map {
-		key := ServerType{
+		key := ServerKey{
 			T:  t,
 			ID: k,
 		}
@@ -37,10 +37,11 @@ func convertV1Server(list v1.InstituteServers, iscurrent bool, t server.Type) (m
 	return ret, lc
 }
 
+// FromV1 converts a version 1 state struct into a v2 one
 func FromV1(ver1 *v1.V1) *V2 {
 	gsrvs := ver1.Servers
 
-	var lc *ServerType
+	var lc *ServerKey
 	cust, glc := convertV1Server(gsrvs.Custom, gsrvs.IsType == server.TypeCustom, server.TypeCustom)
 	if lc == nil {
 		lc = glc
@@ -64,7 +65,7 @@ func FromV1(ver1 *v1.V1) *V2 {
 	}
 	v, ok := sec.BaseMap[sec.CurrentLocation]
 	if v != nil && ok {
-		t := ServerType{
+		t := ServerKey{
 			T:  server.TypeSecureInternet,
 			ID: sec.HomeOrganizationID,
 		}

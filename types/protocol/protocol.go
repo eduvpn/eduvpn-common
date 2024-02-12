@@ -1,4 +1,4 @@
-// package protocol contains hte public type that have to do with VPN protocols
+// Package protocol contains hte public type that have to do with VPN protocols
 package protocol
 
 // Protocol defines an 'enumeration' of protocols

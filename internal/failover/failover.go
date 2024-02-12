@@ -1,3 +1,5 @@
+// Package failover implements the failover procedure
+// by sending pings and checking if the VPN is up
 package failover
 
 import (

@@ -13,12 +13,14 @@ import (
 // mtuOverhead defines the total MTU overhead for an ICMP ECHO message: 20 bytes IP header + 8 bytes ICMP header
 var mtuOverhead = 28
 
+// Pinger sends pings
 type Pinger struct {
 	listener net.PacketConn
 	buffer   []byte
 	gateway  net.Addr
 }
 
+// Read reads from the ping listener with deadline `deadline`
 func (p Pinger) Read(deadline time.Time) error {
 	// First set the deadline to read
 	err := p.listener.SetReadDeadline(deadline)
@@ -43,6 +45,7 @@ func (p Pinger) Read(deadline time.Time) error {
 	}
 }
 
+// Send sends a single ping
 func (p Pinger) Send(seq int) error {
 	errorMessage := fmt.Sprintf("failed sending ping, seq %d", seq)
 	// Make a new ICMP message

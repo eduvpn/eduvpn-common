@@ -1,4 +1,4 @@
-// package server defines public types that have to deal with the VPN server
+// Package server defines public types that have to deal with the VPN server
 package server
 
 import (
@@ -23,7 +23,7 @@ const (
 	TypeCustom
 )
 
-// This is here to support V1 configs which had the server type as a string
+// UnmarshalJSON is set here here to support V1 configs which had the server type as a string
 func (t *Type) UnmarshalJSON(data []byte) error {
 	// First try to just unmarshal the type
 	var num int8

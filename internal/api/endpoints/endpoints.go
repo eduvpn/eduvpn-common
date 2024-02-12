@@ -1,3 +1,5 @@
+// Package endpoints defines a wrapper around the various
+// endpoints returned by an eduVPN server in well-known
 package endpoints
 
 import (
@@ -5,21 +7,30 @@ import (
 	"net/url"
 )
 
+// List is the list of endpoints as returned by the eduVPN server
 type List struct {
-	API           string `json:"api_endpoint"`
+	// API is the API endpoint which we use for calls such as /info, /connect, ...
+	API string `json:"api_endpoint"`
+	// Authorization is the authorization endpoint for OAuth
 	Authorization string `json:"authorization_endpoint"`
-	Token         string `json:"token_endpoint"`
+	// Token is the token endpoint for OAuth
+	Token string `json:"token_endpoint"`
 }
 
+// Versions is the endpoints separated by API version
 type Versions struct {
+	// V2 is the legacy V2 API, this is not used
 	V2 List `json:"http://eduvpn.org/api#2"`
+	// V3 is the newest API, which we use
 	V3 List `json:"http://eduvpn.org/api#3"`
 }
 
 // Endpoints defines the json format for /.well-known/vpn-user-portal".
 type Endpoints struct {
+	// API defines the API endpoints, split by version
 	API Versions `json:"api"`
-	V   string   `json:"v"`
+	// V is the version string for the server
+	V string `json:"v"`
 }
 
 // Validate validates the endpoints by parsing them and checking the scheme is HTTP

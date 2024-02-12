@@ -10,12 +10,17 @@ import (
 
 type cacheMap map[string]eduoauth.Token
 
+// TokenCacher is a structure that caches tokens for each type of server
 type TokenCacher struct {
+	// InstituteAccess is the cached map for institute access servers
 	InstituteAccess cacheMap
-	CustomServer    cacheMap
-	SecureInternet  *eduoauth.Token
+	// CustomServer is the cached map for custom server
+	CustomServer cacheMap
+	// SecureInternet is the cached map for the secure internet server
+	SecureInternet *eduoauth.Token
 }
 
+// Get gets tokens from the cache map
 func (c *cacheMap) Get(id string) (*eduoauth.Token, error) {
 	if c == nil || len(*c) == 0 {
 		return nil, errors.New("no cache map available")
@@ -26,6 +31,7 @@ func (c *cacheMap) Get(id string) (*eduoauth.Token, error) {
 	return nil, fmt.Errorf("identifier: '%s' does not exist in token cache map", id)
 }
 
+// Get gets tokens using a server id and type from the cacher
 func (tc *TokenCacher) Get(id string, t srvtypes.Type) (*eduoauth.Token, error) {
 	switch t {
 	case srvtypes.TypeCustom:
@@ -41,6 +47,7 @@ func (tc *TokenCacher) Get(id string, t srvtypes.Type) (*eduoauth.Token, error) 
 	return nil, fmt.Errorf("invalid type for token cacher get: %d", t)
 }
 
+// Set updates the cache for the server id `id` with tokens `t`
 func (c *cacheMap) Set(id string, t eduoauth.Token) {
 	if c == nil || len(*c) == 0 {
 		*c = make(cacheMap)
@@ -48,6 +55,7 @@ func (c *cacheMap) Set(id string, t eduoauth.Token) {
 	(*c)[id] = t
 }
 
+// Set updates the top-level cacher for a specific server type
 func (tc *TokenCacher) Set(id string, t srvtypes.Type, tok eduoauth.Token) error {
 	switch t {
 	case srvtypes.TypeCustom:
