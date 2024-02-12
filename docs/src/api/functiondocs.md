@@ -168,6 +168,17 @@ Signature:
  ```go
 func CookieNew() C.uintptr_t
 ```
+CookieNew creates a new cookie and returns it
+
+This value should not be parsed or converted somehow by the client This
+value is simply to pass back to the Go library This value has two purposes:
+
+  - Cancel a long running function
+
+  - Send a reply to a state transition (ASK_PROFILE and ASK_LOCATION)
+
+# Functions that take a cookie have it as the first argument
+
 Example Input: ```CookieNew()```
 
 Example Output: ```5```
@@ -821,17 +832,21 @@ Example Output: ```1, null```
 ## StartProxyguard
 Signature:
  ```go
-func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char) *C.char
+func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char, proxyFD C.ProxyFD) *C.char
 ```
-StartProxyguard starts the 'proxyguard' procedure in eduvpn-common. This
-proxies WireGuard UDP connections over TCP. These input variables can be
-gotten from the configuration that is retrieved using the `proxy` json key
+StartProxyguard starts the 'proxyguard' procedure in
+eduvpn-common. This proxies WireGuard UDP connections over HTTP:
+https://codeberg.org/eduvpn/proxyguard. These input variables can be gotten
+from the configuration that is retrieved using the `proxy` JSON key
 
   - `c` is the cookie
   - `listen` is the ip:port of the local udp connection, this is what is set
     to the WireGuard endpoint
   - `tcpsp` is the TCP source port
   - `peer` is the ip:port of the remote server
+  - `proxyFD` is a callback with the file descriptor as only argument.
+    It can be used to set certain socket option, e.g. to exclude the proxy
+    connection from going over the VPN
 
 If the proxy cannot be started it returns an error
 
