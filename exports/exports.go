@@ -23,6 +23,7 @@ typedef int (*StateCB)(int oldstate, int newstate, void* data);
 
 typedef void (*TokenGetter)(const char* server_id, int server_type, char* out, size_t len);
 typedef void (*TokenSetter)(const char* server_id, int server_type, const char* tokens);
+typedef void (*ProxyFD)(int fd);
 
 static long long int get_read_rx_bytes(ReadRxBytes read)
 {
@@ -40,6 +41,9 @@ static void call_token_setter(TokenSetter setter, const char* server_id, int ser
 {
     setter(server_id, server_type, tokens);
 }
+static void call_proxy_fd(ProxyFD proxyfd, int fd)
+{
+    proxyfd(fd);
 }
 */
 import "C"
@@ -883,18 +887,20 @@ func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.Read
 }
 
 // StartProxyguard starts the 'proxyguard' procedure in eduvpn-common.
-// This proxies WireGuard UDP connections over TCP.
+// This proxies WireGuard UDP connections over HTTP: https://codeberg.org/eduvpn/proxyguard.
 // These input variables can be gotten from the configuration that is retrieved using the `proxy` JSON key
 //
 //   - `c` is the cookie
 //   - `listen` is the ip:port of the local udp connection, this is what is set to the WireGuard endpoint
 //   - `tcpsp` is the TCP source port
 //   - `peer` is the ip:port of the remote server
+//   - `proxyFD` is a callback with the file descriptor as only argument. It can be used to set certain
+//     socket option, e.g. to exclude the proxy connection from going over the VPN
 //
 // If the proxy cannot be started it returns an error
 //
 //export StartProxyguard
-func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char) *C.char {
+func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char, proxyFD C.ProxyFD) *C.char {
 	state, stateErr := getVPNState()
 	if stateErr != nil {
 		return getCError(stateErr)
@@ -904,7 +910,12 @@ func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char) *
 		return getCError(err)
 	}
 
-	proxyErr := state.StartProxyguard(ck, C.GoString(listen), int(tcpsp), C.GoString(peer))
+	proxyErr := state.StartProxyguard(ck, C.GoString(listen), int(tcpsp), C.GoString(peer), func(fd int) {
+		if proxyFD == nil {
+			return
+		}
+		C.call_proxy_fd(proxyFD, C.int(fd))
+	})
 	return getCError(proxyErr)
 }
 

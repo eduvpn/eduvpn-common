@@ -20,10 +20,11 @@ func (pl *ProxyLogger) Log(msg string) {
 	log.Logger.Debugf("%s", msg)
 }
 
-func (c *Client) StartProxyguard(ck *cookie.Cookie, listen string, tcpsp int, peer string) error {
 // StartProxyguard starts proxyguard for proxied WireGuard connections
+func (c *Client) StartProxyguard(ck *cookie.Cookie, listen string, tcpsp int, peer string, gotFD func(fd int)) error {
 	var err error
 	proxyguard.UpdateLogger(&ProxyLogger{})
+	proxyguard.GotClientFD = gotFD
 	err = proxyguard.Client(ck.Context(), listen, tcpsp, peer, -1)
 	if err != nil {
 		return i18nerr.Wrap(err, "The VPN proxy exited")
