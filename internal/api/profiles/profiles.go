@@ -80,7 +80,7 @@ func (p *Profile) ShouldFailover() bool {
 		return p.HasOpenVPN()
 	}
 	for _, c := range p.VPNProtoTransportList {
-		if c == "wireguard+tcp" {
+		if c == "wireguard+proxy" {
 			return true
 		}
 		if c == "openvpn+tcp" {
