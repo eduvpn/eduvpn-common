@@ -1,4 +1,12 @@
 # Unreleased
+* OAuth:
+    - Move to github.com/jwijenbergh/eduoauth-go
+* WireGuard:
+    - Support WireGuard over TCP using https://codeberg.org/eduVPN/proxyguard
+* Dependencies:
+    - Remove github.com/go-errors/errors
+* State:
+    - Create a new state file (v2), but automatically convert from version 1 to 2
 * Data transmission:
     - Move from Go->C types->language X types to using: Go struct -> JSON as a c string -> Language unmarshalls JSON. This eliminates a lot of code and makes it easier for clients to Go and the clients to convert data.
 	- The data that clients receive is handled in the `types` folder
@@ -11,18 +19,19 @@
     - Support Windows by using an ip4:icmp ping instead of udp4
 * Errors:
     - Translate errors that are returned to clients using golang.org/x/text and use Weblate
-	- Split into "internal" errors and actual errors. Internal errors are errors that *should not* happen and will thus also not be translated. These internal errors are mostly due to a client fault, e.g. trying to get discovery servers when the client is Let's Connect!
+    - Split into "internal" errors and actual errors. Internal errors are errors that *should not* happen and will thus also not be translated. These internal errors are mostly due to a client fault, e.g. trying to get discovery servers when the client is Let's Connect!
 * Cancellation:
     - Support contexts in the Go API such that almost any action can be cancelled, e.g. HTTP requests.
-	- Support these contexts in the exported API by creating so-called "cookies". The way it works is that clients create a cookie and then pass it to a function. When the client was to cancel any function that uses this cookie it calls "CookieCancel". These same cookies are also used as identifiers to reply to state transitions, e.g. "here is the profile I have chosen" or "here is the secure internet location I want to choose".
+    - Support these contexts in the exported API by creating so-called "cookies". The way it works is that clients create a cookie and then pass it to a function. When the client was to cancel any function that uses this cookie it calls "CookieCancel". These same cookies are also used as identifiers to reply to state transitions, e.g. "here is the profile I have chosen" or "here is the secure internet location I want to choose".
 * FSM:
     - Properly restore the previous state when an error occurs instead of almost always going back to `NoServer`
+    - Simplified to use less states
 * CI + Docker:
     - Use https://codeberg.org/eduvpn/deploy instead of https://codeberg.org/eduvpn/documentation for the deployment scripts
 * Docs:
     - Autogenerate exports docs using genexportsdoc.py
-	- Rewrite a large portion of the API section
-	- Support mermaid graphs using mdbook-mermaid
+    - Rewrite a large portion of the API section
+    - Support mermaid graphs using mdbook-mermaid
 
 # 1.1.2 (2023-09-01)
 * Server:
