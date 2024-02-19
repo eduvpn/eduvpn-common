@@ -19,177 +19,16 @@
             "fuzzy": true
         },
         {
-            "id": "An error occurred after getting the discovery files for the list of organizations",
-            "message": "An error occurred after getting the discovery files for the list of organizations",
-            "translation": "An error occurred after getting the discovery files for the list of organizations",
+            "id": "The current server was not found when getting the VPN expiration date",
+            "message": "The current server was not found when getting the VPN expiration date",
+            "translation": "The current server was not found when getting the VPN expiration date",
             "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "An error occurred after getting the discovery files for the list of servers",
-            "message": "An error occurred after getting the discovery files for the list of servers",
-            "translation": "An error occurred after getting the discovery files for the list of servers",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "The current server could not be found when getting it for expiry",
-            "message": "The current server could not be found when getting it for expiry",
-            "translation": "The current server could not be found when getting it for expiry",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
-            "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
-            "translation": "The client tried to autoconnect to the VPN server: {Namesrv}, but no secure internet location is found. Please manually connect again",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Namesrv",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "server.Name(srv)"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "The secure internet location could not be set",
-            "message": "The secure internet location could not be set",
-            "translation": "The secure internet location could not be set",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
-            "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
-            "translation": "The client tried to autoconnect to the VPN server: {Namesrv}, but you need to authorizate again. Please manually connect again",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Namesrv",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "server.Name(srv)"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "The authorization procedure failed to complete",
-            "message": "The authorization procedure failed to complete",
-            "translation": "The authorization procedure failed to complete",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
-            "message": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
-            "translation": "The client tried to autoconnect to the VPN server: {Namesrv}, but no valid profiles were found. Please manually connect again",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Namesrv",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "server.Name(srv)"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "No suitable profiles could be found",
-            "message": "No suitable profiles could be found",
-            "translation": "No suitable profiles could be found",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Profile with ID: '{PID}' could not be set",
-            "message": "Profile with ID: '{PID}' could not be set",
-            "translation": "Profile with ID: '{PID}' could not be set",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "PID",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "pID"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Profile with ID: '{PID}' could not be obtained from the server",
-            "message": "Profile with ID: '{PID}' could not be obtained from the server",
-            "translation": "Profile with ID: '{PID}' could not be obtained from the server",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "PID",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "pID"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "The identifier that was passed to the library is incorrect",
-            "message": "The identifier that was passed to the library is incorrect",
-            "translation": "The identifier that was passed to the library is incorrect",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
-            "message": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
-            "translation": "Could not retrieve institute access server with URL: '{Identifier}' from discovery",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Identifier",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "identifier"
-                }
-            ],
             "fuzzy": true
         },
         {
             "id": "The institute access server with URL: '{Identifier}' could not be added",
             "message": "The institute access server with URL: '{Identifier}' could not be added",
             "translation": "The institute access server with URL: '{Identifier}' could not be added",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Identifier",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "identifier"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "The secure internet server with organisation ID: '{Identifier}' could not be retrieved from discovery",
-            "message": "The secure internet server with organisation ID: '{Identifier}' could not be retrieved from discovery",
-            "translation": "The secure internet server with organisation ID: '{Identifier}' could not be retrieved from discovery",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -238,55 +77,9 @@
             "fuzzy": true
         },
         {
-            "id": "The VPN configuration could not be obtained",
-            "message": "The VPN configuration could not be obtained",
-            "translation": "The VPN configuration could not be obtained",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "The current profile could not be found",
-            "message": "The current profile could not be found",
-            "translation": "The current profile could not be found",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
-            "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
-            "translation": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Identifier",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "identifier"
-                },
-                {
-                    "id": "Type",
-                    "string": "%[2]d",
-                    "type": "github.com/eduvpn/eduvpn-common/types/server.Type",
-                    "underlyingType": "int8",
-                    "argNum": 2,
-                    "expr": "_type"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "The operation for getting a VPN configuration was canceled",
-            "message": "The operation for getting a VPN configuration was canceled",
-            "translation": "The operation for getting a VPN configuration was canceled",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Failed to set the server with identifier: '{Identifier}' as the current",
-            "message": "Failed to set the server with identifier: '{Identifier}' as the current",
-            "translation": "Failed to set the server with identifier: '{Identifier}' as the current",
+            "id": "input: '{Identifier}' is not a valid URL",
+            "message": "input: '{Identifier}' is not a valid URL",
+            "translation": "input: '{Identifier}' is not a valid URL",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -301,9 +94,9 @@
             "fuzzy": true
         },
         {
-            "id": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
-            "message": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
-            "translation": "Identifier: '{Identifier}' for server with type: '{Type}' is not valid for removal",
+            "id": "Server identifier: '{Identifier}', is not valid when getting a VPN configuration",
+            "message": "Server identifier: '{Identifier}', is not valid when getting a VPN configuration",
+            "translation": "Server identifier: '{Identifier}', is not valid when getting a VPN configuration",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -313,57 +106,192 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "identifier"
-                },
-                {
-                    "id": "Type",
-                    "string": "%[2]d",
-                    "type": "github.com/eduvpn/eduvpn-common/types/server.Type",
-                    "underlyingType": "int8",
-                    "argNum": 2,
-                    "expr": "_type"
                 }
             ],
             "fuzzy": true
         },
         {
-            "id": "Failed to get the current server to cleanup the connection",
-            "message": "Failed to get the current server to cleanup the connection",
-            "translation": "Failed to get the current server to cleanup the connection",
+            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
+            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
+            "translation": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
+            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
+            "translation": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Server: '{Identifier}' could not be obtained",
+            "message": "Server: '{Identifier}' could not be obtained",
+            "translation": "Server: '{Identifier}' could not be obtained",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "No VPN configuration for server: '{Identifier}' could be obtained",
+            "message": "No VPN configuration for server: '{Identifier}' could be obtained",
+            "translation": "No VPN configuration for server: '{Identifier}' could be obtained",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Server identifier: '{Identifier}', is not valid when removing the server",
+            "message": "Server identifier: '{Identifier}', is not valid when removing the server",
+            "translation": "Server identifier: '{Identifier}', is not valid when removing the server",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The server: '{Identifier}' could not be removed",
+            "message": "The server: '{Identifier}' could not be removed",
+            "translation": "The server: '{Identifier}' could not be removed",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The current server could not be retrieved",
+            "message": "The current server could not be retrieved",
+            "translation": "The current server could not be retrieved",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "The cleanup process was canceled",
-            "message": "The cleanup process was canceled",
-            "translation": "The cleanup process was canceled",
+            "id": "Failed to set the profile ID: '{PID}'",
+            "message": "Failed to set the profile ID: '{PID}'",
+            "translation": "Failed to set the profile ID: '{PID}'",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PID",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "pID"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The current server was not found when cleaning up the connection",
+            "message": "The current server was not found when cleaning up the connection",
+            "translation": "The current server was not found when cleaning up the connection",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Failed to cleanup the VPN connection for the current server",
-            "message": "Failed to cleanup the VPN connection for the current server",
-            "translation": "Failed to cleanup the VPN connection for the current server",
+            "id": "No OAuth tokens were found when cleaning up the connection",
+            "message": "No OAuth tokens were found when cleaning up the connection",
+            "translation": "No OAuth tokens were found when cleaning up the connection",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "No secure internet server available to set a location for",
-            "message": "No secure internet server available to set a location for",
-            "translation": "No secure internet server available to set a location for",
+            "id": "The server was unable to be retrieved when cleaning up the connection",
+            "message": "The server was unable to be retrieved when cleaning up the connection",
+            "translation": "The server was unable to be retrieved when cleaning up the connection",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Failed to get current server for renewing the session",
-            "message": "Failed to get current server for renewing the session",
-            "translation": "Failed to get current server for renewing the session",
+            "id": "Failed to cleanup the VPN connection",
+            "message": "Failed to cleanup the VPN connection",
+            "translation": "Failed to cleanup the VPN connection",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "The renewing process was canceled",
-            "message": "The renewing process was canceled",
-            "translation": "The renewing process was canceled",
+            "id": "Failed to get the secure internet server with id: '{OrgID}' for setting a location",
+            "message": "Failed to get the secure internet server with id: '{OrgID}' for setting a location",
+            "translation": "Failed to get the secure internet server with id: '{OrgID}' for setting a location",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "OrgID",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "orgID"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The current server could not be retrieved when renewing the session",
+            "message": "The current server could not be retrieved when renewing the session",
+            "translation": "The current server could not be retrieved when renewing the session",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The server was unable to be retrieved when renewing the session",
+            "message": "The server was unable to be retrieved when renewing the session",
+            "translation": "The server was unable to be retrieved when renewing the session",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -393,10 +321,49 @@
             "fuzzy": true
         },
         {
-            "id": "timeout reached",
-            "message": "timeout reached",
-            "translation": "timeout reached",
+            "id": "An error occurred after getting the discovery files for the list of organizations",
+            "message": "An error occurred after getting the discovery files for the list of organizations",
+            "translation": "An error occurred after getting the discovery files for the list of organizations",
             "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "An error occurred after getting the discovery files for the list of servers",
+            "message": "An error occurred after getting the discovery files for the list of servers",
+            "translation": "An error occurred after getting the discovery files for the list of servers",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The VPN proxy exited",
+            "message": "The VPN proxy exited",
+            "translation": "The VPN proxy exited",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
+            "message": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
+            "translation": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "URL",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "tErr.URL"
+                },
+                {
+                    "id": "Method",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "tErr.Method"
+                }
+            ],
             "fuzzy": true
         },
         {
