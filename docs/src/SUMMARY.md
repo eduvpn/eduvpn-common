@@ -18,3 +18,4 @@
   - [Let's build a client](./api/letsbuildaclient.md)
   - [Code examples](./api/codeexamples.md)
   - [Function docs](./api/functiondocs.md)
+  - [Breaking changes](./api/breaking.md)
