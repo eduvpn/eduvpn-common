@@ -861,7 +861,8 @@ from the configuration that is retrieved using the `proxy` JSON key
     connection from going over the VPN
   - `proxyReady` is a callback when the proxy is ready to be used. This is
     only called when the client is not connected yet. Use this to determine
-    when the actual wireguard connection can be started
+    when the actual wireguard connection can be started. This callback
+    returns and takes no arguments
 
 If the proxy cannot be started it returns an error
 
