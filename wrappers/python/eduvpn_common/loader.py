@@ -6,6 +6,8 @@ from ctypes import CDLL, c_char_p, c_int, c_void_p, cdll
 from eduvpn_common import __version__
 from eduvpn_common.types import (
     BoolError,
+    GotProxyFD,
+    ProxyReady,
     DataError,
     ReadRxBytes,
     TokenGetter,
@@ -130,5 +132,6 @@ def initialize_functions(lib: CDLL) -> None:
         c_char_p,
         c_int,
         c_char_p,
-        c_void_p,
+        GotProxyFD,
+        ProxyReady,
     ], c_void_p
