@@ -933,6 +933,9 @@ func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char, p
 		}
 		C.call_proxy_fd(proxyFD, C.int(fd))
 	}, func() {
+		if proxyReady == nil {
+			return
+		}
 		C.call_proxy_ready(proxyReady)
 	})
 	return getCError(proxyErr)
