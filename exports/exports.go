@@ -912,7 +912,7 @@ func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.Read
 //   - `peer` is the ip:port of the remote server
 //   - `proxyFD` is a callback with the file descriptor as only argument. It can be used to set certain
 //     socket option, e.g. to exclude the proxy connection from going over the VPN
-//   - `proxyReady` is a callback when the proxy is ready to be used. This is only called when the client is not connected yet. Use this to determine when the actual wireguard connection can be started
+//   - `proxyReady` is a callback when the proxy is ready to be used. This is only called when the client is not connected yet. Use this to determine when the actual wireguard connection can be started. This callback returns and takes no arguments
 //
 // If the proxy cannot be started it returns an error
 //
