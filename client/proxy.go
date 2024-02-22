@@ -28,7 +28,16 @@ func (c *Client) StartProxyguard(ck *cookie.Cookie, listen string, tcpsp int, pe
 	var err error
 	proxyguard.UpdateLogger(&ProxyLogger{})
 	proxyguard.GotClientFD = gotFD
-	proxyguard.ClientProxyReady = ready
+	proxyguard.ClientProxyReady = func() {
+		// already connected
+		// no need to signal to the client that the proxy is ready
+		if c.InState(StateConnected) {
+			log.Logger.Debugf("proxyguard is ready again when the client was already connected")
+			return
+		}
+		log.Logger.Debugf("forwarding proxyguard ready callback to client")
+		ready()
+	}
 
 	u, err := url.Parse(peer)
 	if err != nil {
