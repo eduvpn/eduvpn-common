@@ -3,7 +3,7 @@ module github.com/eduvpn/eduvpn-common
 go 1.18
 
 require (
-	codeberg.org/eduVPN/proxyguard v0.0.0-20240222150137-7a64d5af6bd2
+	codeberg.org/eduVPN/proxyguard v0.0.0-20240223093313-0b7963ba28b9
 	github.com/jedisct1/go-minisign v0.0.0-20230811132847-661be99b8267
 	github.com/jwijenbergh/eduoauth-go v0.0.0-20240212102633-770ef228bd93
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
