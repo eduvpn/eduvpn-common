@@ -1,9 +1,6 @@
 package client
 
 import (
-	"net"
-	"net/url"
-
 	"codeberg.org/eduVPN/proxyguard"
 	"github.com/eduvpn/eduvpn-common/i18nerr"
 	"github.com/eduvpn/eduvpn-common/internal/log"
@@ -39,17 +36,8 @@ func (c *Client) StartProxyguard(ck *cookie.Cookie, listen string, tcpsp int, pe
 		ready()
 	}
 
-	u, err := url.Parse(peer)
-	if err != nil {
-		return i18nerr.Wrap(err, "The peer is not a valid URL")
-	}
-
-	pips, err := net.DefaultResolver.LookupHost(ck.Context(), u.Host)
-	if err != nil {
-		return i18nerr.Wrapf(err, "Cannot lookup peer host: '%s'", u.Host)
-	}
-
-	err = proxyguard.Client(ck.Context(), listen, tcpsp, peer, pips, -1)
+	// we set peer IPs to nil here as proxyguard already does a DNS request for us
+	err = proxyguard.Client(ck.Context(), listen, tcpsp, peer, nil, -1)
 	if err != nil {
 		return i18nerr.Wrap(err, "The VPN proxy exited")
 	}
