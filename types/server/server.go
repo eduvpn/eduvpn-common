@@ -163,7 +163,8 @@ type Proxy struct {
 	SourcePort int `json:"source_port"`
 	// Listen is the ip:port for the client UDP connection, this is the value that is replaced in the config
 	Listen string `json:"listen"`
-	// Peer is the ip:port of the upstream server
+	// Peer is the URI of the upstream server
+	// Note that this exactly matches the "ProxyEndpoint" key in the WireGuard config
 	Peer string `json:"peer"`
 }
 
