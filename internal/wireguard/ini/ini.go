@@ -185,8 +185,7 @@ func (i *INI) String() string {
 	return out.String()
 }
 
-// Parse returns a slice of sections
-// we do not return a map as we want to ensure the same ordering of sections, keys and values
+// Parse returns the INI struct from a string `f`
 func Parse(f string) INI {
 	lines := strings.Split(f, "\n")
 
