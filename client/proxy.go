@@ -24,20 +24,21 @@ func (pl *ProxyLogger) Log(msg string) {
 func (c *Client) StartProxyguard(ck *cookie.Cookie, listen string, tcpsp int, peer string, gotFD func(fd int), ready func()) error {
 	var err error
 	proxyguard.UpdateLogger(&ProxyLogger{})
-	proxyguard.GotClientFD = gotFD
-	proxyguard.ClientProxyReady = func() {
-		// already connected
-		// no need to signal to the client that the proxy is ready
-		if c.InState(StateConnected) {
-			log.Logger.Debugf("proxyguard is ready again when the client was already connected")
-			return
-		}
-		log.Logger.Debugf("forwarding proxyguard ready callback to client")
-		ready()
+
+	proxyc := proxyguard.Client{
+		Listen: listen,
+		TCPSourcePort: tcpsp,
+		SetupSocket: func(fd int, _ []string) {
+			if gotFD != nil {
+				gotFD(fd)
+			}
+			// TODO: support peerips
+		},
+		Ready: ready,
 	}
 
 	// we set peer IPs to nil here as proxyguard already does a DNS request for us
-	err = proxyguard.Client(ck.Context(), listen, tcpsp, peer, nil, -1)
+	err = proxyc.Tunnel(ck.Context(), peer, nil)
 	if err != nil {
 		return i18nerr.Wrap(err, "The VPN proxy exited")
 	}
