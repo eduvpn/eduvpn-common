@@ -56,8 +56,6 @@ type API struct {
 	cb Callbacks
 	// oauth is the oauth object
 	oauth *eduoauth.OAuth
-	// apiURL is the API url to send a request to
-	apiURL string
 	// Data is the server data
 	Data ServerData
 }
