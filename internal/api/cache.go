@@ -52,6 +52,8 @@ var (
 	epCacheOnce sync.Once
 )
 
+// GetEndpointCache returns the global singleton endpoint cache
+// or creates one if it does not exist
 func GetEndpointCache() *EndpointCache {
 	epCacheOnce.Do(func() {
 		epCache = &EndpointCache{
