@@ -65,19 +65,19 @@ func NewAPI(ctx context.Context, clientID string, sd ServerData, cb Callbacks, t
 	cr := customRedirect(clientID)
 	// Construct OAuth
 	o := eduoauth.OAuth{
-		ClientID:             clientID,
+		ClientID: clientID,
 		EndpointFunc: func(ctx context.Context) (*eduoauth.EndpointResponse, error) {
-			ep, err := getEndpoints(ctx, sd.BaseAuthWK)
+			ep, err := GetEndpointCache().Get(ctx, sd.BaseAuthWK)
 			if err != nil {
 				return nil, err
 			}
 			return &eduoauth.EndpointResponse{
 				AuthorizationURL: ep.API.V3.Authorization,
-				TokenURL: ep.API.V3.Token,
+				TokenURL:         ep.API.V3.Token,
 			}, nil
 		},
-		CustomRedirect:       cr,
-		RedirectPath:         "/callback",
+		CustomRedirect: cr,
+		RedirectPath:   "/callback",
 		TokensUpdated: func(tok eduoauth.Token) {
 			cb.TokensUpdated(sd.ID, sd.Type, tok)
 		},
@@ -88,9 +88,9 @@ func NewAPI(ctx context.Context, clientID string, sd ServerData, cb Callbacks, t
 	}
 
 	api := &API{
-		cb:     cb,
-		oauth:  &o,
-		Data:   sd,
+		cb:    cb,
+		oauth: &o,
+		Data:  sd,
 	}
 	err := api.authorize(ctx)
 	if err != nil {
@@ -141,7 +141,7 @@ func (a *API) authorize(ctx context.Context) (err error) {
 }
 
 func (a *API) authorized(ctx context.Context, method string, endpoint string, opts *httpw.OptionalParams) (http.Header, []byte, error) {
-	ep, err := getEndpoints(ctx, a.Data.BaseWK)
+	ep, err := GetEndpointCache().Get(ctx, a.Data.BaseWK)
 	if err != nil {
 		return nil, nil, err
 	}
