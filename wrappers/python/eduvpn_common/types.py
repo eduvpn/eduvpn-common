@@ -34,7 +34,7 @@ class BoolError(Structure):
 
 # The type for a Go state change callback
 VPNStateChange = CFUNCTYPE(c_int, c_int, c_int, c_char_p)
-GotProxyFD = CFUNCTYPE(c_void_p, c_int)
+ProxySetup = CFUNCTYPE(c_void_p, c_int, c_char_p)
 ProxyReady = CFUNCTYPE(c_void_p)
 ReadRxBytes = CFUNCTYPE(c_ulonglong)
 TokenGetter = CFUNCTYPE(c_void_p, c_char_p, c_int, POINTER(c_char), c_size_t)

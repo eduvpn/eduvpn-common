@@ -23,7 +23,7 @@ typedef int (*StateCB)(int oldstate, int newstate, void* data);
 
 typedef void (*TokenGetter)(const char* server_id, int server_type, char* out, size_t len);
 typedef void (*TokenSetter)(const char* server_id, int server_type, const char* tokens);
-typedef void (*ProxyFD)(int fd);
+typedef void (*ProxySetup)(int fd, const char* peer_ips);
 typedef void (*ProxyReady)();
 
 static long long int get_read_rx_bytes(ReadRxBytes read)
@@ -42,9 +42,9 @@ static void call_token_setter(TokenSetter setter, const char* server_id, int ser
 {
     setter(server_id, server_type, tokens);
 }
-static void call_proxy_fd(ProxyFD proxyfd, int fd)
+static void call_proxy_setup(ProxySetup proxysetup, int fd, const char* peer_ips)
 {
-    proxyfd(fd);
+    proxysetup(fd, peer_ips);
 }
 static void call_proxy_ready(ProxyReady ready)
 {
@@ -910,14 +910,13 @@ func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.Read
 //   - `listen` is the ip:port of the local udp connection, this is what is set to the WireGuard endpoint
 //   - `tcpsp` is the TCP source port
 //   - `peer` is the ip:port of the remote server
-//   - `proxyFD` is a callback with the file descriptor as only argument. It can be used to set certain
-//     socket option, e.g. to exclude the proxy connection from going over the VPN
+//   - `proxySetup` is a callback which is called when the socket is setting up, this can be used for configuring routing in the client. It takes two arguments: the file descriptor (integer) and a JSON list of IPs the client connects to
 //   - `proxyReady` is a callback when the proxy is ready to be used. This is only called when the client is not connected yet. Use this to determine when the actual wireguard connection can be started. This callback returns and takes no arguments
 //
 // If the proxy cannot be started it returns an error
 //
 //export StartProxyguard
-func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char, proxyFD C.ProxyFD, proxyReady C.ProxyReady) *C.char {
+func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char, proxySetup C.ProxySetup, proxyReady C.ProxyReady) *C.char {
 	state, stateErr := getVPNState()
 	if stateErr != nil {
 		return getCError(stateErr)
@@ -927,11 +926,13 @@ func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char, p
 		return getCError(err)
 	}
 
-	proxyErr := state.StartProxyguard(ck, C.GoString(listen), int(tcpsp), C.GoString(peer), func(fd int) {
-		if proxyFD == nil {
+	proxyErr := state.StartProxyguard(ck, C.GoString(listen), int(tcpsp), C.GoString(peer), func(fd int, pips string) {
+		if proxySetup == nil {
 			return
 		}
-		C.call_proxy_fd(proxyFD, C.int(fd))
+		cpip := C.CString(pips)
+		C.call_proxy_setup(proxySetup, C.int(fd), cpip)
+		FreeString(cpip)
 	}, func() {
 		if proxyReady == nil {
 			return

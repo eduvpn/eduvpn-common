@@ -1,7 +1,10 @@
 package client
 
 import (
+	"encoding/json"
+
 	"codeberg.org/eduVPN/proxyguard"
+
 	"github.com/eduvpn/eduvpn-common/i18nerr"
 	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/types/cookie"
@@ -21,18 +24,23 @@ func (pl *ProxyLogger) Log(msg string) {
 }
 
 // StartProxyguard starts proxyguard for proxied WireGuard connections
-func (c *Client) StartProxyguard(ck *cookie.Cookie, listen string, tcpsp int, peer string, gotFD func(fd int), ready func()) error {
+func (c *Client) StartProxyguard(ck *cookie.Cookie, listen string, tcpsp int, peer string, gotFD func(fd int, pips string), ready func()) error {
 	var err error
 	proxyguard.UpdateLogger(&ProxyLogger{})
 
 	proxyc := proxyguard.Client{
-		Listen: listen,
+		Listen:        listen,
 		TCPSourcePort: tcpsp,
-		SetupSocket: func(fd int, _ []string) {
-			if gotFD != nil {
-				gotFD(fd)
+		SetupSocket: func(fd int, pips []string) {
+			if gotFD == nil {
+				return
 			}
-			// TODO: support peerips
+			b, err := json.Marshal(pips)
+			if err != nil {
+				log.Logger.Errorf("marshalling peer IPs failed: %v", err)
+				return
+			}
+			gotFD(fd, string(b))
 		},
 		Ready: ready,
 	}
