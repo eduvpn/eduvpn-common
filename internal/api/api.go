@@ -192,11 +192,11 @@ func (a *API) Disconnect(ctx context.Context) error {
 func (a *API) Info(ctx context.Context) (*profiles.Info, error) {
 	_, body, err := a.authorizedRetry(ctx, http.MethodGet, "/info", nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed API /info: %v", err)
+		return nil, fmt.Errorf("failed API /info: %w", err)
 	}
 	p := profiles.Info{}
 	if err = json.Unmarshal(body, &p); err != nil {
-		return nil, fmt.Errorf("failed API /info: %v", err)
+		return nil, fmt.Errorf("failed API /info: %w", err)
 	}
 	return &p, nil
 }
@@ -277,14 +277,14 @@ func (a *API) Connect(ctx context.Context, prof profiles.Profile, protos []proto
 	params := &httpw.OptionalParams{Headers: hdrs, Body: uv}
 	h, body, err := a.authorizedRetry(ctx, http.MethodPost, "/connect", params)
 	if err != nil {
-		return nil, fmt.Errorf("failed API /connect call: %v", err)
+		return nil, fmt.Errorf("failed API /connect call: %w", err)
 	}
 
 	// Parse expiry
 	expH := h.Get("expires")
 	expT, err := http.ParseTime(expH)
 	if err != nil {
-		return nil, fmt.Errorf("failed parsing expiry time: %v", err)
+		return nil, fmt.Errorf("failed parsing expiry time: %w", err)
 	}
 
 	vpnCfg := string(body)
