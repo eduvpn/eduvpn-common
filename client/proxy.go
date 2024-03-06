@@ -12,12 +12,12 @@ type ProxyLogger struct{}
 
 // Logf logs a message with parameters
 func (pl *ProxyLogger) Logf(msg string, params ...interface{}) {
-	log.Logger.Debugf(msg, params...)
+	log.Logger.Debugf("[Proxyguard] "+msg, params...)
 }
 
 // Log logs a message
 func (pl *ProxyLogger) Log(msg string) {
-	log.Logger.Debugf("%s", msg)
+	log.Logger.Debugf("[Proxyguard] %s", msg)
 }
 
 // StartProxyguard starts proxyguard for proxied WireGuard connections
