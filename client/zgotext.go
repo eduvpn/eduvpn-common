@@ -57,7 +57,7 @@ var messageKeyToIndex = map[string]int{
 	"No VPN configuration for server: '%s' could be obtained":                                                                   10,
 	"Server identifier: '%s', is not valid when getting a VPN configuration":                                                    6,
 	"Server identifier: '%s', is not valid when removing the server":                                                            11,
-	"Server: '%s' could not be obtained":                                                                                        9,
+	"Server: '%s' could not be connected to":                                                                                    9,
 	"The VPN proxy exited":                                                                                                      25,
 	"The client tried to autoconnect to the VPN server: '%s', but the operation failed to complete":                             8,
 	"The client tried to autoconnect to the VPN server: '%s', but you need to authorizate again. Please manually connect again": 7,
@@ -106,15 +106,15 @@ const deData string = ""
 var enIndex = []uint32{ // 30 elements
 	0x00000000, 0x0000003a, 0x00000080, 0x000000c1,
 	0x0000010d, 0x00000144, 0x00000166, 0x000001b0,
-	0x0000022d, 0x0000028e, 0x000002b4, 0x000002ef,
-	0x00000331, 0x0000035a, 0x00000384, 0x000003aa,
-	0x000003eb, 0x00000426, 0x0000046c, 0x00000491,
-	0x000004e2, 0x00000526, 0x00000566, 0x000005a9,
-	0x000005fb, 0x00000647, 0x0000065c, 0x00000696,
-	0x000006a2, 0x000006bd,
+	0x0000022d, 0x0000028e, 0x000002b8, 0x000002f3,
+	0x00000335, 0x0000035e, 0x00000388, 0x000003ae,
+	0x000003ef, 0x0000042a, 0x00000470, 0x00000495,
+	0x000004e6, 0x0000052a, 0x0000056a, 0x000005ad,
+	0x000005ff, 0x0000064b, 0x00000660, 0x0000069a,
+	0x000006a6, 0x000006c1,
 } // Size: 144 bytes
 
-const enData string = "" + // Size: 1725 bytes
+const enData string = "" + // Size: 1729 bytes
 	"\x02The log file with directory: '%[1]s' failed to initialize\x02The cur" +
 	"rent server was not found when getting the VPN expiration date\x02The in" +
 	"stitute access server with URL: '%[1]s' could not be added\x02The secure" +
@@ -124,23 +124,23 @@ const enData string = "" + // Size: 1725 bytes
 	"g a VPN configuration\x02The client tried to autoconnect to the VPN serv" +
 	"er: '%[1]s', but you need to authorizate again. Please manually connect " +
 	"again\x02The client tried to autoconnect to the VPN server: '%[1]s', but" +
-	" the operation failed to complete\x02Server: '%[1]s' could not be obtain" +
-	"ed\x02No VPN configuration for server: '%[1]s' could be obtained\x02Serv" +
-	"er identifier: '%[1]s', is not valid when removing the server\x02The ser" +
-	"ver: '%[1]s' could not be removed\x02The current server could not be ret" +
-	"rieved\x02Failed to set the profile ID: '%[1]s'\x02The current server wa" +
-	"s not found when cleaning up the connection\x02No OAuth tokens were foun" +
-	"d when cleaning up the connection\x02The server was unable to be retriev" +
-	"ed when cleaning up the connection\x02Failed to cleanup the VPN connecti" +
-	"on\x02Failed to get the secure internet server with id: '%[1]s' for sett" +
-	"ing a location\x02The current server could not be retrieved when renewin" +
-	"g the session\x02The server was unable to be retrieved when renewing the" +
-	" session\x02Failover failed to complete with gateway: '%[1]s' and MTU: '" +
-	"%[2]d'\x02An error occurred after getting the discovery files for the li" +
-	"st of organizations\x02An error occurred after getting the discovery fil" +
-	"es for the list of servers\x02The VPN proxy exited\x02timeout reached fo" +
-	"r URL: '%[1]s' and HTTP method: '%[2]s'\x02with cause:\x02An internal er" +
-	"ror occurred"
+	" the operation failed to complete\x02Server: '%[1]s' could not be connec" +
+	"ted to\x02No VPN configuration for server: '%[1]s' could be obtained\x02" +
+	"Server identifier: '%[1]s', is not valid when removing the server\x02The" +
+	" server: '%[1]s' could not be removed\x02The current server could not be" +
+	" retrieved\x02Failed to set the profile ID: '%[1]s'\x02The current serve" +
+	"r was not found when cleaning up the connection\x02No OAuth tokens were " +
+	"found when cleaning up the connection\x02The server was unable to be ret" +
+	"rieved when cleaning up the connection\x02Failed to cleanup the VPN conn" +
+	"ection\x02Failed to get the secure internet server with id: '%[1]s' for " +
+	"setting a location\x02The current server could not be retrieved when ren" +
+	"ewing the session\x02The server was unable to be retrieved when renewing" +
+	" the session\x02Failover failed to complete with gateway: '%[1]s' and MT" +
+	"U: '%[2]d'\x02An error occurred after getting the discovery files for th" +
+	"e list of organizations\x02An error occurred after getting the discovery" +
+	" files for the list of servers\x02The VPN proxy exited\x02timeout reache" +
+	"d for URL: '%[1]s' and HTTP method: '%[2]s'\x02with cause:\x02An interna" +
+	"l error occurred"
 
 var esIndex = []uint32{ // 30 elements
 	0x00000000, 0x0000004a, 0x0000004a, 0x0000004a,
@@ -247,4 +247,4 @@ var ukIndex = []uint32{ // 30 elements
 
 const ukData string = ""
 
-// Total table size 4752 bytes (4KiB); checksum: 1AA1A07B
+// Total table size 4756 bytes (4KiB); checksum: DAF4A7AF
