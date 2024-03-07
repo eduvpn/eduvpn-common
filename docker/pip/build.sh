@@ -1,5 +1,6 @@
 #!/bin/sh
 
+git pull origin --tags
 VERSION=$(git tag | sort -V | tail -1)
 mkdir -p out/"$VERSION"
 
