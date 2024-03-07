@@ -9,7 +9,7 @@
 set -e
 
 # change these to your liking
-BRANCH=v1
+BRANCH=main
 IS_PRERELEASE=true
 REPO="eduvpn/eduvpn-common"
 
