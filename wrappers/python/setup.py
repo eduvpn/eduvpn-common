@@ -106,7 +106,9 @@ class bdist_wheel(_bdist_wheel):
         if os.path.isdir(p):
             shutil.rmtree(p)
         os.makedirs(p)
-        shutil.copyfile(self.exports_lib_path + "/" + libpath, p+"/"+libpath.split("/")[-1])
+        shutil.copyfile(
+            self.exports_lib_path + "/" + libpath, p + "/" + libpath.split("/")[-1]
+        )
         _bdist_wheel.run(self)
         shutil.rmtree(p)
 
