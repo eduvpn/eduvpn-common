@@ -238,7 +238,7 @@ func convertSecure(orgID string, countryCode string, disco *discovery.Discovery)
 			},
 			CountryCode: countryCode,
 			Locations:   locs,
-			Delisted: true,
+			Delisted:    true,
 		}
 	}
 	return server.SecureInternet{
