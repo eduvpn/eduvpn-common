@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/http"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/verify"
 	discotypes "github.com/eduvpn/eduvpn-common/types/discovery"
 )
@@ -230,8 +231,10 @@ func (discovery *Discovery) Organizations(ctx context.Context) (*discotypes.Orga
 	err := discovery.file(ctx, file, discovery.OrganizationList.Version, &discovery.OrganizationList)
 	if err != nil {
 		// Return previous with an error
-		// TODO: Log here if we fail to get previous
-		orgs, _ := discovery.previousOrganizations()
+		orgs, perr := discovery.previousOrganizations()
+		if perr != nil {
+			log.Logger.Warningf("failed to get previous discovery organizations: %v", perr)
+		}
 		return orgs, err
 	}
 	discovery.OrganizationList.Timestamp = time.Now()
@@ -249,7 +252,10 @@ func (discovery *Discovery) Servers(ctx context.Context) (*discotypes.Servers, e
 	if err != nil {
 		// Return previous with an error
 		// TODO: Log here if we fail to get previous
-		srvs, _ := discovery.previousServers()
+		srvs, perr := discovery.previousServers()
+		if perr != nil {
+			log.Logger.Warningf("failed to get previous discovery servers: %v", perr)
+		}
 		return srvs, err
 	}
 	// Update servers timestamp
