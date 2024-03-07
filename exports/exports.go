@@ -317,7 +317,6 @@ func Deregister() *C.char {
 //
 //export AddServer
 func AddServer(c C.uintptr_t, _type C.int, id *C.char, ni C.int) *C.char {
-	// TODO: type
 	state, stateErr := getVPNState()
 	if stateErr != nil {
 		return getCError(stateErr)
