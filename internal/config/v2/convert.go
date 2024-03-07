@@ -26,8 +26,8 @@ func convertV1Server(list v1.InstituteServers, iscurrent bool, t server.Type) (m
 		if iscurrent && k == list.CurrentURL {
 			lc = &key
 		}
-		prfs := v.Profiles.Public()
-		prfs.Current = v.Profiles.Current
+		prfs := v.Base.Profiles.Public()
+		prfs.Current = v.Base.Profiles.Current
 		ret[key] = &Server{
 			Profiles:          prfs,
 			LastAuthorizeTime: v1AuthTime(v.Base.StartTime, v.Base.StartTimeOAuth),
@@ -42,11 +42,11 @@ func FromV1(ver1 *v1.V1) *V2 {
 	gsrvs := ver1.Servers
 
 	var lc *ServerKey
-	cust, glc := convertV1Server(gsrvs.Custom, gsrvs.IsType == server.TypeCustom, server.TypeCustom)
+	cust, glc := convertV1Server(gsrvs.Custom, gsrvs.IsType == v1.CustomServerType, server.TypeCustom)
 	if lc == nil {
 		lc = glc
 	}
-	res, glc := convertV1Server(gsrvs.Institute, gsrvs.IsType == server.TypeInstituteAccess, server.TypeInstituteAccess)
+	res, glc := convertV1Server(gsrvs.Institute, gsrvs.IsType == v1.InstituteAccessServerType, server.TypeInstituteAccess)
 	if lc == nil {
 		lc = glc
 	}
@@ -69,7 +69,7 @@ func FromV1(ver1 *v1.V1) *V2 {
 			T:  server.TypeSecureInternet,
 			ID: sec.HomeOrganizationID,
 		}
-		if gsrvs.IsType == server.TypeSecureInternet {
+		if gsrvs.IsType == v1.SecureInternetServerType {
 			lc = &t
 		}
 		prfs := v.Profiles.Public()

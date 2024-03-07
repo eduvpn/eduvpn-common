@@ -9,7 +9,6 @@ import (
 
 	"github.com/eduvpn/eduvpn-common/internal/api/profiles"
 	"github.com/eduvpn/eduvpn-common/internal/discovery"
-	"github.com/eduvpn/eduvpn-common/types/server"
 )
 
 // Profiles is the list of profiles
@@ -36,8 +35,6 @@ type Base struct {
 type InstituteServer struct {
 	// Base is the base of the server
 	Base Base `json:"base"`
-	// Profiles are the list of profiles
-	Profiles Profiles `json:"profiles"`
 }
 
 // InstituteServers is a list of institute access servers
@@ -67,6 +64,14 @@ type SecureInternetHome struct {
 	CurrentLocation string `json:"current_location"`
 }
 
+type Type int8
+
+const (
+	CustomServerType Type = iota
+	InstituteAccessServerType
+	SecureInternetServerType
+)
+
 // Servers represents the list of servers
 type Servers struct {
 	// Custom are the "custom" servers; the servers that are added by the user
@@ -77,7 +82,7 @@ type Servers struct {
 	// Also obtained through discovery
 	SecureInternetHome SecureInternetHome `json:"secure_internet_home"`
 	// IsType represents which server type was last configured
-	IsType server.Type `json:"is_secure_internet"`
+	IsType Type `json:"is_secure_internet"`
 }
 
 // V1 is the top-level struct for the first version of the state file
