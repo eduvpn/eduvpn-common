@@ -70,15 +70,10 @@ func (c *Client) GettingConfig() error {
 // It is called when a profile is invalid
 // Here we call the AskProfile transition
 func (c *Client) InvalidProfile(ctx context.Context, srv *server.Server) (string, error) {
-	// TODO: should this have profiles as a parameter
 	ck := cookie.NewWithContext(ctx)
-
-	prfs, err := srv.Profiles(ctx)
+	prfs, err := srv.Profiles()
 	if err != nil {
 		return "", err
-	}
-	if !c.SupportsWireguard {
-		prfs = prfs.FilterWireGuard()
 	}
 	// we are guaranteed to have profiles > 0 (even after filtering)
 	// because internally this callback is only triggered if there is a choice to make
@@ -87,7 +82,7 @@ func (c *Client) InvalidProfile(ctx context.Context, srv *server.Server) (string
 	go func() {
 		err := c.FSM.GoTransitionRequired(StateAskProfile, &srvtypes.RequiredAskTransition{
 			C:    ck,
-			Data: prfs.Public(),
+			Data: prfs,
 		})
 		if err != nil {
 			errChan <- err
