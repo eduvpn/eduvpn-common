@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/discovery"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/types/server"
 )
 
@@ -165,26 +166,17 @@ func (cfg *V2) PublicCurrent(disco *discovery.Discovery) (*server.Current, error
 	// SAFETY: LastChosen is guaranteed to be non-nil here
 	switch cfg.LastChosen.T {
 	case server.TypeInstituteAccess:
-		g, err := convertInstitute(cfg.LastChosen.ID, disco)
-		if err != nil {
-			return nil, err
-		}
+		g := convertInstitute(cfg.LastChosen.ID, disco)
 		g.Profiles = curr.Profiles
-		rcurr.Institute = g
+		rcurr.Institute = &g
 	case server.TypeSecureInternet:
-		g, err := convertSecure(cfg.LastChosen.ID, curr.CountryCode, disco)
-		if err != nil {
-			return nil, err
-		}
+		g := convertSecure(cfg.LastChosen.ID, curr.CountryCode, disco)
 		g.Profiles = curr.Profiles
-		rcurr.SecureInternet = g
+		rcurr.SecureInternet = &g
 	case server.TypeCustom:
-		g, err := convertCustom(cfg.LastChosen.ID)
-		if err != nil {
-			return nil, err
-		}
+		g := convertCustom(cfg.LastChosen.ID)
 		g.Profiles = curr.Profiles
-		rcurr.Custom = g
+		rcurr.Custom = &g
 	default:
 		return nil, fmt.Errorf("unknown connected type: %d", cfg.LastChosen.T)
 	}
@@ -192,81 +184,92 @@ func (cfg *V2) PublicCurrent(disco *discovery.Discovery) (*server.Current, error
 	return rcurr, nil
 }
 
-func convertInstitute(url string, disco *discovery.Discovery) (*server.Institute, error) {
+func convertInstitute(url string, disco *discovery.Discovery) server.Institute {
 	dsrv, err := disco.ServerByURL(url, "institute_access")
+	// server is delisted
 	if err != nil {
-		return nil, err
+		return server.Institute{
+			Server: server.Server{
+				DisplayName: map[string]string{
+					"en": url,
+				},
+				Identifier: url,
+			},
+			Delisted: true,
+		}
 	}
 
-	return &server.Institute{
+	return server.Institute{
 		Server: server.Server{
 			DisplayName: dsrv.DisplayName,
 			Identifier:  url,
 		},
 		SupportContacts: dsrv.SupportContact,
-	}, nil
+	}
 }
 
-func convertCustom(u string) (*server.Server, error) {
+func convertCustom(u string) server.Server {
+	dn := u
 	pu, err := url.Parse(u)
 	if err != nil {
-		return nil, err
+		log.Logger.Errorf("failed to parse server hostname: %v", err)
+	} else {
+		dn = pu.Hostname()
 	}
-	return &server.Server{
+	return server.Server{
 		DisplayName: map[string]string{
-			"en": pu.Hostname(),
+			"en": dn,
 		},
 		Identifier: u,
-	}, nil
+	}
 }
 
-func convertSecure(orgID string, countryCode string, disco *discovery.Discovery) (*server.SecureInternet, error) {
+func convertSecure(orgID string, countryCode string, disco *discovery.Discovery) server.SecureInternet {
 	dorg, _, err := disco.SecureHomeArgs(orgID)
+	locs := disco.SecureLocationList()
+	// server is delisted
 	if err != nil {
-		return nil, err
+		return server.SecureInternet{
+			Server: server.Server{
+				DisplayName: map[string]string{
+					"en": orgID,
+				},
+				Identifier: orgID,
+			},
+			CountryCode: countryCode,
+			Locations:   locs,
+			Delisted: true,
+		}
 	}
-	return &server.SecureInternet{
+	return server.SecureInternet{
 		Server: server.Server{
 			DisplayName: dorg.DisplayName,
 			Identifier:  dorg.OrgID,
 		},
 		CountryCode: countryCode,
-		Locations:   disco.SecureLocationList(),
-	}, nil
+		Locations:   locs,
+	}
 }
 
 // PublicList gets all the servers in a format that is returned to the client
 func (cfg *V2) PublicList(disco *discovery.Discovery) *server.List {
 	ret := &server.List{}
-	// TODO: profile information?
 	for k, v := range cfg.List {
 		switch k.T {
 		case server.TypeInstituteAccess:
-			g, err := convertInstitute(k.ID, disco)
-			if err != nil || g == nil {
-				// TODO: log/delisted?
-				continue
-			}
+			g := convertInstitute(k.ID, disco)
 			g.Profiles = v.Profiles
-			ret.Institutes = append(ret.Institutes, *g)
+			ret.Institutes = append(ret.Institutes, g)
 		case server.TypeSecureInternet:
-			g, err := convertSecure(k.ID, v.CountryCode, disco)
-			if err != nil || g == nil {
-				// TODO: log/delisted?
-				continue
-			}
+			g := convertSecure(k.ID, v.CountryCode, disco)
 			g.Profiles = v.Profiles
-			ret.SecureInternet = g
+			ret.SecureInternet = &g
 		case server.TypeCustom:
-			g, err := convertCustom(k.ID)
-			if err != nil || g == nil {
-				// TODO: log/delisted?
-				continue
-			}
+			g := convertCustom(k.ID)
 			g.Profiles = v.Profiles
-			ret.Custom = append(ret.Custom, *g)
+			ret.Custom = append(ret.Custom, g)
 		default:
-			// TODO: log
+			log.Logger.Errorf("no such server type in list: '%v'", k.T)
 			continue
 		}
 	}
