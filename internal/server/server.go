@@ -126,7 +126,6 @@ func (s *Server) connect(ctx context.Context, wgSupport bool, pTCP bool) (*srvty
 	}
 	// If the client supports WireGuard and the profile supports both protocols we remove openvpn from client support if EDUVPN_PREFER_WG is set to "1"
 	// This also only happens if prefer TCP is set to false
-	// TODO: remove the prefer TCP check when we have implemented proxyguard
 	if wgSupport && os.Getenv("EDUVPN_PREFER_WG") == "1" {
 		if chosenP.HasWireGuard() && chosenP.HasOpenVPN() {
 			protos = []protocol.Protocol{protocol.WireGuard}
