@@ -35,10 +35,19 @@ func (s *Servers) NewServer(identifier string, t srvtypes.Type, api *api.API) Se
 	}
 }
 
-// Profiles gets the profiles for the server
+// Profiles gets the cached profiles from the configuration/state file
+func (s *Server) Profiles() (*srvtypes.Profiles, error) {
+	cfgs, err := s.cfgServer()
+	if err != nil {
+		return nil, err
+	}
+	return &cfgs.Profiles, nil
+}
+
+// FreshProfiles gets the profiles for the server
 // It only does a /info network request if the profiles have not been cached
 // force indicates whether or not the profiles should be fetched fresh
-func (s *Server) Profiles(ctx context.Context) (*profiles.Info, error) {
+func (s *Server) FreshProfiles(ctx context.Context) (*profiles.Info, error) {
 	a, err := s.api()
 	if err != nil {
 		return nil, err
@@ -48,6 +57,7 @@ func (s *Server) Profiles(ctx context.Context) (*profiles.Info, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Update the profile list in the config
 	err = s.SetProfileList(prfs.Public())
 	if err != nil {
 		return nil, err
@@ -64,7 +74,7 @@ func (s *Server) api() (*api.API, error) {
 
 func (s *Server) findProfile(ctx context.Context, wgSupport bool) (*profiles.Profile, error) {
 	// Get the profiles by ignoring the cache
-	prfs, err := s.Profiles(ctx)
+	prfs, err := s.FreshProfiles(ctx)
 	if err != nil {
 		return nil, err
 	}
