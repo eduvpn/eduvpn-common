@@ -337,8 +337,7 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 		// Convert to an identifier
 		identifier, err = http.EnsureValidURL(identifier, true)
 		if err != nil {
-			// TODO: wrap error
-			return err
+			return i18nerr.WrapInternalf(err, "failed to convert identifier: %v", identifier)
 		}
 	}
 
