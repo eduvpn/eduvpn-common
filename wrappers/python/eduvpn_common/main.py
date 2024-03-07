@@ -49,6 +49,7 @@ class ServerType(IntEnum):
             return "Secure Internet Server"
         return "Unknown Server"
 
+
 class Jar(object):
     """A cookie jar"""
 
@@ -289,7 +290,9 @@ class EduVPN(object):
         :raises WrappedError: An error by the Go library
         """
         # Set the location by country code
-        location_err = self.go_function(self.lib.SetSecureLocation, org_id, country_code)
+        location_err = self.go_function(
+            self.lib.SetSecureLocation, org_id, country_code
+        )
 
         # If there is a location event, set it so that the wait callback finishes
         # And so that the Go code can move to the next state
@@ -347,7 +350,14 @@ class EduVPN(object):
             forwardError(dropped_err)
         return dropped
 
-    def start_proxyguard(self, listen: str, source_port: int, peer: str, setup: ProxySetup, ready: ProxyReady):
+    def start_proxyguard(
+        self,
+        listen: str,
+        source_port: int,
+        peer: str,
+        setup: ProxySetup,
+        ready: ProxyReady,
+    ):
         proxy_err = self.go_cookie_function(
             self.lib.StartProxyguard,
             listen,
@@ -367,7 +377,9 @@ global_object: Optional[EduVPN] = None
 
 
 @TokenSetter
-def token_setter(server_id: ctypes.c_char_p, server_type: ctypes.c_int, tokens: ctypes.c_char_p):
+def token_setter(
+    server_id: ctypes.c_char_p, server_type: ctypes.c_int, tokens: ctypes.c_char_p
+):
     global global_object
     if global_object is None:
         return
@@ -377,7 +389,12 @@ def token_setter(server_id: ctypes.c_char_p, server_type: ctypes.c_int, tokens: 
 
 
 @TokenGetter
-def token_getter(server_id: ctypes.c_char_p, server_type: ctypes.c_int, buf: ctypes.c_char_p, size: ctypes.c_size_t):
+def token_getter(
+    server_id: ctypes.c_char_p,
+    server_type: ctypes.c_int,
+    buf: ctypes.c_char_p,
+    size: ctypes.c_size_t,
+):
     global global_object
     if global_object is None:
         return

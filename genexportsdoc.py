@@ -2,9 +2,9 @@
 
 import subprocess
 
-cmd=["go", "doc", "--all", "exports"]
+cmd = ["go", "doc", "--all", "exports"]
 
-output=subprocess.check_output(cmd).decode("utf-8")
+output = subprocess.check_output(cmd).decode("utf-8")
 
 section = [""]
 package_doc = ""
@@ -26,13 +26,16 @@ for out in output.splitlines():
     if in_section:
         section[num] += line
 
+
 def func_name(signature: str) -> str:
     idx = signature.index("(")
-    return signature[len("func "):idx]
+    return signature[len("func ") : idx]
+
 
 def gen_toc(title: str) -> str:
     id = "-".join(title.lower().split(" "))
     return f"[{title}](#{id})"
+
 
 toc = ""
 first = True

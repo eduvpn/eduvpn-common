@@ -7,10 +7,10 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 import sphinx_rtd_theme
 
-project = 'python-eduvpn-common'
-copyright = '2023, Jeroen Wijenbergh'
-author = 'Jeroen Wijenbergh'
-release = '1.1.2'
+project = "python-eduvpn-common"
+copyright = "2023, Jeroen Wijenbergh"
+author = "Jeroen Wijenbergh"
+release = "1.1.2"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
