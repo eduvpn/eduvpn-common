@@ -23,7 +23,7 @@ type Server struct {
 
 	// CountryCode is the country code for the server in case of secure internet
 	// Otherwise it is an empty string
-	CountryCode string `json:"country_code"`
+	CountryCode string `json:"country_code,omitempty"`
 }
 
 // ServerKey is the key type of the server map
