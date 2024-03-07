@@ -1,4 +1,4 @@
-# Unreleased
+# 1.99.0 (2024-03-07)
 * OAuth:
     - Move to github.com/jwijenbergh/eduoauth-go
 * WireGuard:
@@ -7,6 +7,7 @@
     - Remove github.com/go-errors/errors
 * State:
     - Create a new state file (v2), but automatically convert from version 1 to 2
+    - Remove a ton of caching in the version 2 state file
 * Data transmission:
     - Move from Go->C types->language X types to using: Go struct -> JSON as a c string -> Language unmarshalls JSON. This eliminates a lot of code and makes it easier for clients to Go and the clients to convert data.
 	- The data that clients receive is handled in the `types` folder
@@ -32,6 +33,11 @@
     - Autogenerate exports docs using genexportsdoc.py
     - Rewrite a large portion of the API section
     - Support mermaid graphs using mdbook-mermaid
+* API:
+    - add support for DNS search domains
+    - add support for VPN proto transport list
+* Server List:
+    - Implement `delisted` servers
 
 # 1.1.2 (2023-09-01)
 * Server:
