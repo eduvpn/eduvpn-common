@@ -844,7 +844,7 @@ Example Output: ```1, null```
 ## StartProxyguard
 Signature:
  ```go
-func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char, proxyFD C.ProxyFD, proxyReady C.ProxyReady) *C.char
+func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char, proxySetup C.ProxySetup, proxyReady C.ProxyReady) *C.char
 ```
 StartProxyguard starts the 'proxyguard' procedure in
 eduvpn-common. This proxies WireGuard UDP connections over HTTP:
@@ -856,9 +856,10 @@ from the configuration that is retrieved using the `proxy` JSON key
     to the WireGuard endpoint
   - `tcpsp` is the TCP source port
   - `peer` is the ip:port of the remote server
-  - `proxyFD` is a callback with the file descriptor as only argument.
-    It can be used to set certain socket option, e.g. to exclude the proxy
-    connection from going over the VPN
+  - `proxySetup` is a callback which is called when the socket is setting
+    up, this can be used for configuring routing in the client. It takes
+    two arguments: the file descriptor (integer) and a JSON list of IPs the
+    client connects to
   - `proxyReady` is a callback when the proxy is ready to be used. This is
     only called when the client is not connected yet. Use this to determine
     when the actual wireguard connection can be started. This callback
