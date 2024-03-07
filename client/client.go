@@ -200,8 +200,6 @@ func (c *Client) AuthDone(id string, t srvtypes.Type) {
 	if err == nil {
 		srv.LastAuthorizeTime = time.Now()
 	}
-	// TODO: Should this log anything if it fails?
-	// unhandled transition?
 	_, err = c.FSM.GoTransition(StateMain)
 	if err != nil {
 		log.Logger.Debugf("unhandled auth done main transition: %v", err)
