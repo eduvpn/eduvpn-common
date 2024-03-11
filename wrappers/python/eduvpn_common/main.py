@@ -19,6 +19,9 @@ from eduvpn_common.event import EventHandler
 from eduvpn_common.state import State
 
 
+global_object = None
+
+
 class WrappedError(Exception):
     def __init__(self, translations, language, misc):
         self.translations = translations
@@ -371,9 +374,6 @@ class EduVPN(object):
 
     def cancel(self):
         self.jar.cancel()
-
-
-global_object: Optional[EduVPN] = None
 
 
 @TokenSetter
