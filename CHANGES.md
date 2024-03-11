@@ -1,3 +1,6 @@
+# 1.99.1 (2024-03-11)
+* Disable type annotation for global eduVPN class as it gave a `SyntaxError` on some Python versions. See https://bugs.python.org/issue34939
+
 # 1.99.0 (2024-03-07)
 * OAuth:
     - Move to github.com/jwijenbergh/eduoauth-go
