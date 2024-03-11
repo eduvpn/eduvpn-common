@@ -46,35 +46,35 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"An error occurred after getting the discovery files for the list of organizations": 23,
-	"An error occurred after getting the discovery files for the list of servers":       24,
-	"An internal error occurred":                                                                                                28,
-	"Failed to cleanup the VPN connection":                                                                                      18,
-	"Failed to get the secure internet server with id: '%s' for setting a location":                                             19,
-	"Failed to set the profile ID: '%s'":                                                                                        14,
-	"Failover failed to complete with gateway: '%s' and MTU: '%d'":                                                              22,
-	"No OAuth tokens were found when cleaning up the connection":                                                                16,
-	"No VPN configuration for server: '%s' could be obtained":                                                                   10,
+	"An error occurred after getting the discovery files for the list of organizations": 22,
+	"An error occurred after getting the discovery files for the list of servers":       23,
+	"An internal error occurred":                                                                                                27,
+	"Failed to cleanup the VPN connection":                                                                                      17,
+	"Failed to get the secure internet server with id: '%s' for setting a location":                                             18,
+	"Failed to set the profile ID: '%s'":                                                                                        13,
+	"Failover failed to complete with gateway: '%s' and MTU: '%d'":                                                              21,
+	"No OAuth tokens were found when cleaning up the connection":                                                                15,
+	"No VPN configuration for server: '%s' could be obtained":                                                                   9,
 	"Server identifier: '%s', is not valid when getting a VPN configuration":                                                    6,
-	"Server identifier: '%s', is not valid when removing the server":                                                            11,
-	"Server: '%s' could not be connected to":                                                                                    9,
-	"The VPN proxy exited":                                                                                                      25,
+	"Server identifier: '%s', is not valid when removing the server":                                                            10,
+	"Server: '%s' could not be connected to":                                                                                    28,
+	"The VPN proxy exited":                                                                                                      24,
 	"The client tried to autoconnect to the VPN server: '%s', but the operation failed to complete":                             8,
 	"The client tried to autoconnect to the VPN server: '%s', but you need to authorizate again. Please manually connect again": 7,
-	"The current server could not be retrieved":                                                                                 13,
-	"The current server could not be retrieved when renewing the session":                                                       20,
-	"The current server was not found when cleaning up the connection":                                                          15,
+	"The current server could not be retrieved":                                                                                 12,
+	"The current server could not be retrieved when renewing the session":                                                       19,
+	"The current server was not found when cleaning up the connection":                                                          14,
 	"The current server was not found when getting the VPN expiration date":                                                     1,
 	"The custom server with URL: '%s' could not be added":                                                                       4,
 	"The institute access server with URL: '%s' could not be added":                                                             2,
 	"The log file with directory: '%s' failed to initialize":                                                                    0,
 	"The secure internet server with organisation ID: '%s' could not be added":                                                  3,
-	"The server was unable to be retrieved when cleaning up the connection":                                                     17,
-	"The server was unable to be retrieved when renewing the session":                                                           21,
-	"The server: '%s' could not be removed":                                                                                     12,
+	"The server was unable to be retrieved when cleaning up the connection":                                                     16,
+	"The server was unable to be retrieved when renewing the session":                                                           20,
+	"The server: '%s' could not be removed":                                                                                     11,
 	"input: '%s' is not a valid URL":                                                                                            5,
-	"timeout reached for URL: '%s' and HTTP method: '%s'":                                                                       26,
-	"with cause:": 27,
+	"timeout reached for URL: '%s' and HTTP method: '%s'":                                                                       25,
+	"with cause:": 26,
 }
 
 var daIndex = []uint32{ // 30 elements
@@ -91,27 +91,56 @@ var daIndex = []uint32{ // 30 elements
 const daData string = ""
 
 var deIndex = []uint32{ // 30 elements
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
+	0x00000000, 0x00000047, 0x0000009c, 0x000000ec,
+	0x0000014a, 0x0000019d, 0x000001c3, 0x0000020e,
+	0x000002b4, 0x0000033a, 0x00000384, 0x000003c7,
+	0x000003f7, 0x0000042a, 0x0000045c, 0x000004ad,
+	0x000004ef, 0x00000537, 0x0000056a, 0x000005ca,
+	0x00000617, 0x0000065a, 0x000006a9, 0x00000701,
+	0x00000752, 0x00000769, 0x000007b0, 0x000007bd,
+	0x000007e1, 0x000007e1,
 } // Size: 144 bytes
 
-const deData string = ""
+const deData string = "" + // Size: 2017 bytes
+	"\x02Die Log-Datei im Verzeichnis '%[1]s' konnte nicht initialisiert werd" +
+	"en\x02Der momentane Server wurde bei der Abfrage des Verfallsdatums der " +
+	"VPN nicht gefunden\x02Der Institutszugriffserver mit der URL '%[1]s' kon" +
+	"nte nicht hinzugefügt werden\x02Der sichere Internet-Server mit der Orga" +
+	"nisations-ID '%[1]s' konnte nicht hinzugefügt werden\x02Der benutzerdefi" +
+	"nierte Server mit der URL '%[1]s' konnte nicht hinzugefügt werden\x02Ein" +
+	"gabe: '%[1]s' ist keine valide URL\x02Serveridentifikator '%[1]s' ist be" +
+	"im Abrufen der VPN-Konfiguration invalid\x02Der Client hat versucht, sic" +
+	"h automatisch mit dem VPN-Server '%[1]s' zu verbinden, aber Sie müssen s" +
+	"ich erneut autorisieren. Bitte verbinden sie sich manuell erneut\x02Der " +
+	"Client hat versucht, sich automatisch mit dem VPN-Server '%[1]s' zu verb" +
+	"inden, aber der Vorgang konnte nicht abgeschlossen werden\x02Es konnte k" +
+	"eine VPN-Konfiguration für den Server '%[1]s' gefunden werden\x02Serveri" +
+	"dentifikator '%[1]s' ist beim Entfernen des Servers invalid\x02Der Serve" +
+	"r '%[1]s' konnte nicht entfernt werden\x02Der momentane Server konnte ni" +
+	"cht abgerufen werden\x02Die Profil-ID '%[1]s' konnte nicht gesetzt werde" +
+	"n\x02Der momentane Server konnte beim Aufräumen der Verbindung nicht gef" +
+	"unden werden\x02Keine OAuth-Tokens wurden beim Aufräumen der Verbindung " +
+	"gefunden\x02Der Server konnte beim Aufräumen der Verbindung nicht abgeru" +
+	"fen werden\x02Die VPN-Verbindung konnte nicht aufgeräumt werden\x02Es ko" +
+	"nnte kein sicherer Internetserver mit der ID '%[1]s' zum Setzen des Orte" +
+	"s abgerufen werden\x02Der momentane Server konnte beim Erneuern der Sitz" +
+	"ung nicht abgerufen werden\x02Der Server konnte beim Erneuern der Sitzun" +
+	"g nicht abgerufen werden\x02Failover konnte nicht mit Gateway '%[1]s' un" +
+	"d MTU '%[2]d' abgeschlossen werden\x02Nach dem Abfragen der Discovery-Da" +
+	"teien für die Organisationsliste trat ein Fehler auf\x02Nach dem Abfrage" +
+	"n der Discovery-Dateien für die Serverliste trat ein Fehler auf\x02Die V" +
+	"PN-Proxy brach ab\x02Zeitüberschreitung für URL '%[1]s' und HTTP-Methode" +
+	" '%[2]s' erreicht\x02mit Ursache:\x02Ein interner Fehler ist aufgetreten"
 
 var enIndex = []uint32{ // 30 elements
 	0x00000000, 0x0000003a, 0x00000080, 0x000000c1,
 	0x0000010d, 0x00000144, 0x00000166, 0x000001b0,
-	0x0000022d, 0x0000028e, 0x000002b8, 0x000002f3,
-	0x00000335, 0x0000035e, 0x00000388, 0x000003ae,
-	0x000003ef, 0x0000042a, 0x00000470, 0x00000495,
-	0x000004e6, 0x0000052a, 0x0000056a, 0x000005ad,
-	0x000005ff, 0x0000064b, 0x00000660, 0x0000069a,
-	0x000006a6, 0x000006c1,
+	0x0000022d, 0x0000028e, 0x000002c9, 0x0000030b,
+	0x00000334, 0x0000035e, 0x00000384, 0x000003c5,
+	0x00000400, 0x00000446, 0x0000046b, 0x000004bc,
+	0x00000500, 0x00000540, 0x00000583, 0x000005d5,
+	0x00000621, 0x00000636, 0x00000670, 0x0000067c,
+	0x00000697, 0x000006c1,
 } // Size: 144 bytes
 
 const enData string = "" + // Size: 1729 bytes
@@ -124,23 +153,23 @@ const enData string = "" + // Size: 1729 bytes
 	"g a VPN configuration\x02The client tried to autoconnect to the VPN serv" +
 	"er: '%[1]s', but you need to authorizate again. Please manually connect " +
 	"again\x02The client tried to autoconnect to the VPN server: '%[1]s', but" +
-	" the operation failed to complete\x02Server: '%[1]s' could not be connec" +
-	"ted to\x02No VPN configuration for server: '%[1]s' could be obtained\x02" +
-	"Server identifier: '%[1]s', is not valid when removing the server\x02The" +
-	" server: '%[1]s' could not be removed\x02The current server could not be" +
-	" retrieved\x02Failed to set the profile ID: '%[1]s'\x02The current serve" +
-	"r was not found when cleaning up the connection\x02No OAuth tokens were " +
-	"found when cleaning up the connection\x02The server was unable to be ret" +
-	"rieved when cleaning up the connection\x02Failed to cleanup the VPN conn" +
-	"ection\x02Failed to get the secure internet server with id: '%[1]s' for " +
-	"setting a location\x02The current server could not be retrieved when ren" +
-	"ewing the session\x02The server was unable to be retrieved when renewing" +
-	" the session\x02Failover failed to complete with gateway: '%[1]s' and MT" +
-	"U: '%[2]d'\x02An error occurred after getting the discovery files for th" +
-	"e list of organizations\x02An error occurred after getting the discovery" +
-	" files for the list of servers\x02The VPN proxy exited\x02timeout reache" +
-	"d for URL: '%[1]s' and HTTP method: '%[2]s'\x02with cause:\x02An interna" +
-	"l error occurred"
+	" the operation failed to complete\x02No VPN configuration for server: '%" +
+	"[1]s' could be obtained\x02Server identifier: '%[1]s', is not valid when" +
+	" removing the server\x02The server: '%[1]s' could not be removed\x02The " +
+	"current server could not be retrieved\x02Failed to set the profile ID: '" +
+	"%[1]s'\x02The current server was not found when cleaning up the connecti" +
+	"on\x02No OAuth tokens were found when cleaning up the connection\x02The " +
+	"server was unable to be retrieved when cleaning up the connection\x02Fai" +
+	"led to cleanup the VPN connection\x02Failed to get the secure internet s" +
+	"erver with id: '%[1]s' for setting a location\x02The current server coul" +
+	"d not be retrieved when renewing the session\x02The server was unable to" +
+	" be retrieved when renewing the session\x02Failover failed to complete w" +
+	"ith gateway: '%[1]s' and MTU: '%[2]d'\x02An error occurred after getting" +
+	" the discovery files for the list of organizations\x02An error occurred " +
+	"after getting the discovery files for the list of servers\x02The VPN pro" +
+	"xy exited\x02timeout reached for URL: '%[1]s' and HTTP method: '%[2]s'" +
+	"\x02with cause:\x02An internal error occurred\x02Server: '%[1]s' could n" +
+	"ot be connected to"
 
 var esIndex = []uint32{ // 30 elements
 	0x00000000, 0x0000004a, 0x0000004a, 0x0000004a,
@@ -148,8 +177,8 @@ var esIndex = []uint32{ // 30 elements
 	0x0000004a, 0x0000004a, 0x0000004a, 0x0000004a,
 	0x0000004a, 0x0000004a, 0x0000004a, 0x0000004a,
 	0x0000004a, 0x0000004a, 0x0000004a, 0x0000004a,
-	0x0000004a, 0x0000004a, 0x0000004a, 0x0000004a,
-	0x000000ab, 0x00000104, 0x00000104, 0x00000104,
+	0x0000004a, 0x0000004a, 0x0000004a, 0x000000ab,
+	0x00000104, 0x00000104, 0x00000104, 0x00000104,
 	0x00000104, 0x00000104,
 } // Size: 144 bytes
 
@@ -165,8 +194,8 @@ var frIndex = []uint32{ // 30 elements
 	0x000000f1, 0x000000f1, 0x000000f1, 0x000000f1,
 	0x000000f1, 0x000000f1, 0x000000f1, 0x000000f1,
 	0x000000f1, 0x000000f1, 0x000000f1, 0x000000f1,
-	0x000000f1, 0x000000f1, 0x000000f1, 0x000000f1,
-	0x0000015c, 0x000001c2, 0x000001c2, 0x000001c2,
+	0x000000f1, 0x000000f1, 0x000000f1, 0x0000015c,
+	0x000001c2, 0x000001c2, 0x000001c2, 0x000001c2,
 	0x000001c2, 0x000001c2,
 } // Size: 144 bytes
 
@@ -198,9 +227,9 @@ var nlIndex = []uint32{ // 30 elements
 	0x00000106, 0x00000106, 0x00000106, 0x00000106,
 	0x00000106, 0x00000106, 0x00000106, 0x00000106,
 	0x00000106, 0x00000106, 0x00000106, 0x00000106,
-	0x00000106, 0x00000106, 0x00000106, 0x00000157,
-	0x0000019f, 0x000001e2, 0x000001e2, 0x000001e2,
-	0x000001ef, 0x0000020e,
+	0x00000106, 0x00000106, 0x00000157, 0x0000019f,
+	0x000001e2, 0x000001e2, 0x000001e2, 0x000001ef,
+	0x0000020e, 0x0000020e,
 } // Size: 144 bytes
 
 const nlData string = "" + // Size: 526 bytes
@@ -219,9 +248,9 @@ var slIndex = []uint32{ // 30 elements
 	0x00000110, 0x00000110, 0x00000110, 0x00000110,
 	0x00000110, 0x00000110, 0x00000110, 0x00000110,
 	0x00000110, 0x00000110, 0x00000110, 0x00000110,
-	0x00000110, 0x00000110, 0x00000110, 0x00000147,
-	0x00000187, 0x000001c7, 0x000001c7, 0x000001c7,
-	0x000001d1, 0x000001ef,
+	0x00000110, 0x00000110, 0x00000147, 0x00000187,
+	0x000001c7, 0x000001c7, 0x000001c7, 0x000001d1,
+	0x000001ef, 0x000001ef,
 } // Size: 144 bytes
 
 const slData string = "" + // Size: 495 bytes
@@ -247,4 +276,4 @@ var ukIndex = []uint32{ // 30 elements
 
 const ukData string = ""
 
-// Total table size 4756 bytes (4KiB); checksum: DAF4A7AF
+// Total table size 6773 bytes (6KiB); checksum: 5C59D2DF

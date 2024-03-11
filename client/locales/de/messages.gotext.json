@@ -4,7 +4,7 @@
         {
             "id": "The log file with directory: '{Directory}' failed to initialize",
             "message": "The log file with directory: '{Directory}' failed to initialize",
-            "translation": "",
+            "translation": "Die Log-Datei im Verzeichnis '{Directory}' konnte nicht initialisiert werden",
             "placeholders": [
                 {
                     "id": "Directory",
@@ -19,12 +19,12 @@
         {
             "id": "The current server was not found when getting the VPN expiration date",
             "message": "The current server was not found when getting the VPN expiration date",
-            "translation": ""
+            "translation": "Der momentane Server wurde bei der Abfrage des Verfallsdatums der VPN nicht gefunden"
         },
         {
             "id": "The institute access server with URL: '{Identifier}' could not be added",
             "message": "The institute access server with URL: '{Identifier}' could not be added",
-            "translation": "",
+            "translation": "Der Institutszugriffserver mit der URL '{Identifier}' konnte nicht hinzugefügt werden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -39,7 +39,7 @@
         {
             "id": "The secure internet server with organisation ID: '{Identifier}' could not be added",
             "message": "The secure internet server with organisation ID: '{Identifier}' could not be added",
-            "translation": "",
+            "translation": "Der sichere Internet-Server mit der Organisations-ID '{Identifier}' konnte nicht hinzugefügt werden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -54,7 +54,7 @@
         {
             "id": "The custom server with URL: '{Identifier}' could not be added",
             "message": "The custom server with URL: '{Identifier}' could not be added",
-            "translation": "",
+            "translation": "Der benutzerdefinierte Server mit der URL '{Identifier}' konnte nicht hinzugefügt werden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -69,7 +69,7 @@
         {
             "id": "input: '{Identifier}' is not a valid URL",
             "message": "input: '{Identifier}' is not a valid URL",
-            "translation": "",
+            "translation": "Eingabe: '{Identifier}' ist keine valide URL",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -84,7 +84,7 @@
         {
             "id": "Server identifier: '{Identifier}', is not valid when getting a VPN configuration",
             "message": "Server identifier: '{Identifier}', is not valid when getting a VPN configuration",
-            "translation": "",
+            "translation": "Serveridentifikator '{Identifier}' ist beim Abrufen der VPN-Konfiguration invalid",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -99,7 +99,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
-            "translation": "",
+            "translation": "Der Client hat versucht, sich automatisch mit dem VPN-Server '{Identifier}' zu verbinden, aber Sie müssen sich erneut autorisieren. Bitte verbinden sie sich manuell erneut",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -114,7 +114,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
-            "translation": "",
+            "translation": "Der Client hat versucht, sich automatisch mit dem VPN-Server '{Identifier}' zu verbinden, aber der Vorgang konnte nicht abgeschlossen werden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -127,9 +127,9 @@
             ]
         },
         {
-            "id": "Server: '{Identifier}' could not be connected to",
-            "message": "Server: '{Identifier}' could not be connected to",
-            "translation": "",
+            "id": "Server: '{Identifier}' could not be obtained",
+            "message": "Server: '{Identifier}' could not be obtained",
+            "translation": "Server '{Identifier}' konnte nicht erhalten werden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -144,7 +144,7 @@
         {
             "id": "No VPN configuration for server: '{Identifier}' could be obtained",
             "message": "No VPN configuration for server: '{Identifier}' could be obtained",
-            "translation": "",
+            "translation": "Es konnte keine VPN-Konfiguration für den Server '{Identifier}' gefunden werden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -159,7 +159,7 @@
         {
             "id": "Server identifier: '{Identifier}', is not valid when removing the server",
             "message": "Server identifier: '{Identifier}', is not valid when removing the server",
-            "translation": "",
+            "translation": "Serveridentifikator '{Identifier}' ist beim Entfernen des Servers invalid",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -174,7 +174,7 @@
         {
             "id": "The server: '{Identifier}' could not be removed",
             "message": "The server: '{Identifier}' could not be removed",
-            "translation": "",
+            "translation": "Der Server '{Identifier}' konnte nicht entfernt werden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -189,12 +189,12 @@
         {
             "id": "The current server could not be retrieved",
             "message": "The current server could not be retrieved",
-            "translation": ""
+            "translation": "Der momentane Server konnte nicht abgerufen werden"
         },
         {
             "id": "Failed to set the profile ID: '{PID}'",
             "message": "Failed to set the profile ID: '{PID}'",
-            "translation": "",
+            "translation": "Die Profil-ID '{PID}' konnte nicht gesetzt werden",
             "placeholders": [
                 {
                     "id": "PID",
@@ -209,27 +209,27 @@
         {
             "id": "The current server was not found when cleaning up the connection",
             "message": "The current server was not found when cleaning up the connection",
-            "translation": ""
+            "translation": "Der momentane Server konnte beim Aufräumen der Verbindung nicht gefunden werden"
         },
         {
             "id": "No OAuth tokens were found when cleaning up the connection",
             "message": "No OAuth tokens were found when cleaning up the connection",
-            "translation": ""
+            "translation": "Keine OAuth-Tokens wurden beim Aufräumen der Verbindung gefunden"
         },
         {
             "id": "The server was unable to be retrieved when cleaning up the connection",
             "message": "The server was unable to be retrieved when cleaning up the connection",
-            "translation": ""
+            "translation": "Der Server konnte beim Aufräumen der Verbindung nicht abgerufen werden"
         },
         {
             "id": "Failed to cleanup the VPN connection",
             "message": "Failed to cleanup the VPN connection",
-            "translation": ""
+            "translation": "Die VPN-Verbindung konnte nicht aufgeräumt werden"
         },
         {
             "id": "Failed to get the secure internet server with id: '{OrgID}' for setting a location",
             "message": "Failed to get the secure internet server with id: '{OrgID}' for setting a location",
-            "translation": "",
+            "translation": "Es konnte kein sicherer Internetserver mit der ID '{OrgID}' zum Setzen des Ortes abgerufen werden",
             "placeholders": [
                 {
                     "id": "OrgID",
@@ -244,17 +244,17 @@
         {
             "id": "The current server could not be retrieved when renewing the session",
             "message": "The current server could not be retrieved when renewing the session",
-            "translation": ""
+            "translation": "Der momentane Server konnte beim Erneuern der Sitzung nicht abgerufen werden"
         },
         {
             "id": "The server was unable to be retrieved when renewing the session",
             "message": "The server was unable to be retrieved when renewing the session",
-            "translation": ""
+            "translation": "Der Server konnte beim Erneuern der Sitzung nicht abgerufen werden"
         },
         {
             "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
             "message": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
-            "translation": "",
+            "translation": "Failover konnte nicht mit Gateway '{Gateway}' und MTU '{Mtu}' abgeschlossen werden",
             "placeholders": [
                 {
                     "id": "Gateway",
@@ -277,22 +277,22 @@
         {
             "id": "An error occurred after getting the discovery files for the list of organizations",
             "message": "An error occurred after getting the discovery files for the list of organizations",
-            "translation": ""
+            "translation": "Nach dem Abfragen der Discovery-Dateien für die Organisationsliste trat ein Fehler auf"
         },
         {
             "id": "An error occurred after getting the discovery files for the list of servers",
             "message": "An error occurred after getting the discovery files for the list of servers",
-            "translation": ""
+            "translation": "Nach dem Abfragen der Discovery-Dateien für die Serverliste trat ein Fehler auf"
         },
         {
             "id": "The VPN proxy exited",
             "message": "The VPN proxy exited",
-            "translation": ""
+            "translation": "Die VPN-Proxy brach ab"
         },
         {
             "id": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
             "message": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
-            "translation": "",
+            "translation": "Zeitüberschreitung für URL '{URL}' und HTTP-Methode '{Method}' erreicht",
             "placeholders": [
                 {
                     "id": "URL",
@@ -315,12 +315,12 @@
         {
             "id": "with cause:",
             "message": "with cause:",
-            "translation": ""
+            "translation": "mit Ursache:"
         },
         {
             "id": "An internal error occurred",
             "message": "An internal error occurred",
-            "translation": ""
+            "translation": "Ein interner Fehler ist aufgetreten"
         }
     ]
 }

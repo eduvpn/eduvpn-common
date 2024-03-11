@@ -127,8 +127,8 @@
             ]
         },
         {
-            "id": "Server: '{Identifier}' could not be connected to",
-            "message": "Server: '{Identifier}' could not be connected to",
+            "id": "Server: '{Identifier}' could not be obtained",
+            "message": "Server: '{Identifier}' could not be obtained",
             "translation": "",
             "placeholders": [
                 {
