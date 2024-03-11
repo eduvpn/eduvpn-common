@@ -6,4 +6,4 @@ package version
 
 // Version is the latest version
 // Update this when releasing
-const Version = "1.99.0"
+const Version = "1.99.1"
