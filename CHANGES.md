@@ -1,3 +1,6 @@
+# Not released
+* Expose default gateway in profile settings too. For clients, use the default gateway set on the config object, this is maybe only useful for suggesting some profiles in the client profile chooser UI
+
 # 1.99.1 (2024-03-11)
 * Disable type annotation for global eduVPN class as it gave a `SyntaxError` on some Python versions. See https://bugs.python.org/issue34939
 

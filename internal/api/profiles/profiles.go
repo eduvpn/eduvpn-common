@@ -123,6 +123,7 @@ func (i Info) Public() server.Profiles {
 			DisplayName: map[string]string{
 				"en": p.DisplayName,
 			},
+			DefaultGateway: p.DefaultGateway,
 		}
 	}
 	return server.Profiles{Map: m}

@@ -86,6 +86,9 @@ type Profile struct {
 	// E.g. {"en": "Default Profile"}
 	// If this is empty, the field is omitted from the JSON
 	DisplayName map[string]string `json:"display_name,omitempty"`
+
+	// DefaultGateway is true when the profile is a default gateway one
+	DefaultGateway bool `json:"default_gateway"`
 }
 
 // Profiles is the map of profiles with the current defined
