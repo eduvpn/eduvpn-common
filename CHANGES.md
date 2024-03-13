@@ -1,6 +1,6 @@
 # Not released
 * Expose default gateway in profile settings too. For clients, use the default gateway set on the config object, this is maybe only useful for suggesting some profiles in the client profile chooser UI
-* Add a server internally before authorizing and remove it again if authorization has failed. This makes sure the internet state is always up-to-date with what is happening. This also allows us to move to the main state when authorization is done as previously it could be the case where authorization was done but the server was not added yet
+* Add a server internally before authorizing and remove it again if authorization has failed. This makes sure the internal state is always up-to-date with what is happening. This also allows us to move to the main state when authorization is done as previously it could be the case where authorization was done but the server was not added yet
 
 # 1.99.1 (2024-03-11)
 * Disable type annotation for global eduVPN class as it gave a `SyntaxError` on some Python versions. See https://bugs.python.org/issue34939
