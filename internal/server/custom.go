@@ -5,6 +5,7 @@ import (
 
 	"github.com/eduvpn/eduvpn-common/internal/api"
 	"github.com/eduvpn/eduvpn-common/internal/config/v2"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/types/server"
 	"github.com/jwijenbergh/eduoauth-go"
 )
@@ -35,7 +36,10 @@ func (s *Servers) AddCustom(ctx context.Context, id string, na bool) error {
 	_, err = api.NewAPI(ctx, s.clientID, sd, s.cb, nil)
 	if err != nil {
 		// authorization has failed, remove the server again
-		s.config.RemoveServer(id, server.TypeCustom)
+		rerr := s.config.RemoveServer(id, server.TypeCustom)
+		if rerr != nil {
+			log.Logger.Warningf("could not remove custom server: '%s' after failing authorization: %v", id, rerr)
+		}
 		return err
 	}
 	return nil

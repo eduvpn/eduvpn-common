@@ -6,6 +6,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/api"
 	"github.com/eduvpn/eduvpn-common/internal/config/v2"
 	"github.com/eduvpn/eduvpn-common/internal/discovery"
+	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/types/server"
 	"github.com/jwijenbergh/eduoauth-go"
 )
@@ -43,7 +44,10 @@ func (s *Servers) AddInstitute(ctx context.Context, disco *discovery.Discovery, 
 	_, err = api.NewAPI(ctx, s.clientID, sd, s.cb, nil)
 	if err != nil {
 		// authorization has failed, remove the server again
-		s.config.RemoveServer(dsrv.BaseURL, server.TypeInstituteAccess)
+		rerr := s.config.RemoveServer(dsrv.BaseURL, server.TypeInstituteAccess)
+		if rerr != nil {
+			log.Logger.Warningf("could not remove institute access server: '%s' after failing authorization: %v", dsrv.BaseURL, rerr)
+		}
 		return err
 	}
 	return nil
