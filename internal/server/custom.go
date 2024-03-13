@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/api"
 	"github.com/eduvpn/eduvpn-common/internal/config/v2"
@@ -14,7 +13,7 @@ import (
 // `ctx` is the context used for cancellation
 // `id` is the identifier of the server, the base URL
 // `na` specifies whether or not we want to add the server without doing authorization now
-func (s *Servers) AddCustom(ctx context.Context, id string, na bool) (*Server, error) {
+func (s *Servers) AddCustom(ctx context.Context, id string, na bool) error {
 	sd := api.ServerData{
 		ID:         id,
 		Type:       server.TypeCustom,
@@ -22,25 +21,24 @@ func (s *Servers) AddCustom(ctx context.Context, id string, na bool) (*Server, e
 		BaseAuthWK: id,
 	}
 
-	var a *api.API
-	var err error
-	if !na {
-		// Authorize by creating the API object
-		a, err = api.NewAPI(ctx, s.clientID, sd, s.cb, nil)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	err = s.config.AddServer(id, server.TypeCustom, v2.Server{LastAuthorizeTime: time.Now()})
+	err := s.config.AddServer(id, server.TypeCustom, v2.Server{})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	cust := s.NewServer(id, server.TypeCustom, a)
-	// Return the server with the API
+	// no authorization should be triggered, return
+	if na {
+		return nil
+	}
 
-	return &cust, nil
+	// Authorize by creating the API object
+	_, err = api.NewAPI(ctx, s.clientID, sd, s.cb, nil)
+	if err != nil {
+		// authorization has failed, remove the server again
+		s.config.RemoveServer(id, server.TypeCustom)
+		return err
+	}
+	return nil
 }
 
 // GetCustom gets a custom server

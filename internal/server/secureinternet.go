@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/api"
 	"github.com/eduvpn/eduvpn-common/internal/config/v2"
@@ -18,9 +17,9 @@ import (
 // `disco` are the discovery servers
 // `orgID` is the organiztaion ID
 // `na` specifies whether or not authorization should be triggered when adding
-func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, orgID string, na bool) (*Server, error) {
+func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, orgID string, na bool) error {
 	if s.config.HasSecureInternet() {
-		return nil, errors.New("a secure internet server already exists")
+		return errors.New("a secure internet server already exists")
 	}
 	dorg, dsrv, err := disco.SecureHomeArgs(orgID)
 	if err != nil {
@@ -28,7 +27,7 @@ func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, org
 		// Note that in the docs it states that it only should happen when the Org ID doesn't exist
 		// However, this is nice as well because it also catches the error where the SecureInternetHome server is not found
 		disco.MarkOrganizationsExpired()
-		return nil, err
+		return err
 	}
 
 	sd := api.ServerData{
@@ -41,22 +40,24 @@ func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, org
 		},
 	}
 
-	var a *api.API
-	if !na {
-		// Authorize by creating the API object
-		a, err = api.NewAPI(ctx, s.clientID, sd, s.cb, nil)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	err = s.config.AddServer(orgID, server.TypeSecureInternet, v2.Server{CountryCode: dsrv.CountryCode, LastAuthorizeTime: time.Now()})
+	err = s.config.AddServer(orgID, server.TypeSecureInternet, v2.Server{CountryCode: dsrv.CountryCode})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	sec := s.NewServer(orgID, server.TypeSecureInternet, a)
-	return &sec, nil
+	// no authorization should be triggered, return
+	if na {
+		return nil
+	}
+
+	// Authorize by creating the API object
+	_, err = api.NewAPI(ctx, s.clientID, sd, s.cb, nil)
+	if err != nil {
+		// authorization has failed, remove the server again
+		s.config.RemoveServer(orgID, server.TypeSecureInternet)
+		return err
+	}
+	return nil
 }
 
 // GetSecure gets a secure internet server
