@@ -24,7 +24,6 @@ This document was automatically generated from the exports/exports.go file
     * [SetProfileID](#setprofileid)
     * [SetSecureLocation](#setsecurelocation)
     * [SetState](#setstate)
-    * [SetSupportWireguard](#setsupportwireguard)
     * [SetTokenHandler](#settokenhandler)
     * [StartFailover](#startfailover)
     * [StartProxyguard](#startproxyguard)
@@ -759,20 +758,6 @@ Note: this transitions the FSM into the new state without passing any data
 to it. Example Input: ```SetState(5)```
 
 Example Output: ```null```
-
-## SetSupportWireguard
-Signature:
- ```go
-func SetSupportWireguard(support C.int) *C.char
-```
-SetSupportWireguard enables or disables WireGuard for the client. *WARNING:
-This function will be removed*
-
-By default WireGuard support is enabled To disable it you can pass a 0 int
-to this
-
-`support` thus indicates whether or not to enable WireGuard An error is
-returned if this is not possible
 
 ## SetTokenHandler
 Signature:
