@@ -34,9 +34,6 @@ type Client struct {
 	// The fsm
 	FSM fsm.FSM
 
-	// Whether or not this client supports WireGuard
-	SupportsWireguard bool
-
 	// Whether to enable debugging
 	Debug bool
 
@@ -145,16 +142,13 @@ func New(name string, version string, directory string, stateCallback func(FSMSt
 	// Initialize the FSM
 	c.FSM = newFSM(stateCallback, directory, debug)
 
-	// By default we support wireguard
-	c.SupportsWireguard = true
-
 	// Debug only if given
 	c.Debug = debug
 
 	c.cfg = config.NewFromDirectory(directory)
 
 	// set the servers
-	c.Servers = server.NewServers(c.Name, c, c.SupportsWireguard, c.cfg.V2)
+	c.Servers = server.NewServers(c.Name, c, c.cfg.V2)
 	return c, nil
 }
 

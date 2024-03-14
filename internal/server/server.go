@@ -72,21 +72,11 @@ func (s *Server) api() (*api.API, error) {
 	return s.apiw, nil
 }
 
-func (s *Server) findProfile(ctx context.Context, wgSupport bool) (*profiles.Profile, error) {
+func (s *Server) findProfile(ctx context.Context) (*profiles.Profile, error) {
 	// Get the profiles by ignoring the cache
 	prfs, err := s.FreshProfiles(ctx)
 	if err != nil {
 		return nil, err
-	}
-
-	// No profiles available
-	if prfs.Len() == 0 {
-		return nil, errors.New("the server has no available profiles for your account")
-	}
-
-	// No WireGuard support, we have to filter the profiles that only have WireGuard
-	if !wgSupport {
-		prfs = prfs.FilterWireGuard()
 	}
 
 	var chosenP profiles.Profile
@@ -95,7 +85,7 @@ func (s *Server) findProfile(ctx context.Context, wgSupport bool) (*profiles.Pro
 	switch n {
 	// If we now get no profiles then that means a profile with only WireGuard was removed
 	case 0:
-		return nil, errors.New("the server has only WireGuard profiles but the client does not support WireGuard")
+		return nil, errors.New("the server has no available profiles for your account")
 	case 1:
 		// Only one profile, make sure it is set
 		chosenP = prfs.MustIndex(0)
@@ -114,14 +104,14 @@ func (s *Server) findProfile(ctx context.Context, wgSupport bool) (*profiles.Pro
 	return &chosenP, nil
 }
 
-func (s *Server) connect(ctx context.Context, wgSupport bool, pTCP bool) (*srvtypes.Configuration, error) {
+func (s *Server) connect(ctx context.Context, pTCP bool) (*srvtypes.Configuration, error) {
 	a, err := s.api()
 	if err != nil {
 		return nil, err
 	}
 
 	// find a suitable profile to connect
-	chosenP, err := s.findProfile(ctx, wgSupport)
+	chosenP, err := s.findProfile(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -130,13 +120,11 @@ func (s *Server) connect(ctx context.Context, wgSupport bool, pTCP bool) (*srvty
 		return nil, err
 	}
 
-	protos := []protocol.Protocol{protocol.OpenVPN}
-	if wgSupport {
-		protos = append(protos, protocol.WireGuard)
-	}
-	// If the client supports WireGuard and the profile supports both protocols we remove openvpn from client support if EDUVPN_PREFER_WG is set to "1"
+	// protos supported by the client
+	protos := []protocol.Protocol{protocol.OpenVPN, protocol.WireGuard}
+	// If profile supports both protocols we remove openvpn from client support if EDUVPN_PREFER_WG is set to "1"
 	// This also only happens if prefer TCP is set to false
-	if wgSupport && os.Getenv("EDUVPN_PREFER_WG") == "1" {
+	if os.Getenv("EDUVPN_PREFER_WG") == "1" {
 		if chosenP.HasWireGuard() && chosenP.HasOpenVPN() {
 			protos = []protocol.Protocol{protocol.WireGuard}
 		}

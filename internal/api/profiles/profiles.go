@@ -100,21 +100,6 @@ func (p *Profile) HasWireGuard() bool {
 	return hasProtocol(p.VPNProtoList, protocol.WireGuard)
 }
 
-// FilterWireGuard gets a profile list but without WireGuard profiles
-func (i Info) FilterWireGuard() *Info {
-	var ret []Profile
-	for _, p := range i.Info.ProfileList {
-		if !p.HasOpenVPN() {
-			continue
-		}
-	}
-	return &Info{
-		Info: ListInfo{
-			ProfileList: ret,
-		},
-	}
-}
-
 // Public gets the server list as a structure that we return to clients
 func (i Info) Public() server.Profiles {
 	m := make(map[string]server.Profile)

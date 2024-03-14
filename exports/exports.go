@@ -837,26 +837,6 @@ func RenewSession(c C.uintptr_t) *C.char {
 	return getCError(renewSessionErr)
 }
 
-// SetSupportWireguard enables or disables WireGuard for the client.
-// *WARNING: This function will be removed*
-//
-// By default WireGuard support is enabled
-// To disable it you can pass a 0 int to this
-//
-// `support` thus indicates whether or not to enable WireGuard
-// An error is returned if this is not possible
-//
-//export SetSupportWireguard
-func SetSupportWireguard(support C.int) *C.char {
-	state, stateErr := getVPNState()
-	if stateErr != nil {
-		return getCError(stateErr)
-	}
-	// TODO: Do not do any nested struct member here
-	state.Servers.WGSupport = support != 0
-	return nil
-}
-
 // StartFailover starts the 'failover' procedure in eduvpn-common
 //
 // Failover has one primary goal: check if the VPN can reach the gateway.

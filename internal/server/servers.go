@@ -26,8 +26,6 @@ type Callbacks interface {
 type Servers struct {
 	clientID string
 	cb       Callbacks
-	// WGSupport defines whether or not wireguard support is enabled
-	WGSupport bool
 	config    *v2.V2
 }
 
@@ -37,11 +35,10 @@ func (s *Servers) Remove(identifier string, t srvtypes.Type) error {
 }
 
 // NewServers creates a new servers struct
-func NewServers(name string, cb Callbacks, wgSupport bool, cfg *v2.V2) Servers {
+func NewServers(name string, cb Callbacks, cfg *v2.V2) Servers {
 	return Servers{
 		clientID:  name,
 		cb:        cb,
-		WGSupport: wgSupport,
 		config:    cfg,
 	}
 }
@@ -107,7 +104,7 @@ func (s *Servers) ConnectWithCallbacks(ctx context.Context, srv *Server, pTCP bo
 	if err != nil {
 		return nil, err
 	}
-	cfg, err := srv.connect(ctx, s.WGSupport, pTCP)
+	cfg, err := srv.connect(ctx, pTCP)
 	if err == nil {
 		return cfg, nil
 	}
@@ -127,5 +124,5 @@ func (s *Servers) ConnectWithCallbacks(ctx context.Context, srv *Server, pTCP bo
 	if err != nil {
 		return nil, err
 	}
-	return srv.connect(ctx, s.WGSupport, pTCP)
+	return srv.connect(ctx, pTCP)
 }
