@@ -3,6 +3,7 @@
 * Add a server internally before authorizing and remove it again if authorization has failed. This makes sure the internal state is always up-to-date with what is happening. This also allows us to move to the main state when authorization is done as previously it could be the case where authorization was done but the server was not added yet
 * Fix previous state not being set correctly when getting a config and an error happens
 * Make WireGuard support mandatory
+* Cache secure internet profile choice per location
 
 # 1.99.1 (2024-03-11)
 * Disable type annotation for global eduVPN class as it gave a `SyntaxError` on some Python versions. See https://bugs.python.org/issue34939

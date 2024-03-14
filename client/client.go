@@ -517,6 +517,16 @@ func (c *Client) SetSecureLocation(orgID string, countryCode string) error {
 		return i18nerr.Wrapf(err, "Failed to get the secure internet server with id: '%s' for setting a location", orgID)
 	}
 	srv.CountryCode = countryCode
+
+	// no cached location profiles
+	if srv.LocationProfiles == nil {
+		return nil
+	}
+
+	// restore profile from the location
+	if v, ok := srv.LocationProfiles[srv.CountryCode]; ok {
+		srv.Profiles.Current = v
+	}
 	return nil
 }
 

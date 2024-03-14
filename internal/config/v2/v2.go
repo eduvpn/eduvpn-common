@@ -25,6 +25,9 @@ type Server struct {
 	// CountryCode is the country code for the server in case of secure internet
 	// Otherwise it is an empty string
 	CountryCode string `json:"country_code,omitempty"`
+
+	// LocationProfiles are current profiles for each secure internet location
+	LocationProfiles map[string]string `json:"location_profiles,omitempty"`
 }
 
 // ServerKey is the key type of the server map

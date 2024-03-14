@@ -178,7 +178,15 @@ func (s *Server) SetProfileID(id string) error {
 	if err != nil {
 		return err
 	}
+	oldP := cs.Profiles.Current
 	cs.Profiles.Current = id
+
+	if s.t == srvtypes.TypeSecureInternet {
+		if cs.LocationProfiles == nil {
+			cs.LocationProfiles = make(map[string]string)
+		}
+		cs.LocationProfiles[cs.CountryCode] = oldP
+	}
 	return nil
 }
 
@@ -209,19 +217,6 @@ func (s *Server) ProfileID() (string, error) {
 		return "", err
 	}
 	return cs.Profiles.Current, nil
-}
-
-// SetLocation sets the secure internet location for the server
-func (s *Server) SetLocation(loc string) error {
-	if s.t != srvtypes.TypeSecureInternet {
-		return errors.New("changing secure internet location is only possible when the server is a secure location")
-	}
-	cs, err := s.cfgServer()
-	if err != nil {
-		return err
-	}
-	cs.CountryCode = loc
-	return nil
 }
 
 // SetCurrent sets the current server in the state file to this one
