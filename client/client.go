@@ -372,11 +372,10 @@ func (c *Client) convertIdentifier(identifier string, t srvtypes.Type) (string, 
 }
 
 // GetConfig gets a VPN configuration
-func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.Type, pTCP bool, startup bool) (*srvtypes.Configuration, error) {
+func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.Type, pTCP bool, startup bool) (cfg *srvtypes.Configuration, err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	previousState := c.FSM.Current
-	var err error
 
 	defer func() {
 		if err == nil {
@@ -431,7 +430,7 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 		return nil, i18nerr.Wrapf(err, "Server: '%s' could not be connected to", identifier)
 	}
 
-	cfg, err := c.Servers.ConnectWithCallbacks(ck.Context(), srv, pTCP)
+	cfg, err = c.Servers.ConnectWithCallbacks(ck.Context(), srv, pTCP)
 	if err != nil {
 		return nil, i18nerr.Wrapf(err, "No VPN configuration for server: '%s' could be obtained", identifier)
 	}
