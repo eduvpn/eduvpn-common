@@ -3,8 +3,8 @@ codeberg.org/eduVPN/proxyguard v0.0.0-20240307130342-c5ee3ef1e3ae/go.mod h1:fc7D
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
 github.com/jedisct1/go-minisign v0.0.0-20230811132847-661be99b8267 h1:TMtDYDHKYY15rFihtRfck/bfFqNfvcabqvXAFQfAUpY=
 github.com/jedisct1/go-minisign v0.0.0-20230811132847-661be99b8267/go.mod h1:h1nSAbGFqGVzn6Jyl1R/iCcBUHN4g+gW1u9CoBTrb9E=
-github.com/jwijenbergh/eduoauth-go v0.0.0-20240307140448-87bf2a5393cb h1:TV3GV8R+twGEWWY5BDJ63LhcQ7fZZC+rdw1cG9l18yI=
-github.com/jwijenbergh/eduoauth-go v0.0.0-20240307140448-87bf2a5393cb/go.mod h1:HidfCfBBI7U0edu2f0tNM/4/kkm4pD+nrp6IlANo214=
+github.com/jwijenbergh/eduoauth-go v0.0.0-20240315135955-9f1f5b2fd78e h1:KOWbMxOd6qRF6Zw7PfDwUy0HFhks1KXU/7ai98WKFVY=
+github.com/jwijenbergh/eduoauth-go v0.0.0-20240315135955-9f1f5b2fd78e/go.mod h1:HidfCfBBI7U0edu2f0tNM/4/kkm4pD+nrp6IlANo214=
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c h1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c/go.mod h1:7rwL4CYBLnjLxUqIJNnCWiEdr3bn6IUYi15bNlnbCCU=
 golang.org/x/crypto v0.21.0 h1:X31++rzVUdKhX5sWmSOFZxx8UW/ldWx55cbf08iNAMA=

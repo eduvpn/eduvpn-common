@@ -4,6 +4,7 @@
 * Fix previous state not being set correctly when getting a config and an error happens
 * Make WireGuard support mandatory
 * Cache secure internet profile choice per location
+* Update go dependencies: eduoauth-go logging changes
 
 # 1.99.1 (2024-03-11)
 * Disable type annotation for global eduVPN class as it gave a `SyntaxError` on some Python versions. See https://bugs.python.org/issue34939
