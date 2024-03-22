@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := pack
-.PHONY: install-lib pack test clean
+.PHONY: install-lib pack test clean lint fmt
 
 VERSION := $(shell grep -o 'const Version = "[^"]*' ../../internal/version/version.go | cut -d '"' -f 2)
 
@@ -16,3 +16,10 @@ test: install-lib
 
 clean:
 	rm -rf build/ dist/ *.egg-info/ eduvpn_common/lib/* venv
+
+lint:
+	ruff check eduvpn_common
+	ruff format --check eduvpn_common
+
+fmt:
+	ruff format eduvpn_common
