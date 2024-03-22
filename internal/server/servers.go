@@ -26,7 +26,7 @@ type Callbacks interface {
 type Servers struct {
 	clientID string
 	cb       Callbacks
-	config    *v2.V2
+	config   *v2.V2
 }
 
 // Remove removes a server with id `identifier` and type `t`
@@ -37,9 +37,9 @@ func (s *Servers) Remove(identifier string, t srvtypes.Type) error {
 // NewServers creates a new servers struct
 func NewServers(name string, cb Callbacks, cfg *v2.V2) Servers {
 	return Servers{
-		clientID:  name,
-		cb:        cb,
-		config:    cfg,
+		clientID: name,
+		cb:       cb,
+		config:   cfg,
 	}
 }
 
