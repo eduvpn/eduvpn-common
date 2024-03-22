@@ -39,11 +39,14 @@ jobs:
 
         # Install rtd theme
         pip install sphinx_rtd_theme
-    - name: Install go
-      run: |
-        sudo apt -y install golang-go
+    - uses: actions/setup-go@v3
+      with:
+        go-version: ^1.22
     - name: Build & Install python-eduvpn-common
       run: |
+        # install pip deps
+        pip install wheel setuptools build
+
         # Make go library
         make
 
