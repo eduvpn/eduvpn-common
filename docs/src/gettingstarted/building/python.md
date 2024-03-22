@@ -6,11 +6,7 @@ To build the python wrapper issue the following command (in the root directory o
 make -C wrappers/python
 ```
 
-This uses the makefile in `wrappers/python/Makefile` to build the python file into a wheel placed in `wrappers/python/dist/eduvpncommon-[version]-py3-none-[platform].whl`. Where version is the version of the library and platform is your current platform. Like Go you can also build for a specific platform:
-
-```bash
-make PLAT_NAME=win32
-```
+This uses the makefile in `wrappers/python/Makefile` to build the python file into a wheel placed in `wrappers/python/dist/eduvpncommon-[version]-py3-none-[platform].whl`. Where version is the version of the library and platform is your current platform. 
 
 The wheel can be installed with `pip`:
 

@@ -1,5 +1,4 @@
 import pathlib
-import platform
 from collections import defaultdict
 from ctypes import CDLL, c_char_p, c_int, c_void_p, cdll
 
@@ -24,25 +23,7 @@ def load_lib() -> CDLL:
     :return: The Go shared library loaded with cdll.LoadLibrary from ctypes
     :rtype: CDLL
     """
-    lib_prefixes = defaultdict(
-        lambda: "lib",
-        {
-            "windows": "",
-        },
-    )
-
-    lib_suffixes = defaultdict(
-        lambda: ".so",
-        {
-            "windows": ".dll",
-            "darwin": ".dylib",
-        },
-    )
-
-    os = platform.system().lower()
-
-    libname = "eduvpn_common"
-    libfile = f"{lib_prefixes[os]}{libname}-{__version__}{lib_suffixes[os]}"
+    libfile = f"libeduvpn_common-{__version__}.so"
 
     lib = None
 
