@@ -1,4 +1,3 @@
-from enum import IntEnum
 from typing import Any, Callable, Dict, List, Tuple
 
 from eduvpn_common.state import State, StateType
@@ -41,7 +40,7 @@ class EventHandler(object):
             try:
                 # Get the method
                 method = getattr(cls, method_name)
-            except Exception as e:
+            except Exception:
                 # Unable to get a value, go to the next
                 continue
 
@@ -81,9 +80,7 @@ class EventHandler(object):
             self.handlers[(state, state_type)] = []
         self.handlers[(state, state_type)].append(func)
 
-    def run_state(
-        self, state: State, other_state: State, state_type: StateType, data: str
-    ) -> bool:
+    def run_state(self, state: State, other_state: State, state_type: StateType, data: str) -> bool:
         """The function that runs the callback for a specific event
         :param state: State: The state of the event
         :param other_state: State: The other state of the event
