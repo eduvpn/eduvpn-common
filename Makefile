@@ -10,9 +10,12 @@ build:
 
 fmt:
 	gofumpt -w .
+	ruff format wrappers/python/eduvpn_common
 
 lint:
 	golangci-lint run -E stylecheck,revive,gocritic ./...
+	ruff check wrappers/python/eduvpn_common
+	ruff format --check wrappers/python/eduvpn_common
 
 cli:
 	go build -o eduvpn-common-cli ./cmd/cli
