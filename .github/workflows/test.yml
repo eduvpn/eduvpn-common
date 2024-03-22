@@ -3,8 +3,8 @@ name: "[Ubuntu] Test & check build"
 on: [ push, pull_request ]
 
 jobs:
-  lint-go:
-    name: Lint go
+  lint:
+    name: Linting
     runs-on: ubuntu-latest
 
     steps:
@@ -17,9 +17,15 @@ jobs:
         with:
           version: latest
           args: "-E stylecheck,revive,gocritic --out-${NO_FUTURE}format colored-line-number"
+      - name: Install ruff
+        run: pip install ruff
+      - name: Run ruff
+        run: |
+          ruff check wrappers/python/eduvpn_common
+          ruff format --check wrappers/python/eduvpn_common
 
-  test-go:
-    name: Test Go
+  test:
+    name: Run Tests
     runs-on: ubuntu-22.04
     env:
       WEB_FQDN: eduvpnghci
