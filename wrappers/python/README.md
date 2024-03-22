@@ -2,26 +2,16 @@
 
 ## Requirements
 
-Python 3.6+ is assumed, but it may work with older versions. To build, `setuptools` and `wheel` are required.
+Python 3.6+ is assumed, but it may work with older versions. To build, `setuptools`, `wheel` and `build` are required.
 
-## Build & test
+## Building
 
-First build the shared Go library. Next:
+First build the shared Go library by following the instructions in the root directory of this Repo.
 
-Build wheel using library for current platform:
+Then, to build the wheel use:
 
 ```shell
 make pack
-```
-
-(This does not build the shared Go library.)
-
-Build wheel using library for specified platform (passed to setuptools `--plat-name`,
-see [`get_build_platform`](https://setuptools.pypa.io/en/latest/pkg_resources.html?highlight=get_build_platform#platform-utilities)
-for more):
-
-```shell
-make pack PLAT_NAME=win32
 ```
 
 To install the wheel, run:
@@ -30,14 +20,7 @@ To install the wheel, run:
 pip install dist/eduvpncommon-[version]-py3-none-[platform].whl
 ```
 
-You could also reference the discovery module directly and copy the library for the platform to the `eduvpncommon/lib/`
-folder.
-
-If you do not build this as part of the full repository, specify `EXPORTS_PATH="path/to/exports-folder"` when calling
-make. This folder must contain `common.mk` and the `lib/` folder with built libraries.
-
-Test:
-
+## Running tests
 ```shell
 make test
 ```

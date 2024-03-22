@@ -1,24 +1,18 @@
-.PHONY: pack test clean
+.DEFAULT_GOAL := pack
+.PHONY: install-lib pack test clean
 
-EXPORTS_PATH ?= ../../exports
-include $(EXPORTS_PATH)/common.mk
+VERSION := $(shell grep -o 'const Version = "[^"]*' ../../internal/version/version.go | cut -d '"' -f 2)
 
-ifdef PLAT_NAME
-override SETUP_ARGS += --plat-name=$(PLAT_NAME)
-endif
+install-lib:
+	rm -rf eduvpn_common/lib/*
+	install "../../lib/libeduvpn_common-${VERSION}.so" -Dt "eduvpn_common/lib"
 
 # Build for current platform only
-pack:
-	mkdir -p ./eduvpn_common/lib
-	./setup.py bdist_wheel $(SETUP_ARGS) --exports-lib-path="$(EXPORTS_LIB_PATH)"
+pack: install-lib
+	python3 -m build --sdist --wheel .
 
-test: .try-build-lib
-	install "$(EXPORTS_LIB_SUBFOLDER_PATH)/$(LIB_FILE)" -Dt "eduvpn_common/lib"
+test: install-lib
 	python3 -m unittest tests
-	rm eduvpn_common/lib/*
 
 clean:
-	rm -rf build/ dist/ *.egg-info/ lib/*
-ifeq ($(CLEAN_ALL),1)
-	rm -rf venv/
-endif
+	rm -rf build/ dist/ *.egg-info/ eduvpn_common/lib/* venv

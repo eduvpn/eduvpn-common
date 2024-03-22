@@ -1,6 +1,37 @@
 [build-system]
-requires = [
-    "setuptools",
-    "wheel",
-]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "eduvpn_common"
+version = "1.99.1"
+description = "eduvpn-common library"
+authors = [
+    {name = "Jeroen Wijenbergh", email = "jeroen.wijenbergh@geant.org"},
+]
+requires-python = ">=3.6"
+readme = "README.md"
+license = {text = "MIT"}
+
+[project.urls]
+Homepage = "https://github.com/eduvpn/eduvpn-common"
+
+[project.optional-dependencies]
+lint = ["ruff" ]
+mypy = [ "mypy" ]
+
+[tool.setuptools.packages.find]
+include = ["eduvpn_common*"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = [
+    # isort
+    "I",
+]
+ignore = ['E402']
+
+[tool.ruff.lint.isort]
+case-sensitive = true

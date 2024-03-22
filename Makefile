@@ -1,30 +1,25 @@
-.PHONY: build test test-go test-wrappers clean
+.DEFAULT_GOAL := build
+.PHONY: build fmt cli clean
+
+
+VERSION := $(shell grep -o 'const Version = "[^"]*' internal/version/version.go | cut -d '"' -f 2)
+
 
 build:
-	$(MAKE) -C exports
+	CGO_ENABLED="1" go build -o lib/libeduvpn_common-${VERSION}.so -buildmode=c-shared ./exports
 
-test: test-go test-wrappers
+fmt:
+	gofumpt -w .
 
-test-go:
-	go test ./... -v
+lint:
+	golangci-lint run -E stylecheck,revive,gocritic ./...
 
-#WRAPPERS ?= $(notdir $(patsubst %/,%,$(wildcard wrappers/*/)))
-WRAPPERS=python
+cli:
+	go build -o eduvpn-common-cli ./cmd/cli
 
-# Enable parallelism if -j is specified, but first execute build
-test-wrappers: build
-	$(MAKE) $(foreach wrapper,$(WRAPPERS),.test-$(wrapper))
+test:
+	go test ./...
 
-clean: .clean-libs $(foreach wrapper,$(WRAPPERS),.clean-$(wrapper))
-
-.clean-libs:
-	$(MAKE) -C exports clean
-
-# Define test & clean for each wrapper
-define wrapper_targets
-.test-$(1):
-	$(MAKE) -C wrappers/$(1) test
-.clean-$(1):
-	$(MAKE) -C wrappers/$(1) clean
-endef
-$(foreach wrapper,$(WRAPPERS),$(eval $(call wrapper_targets,$(wrapper))))
+clean:
+	rm -rf lib
+	go clean
