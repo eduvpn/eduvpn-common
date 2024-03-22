@@ -1,9 +1,11 @@
 import ctypes
 import json
 from enum import IntEnum
-from typing import Any, Callable, Iterator, Optional
+from typing import Any, Callable, Iterator
 
+from eduvpn_common.event import EventHandler
 from eduvpn_common.loader import initialize_functions, load_lib
+from eduvpn_common.state import State
 from eduvpn_common.types import (
     ProxyReady,
     ProxySetup,
@@ -14,10 +16,6 @@ from eduvpn_common.types import (
     decode_res,
     encode_args,
 )
-
-from eduvpn_common.event import EventHandler
-from eduvpn_common.state import State
-
 
 global_object = None
 
@@ -134,7 +132,6 @@ class EduVPN(object):
         """Register the Go shared library.
         This makes sure the FSM is initialized and that we can call Go functions
 
-        :param handler: Optional[Callable]:  (Default value = None): The handler that runs state transitions
         :param debug: bool:  (Default value = False): Whether or not we want to enable debug logging
 
         """
@@ -293,9 +290,7 @@ class EduVPN(object):
         :raises WrappedError: An error by the Go library
         """
         # Set the location by country code
-        location_err = self.go_function(
-            self.lib.SetSecureLocation, org_id, country_code
-        )
+        location_err = self.go_function(self.lib.SetSecureLocation, org_id, country_code)
 
         # If there is a location event, set it so that the wait callback finishes
         # And so that the Go code can move to the next state
@@ -305,9 +300,7 @@ class EduVPN(object):
     def set_token_handler(self, getter: Callable, setter: Callable) -> None:
         self.token_setter = setter
         self.token_getter = getter
-        handler_err = self.go_function(
-            self.lib.SetTokenHandler, token_getter, token_setter
-        )
+        handler_err = self.go_function(self.lib.SetTokenHandler, token_getter, token_setter)
 
         if handler_err:
             forwardError(handler_err)
@@ -328,9 +321,7 @@ class EduVPN(object):
         if renew_err:
             forwardError(renew_err)
 
-    def start_failover(
-        self, gateway: str, wg_mtu: int, readrxbytes: ReadRxBytes
-    ) -> bool:
+    def start_failover(self, gateway: str, wg_mtu: int, readrxbytes: ReadRxBytes) -> bool:
         dropped, dropped_err = self.go_cookie_function(
             self.lib.StartFailover,
             gateway,
@@ -365,9 +356,7 @@ class EduVPN(object):
 
 
 @TokenSetter
-def token_setter(
-    server_id: ctypes.c_char_p, server_type: ctypes.c_int, tokens: ctypes.c_char_p
-):
+def token_setter(server_id: ctypes.c_char_p, server_type: ctypes.c_int, tokens: ctypes.c_char_p):
     global global_object
     if global_object is None:
         return
@@ -409,9 +398,7 @@ def state_callback(old_state: int, new_state: int, data: str) -> int:
     global global_object
     if global_object is None:
         return 0
-    handled = global_object.event_handler.run(
-        State(old_state), State(new_state), data.decode("utf-8")
-    )
+    handled = global_object.event_handler.run(State(old_state), State(new_state), data.decode("utf-8"))
     if handled:
         return 1
     return 0
