@@ -9,3 +9,7 @@
 /cmd/cli/configs/
 /ci/docker/selfsigned/
 /docker/pip/out/
+
+# build output
+/eduvpn-common-cli
+/lib
