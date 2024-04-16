@@ -124,7 +124,7 @@ func New(name string, version string, directory string, stateCallback func(FSMSt
 	}
 
 	// Initialize the logger
-	lvl := log.LevelWarning
+	lvl := log.LevelInfo
 	if debug {
 		lvl = log.LevelDebug
 	}
