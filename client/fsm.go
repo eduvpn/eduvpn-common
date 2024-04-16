@@ -116,6 +116,7 @@ func newFSM(
 		StateOAuthStarted: FSMState{
 			Transitions: []FSMTransition{
 				{To: StateMain, Description: "Authorized"},
+				{To: StateDisconnected, Description: "Cancel, was disconnected"},
 			},
 		},
 		StateGettingConfig: FSMState{
