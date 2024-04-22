@@ -18,7 +18,7 @@ cli:
 	go build -o eduvpn-common-cli ./cmd/cli
 
 test:
-	go test ./...
+	go test -race ./...
 
 clean:
 	rm -rf lib
