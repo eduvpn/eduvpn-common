@@ -773,7 +773,8 @@ func DiscoOrganizations(c C.uintptr_t) (*C.char, *C.char) {
 	return C.CString(s), getCError(err)
 }
 
-// Cleanup sends a /disconnect to cleanup the connection
+// Cleanup sends a /disconnect to cleanup the connection.
+// Additionally, if ProxyGuard is active it cancels the running process
 //
 // This MUST be called when disconnecting, see https://docs.eduvpn.org/server/v3/api.html#application-flow
 // `c` is the Cookie that needs to be passed. Create a new Cookie using `CookieNew`
@@ -882,7 +883,10 @@ func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.Read
 }
 
 // StartProxyguard starts the 'proxyguard' procedure in eduvpn-common.
-// This proxies WireGuard UDP connections over HTTP: https://codeberg.org/eduvpn/proxyguard.
+// Note that you should cancel/delete the cookie for this function when ProxyGuard is no longer needed!
+// eduvpn-common currently also cleans up the running ProxyGuard process in `cleanup`.
+//
+// This function proxies WireGuard UDP connections over HTTP: https://codeberg.org/eduvpn/proxyguard.
 // These input variables can be gotten from the configuration that is retrieved using the `proxy` JSON key
 //
 //   - `c` is the cookie

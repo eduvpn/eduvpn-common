@@ -114,7 +114,8 @@ Signature:
  ```go
 func Cleanup(c C.uintptr_t) *C.char
 ```
-Cleanup sends a /disconnect to cleanup the connection
+Cleanup sends a /disconnect to cleanup the connection. Additionally,
+if ProxyGuard is active it cancels the running process
 
 This MUST be called when disconnecting, see
 https://docs.eduvpn.org/server/v3/api.html#application-flow `c` is the
@@ -831,8 +832,12 @@ Signature:
  ```go
 func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char, proxySetup C.ProxySetup, proxyReady C.ProxyReady) *C.char
 ```
-StartProxyguard starts the 'proxyguard' procedure in
-eduvpn-common. This proxies WireGuard UDP connections over HTTP:
+StartProxyguard starts the 'proxyguard' procedure in eduvpn-common. Note
+that you should cancel/delete the cookie for this function when ProxyGuard
+is no longer needed! eduvpn-common currently also cleans up the running
+ProxyGuard process in `cleanup`.
+
+This function proxies WireGuard UDP connections over HTTP:
 https://codeberg.org/eduvpn/proxyguard. These input variables can be gotten
 from the configuration that is retrieved using the `proxy` JSON key
 
