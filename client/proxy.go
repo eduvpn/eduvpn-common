@@ -1,7 +1,10 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
+	"sync"
 
 	"codeberg.org/eduVPN/proxyguard"
 
@@ -21,6 +24,70 @@ func (pl *ProxyLogger) Logf(msg string, params ...interface{}) {
 // Log logs a message
 func (pl *ProxyLogger) Log(msg string) {
 	log.Logger.Infof("[Proxyguard] %s", msg)
+}
+
+// Proxy is a wrapper around ProxyGuard
+// that has the client
+// and a cancel for cancellation by common
+// and a mutex to protect against race conditions
+type Proxy struct {
+	c      *proxyguard.Client
+	mu     sync.Mutex
+	cancel context.CancelFunc
+}
+
+// NewClient creates a new ProxyGuard wrapper from client `c`
+func (p *Proxy) NewClient(c *proxyguard.Client) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.c = c
+}
+
+// Delete sets the inner client to nil
+func (p *Proxy) Delete() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.c = nil
+}
+
+// ErrNoProxyGuardCancel indicates that no ProxyGuard cancel function
+// was ever defined. You probably forgot to call `Tunnel`
+var ErrNoProxyGuardCancel = errors.New("no ProxyGuard cancel function")
+
+// Cancel cancels a running ProxyGuard tunnel
+// it returns an error if it cannot be canceled
+func (p *Proxy) Cancel() error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.cancel == nil {
+		return ErrNoProxyGuardCancel
+	}
+	p.cancel()
+	p.cancel = nil
+	return nil
+}
+
+// ErrNoProxyGuardClient is an error that is returned when no ProxyGuard client is created
+var ErrNoProxyGuardClient = errors.New("no ProxyGuard client created")
+
+// Tunnel is a wrapper around ProxyGuard tunnel that
+// that creates a new context that can be canceled
+func (p *Proxy) Tunnel(ctx context.Context, peer string) error {
+	p.mu.Lock()
+	if p.c == nil {
+		p.mu.Unlock()
+		return ErrNoProxyGuardClient
+	}
+	cctx, cf := context.WithCancel(ctx)
+	p.cancel = cf
+	p.mu.Unlock()
+	defer func() {
+		p.mu.Lock()
+		p.cancel = nil
+		p.mu.Unlock()
+	}()
+	// we set peer IPs to nil here as proxyguard already does a DNS request for us
+	return p.c.Tunnel(cctx, peer, nil)
 }
 
 // StartProxyguard starts proxyguard for proxied WireGuard connections
@@ -45,8 +112,9 @@ func (c *Client) StartProxyguard(ck *cookie.Cookie, listen string, tcpsp int, pe
 		Ready: ready,
 	}
 
-	// we set peer IPs to nil here as proxyguard already does a DNS request for us
-	err = proxyc.Tunnel(ck.Context(), peer, nil)
+	c.proxy.NewClient(&proxyc)
+	defer c.proxy.Delete()
+	err = c.proxy.Tunnel(ck.Context(), peer)
 	if err != nil {
 		return i18nerr.Wrap(err, "The VPN proxy exited")
 	}
