@@ -49,6 +49,9 @@ type Client struct {
 	// cfg is the config
 	cfg *config.Config
 
+	// proxy is proxyguard
+	proxy Proxy
+
 	mu sync.Mutex
 }
 
@@ -486,6 +489,11 @@ func (c *Client) retrieveTokens(sid string, t srvtypes.Type) (*eduoauth.Token, e
 
 // Cleanup cleans up the VPN connection by sending a /disconnect
 func (c *Client) Cleanup(ck *cookie.Cookie) error {
+	// cleanup proxyguard
+	cerr := c.proxy.Cancel()
+	if cerr != nil {
+		log.Logger.Debugf("ProxyGuard cancel gave an error: %v", cerr)
+	}
 	srv, err := c.Servers.CurrentServer()
 	if err != nil {
 		return i18nerr.Wrap(err, "The current server was not found when cleaning up the connection")
