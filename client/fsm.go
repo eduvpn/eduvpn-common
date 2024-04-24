@@ -123,6 +123,7 @@ func newFSM(
 			Transitions: []FSMTransition{
 				{To: StateAskLocation, Description: "Invalid location"},
 				{To: StateAskProfile, Description: "Invalid or no profile"},
+				{To: StateDisconnected, Description: "Go back to disconnected"},
 				{To: StateGotConfig, Description: "Successfully got a configuration"},
 				{To: StateOAuthStarted, Description: "Authorize"},
 			},
