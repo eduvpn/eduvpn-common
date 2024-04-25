@@ -9,8 +9,8 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-if ! command -v "black" &>/dev/null; then
-    echo "please install black for formatting the python wrapper"
+if ! command -v "ruff" &>/dev/null; then
+    echo "please install ruff for formatting the python wrapper"
     exit 1
 fi
 
@@ -38,10 +38,10 @@ if [[ $(git diff) ]]; then
 fi
 
 # Format all Python files
-git ls-files | grep '.py$' | xargs -I {} black --quiet {} >/dev/null
+git ls-files | grep '.py$' | xargs -I {} ruff format --quiet {} >/dev/null
 if [[ $(git diff) ]]; then
     git add -u
-    git commit -m "Format: Run Black"
+    git commit -m "Format: Run Ruff"
 fi
 
 # Replace version number
