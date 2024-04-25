@@ -9,9 +9,7 @@ import sys
 import threading
 
 # Import project root directory where the selenium python utility is
-sys.path.append(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from selenium_eduvpn import login_eduvpn
 
