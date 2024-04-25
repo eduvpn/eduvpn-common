@@ -1,10 +1,13 @@
-# Not released
+# 1.99.2 (2024-04-25)
 * Expose default gateway in profile settings too. For clients, use the default gateway set on the config object, this is maybe only useful for suggesting some profiles in the client profile chooser UI
 * Add a server internally before authorizing and remove it again if authorization has failed. This makes sure the internal state is always up-to-date with what is happening. This also allows us to move to the main state when authorization is done as previously it could be the case where authorization was done but the server was not added yet
 * Fix previous state not being set correctly when getting a config and an error happens
 * Make WireGuard support mandatory
 * Cache secure internet profile choice per location
 * Update go dependencies: eduoauth-go logging changes
+* Cancel ProxyGuard in Cleanup function if it was started using the common functionality
+* FSM Changes: Allow to go to disconnected from OAuthStarted and GettingConfig
+* Refactor makefile & building
 
 # 1.99.1 (2024-03-11)
 * Disable type annotation for global eduVPN class as it gave a `SyntaxError` on some Python versions. See https://bugs.python.org/issue34939
