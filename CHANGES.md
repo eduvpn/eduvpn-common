@@ -7,7 +7,7 @@
 * Update go dependencies: eduoauth-go logging changes
 * Cancel ProxyGuard in Cleanup function if it was started using the common functionality
 * FSM Changes: Allow to go to disconnected from OAuthStarted and GettingConfig
-* Refactor makefile & building
+* Refactor makefile & building for Go and Python code
 
 # 1.99.1 (2024-03-11)
 * Disable type annotation for global eduVPN class as it gave a `SyntaxError` on some Python versions. See https://bugs.python.org/issue34939
