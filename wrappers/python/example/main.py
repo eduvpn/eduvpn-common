@@ -14,9 +14,7 @@ def ask_ranged_input(total: int, label: str) -> int:
 
     while range_index is None:
         try:
-            range_index = int(
-                input(f"Please select a {label} by inputting a number (e.g. 1): ")
-            )
+            range_index = int(input(f"Please select a {label} by inputting a number (e.g. 1): "))
             if (range_index > total) or (range_index < 1):
                 print(f"Invalid input, input must be between 1 and {total} (inclusive)")
                 range_index = None
@@ -51,9 +49,7 @@ def setup_callbacks(edu: eduvpn.EduVPN):
 
 
 def do_custom_server(edu: eduvpn.EduVPN) -> Optional[Config]:
-    server_url = input(
-        "Enter a server URL to get a configuration for (e.g. vpn.example.com): "
-    )
+    server_url = input("Enter a server URL to get a configuration for (e.g. vpn.example.com): ")
     edu.add_custom_server(server_url)
     return edu.get_config_custom_server(server_url)
 
@@ -89,9 +85,7 @@ def do_secure_internet(edu: eduvpn.EduVPN) -> Optional[Config]:
         secure_internet_servers.append(disco_org)
         index += 1
 
-    ranged_index = ask_ranged_input(
-        len(secure_internet_servers), "secure internet server"
-    )
+    ranged_index = ask_ranged_input(len(secure_internet_servers), "secure internet server")
     org_id = secure_internet_servers[ranged_index].org_id
     edu.add_secure_internet_home(org_id)
     return edu.get_config_secure_internet(org_id)
@@ -99,9 +93,7 @@ def do_secure_internet(edu: eduvpn.EduVPN) -> Optional[Config]:
 
 # The main entry point
 if __name__ == "__main__":
-    _eduvpn = eduvpn.EduVPN(
-        "org.eduvpn.app.linux", f"{commonver}-cli-py", "configs", "en"
-    )
+    _eduvpn = eduvpn.EduVPN("org.eduvpn.app.linux", f"{commonver}-cli-py", "configs", "en")
     setup_callbacks(_eduvpn)
 
     # Register with the eduVPN-common library
