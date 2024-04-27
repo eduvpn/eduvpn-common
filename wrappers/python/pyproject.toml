@@ -23,6 +23,9 @@ mypy = [ "mypy" ]
 [tool.setuptools.packages.find]
 include = ["eduvpn_common*"]
 
+[tool.setuptools.package-data]
+"eduvpn_common.lib" = ["*.so"]
+
 [tool.ruff]
 line-length = 120
 
