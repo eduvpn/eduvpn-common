@@ -16,16 +16,61 @@ import (
 // HasCache denotes whether or not we have an embedded cache available
 var HasCache bool
 
+// Organizations are the list of organizations from https://disco.eduvpn.org/v2/organization_list.json
+type Organizations struct {
+	// Version is the version field in discovery. The Go library checks this for rollbacks
+	Version uint64 `json:"v"`
+	// List is the list of organizations, omitted if empty
+	List []Organization `json:"organization_list,omitempty"`
+	// Timestamp is the timestamp that is internally used by the Go library to keep track
+	// of when the organizations were last updated
+	Timestamp time.Time `json:"go_timestamp"`
+}
+
+// Organization is a single discovery Organization
+type Organization struct {
+	// Organization is the embedded public type that is a subset of this thus common Organization
+	discotypes.Organization
+	// SecureInternetHome is the secure internet home server that belongs to this organization
+	// Omitted if none is defined
+	SecureInternetHome string `json:"secure_internet_home"`
+}
+
+// Servers are the list of servers from https://disco.eduvpn.org/v2/server_list.json
+type Servers struct {
+	// Version is the version field in discovery. The Go library checks this for rollbacks
+	Version uint64 `json:"v"`
+	// List is the list of servers, omitted if empty
+	List []Server `json:"server_list,omitempty"`
+	// Timestamp is a timestamp that is internally used by the Go library to keek track
+	// of when the servers were last updated
+	Timestamp time.Time `json:"go_timestamp"`
+}
+
+// Server is a single discovery server
+type Server struct {
+	// Server is the embedded public type that is a subset of this common Server
+	discotypes.Server
+	// AuthenticationURLTemplate is the template to be used for authentication to skip WAYF
+	AuthenticationURLTemplate string `json:"authentication_url_template,omitempty"`
+	// CountryCode is the country code for the server in case of secure internet, e.g. NL
+	CountryCode string `json:"country_code,omitempty"`
+	// PublicKeyList are the public keys of the server. Currently not used in this lib but returned by the upstream discovery server
+	PublicKeyList []string `json:"public_key_list,omitempty"`
+	// SupportContact is the list/slice of support contacts
+	SupportContact []string `json:"support_contact,omitempty"`
+}
+
 // Discovery is the main structure used for this package.
 type Discovery struct {
 	// The httpClient for sending HTTP requests
 	httpClient *http.Client
 
-	// OrganizationList represents the organizations that are returned by the discovery server
-	OrganizationList discotypes.Organizations `json:"organizations"`
+	// Organizations represents the organizations that are returned by the discovery server
+	OrganizationList Organizations `json:"organizations"`
 
-	// ServerList represents the servers that are returned by the discovery server
-	ServerList discotypes.Servers `json:"servers"`
+	// Servers represents the servers that are returned by the discovery server
+	ServerList Servers `json:"servers"`
 }
 
 // DiscoURL is the URL used for fetching the discovery files and signatures
@@ -116,7 +161,7 @@ func (discovery *Discovery) SecureLocationList() []string {
 func (discovery *Discovery) ServerByURL(
 	baseURL string,
 	srvType string,
-) (*discotypes.Server, error) {
+) (*Server, error) {
 	for _, currentServer := range discovery.ServerList.List {
 		if currentServer.BaseURL == baseURL && currentServer.Type == srvType {
 			return &currentServer, nil
@@ -136,7 +181,7 @@ func (cnf *ErrCountryNotFound) Error() string {
 
 // ServerByCountryCode returns the discovery server by the country code
 // An error is returned if and only if nil is returned for the server.
-func (discovery *Discovery) ServerByCountryCode(countryCode string) (*discotypes.Server, error) {
+func (discovery *Discovery) ServerByCountryCode(countryCode string) (*Server, error) {
 	for _, srv := range discovery.ServerList.List {
 		if srv.CountryCode == countryCode && srv.Type == "secure_internet" {
 			return &srv, nil
@@ -147,7 +192,7 @@ func (discovery *Discovery) ServerByCountryCode(countryCode string) (*discotypes
 
 // orgByID returns the discovery organization by the organization ID
 // An error is returned if and only if nil is returned for the organization.
-func (discovery *Discovery) orgByID(orgID string) (*discotypes.Organization, error) {
+func (discovery *Discovery) orgByID(orgID string) (*Organization, error) {
 	for _, org := range discovery.OrganizationList.List {
 		if org.OrgID == orgID {
 			return &org, nil
@@ -160,7 +205,7 @@ func (discovery *Discovery) orgByID(orgID string) (*discotypes.Organization, err
 // - The organization it belongs to
 // - The secure internet server itself
 // An error is returned if and only if nil is returned for the organization.
-func (discovery *Discovery) SecureHomeArgs(orgID string) (*discotypes.Organization, *discotypes.Server, error) {
+func (discovery *Discovery) SecureHomeArgs(orgID string) (*Organization, *Server, error) {
 	org, err := discovery.orgByID(orgID)
 	if err != nil {
 		discovery.MarkOrganizationsExpired()
@@ -189,7 +234,7 @@ func (discovery *Discovery) DetermineServersUpdate() bool {
 	return !time.Now().Before(upd)
 }
 
-func (discovery *Discovery) previousOrganizations() (*discotypes.Organizations, error) {
+func (discovery *Discovery) previousOrganizations() (*Organizations, error) {
 	// If the version field is not zero then we have a cached struct
 	// We also immediately return this copy if we have no embedded JSON
 	if discovery.OrganizationList.Version != 0 || !HasCache {
@@ -197,7 +242,7 @@ func (discovery *Discovery) previousOrganizations() (*discotypes.Organizations, 
 	}
 
 	// We do not have a cached struct, this we need to get it using the embedded JSON
-	var eo discotypes.Organizations
+	var eo Organizations
 	if err := json.Unmarshal(eOrganizations, &eo); err != nil {
 		return nil, fmt.Errorf("failed parsing discovery organizations from the embedded cache with error: %w", err)
 	}
@@ -205,7 +250,7 @@ func (discovery *Discovery) previousOrganizations() (*discotypes.Organizations, 
 	return &eo, nil
 }
 
-func (discovery *Discovery) previousServers() (*discotypes.Servers, error) {
+func (discovery *Discovery) previousServers() (*Servers, error) {
 	// If the version field is not zero then we have a cached struct
 	// We also immediately return this copy if we have no embedded JSON
 	if discovery.ServerList.Version != 0 || !HasCache {
@@ -213,7 +258,7 @@ func (discovery *Discovery) previousServers() (*discotypes.Servers, error) {
 	}
 
 	// We do not have a cached struct, this we need to get it using the embedded JSON
-	var es discotypes.Servers
+	var es Servers
 	if err := json.Unmarshal(eServers, &es); err != nil {
 		return nil, fmt.Errorf("failed parsing discovery servers from the embedded cache with error: %w", err)
 	}
@@ -223,7 +268,7 @@ func (discovery *Discovery) previousServers() (*discotypes.Servers, error) {
 
 // Organizations returns the discovery organizations
 // If there was an error, a cached copy is returned if available.
-func (discovery *Discovery) Organizations(ctx context.Context) (*discotypes.Organizations, error) {
+func (discovery *Discovery) Organizations(ctx context.Context) (*Organizations, error) {
 	if !discovery.DetermineOrganizationsUpdate() {
 		return &discovery.OrganizationList, nil
 	}
@@ -243,7 +288,7 @@ func (discovery *Discovery) Organizations(ctx context.Context) (*discotypes.Orga
 
 // Servers returns the discovery servers
 // If there was an error, a cached copy is returned if available.
-func (discovery *Discovery) Servers(ctx context.Context) (*discotypes.Servers, error) {
+func (discovery *Discovery) Servers(ctx context.Context) (*Servers, error) {
 	if !discovery.DetermineServersUpdate() {
 		return &discovery.ServerList, nil
 	}
