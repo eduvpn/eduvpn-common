@@ -86,9 +86,9 @@ func TestOrganizations(t *testing.T) {
 // TestSecureLocationList tests the function for getting a list of secure internet servers
 func TestSecureLocationList(t *testing.T) {
 	d := Discovery{
-		ServerList: discotypes.Servers{
+		ServerList: Servers{
 			Version: 1,
-			List: []discotypes.Server{
+			List: []Server{
 				// institute access server, this should not be found
 				{CountryCode: "", Type: "institute_access"},
 				// secure internet servers, these should be found
@@ -111,15 +111,15 @@ func TestSecureLocationList(t *testing.T) {
 // TestServerByURL tests the function for getting a server by the Base URL and type
 func TestServerByURL(t *testing.T) {
 	d := Discovery{
-		ServerList: discotypes.Servers{
+		ServerList: Servers{
 			Version: 1,
-			List: []discotypes.Server{
+			List: []Server{
 				// institute access server
-				{BaseURL: "a", Type: "institute_access"},
+				Server{BaseURL: "a", Type: "institute_access"},
 				// secure internet servers
-				{BaseURL: "b", Type: "secure_internet"},
+				Server{BaseURL: "b", Type: "secure_internet"},
 				// Unexpected type, this should not be found
-				{BaseURL: "d", Type: "test"},
+				Server{BaseURL: "d", Type: "test"},
 			},
 		},
 	}
