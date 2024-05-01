@@ -172,21 +172,45 @@ const enData string = "" + // Size: 1729 bytes
 	"ot be connected to"
 
 var esIndex = []uint32{ // 30 elements
-	0x00000000, 0x0000004a, 0x0000004a, 0x0000004a,
-	0x0000004a, 0x0000004a, 0x0000004a, 0x0000004a,
-	0x0000004a, 0x0000004a, 0x0000004a, 0x0000004a,
-	0x0000004a, 0x0000004a, 0x0000004a, 0x0000004a,
-	0x0000004a, 0x0000004a, 0x0000004a, 0x0000004a,
-	0x0000004a, 0x0000004a, 0x0000004a, 0x000000ab,
-	0x00000104, 0x00000104, 0x00000104, 0x00000104,
-	0x00000104, 0x00000104,
+	0x00000000, 0x0000004a, 0x0000009c, 0x000000e9,
+	0x00000142, 0x00000187, 0x000001ac, 0x00000204,
+	0x00000290, 0x000002f3, 0x0000033c, 0x0000038a,
+	0x000003b5, 0x000003e2, 0x00000410, 0x00000453,
+	0x0000048d, 0x000004cb, 0x000004ed, 0x0000054c,
+	0x0000058f, 0x000005cb, 0x0000061c, 0x0000067d,
+	0x000006d6, 0x000006f7, 0x0000073c, 0x0000074b,
+	0x00000764, 0x0000078f,
 } // Size: 144 bytes
 
-const esData string = "" + // Size: 260 bytes
+const esData string = "" + // Size: 1935 bytes
 	"\x02El archivo de registro con el directorio: '%[1]s' no se puede inicia" +
-	"lizar\x02Se ha producido un error al obtener los archivos de detección d" +
-	"e la lista de las organizaciones\x02Se ha producido un error al obtener " +
-	"los archivos de detección de la lista de servidores"
+	"lizar\x02No se ha encontrado el servidor actual al obtener la fecha de c" +
+	"aducidad de la VPN\x02El servidor de acceso al instituto con URL '%[1]s'" +
+	" no ha podido ser añadido\x02No se ha podido añadir el servidor seguro d" +
+	"e Internet con ID de organización: '%[1]s'.\x02El servidor personalizado" +
+	" con URL: '%[1]s' no ha podido ser añadido\x02input: '%[1]s' no es una U" +
+	"RL válida\x02El identificador del servidor: '%[1]s', no es válido al obt" +
+	"ener una configuración VPN\x02El cliente intentó autoconectarse al servi" +
+	"dor VPN: '%[1]s', pero necesita autorizarse de nuevo. Por favor, conécte" +
+	"se manualmente de nuevo\x02El cliente intentó autoconectarse al servidor" +
+	" VPN: %[1]s', pero la operación no se ha completado\x02No hay configurac" +
+	"ión VPN para el servidor: '%[1]s' se ha podido obtener\x02El identificad" +
+	"or del servidor: '%[1]s', no es válido al eliminar el servidor\x02El ser" +
+	"vidor: '%[1]s' no pudo ser eliminado\x02No se ha podido recuperar el ser" +
+	"vidor actual\x02Error al establecer el ID del perfil: '%[1]s'\x02No se h" +
+	"a encontrado el servidor actual al restablecer la conexión\x02No se han " +
+	"encontrado tokens OAuth al limpiar la conexión\x02No se ha podido recupe" +
+	"rar el servidor al limpiar la conexión\x02Error al limpiar la conexión V" +
+	"PN\x02Error al obtener el servidor seguro de Internet con id: '%[1]s' pa" +
+	"ra establecer una ubicación\x02No se ha podido recuperar el servidor act" +
+	"ual al renovar la sesión\x02No se ha podido recuperar el servidor al ren" +
+	"ovar la sesión\x02Error en la conmutación por error con puerta de enlace" +
+	": '%[1]s' y MTU: '%[2]d'.\x02Se ha producido un error al obtener los arc" +
+	"hivos de detección de la lista de las organizaciones\x02Se ha producido " +
+	"un error al obtener los archivos de detección de la lista de servidores" +
+	"\x02Se ha desconectado del proxy VPN\x02tiempo de espera alcanzado para " +
+	"URL: '%[1]s' y método HTTP: '%[2]s'\x02Por el motivo:\x02Se ha producido" +
+	" un error\x02Servidor: '%[1]s' no se ha podido conectar"
 
 var frIndex = []uint32{ // 30 elements
 	0x00000000, 0x0000004f, 0x0000004f, 0x0000004f,
@@ -276,4 +300,4 @@ var ukIndex = []uint32{ // 30 elements
 
 const ukData string = ""
 
-// Total table size 6773 bytes (6KiB); checksum: 5C59D2DF
+// Total table size 8448 bytes (8KiB); checksum: 7494CF86
