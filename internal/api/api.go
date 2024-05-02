@@ -45,8 +45,6 @@ type ServerData struct {
 	BaseAuthWK string
 	// ProcessAuth processes the OAuth authorization
 	ProcessAuth func(string) string
-	// SetAuthorizeTime sets the authorization time
-	SetAuthorizeTime func(time.Time)
 	// DisableAuthorize indicates whether or not new authorization requests should be disabled
 	DisableAuthorize bool
 }
