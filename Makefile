@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := build
-.PHONY: build fmt cli clean
+.PHONY: build fmt cli clean coverage
 
 
 VERSION := $(shell grep -o 'const Version = "[^"]*' internal/version/version.go | cut -d '"' -f 2)
@@ -23,3 +23,6 @@ test:
 clean:
 	rm -rf lib
 	go clean
+coverage:
+	go test -v -coverpkg=./... -coverprofile=common.cov ./...
+	go tool cover -func common.cov

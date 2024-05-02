@@ -13,3 +13,6 @@
 # build output
 /eduvpn-common-cli
 /lib
+
+# coverage profile
+/common.cov
