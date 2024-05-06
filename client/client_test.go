@@ -328,8 +328,8 @@ func TestPreferTCP(t *testing.T) {
 	config, configErr := state.GetConfig(ck, serverURI, srvtypes.TypeCustom, true, false)
 
 	// Test server should accept prefer TCP!
-	if config.Protocol != protocol.OpenVPN {
-		t.Fatalf("Invalid protocol for prefer TCP, got: WireGuard, want: OpenVPN")
+	if config.Protocol != protocol.OpenVPN && config.Protocol != protocol.WireGuardProxy {
+		t.Fatalf("Invalid protocol for prefer TCP")
 	}
 
 	if configErr != nil {
@@ -337,7 +337,7 @@ func TestPreferTCP(t *testing.T) {
 	}
 
 	// We also test for script security 0 here
-	if !strings.HasSuffix(config.VPNConfig, "udp\nscript-security 0") {
+	if config.Protocol == protocol.OpenVPN && !strings.HasSuffix(config.VPNConfig, "udp\nscript-security 0") {
 		t.Fatalf("Suffix for prefer TCP is not in the right order for config: %s", config.VPNConfig)
 	}
 
