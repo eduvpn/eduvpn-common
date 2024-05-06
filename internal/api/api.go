@@ -239,6 +239,12 @@ func protocolFromCT(ct string) (protocol.Protocol, error) {
 	return protocol.Unknown, fmt.Errorf("invalid content type: %s", ct)
 }
 
+// ErrNoProtocols is returned when a connect call is given with an empty protocol slice
+var ErrNoProtocols = errors.New("no protocols supplied")
+
+// ErrUnknownProtocol is returned when the client in a connect gives an unknown protocol
+var ErrUnknownProtocol = errors.New("unknown protocol supplied")
+
 // Connect sends a /connect to an eduVPN server
 // `ctx` is the context used for cancellation
 // protos is the list of protocols supported and wanted by the client
@@ -251,7 +257,7 @@ func (a *API) Connect(ctx context.Context, prof profiles.Profile, protos []proto
 	}
 
 	if len(protos) == 0 {
-		return nil, errors.New("no protocols supplied")
+		return nil, ErrNoProtocols
 	}
 
 	var wgKey *wgtypes.Key
@@ -273,7 +279,7 @@ func (a *API) Connect(ctx context.Context, prof profiles.Profile, protos []proto
 		case protocol.OpenVPN:
 			hdrs.Add("accept", "application/x-openvpn-profile")
 		default:
-			return nil, errors.New("unknown protocol supplied")
+			return nil, ErrUnknownProtocol
 		}
 	}
 	// set prefer TCP
