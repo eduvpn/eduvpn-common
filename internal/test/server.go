@@ -48,7 +48,10 @@ func (hp *HandlerPath) HandlerFunc() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 		w.WriteHeader(hp.ResponseCode)
-		w.Write([]byte(hp.Response))
+		_, err := w.Write([]byte(hp.Response))
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
