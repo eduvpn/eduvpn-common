@@ -107,6 +107,14 @@ func (a *API) authorize(ctx context.Context) (err error) {
 		return nil
 	}
 
+	// otherwise check if invalid tokens,
+	// if not then something else is wrong with the API
+	// return an error
+	tErr := &eduoauth.TokensInvalidError{}
+	if !errors.As(err, &tErr) {
+		return err
+	}
+
 	if a.Data.DisableAuthorize {
 		return ErrAuthorizeDisabled
 	}
