@@ -15,7 +15,7 @@ import (
 // It setups up a file server using the 'test_files' directory
 func TestServers(t *testing.T) {
 	handler := http.FileServer(http.Dir("test_files"))
-	s := test.NewServer(handler)
+	s := test.NewServer(handler, nil)
 	DiscoURL = s.URL
 	c, err := s.Client()
 	if err != nil {
@@ -57,7 +57,7 @@ func TestServers(t *testing.T) {
 // It setups up a file server using the 'test_files' directory
 func TestOrganizations(t *testing.T) {
 	handler := http.FileServer(http.Dir("test_files"))
-	s := test.NewServer(handler)
+	s := test.NewServer(handler, nil)
 	DiscoURL = s.URL
 	c, err := s.Client()
 	if err != nil {

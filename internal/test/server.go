@@ -4,6 +4,7 @@ package test
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"net"
 	"net/http"
 	"net/http/httptest"
 
@@ -16,9 +17,49 @@ type Server struct {
 }
 
 // NewServer creates a new test server
-func NewServer(handler http.Handler) *Server {
-	s := httptest.NewTLSServer(handler)
+func NewServer(handler http.Handler, listener net.Listener) *Server {
+	if listener == nil {
+		s := httptest.NewTLSServer(handler)
+		return &Server{s}
+	}
+
+	s := httptest.NewUnstartedServer(handler)
+	s.Listener.Close()
+	s.Listener = listener
+	s.StartTLS()
 	return &Server{s}
+}
+
+type HandlerPath struct {
+	Method          string
+	Path            string
+	Response        string
+	ResponseHandler func(http.ResponseWriter, *http.Request)
+	ResponseCode    int
+}
+
+func (hp *HandlerPath) HandlerFunc() func(http.ResponseWriter, *http.Request) {
+	if hp.ResponseHandler != nil {
+		return hp.ResponseHandler
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != hp.Method {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		w.WriteHeader(hp.ResponseCode)
+		w.Write([]byte(hp.Response))
+	}
+}
+
+// NewServerWithHandles creates a new test servers with path and responses
+func NewServerWithHandles(hps []HandlerPath, listener net.Listener) *Server {
+	mux := http.NewServeMux()
+	for _, hp := range hps {
+		hp := hp
+		mux.HandleFunc(hp.Path, hp.HandlerFunc())
+	}
+	return NewServer(mux, listener)
 }
 
 // Client returns a test client that trusts the HTTPS certificates
