@@ -40,13 +40,16 @@ func tokenHandler(t *testing.T, gt []string) func(http.ResponseWriter, *http.Req
 
 		for _, v := range gt {
 			if v == grant {
-				w.Write([]byte(`
+				_, err = w.Write([]byte(`
 {
 	"access_token": "validaccess",
 	"refresh_token": "validrefresh",
 	"expires_in": 3600
 }
 		`))
+				if err != nil {
+					t.Fatalf("failed writing in token handler: %v", err)
+				}
 				return
 			}
 		}
@@ -78,7 +81,7 @@ func connectHandler(t *testing.T, proto string, exp time.Time) func(http.Respons
 			t.Fatalf("failed parsing query body: %v", err)
 		}
 		// the wireguard config we parse
-		cfg := proto
+		var cfg string
 		if proto == "openvpn" {
 			cfg = "openvpnconfig"
 		} else {
@@ -99,12 +102,15 @@ ProxyEndpoint = https://proxyendpoint
 				cfg = "[Interface]"
 			}
 		}
-		w.Write([]byte(cfg))
+		_, err = w.Write([]byte(cfg))
+		if err != nil {
+			t.Fatalf("failed writing /connect response: %v", err)
+		}
 	}
 }
 
 func disconnectHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(_ http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			t.Fatalf("invalid HTTP method for disconnect handler: %v", r.Method)
 		}
@@ -116,15 +122,15 @@ type TestCallback struct {
 	t *testing.T
 }
 
-func (tc *TestCallback) TriggerAuth(ctx context.Context, str string, cr bool) (string, error) {
+func (tc *TestCallback) TriggerAuth(_ context.Context, str string, _ bool) (string, error) {
 	go func() {
 		u, err := url.Parse(str)
 		if err != nil {
-			tc.t.Fatalf("cannot parse TriggerAuth uri: %v", err)
+			panic(err)
 		}
 		ru, err := url.Parse(u.Query().Get("redirect_uri"))
 		if err != nil {
-			tc.t.Fatalf("failed to parse redirect uri: %v", err)
+			panic(err)
 		}
 		oq := u.Query()
 		q := ru.Query()
@@ -135,9 +141,12 @@ func (tc *TestCallback) TriggerAuth(ctx context.Context, str string, cr bool) (s
 		c := http.Client{}
 		req, err := http.NewRequest("GET", ru.String(), nil)
 		if err != nil {
-			tc.t.Fatalf("failed to create HTTP request: %v", err)
+			panic(err)
 		}
-		c.Do(req)
+		_, err = c.Do(req)
+		if err != nil {
+			panic(err)
+		}
 	}()
 	return "", nil
 }
@@ -152,7 +161,7 @@ func createTestAPI(t *testing.T, tok *eduoauth.Token, gt []string, hps []test.Ha
 		t.Fatalf("failed to setup listener for test server: %v", err)
 	}
 
-	fp := append(hps, []test.HandlerPath{
+	hps = append(hps, []test.HandlerPath{
 		{
 			Method: http.MethodGet,
 			Path:   "/.well-known/vpn-user-portal",
@@ -176,7 +185,7 @@ func createTestAPI(t *testing.T, tok *eduoauth.Token, gt []string, hps []test.Ha
 		},
 	}...)
 	// start server
-	serv := test.NewServerWithHandles(fp, listen)
+	serv := test.NewServerWithHandles(hps, listen)
 
 	sd := ServerData{
 		ID:         "randomidentifier",
@@ -243,7 +252,7 @@ func TestNewAPI(t *testing.T) {
 
 func TestAPIInfo(t *testing.T) {
 	// auth should not be triggered
-	var gts []string = nil
+	var gts []string
 	tok := &eduoauth.Token{
 		Access:           "validaccess",
 		Refresh:          "validrefresh",
@@ -350,10 +359,8 @@ func TestAPIInfo(t *testing.T) {
 			if !errors.As(err, c.err) {
 				t.Fatalf("error type not equal: %T, want: %T, error string: %s", err, c.err, err.Error())
 			}
-		} else {
-			if c.err != nil {
-				t.Fatalf("got no error but want error: %T", c.err)
-			}
+		} else if c.err != nil {
+			t.Fatalf("got no error but want error: %T", c.err)
 		}
 
 		if !reflect.DeepEqual(gprfs, c.info) {
@@ -364,7 +371,7 @@ func TestAPIInfo(t *testing.T) {
 
 func TestAPIConnect(t *testing.T) {
 	// auth should not be triggered
-	var gts []string = nil
+	var gts []string
 	tok := &eduoauth.Token{
 		Access:           "validaccess",
 		Refresh:          "validrefresh",
@@ -474,10 +481,8 @@ PrivateKey = .*`,
 			if !errors.Is(err, c.err) {
 				t.Fatalf("error type not equal: %T, want: %T, error string: %s", err, c.err, err)
 			}
-		} else {
-			if c.err != nil {
-				t.Fatalf("got no error but want error: %T", c.err)
-			}
+		} else if c.err != nil {
+			t.Fatalf("got no error but want error: %T", c.err)
 		}
 
 		if gcd != nil && c.cd != nil {
@@ -512,7 +517,7 @@ PrivateKey = .*`,
 }
 
 func TestDisconnect(t *testing.T) {
-	var gts []string = nil
+	var gts []string
 	tok := &eduoauth.Token{
 		Access:           "validaccess",
 		Refresh:          "validrefresh",
