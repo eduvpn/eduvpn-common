@@ -17,9 +17,6 @@ type Organization struct {
 	DisplayName MapOrString `json:"display_name,omitempty"`
 	// OrgID is the organization ID for the server
 	OrgID string `json:"org_id"`
-	// KeywordList is the list of keywords
-	// Omitted if none is defined
-	KeywordList MapOrString `json:"keyword_list,omitempty"`
 }
 
 // Servers is the type that defines the upstream discovery format for the list of servers
@@ -35,8 +32,6 @@ type Server struct {
 	BaseURL string `json:"base_url"`
 	// DisplayName is the display name of the server, omitted if empty
 	DisplayName MapOrString `json:"display_name,omitempty"`
-	// DisplayName are the keywords of the server, omitted if empty
-	KeywordList MapOrString `json:"keyword_list,omitempty"`
 	// Type is the type of the server, "secure_internet" or "institute_access"
 	Type string `json:"server_type"`
 }

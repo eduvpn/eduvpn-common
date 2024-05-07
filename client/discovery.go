@@ -13,11 +13,11 @@ func (c *Client) hasDiscovery() bool {
 	return strings.HasPrefix(c.Name, "org.eduvpn.app")
 }
 
-// DiscoOrganizations gets the organizations list from the discovery server
+// DiscoOrganizations gets the organizations list from the discovery server with search string `search`
 // If the list cannot be retrieved an error is returned.
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#organization-list.
-func (c *Client) DiscoOrganizations(ck *cookie.Cookie) (*discotypes.Organizations, error) {
+func (c *Client) DiscoOrganizations(ck *cookie.Cookie, search string) (*discotypes.Organizations, error) {
 	// Not supported with Let's Connect! & govVPN
 	if !c.hasDiscovery() {
 		return nil, i18nerr.NewInternal("Server/organization discovery with this client ID is not supported")
@@ -32,20 +32,23 @@ func (c *Client) DiscoOrganizations(ck *cookie.Cookie) (*discotypes.Organization
 	}
 
 	// convert to public subset
-	retOrgs := make([]discotypes.Organization, len(orgs.List))
-	for i, v := range orgs.List {
-		retOrgs[i] = v.Organization
+	var retOrgs []discotypes.Organization
+	for _, v := range orgs.List {
+		if !v.Matches(search) {
+			continue
+		}
+		retOrgs = append(retOrgs, v.Organization)
 	}
 	return &discotypes.Organizations{
 		List: retOrgs,
 	}, err
 }
 
-// DiscoServers gets the servers list from the discovery server
+// DiscoServers gets the servers list from the discovery server with search string `search`
 // If the list cannot be retrieved an error is returned.
 // If this is the case then a previous version of the list is returned if there is any.
 // This takes into account the frequency of updates, see: https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md#server-list.
-func (c *Client) DiscoServers(ck *cookie.Cookie) (*discotypes.Servers, error) {
+func (c *Client) DiscoServers(ck *cookie.Cookie, search string) (*discotypes.Servers, error) {
 	// Not supported with Let's Connect! & govVPN
 	if !c.hasDiscovery() {
 		return nil, i18nerr.NewInternal("Server/organization discovery with this client ID is not supported")
@@ -60,9 +63,12 @@ func (c *Client) DiscoServers(ck *cookie.Cookie) (*discotypes.Servers, error) {
 	}
 
 	// convert to public subset
-	retServs := make([]discotypes.Server, len(servs.List))
-	for i, v := range servs.List {
-		retServs[i] = v.Server
+	var retServs []discotypes.Server
+	for _, v := range servs.List {
+		if !v.Matches(search) {
+			continue
+		}
+		retServs = append(retServs, v.Server)
 	}
 	return &discotypes.Servers{
 		List: retServs,

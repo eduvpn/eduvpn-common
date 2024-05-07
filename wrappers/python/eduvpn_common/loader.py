@@ -49,8 +49,8 @@ def initialize_functions(lib: CDLL) -> None:
     lib.Deregister.argtypes, lib.Deregister.restype = [], None
     lib.ExpiryTimes.argtypes, lib.ExpiryTimes.restype = [], DataError
     lib.FreeString.argtypes, lib.FreeString.restype = [c_void_p], None
-    lib.DiscoOrganizations.argtypes, lib.DiscoOrganizations.restype = [c_int], DataError
-    lib.DiscoServers.argtypes, lib.DiscoServers.restype = [c_int], DataError
+    lib.DiscoOrganizations.argtypes, lib.DiscoOrganizations.restype = [c_int, c_char_p], DataError
+    lib.DiscoServers.argtypes, lib.DiscoServers.restype = [c_int, c_char_p], DataError
     lib.GetConfig.argtypes, lib.GetConfig.restype = (
         [
             c_int,
