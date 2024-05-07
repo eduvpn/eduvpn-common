@@ -53,7 +53,7 @@ func (s *Organization) Matches(str string) bool {
 		_, _ = catalog.WriteString(strings.ToLower(v))
 		_, _ = catalog.WriteString(" ")
 	}
-	return strings.Contains(catalog.String(), str)
+	return strings.Contains(catalog.String(), strings.ToLower(str))
 }
 
 // Servers are the list of servers from https://disco.eduvpn.org/v2/server_list.json
@@ -96,7 +96,7 @@ func (s *Server) Matches(str string) bool {
 		_, _ = catalog.WriteString(strings.ToLower(v))
 		_, _ = catalog.WriteString(" ")
 	}
-	return strings.Contains(catalog.String(), str)
+	return strings.Contains(catalog.String(), strings.ToLower(str))
 }
 
 // Discovery is the main structure used for this package.
