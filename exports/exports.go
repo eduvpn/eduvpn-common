@@ -681,25 +681,14 @@ func SetSecureLocation(orgID *C.char, cc *C.char) *C.char {
 // Example Output:
 //
 //	{
-//	 "v": 1695291170,
 //	 "server_list": [
 //	   {
 //	     "base_url": "https://eduvpn.rash.al/",
-//	     "country_code": "AL",
-//	     "public_key_list": [
-//	       "k7.pub.S4j5JJiTEz1fWMkI.hzU_xJasWzD6Da2WR7hgbobx9n3o4XSDeqFh03tgM-0"
-//	     ],
 //	     "server_type": "secure_internet",
-//	     "support_contact": [
-//	       "mailto:helpdesk@rash.al"
-//	     ]
 //	   },
 //	   {
 //	     "base_url": "https://eduvpn.deic.dk/",
-//	     "country_code": "DK",
-//	     "public_key_list": [
-//	       "k7.pub.RNOJIYbemlfsE7EL.BxmV2l2UV7pCqz135ofBgyG9-xLg0R9rILQedZrfLtE"
-//	     ], ..................
+//	     "server_type": "secure_internet",
 //	} , null
 //
 // Example Input: ```DiscoServers(myCookie, "heanet")```
@@ -707,16 +696,13 @@ func SetSecureLocation(orgID *C.char, cc *C.char) *C.char {
 // Example Output:
 //
 //	{
-//	 "v": 1695291170,
 //	 "server_list": [
 //          {
 //            "base_url": "https://eduvpn.heanet.ie/",
-//            "display_name": "HEAnet Staff",
+//            "display_name": {
+//              "en": "HEAnet Staff"
+//             },
 //            "server_type": "institute_access",
-//            "support_contact": [
-//              "mailto:noc@heanet.ie",
-//              "tel:+35316609040"
-//            ]
 //          },
 //        ]
 //	} , null
@@ -755,14 +741,12 @@ func DiscoServers(c C.uintptr_t, search *C.char) (*C.char, *C.char) {
 // Example Output:
 //
 //	{
-//	 "v": 1695291170,
 //	 "organization_list": [
 //	   {
 //	     "display_name": {
 //	       "en": "Academic Network of Albania - RASH"
 //	     },
 //	     "org_id": "https://idp.rash.al/simplesaml/saml2/idp/metadata.php",
-//	     "secure_internet_home": "https://eduvpn.rash.al/"
 //	   },
 //	   {
 //	     "display_name": {
@@ -770,7 +754,6 @@ func DiscoServers(c C.uintptr_t, search *C.char) (*C.char, *C.char) {
 //	       "en": "Danish Language Council"
 //	     },
 //	     "org_id": "http://idp.dsn.dk/adfs/services/trust",
-//	     "secure_internet_home": "https://eduvpn.deic.dk/"
 //	   },
 //	   {
 //	     "display_name": {
@@ -778,7 +761,6 @@ func DiscoServers(c C.uintptr_t, search *C.char) (*C.char, *C.char) {
 //	       "en": "Business Academy Aarhus"
 //	     },
 //	     "org_id": "http://adfs.eaaa.dk/adfs/services/trust",
-//	     "secure_inte .....................
 //	}, null
 //
 // Example Input: ```DiscoOrganizations(myCookie, "rash")```
@@ -786,15 +768,14 @@ func DiscoServers(c C.uintptr_t, search *C.char) (*C.char, *C.char) {
 // Example Output:
 //
 //	{
-//	 "v": 1695291170,
 //	 "organization_list": [
 //	   {
 //	     "display_name": {
 //	       "en": "Academic Network of Albania - RASH"
 //	     },
 //	     "org_id": "https://idp.rash.al/simplesaml/saml2/idp/metadata.php",
-//	     "secure_internet_home": "https://eduvpn.rash.al/"
 //	   },
+//       ]
 //	}, null
 //
 //
