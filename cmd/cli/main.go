@@ -173,11 +173,11 @@ func printConfig(url string, srvType srvtypes.Type) {
 	_ = c.Register()
 
 	ck := cookie.NewWithContext(context.Background())
-	_, err = c.DiscoOrganizations(ck)
+	_, err = c.DiscoOrganizations(ck, "")
 	if err != nil {
 		panic(err)
 	}
-	_, err = c.DiscoServers(ck)
+	_, err = c.DiscoServers(ck, "")
 	if err != nil {
 		panic(err)
 	}
