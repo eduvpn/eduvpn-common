@@ -695,17 +695,17 @@ func SetSecureLocation(orgID *C.char, cc *C.char) *C.char {
 //
 // Example Output:
 //
-//	{
-//	 "server_list": [
-//          {
-//            "base_url": "https://eduvpn.heanet.ie/",
-//            "display_name": {
-//              "en": "HEAnet Staff"
-//             },
-//            "server_type": "institute_access",
-//          },
-//        ]
-//	} , null
+//		{
+//		 "server_list": [
+//	         {
+//	           "base_url": "https://eduvpn.heanet.ie/",
+//	           "display_name": {
+//	             "en": "HEAnet Staff"
+//	            },
+//	           "server_type": "institute_access",
+//	         },
+//	       ]
+//		} , null
 //
 //export DiscoServers
 func DiscoServers(c C.uintptr_t, search *C.char) (*C.char, *C.char) {
@@ -767,17 +767,16 @@ func DiscoServers(c C.uintptr_t, search *C.char) (*C.char, *C.char) {
 //
 // Example Output:
 //
-//	{
-//	 "organization_list": [
-//	   {
-//	     "display_name": {
-//	       "en": "Academic Network of Albania - RASH"
-//	     },
-//	     "org_id": "https://idp.rash.al/simplesaml/saml2/idp/metadata.php",
-//	   },
-//       ]
-//	}, null
-//
+//		{
+//		 "organization_list": [
+//		   {
+//		     "display_name": {
+//		       "en": "Academic Network of Albania - RASH"
+//		     },
+//		     "org_id": "https://idp.rash.al/simplesaml/saml2/idp/metadata.php",
+//		   },
+//	      ]
+//		}, null
 //
 //export DiscoOrganizations
 func DiscoOrganizations(c C.uintptr_t, search *C.char) (*C.char, *C.char) {
