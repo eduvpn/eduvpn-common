@@ -178,13 +178,13 @@ class EduVPN(object):
             forwardError(server_err)
         return server
 
-    def get_disco_organizations(self) -> str:
-        orgs, _ = self.go_cookie_function(self.lib.DiscoOrganizations)
+    def get_disco_organizations(self, search="") -> str:
+        orgs, _ = self.go_cookie_function(self.lib.DiscoOrganizations, search)
         # TODO: Log error
         return orgs
 
-    def get_disco_servers(self) -> str:
-        servers, _ = self.go_cookie_function(self.lib.DiscoServers)
+    def get_disco_servers(self, search="") -> str:
+        servers, _ = self.go_cookie_function(self.lib.DiscoServers, search)
         # TODO: Log error
         return servers
 
