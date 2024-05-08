@@ -1,10 +1,11 @@
-from eduvpn_common import __version__ as commonver
-import eduvpn_common.main as eduvpn
-from eduvpn_common.state import State, StateType
-from eduvpn_common.server import Config, Profiles
-from typing import Optional, List, Tuple
-import webbrowser
 import sys
+import webbrowser
+from typing import List, Optional, Tuple
+
+import eduvpn_common.main as eduvpn
+from eduvpn_common import __version__ as commonver
+from eduvpn_common.server import Config, Profiles
+from eduvpn_common.state import State, StateType
 
 
 # Asks the user for a profile index

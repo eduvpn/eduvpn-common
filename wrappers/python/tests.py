@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-import unittest
-import eduvpn_common.main as eduvpn
-import eduvpn_common.event as event
-from eduvpn_common.state import State, StateType
 import os
 import sys
 import threading
+import unittest
+
+import eduvpn_common.event as event
+import eduvpn_common.main as eduvpn
+from eduvpn_common.state import State, StateType
 
 # Import project root directory where the selenium python utility is
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
