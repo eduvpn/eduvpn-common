@@ -146,7 +146,7 @@ func getConfig(state *client.Client, url string, srvType srvtypes.Type) (*srvtyp
 	}
 	ck := cookie.NewWithContext(context.Background())
 	defer ck.Cancel() //nolint:errcheck
-	err := state.AddServer(ck, url, srvType, false)
+	err := state.AddServer(ck, url, srvType, nil)
 	if err != nil {
 		return nil, err
 	}

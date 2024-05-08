@@ -1,5 +1,5 @@
 import pathlib
-from ctypes import CDLL, c_char_p, c_int, c_void_p, cdll
+from ctypes import CDLL, c_char_p, c_int, c_longlong, c_void_p, cdll, POINTER
 
 from eduvpn_common import __version__
 from eduvpn_common.types import (
@@ -66,7 +66,7 @@ def initialize_functions(lib: CDLL) -> None:
             c_int,
             c_int,
             c_char_p,
-            c_int,
+            POINTER(c_longlong),
         ],
         c_char_p,
     )

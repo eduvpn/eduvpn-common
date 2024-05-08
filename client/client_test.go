@@ -95,7 +95,7 @@ func TestServer(t *testing.T) {
 		t.Fatalf("Registering error: %v", err)
 	}
 
-	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, false)
+	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, nil)
 	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
 	}
@@ -143,7 +143,7 @@ func TestTokenExpired(t *testing.T) {
 		t.Fatalf("Registering error: %v", err)
 	}
 
-	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, false)
+	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, nil)
 	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
 	}
@@ -202,7 +202,7 @@ func TestInvalidProfileCorrected(t *testing.T) {
 		t.Fatalf("Registering error: %v", err)
 	}
 
-	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, false)
+	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, nil)
 	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
 	}
@@ -259,7 +259,8 @@ func TestConfigStartup(t *testing.T) {
 		t.Fatalf("Failed to register with error: %v", err)
 	}
 	// we set true as last argument here such that no callbacks are ran
-	err = state.AddServer(ck, serverURI, srvtypes.TypeCustom, true)
+	var ot int64 = 5
+	err = state.AddServer(ck, serverURI, srvtypes.TypeCustom, &ot)
 	if err != nil {
 		t.Fatalf("Failed to add server for trying config startup: %v", err)
 	}
@@ -319,7 +320,7 @@ func TestPreferTCP(t *testing.T) {
 		t.Fatalf("Registering error: %v", err)
 	}
 
-	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, false)
+	addErr := state.AddServer(ck, serverURI, srvtypes.TypeCustom, nil)
 	if addErr != nil {
 		t.Fatalf("Add error: %v", addErr)
 	}

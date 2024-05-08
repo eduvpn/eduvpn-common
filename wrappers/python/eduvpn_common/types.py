@@ -1,5 +1,5 @@
-from ctypes import CDLL, CFUNCTYPE, POINTER, Structure, c_char, c_char_p, c_int, c_size_t, c_ulonglong, c_void_p, cast
-from typing import Any, Iterator, List, Tuple
+from ctypes import CDLL, CFUNCTYPE, POINTER, Structure, byref, c_char, c_char_p, c_int, c_longlong, c_size_t, c_ulonglong, c_void_p, cast
+from typing import Any, Iterator, List, Optional, Tuple
 
 
 class DataError(Structure):
@@ -29,6 +29,12 @@ TokenGetter = CFUNCTYPE(c_void_p, c_char_p, c_int, POINTER(c_char), c_size_t)
 TokenSetter = CFUNCTYPE(c_void_p, c_char_p, c_int, c_char_p)
 
 
+def conv_longlongp(val: Optional[int]) -> POINTER(c_longlong):
+    if val is None:
+        return None
+    return byref(c_longlong(val))
+
+
 def encode_args(args: List[Any], types: List[Any]) -> Iterator[Any]:
     """Encode the arguments ready to be used by the Go library
 
@@ -44,6 +50,7 @@ def encode_args(args: List[Any], types: List[Any]) -> Iterator[Any]:
         # c_char_p needs the str to be encoded to bytes
         encode_map = {
             c_char_p: lambda x: x.encode("utf-8"),
+            POINTER(c_longlong): conv_longlongp,
         }
         if t in encode_map:
             arg = encode_map[t](arg)

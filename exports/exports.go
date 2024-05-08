@@ -291,7 +291,9 @@ func Deregister() *C.char {
 //
 // `ni` stands for non-interactive. If non-zero, any state transitions will not be run.
 //
-// This `ni` flag is useful for preprovisioned servers. For normal usage, you want to set this to zero (meaning: False)
+// This `ot` flag is useful for preprovisioned servers; set this to non-null to non-interactively add a server.
+// This flag represents the Unix time OAuth was last triggered, if the server needs to be added non-interactively but there is no
+// token structure, set this to zero (integer) or the current Unix time. This value will be overwritten once OAuth is triggered.
 //
 // If the server cannot be added it returns the error as types/error/error.go Error.
 // Note that the server is removed when an error has occured
@@ -316,7 +318,7 @@ func Deregister() *C.char {
 //	}
 //
 //export AddServer
-func AddServer(c C.uintptr_t, _type C.int, id *C.char, ni C.int) *C.char {
+func AddServer(c C.uintptr_t, _type C.int, id *C.char, ot *C.longlong) *C.char {
 	state, stateErr := getVPNState()
 	if stateErr != nil {
 		return getCError(stateErr)
@@ -325,7 +327,13 @@ func AddServer(c C.uintptr_t, _type C.int, id *C.char, ni C.int) *C.char {
 	if err != nil {
 		return getCError(err)
 	}
-	err = state.AddServer(v, C.GoString(id), srvtypes.Type(_type), ni != 0)
+	// get the go oauth time
+	var auth *int64
+	if ot != nil {
+		got := int64(*ot)
+		auth = &got
+	}
+	err = state.AddServer(v, C.GoString(id), srvtypes.Type(_type), auth)
 	return getCError(err)
 }
 

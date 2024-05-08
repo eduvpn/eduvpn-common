@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/api"
 	"github.com/eduvpn/eduvpn-common/internal/config/v2"
@@ -13,8 +14,8 @@ import (
 // AddCustom adds a custom server to the internal server list
 // `ctx` is the context used for cancellation
 // `id` is the identifier of the server, the base URL
-// `na` specifies whether or not we want to add the server without doing authorization now
-func (s *Servers) AddCustom(ctx context.Context, id string, na bool) error {
+// `ot` specifies specifies the start time OAuth was already triggered
+func (s *Servers) AddCustom(ctx context.Context, id string, ot *int64) error {
 	sd := api.ServerData{
 		ID:         id,
 		Type:       server.TypeCustom,
@@ -22,13 +23,19 @@ func (s *Servers) AddCustom(ctx context.Context, id string, na bool) error {
 		BaseAuthWK: id,
 	}
 
-	err := s.config.AddServer(id, server.TypeCustom, v2.Server{})
+	auth := time.Time{}
+	if ot != nil {
+		auth = time.Unix(*ot, 0)
+	}
+	err := s.config.AddServer(id, server.TypeCustom, v2.Server{
+		LastAuthorizeTime: auth,
+	})
 	if err != nil {
 		return err
 	}
 
 	// no authorization should be triggered, return
-	if na {
+	if ot != nil {
 		return nil
 	}
 
