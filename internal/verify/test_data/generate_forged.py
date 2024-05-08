@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import hashlib
 import base64
+import hashlib
 
 # Hash server_list.json
 

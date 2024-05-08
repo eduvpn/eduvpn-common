@@ -1,5 +1,5 @@
 import pathlib
-from ctypes import CDLL, c_char_p, c_int, c_longlong, c_void_p, cdll, POINTER
+from ctypes import CDLL, POINTER, c_char_p, c_int, c_longlong, c_void_p, cdll
 
 from eduvpn_common import __version__
 from eduvpn_common.types import (

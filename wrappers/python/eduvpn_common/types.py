@@ -1,4 +1,18 @@
-from ctypes import CDLL, CFUNCTYPE, POINTER, Structure, byref, c_char, c_char_p, c_int, c_longlong, c_size_t, c_ulonglong, c_void_p, cast
+from ctypes import (
+    CDLL,
+    CFUNCTYPE,
+    POINTER,
+    Structure,
+    byref,
+    c_char,
+    c_char_p,
+    c_int,
+    c_longlong,
+    c_size_t,
+    c_ulonglong,
+    c_void_p,
+    cast,
+)
 from typing import Any, Iterator, List, Optional, Tuple
 
 
