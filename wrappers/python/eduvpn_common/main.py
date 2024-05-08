@@ -1,7 +1,7 @@
 import ctypes
 import json
 from enum import IntEnum
-from typing import Any, Callable, Iterator
+from typing import Any, Callable, Iterator, Optional
 
 from eduvpn_common.event import EventHandler
 from eduvpn_common.loader import initialize_functions, load_lib
@@ -151,16 +151,17 @@ class EduVPN(object):
         if register_err:
             forwardError(register_err)
 
-    def add_server(self, _type: ServerType, _id: str, ni: bool = False) -> None:
+    def add_server(self, _type: ServerType, _id: str, ot: Optional[int] = None) -> None:
         """Add a server
 
         :param _type: ServerType: The type of server e.g. SERVER.INSTITUTE_ACCESS
         :param _id: str: The identifier of the server, e.g. "https://vpn.example.com/"
-        :param ni: bool: Whether the server should be added non interactively, meaning no callbacks
+        :param ot: Optional[int]: The time when OAuth was last started.
+        if != None the server is added without any interactivity
 
         :raises WrappedError: An error by the Go library
         """
-        add_err = self.go_cookie_function(self.lib.AddServer, int(_type), _id, ni)
+        add_err = self.go_cookie_function(self.lib.AddServer, int(_type), _id, ot)
 
         if add_err:
             forwardError(add_err)

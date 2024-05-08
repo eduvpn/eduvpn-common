@@ -302,9 +302,11 @@ func (c *Client) TrySave() {
 }
 
 // AddServer adds a server with identifier and type
-func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.Type, ni bool) (err error) {
+func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.Type, ot *int64) (err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	// we are non-interactive if oauth time is non-nil
+	ni := ot != nil
 	// If we have failed to add the server, we remove it again
 	// We add the server because we can then obtain it in other callback functions
 	previousState := c.FSM.Current
@@ -335,17 +337,17 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 
 	switch _type {
 	case srvtypes.TypeInstituteAccess:
-		err = c.Servers.AddInstitute(ck.Context(), c.cfg.Discovery(), identifier, ni)
+		err = c.Servers.AddInstitute(ck.Context(), c.cfg.Discovery(), identifier, ot)
 		if err != nil {
 			return i18nerr.Wrapf(err, "The institute access server with URL: '%s' could not be added", identifier)
 		}
 	case srvtypes.TypeSecureInternet:
-		err = c.Servers.AddSecure(ck.Context(), c.cfg.Discovery(), identifier, ni)
+		err = c.Servers.AddSecure(ck.Context(), c.cfg.Discovery(), identifier, ot)
 		if err != nil {
 			return i18nerr.Wrapf(err, "The secure internet server with organisation ID: '%s' could not be added", identifier)
 		}
 	case srvtypes.TypeCustom:
-		err = c.Servers.AddCustom(ck.Context(), identifier, ni)
+		err = c.Servers.AddCustom(ck.Context(), identifier, ot)
 		if err != nil {
 			return i18nerr.Wrapf(err, "The custom server with URL: '%s' could not be added", identifier)
 		}

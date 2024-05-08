@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/api"
 	"github.com/eduvpn/eduvpn-common/internal/config/v2"
@@ -15,8 +16,8 @@ import (
 // `ctx` is the context used for cancellation
 // `disco` are the discovery servers
 // `id` is the identifier for the server, the base url
-// `na` is true when authorization should not be triggered
-func (s *Servers) AddInstitute(ctx context.Context, disco *discovery.Discovery, id string, na bool) error {
+// `ot` specifies specifies the start time OAuth was already triggered
+func (s *Servers) AddInstitute(ctx context.Context, disco *discovery.Discovery, id string, ot *int64) error {
 	// This is basically done to double check if the server is part of the institute access section of disco
 	dsrv, err := disco.ServerByURL(id, "institute_access")
 	if err != nil {
@@ -30,13 +31,20 @@ func (s *Servers) AddInstitute(ctx context.Context, disco *discovery.Discovery, 
 		BaseAuthWK: dsrv.BaseURL,
 	}
 
-	err = s.config.AddServer(dsrv.BaseURL, server.TypeInstituteAccess, v2.Server{})
+	auth := time.Time{}
+	if ot != nil {
+		auth = time.Unix(*ot, 0)
+	}
+
+	err = s.config.AddServer(dsrv.BaseURL, server.TypeInstituteAccess, v2.Server{
+		LastAuthorizeTime: auth,
+	})
 	if err != nil {
 		return err
 	}
 
 	// no authorization should be triggered, return
-	if na {
+	if ot != nil {
 		return nil
 	}
 

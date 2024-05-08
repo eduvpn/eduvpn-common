@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/api"
 	"github.com/eduvpn/eduvpn-common/internal/config/v2"
@@ -17,8 +18,8 @@ import (
 // `ctx` is the context used for cancellation
 // `disco` are the discovery servers
 // `orgID` is the organiztaion ID
-// `na` specifies whether or not authorization should be triggered when adding
-func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, orgID string, na bool) error {
+// `ot` specifies specifies the start time OAuth was already triggered
+func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, orgID string, ot *int64) error {
 	if s.config.HasSecureInternet() {
 		return errors.New("a secure internet server already exists")
 	}
@@ -41,13 +42,21 @@ func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, org
 		},
 	}
 
-	err = s.config.AddServer(orgID, server.TypeSecureInternet, v2.Server{CountryCode: dsrv.CountryCode})
+	auth := time.Time{}
+	if ot != nil {
+		auth = time.Unix(*ot, 0)
+	}
+
+	err = s.config.AddServer(orgID, server.TypeSecureInternet, v2.Server{
+		CountryCode:       dsrv.CountryCode,
+		LastAuthorizeTime: auth,
+	})
 	if err != nil {
 		return err
 	}
 
 	// no authorization should be triggered, return
-	if na {
+	if ot != nil {
 		return nil
 	}
 
