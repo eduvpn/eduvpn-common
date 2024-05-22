@@ -73,8 +73,6 @@ type Server struct {
 	discotypes.Server
 	// AuthenticationURLTemplate is the template to be used for authentication to skip WAYF
 	AuthenticationURLTemplate string `json:"authentication_url_template,omitempty"`
-	// CountryCode is the country code for the server in case of secure internet, e.g. NL
-	CountryCode string `json:"country_code,omitempty"`
 	// KeywordList are the keywords of the server, omitted if empty
 	KeywordList discotypes.MapOrString `json:"keyword_list,omitempty"`
 	// PublicKeyList are the public keys of the server. Currently not used in this lib but returned by the upstream discovery server
