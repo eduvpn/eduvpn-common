@@ -34,6 +34,8 @@ type Server struct {
 	DisplayName MapOrString `json:"display_name,omitempty"`
 	// Type is the type of the server, "secure_internet" or "institute_access"
 	Type string `json:"server_type"`
+	// CountryCode is the country code of the server if Type is "secure_internet", e.g. nl
+	CountryCode string `json:"country_code"`
 }
 
 // MapOrString is a custom type as the upstream discovery format is a map or a value.
