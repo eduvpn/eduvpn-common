@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/http"
+	"github.com/eduvpn/eduvpn-common/internal/levenshtein"
 	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/internal/verify"
 	discotypes "github.com/eduvpn/eduvpn-common/types/discovery"
@@ -40,20 +40,8 @@ type Organization struct {
 	KeywordList discotypes.MapOrString `json:"keyword_list,omitempty"`
 }
 
-// Matches returns if the search query `str` matches with this organization
-func (s *Organization) Matches(str string) bool {
-	var catalog strings.Builder
-	for _, v := range s.DisplayName {
-		// length and nil error is returned
-		_, _ = catalog.WriteString(strings.ToLower(v))
-		_, _ = catalog.WriteString(" ")
-	}
-	for _, v := range s.KeywordList {
-		// length and nil error is returned
-		_, _ = catalog.WriteString(strings.ToLower(v))
-		_, _ = catalog.WriteString(" ")
-	}
-	return strings.Contains(catalog.String(), strings.ToLower(str))
+func (o *Organization) Score(search string) int {
+	return levenshtein.DiscoveryScore(search, o.DisplayName, o.KeywordList)
 }
 
 // Servers are the list of servers from https://disco.eduvpn.org/v2/server_list.json
@@ -82,19 +70,8 @@ type Server struct {
 }
 
 // Matches returns if the search query `str` matches with this server
-func (s *Server) Matches(str string) bool {
-	var catalog strings.Builder
-	for _, v := range s.DisplayName {
-		// length and nil error is returned
-		_, _ = catalog.WriteString(strings.ToLower(v))
-		_, _ = catalog.WriteString(" ")
-	}
-	for _, v := range s.KeywordList {
-		// length and nil error is returned
-		_, _ = catalog.WriteString(strings.ToLower(v))
-		_, _ = catalog.WriteString(" ")
-	}
-	return strings.Contains(catalog.String(), strings.ToLower(str))
+func (s *Server) Score(search string) int {
+	return levenshtein.DiscoveryScore(search, s.DisplayName, s.KeywordList)
 }
 
 // Discovery is the main structure used for this package.

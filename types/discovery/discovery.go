@@ -17,6 +17,8 @@ type Organization struct {
 	DisplayName MapOrString `json:"display_name,omitempty"`
 	// OrgID is the organization ID for the server
 	OrgID string `json:"org_id"`
+	// score is the score internally used for sorting
+	Score int `json:"-"`
 }
 
 // Servers is the type that defines the upstream discovery format for the list of servers
@@ -36,6 +38,8 @@ type Server struct {
 	Type string `json:"server_type"`
 	// CountryCode is the country code of the server if Type is "secure_internet", e.g. nl
 	CountryCode string `json:"country_code"`
+	// score is the score internally used for sorting
+	Score int `json:"-"`
 }
 
 // MapOrString is a custom type as the upstream discovery format is a map or a value.

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/eduvpn/eduvpn-common/i18nerr"
@@ -34,10 +35,22 @@ func (c *Client) DiscoOrganizations(ck *cookie.Cookie, search string) (*discotyp
 	// convert to public subset
 	var retOrgs []discotypes.Organization
 	for _, v := range orgs.List {
-		if !v.Matches(search) {
+		if search == "" {
+		    retOrgs = append(retOrgs, v.Organization)
+		    continue
+		}
+		score := v.Score(search)
+		if score < 0 {
 			continue
 		}
+		v.Organization.Score = score
 		retOrgs = append(retOrgs, v.Organization)
+	}
+	if search != "" {
+	    sort.Slice(retOrgs, func(i, j int) bool {
+		    // lower score is better
+		    return retOrgs[i].Score < retOrgs[j].Score
+	    })
 	}
 	return &discotypes.Organizations{
 		List: retOrgs,
@@ -65,10 +78,22 @@ func (c *Client) DiscoServers(ck *cookie.Cookie, search string) (*discotypes.Ser
 	// convert to public subset
 	var retServs []discotypes.Server
 	for _, v := range servs.List {
-		if !v.Matches(search) {
+		if search == "" {
+		    retServs = append(retServs, v.Server)
+		    continue
+		}
+		score := v.Score(search)
+		if score < 0 {
 			continue
 		}
+		v.Server.Score = score
 		retServs = append(retServs, v.Server)
+	}
+	if search != "" {
+	    sort.Slice(retServs, func(i, j int) bool {
+		    // lower score is better
+		    return retServs[i].Score < retServs[j].Score
+	    })
 	}
 	return &discotypes.Servers{
 		List: retServs,
