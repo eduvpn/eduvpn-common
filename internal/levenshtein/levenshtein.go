@@ -58,9 +58,9 @@ func levenshtein(os, ot string) int {
 func adjusted(substr, full string) int {
 	substr = normalize(substr)
 	full = normalize(full)
-	s_sub := strings.Split(substr, " ")
-	for _, v_sub := range s_sub {
-		if !strings.Contains(full, v_sub) {
+	sSub := strings.Split(substr, " ")
+	for _, vSub := range sSub {
+		if !strings.Contains(full, vSub) {
 			return -1
 		}
 	}
