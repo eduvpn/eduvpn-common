@@ -24,7 +24,7 @@ func compareEndpoints(ep1 Endpoints, ep2 Endpoints) bool {
 }
 
 func Test_APIGetEndpoints(t *testing.T) {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintln(w, "Hello!")
 	})
 	hs := &test.HandlerSet{}
@@ -74,7 +74,7 @@ func Test_APIGetEndpoints(t *testing.T) {
 			},
 		}
 		// Update the handler
-		hs.SetHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hs.SetHandler(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 
 			jsonStr, err := json.Marshal(ep)
