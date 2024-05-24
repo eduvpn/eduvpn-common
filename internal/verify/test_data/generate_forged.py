@@ -29,9 +29,9 @@ with open("server_list.json.forged_pure.minisig", "wb") as f:
 with open("server_list.json.wrong_key.minisig", "rb") as f:
     siglines = f.readlines()
 
-siglines[
-    0
-] = b"untrusted comment: this signature was created with wrong_secret.key but has key ID changed to that of public.key\n"
+siglines[0] = (
+    b"untrusted comment: this signature was created with wrong_secret.key but has key ID changed to that of public.key\n"
+)
 sig_wrong = base64.b64decode(siglines[1])
 siglines[1] = (
     base64.b64encode(sig_wrong[:2] + sig[2 : 2 + 8] + sig_wrong[2 + 8 :]) + b"\n"
