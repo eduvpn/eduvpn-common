@@ -115,7 +115,7 @@ func testConnectOAuthParameter(
 		"0.1.0-test",
 		configDirectory,
 		"en",
-		func(oldState FSMStateID, newState FSMStateID, data interface{}) bool {
+		func(_ FSMStateID, newState FSMStateID, _ interface{}) bool {
 			if newState == StateOAuthStarted {
 				server, serverErr := state.Servers.GetCustomServer(serverURI)
 				if serverErr != nil {
