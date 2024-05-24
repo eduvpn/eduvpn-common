@@ -186,6 +186,10 @@ func createTestAPI(t *testing.T, tok *eduoauth.Token, gt []string, hps []test.Ha
 	}...)
 	// start server
 	serv := test.NewServerWithHandles(hps, listen)
+	servc, err := serv.Client()
+	if err != nil {
+		t.Fatalf("failed to setup HTTP test server client: %v", servc)
+	}
 
 	sd := ServerData{
 		ID:         "randomidentifier",
@@ -196,13 +200,9 @@ func createTestAPI(t *testing.T, tok *eduoauth.Token, gt []string, hps []test.Ha
 			return in
 		},
 		DisableAuthorize: false,
+		Transport: servc.Client.Transport,
 	}
-	servc, err := serv.Client()
-	if err != nil {
-		t.Fatalf("failed to setup HTTP test server client: %v", servc)
-	}
-	// TODO: Mock underlying clients instead
-	http.DefaultTransport = servc.Client.Transport
+
 
 	tc := &TestCallback{t: t}
 

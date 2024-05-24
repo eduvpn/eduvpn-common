@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"net/http"
 	"sync"
 	"time"
 
@@ -16,7 +17,7 @@ type EndpointCache struct {
 }
 
 // Get() returns a cached or fresh endpoint cache copy
-func (ec *EndpointCache) Get(ctx context.Context, wk string) (*endpoints.Endpoints, error) {
+func (ec *EndpointCache) Get(ctx context.Context, wk string, transport http.RoundTripper) (*endpoints.Endpoints, error) {
 	ec.mu.Lock()
 	defer ec.mu.Unlock()
 
@@ -35,7 +36,7 @@ func (ec *EndpointCache) Get(ctx context.Context, wk string) (*endpoints.Endpoin
 	}
 
 	// get fresh API endpoints
-	ep, err := getEndpoints(ctx, wk)
+	ep, err := getEndpoints(ctx, wk, transport)
 	if err != nil {
 		return nil, err
 	}
