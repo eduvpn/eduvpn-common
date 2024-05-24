@@ -1,3 +1,8 @@
+# 1.2.1 (2024-05-24)
+* Python wrapper:
+    - Do not add type annotation for global object
+    - Do not use \* in docstring to avoid SyntaxWarning for Python 3.12
+
 # 1.2.0 (2023-12-08)
 * OAuth:
     - Disable all ISS checks
