@@ -599,7 +599,7 @@ class EduVPN(object):
             raise cancel_err
 
 
-eduvpn_objects: Dict[str, EduVPN] = {}
+eduvpn_objects = {}
 
 
 @UpdateToken
