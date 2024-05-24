@@ -23,6 +23,7 @@ test:
 clean:
 	rm -rf lib
 	go clean
+
 coverage:
 	go test -v -coverpkg=./... -coverprofile=common.cov ./...
 	go tool cover -func common.cov
