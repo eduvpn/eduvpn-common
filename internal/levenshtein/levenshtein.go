@@ -1,9 +1,10 @@
 package levenshtein
 
 import (
-	"unicode/utf8"
-	"unicode"
 	"strings"
+	"unicode"
+	"unicode/utf8"
+
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -36,6 +37,9 @@ func levenshtein(os, ot string) int {
 	for i := 0; i < n; i++ {
 		v1[0] = i + 1
 		for j := 0; j < m; j++ {
+			// calculate deletion cost,
+			// insertion cost and
+			// substitution cost
 			dc := v0[j+1] + 1
 			ic := v1[j] + 1
 			var sc int
@@ -44,6 +48,7 @@ func levenshtein(os, ot string) int {
 			} else {
 				sc = v0[j] + 1
 			}
+			// take the min of all the costs
 			v1[j+1] = min(min(dc, ic), sc)
 		}
 		v0, v1 = v1, v0
@@ -84,7 +89,7 @@ func DiscoveryScore(search string, displays map[string]string, keywords map[stri
 		// length and nil error is returned
 		_, _ = catalogKW.WriteString(v)
 	}
-	scoreKW := 3*adjusted(search, catalogKW.String())
+	scoreKW := KeywordPenalty * adjusted(search, catalogKW.String())
 
 	// if both scores are positive, return the min
 	if scoreDN >= 0 && scoreKW >= 0 {

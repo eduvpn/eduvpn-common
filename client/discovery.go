@@ -36,8 +36,8 @@ func (c *Client) DiscoOrganizations(ck *cookie.Cookie, search string) (*discotyp
 	var retOrgs []discotypes.Organization
 	for _, v := range orgs.List {
 		if search == "" {
-		    retOrgs = append(retOrgs, v.Organization)
-		    continue
+			retOrgs = append(retOrgs, v.Organization)
+			continue
 		}
 		score := v.Score(search)
 		if score < 0 {
@@ -47,10 +47,10 @@ func (c *Client) DiscoOrganizations(ck *cookie.Cookie, search string) (*discotyp
 		retOrgs = append(retOrgs, v.Organization)
 	}
 	if search != "" {
-	    sort.Slice(retOrgs, func(i, j int) bool {
-		    // lower score is better
-		    return retOrgs[i].Score < retOrgs[j].Score
-	    })
+		sort.Slice(retOrgs, func(i, j int) bool {
+			// lower score is better
+			return retOrgs[i].Score < retOrgs[j].Score
+		})
 	}
 	return &discotypes.Organizations{
 		List: retOrgs,
@@ -79,8 +79,8 @@ func (c *Client) DiscoServers(ck *cookie.Cookie, search string) (*discotypes.Ser
 	var retServs []discotypes.Server
 	for _, v := range servs.List {
 		if search == "" {
-		    retServs = append(retServs, v.Server)
-		    continue
+			retServs = append(retServs, v.Server)
+			continue
 		}
 		score := v.Score(search)
 		if score < 0 {
@@ -90,10 +90,10 @@ func (c *Client) DiscoServers(ck *cookie.Cookie, search string) (*discotypes.Ser
 		retServs = append(retServs, v.Server)
 	}
 	if search != "" {
-	    sort.Slice(retServs, func(i, j int) bool {
-		    // lower score is better
-		    return retServs[i].Score < retServs[j].Score
-	    })
+		sort.Slice(retServs, func(i, j int) bool {
+			// lower score is better
+			return retServs[i].Score < retServs[j].Score
+		})
 	}
 	return &discotypes.Servers{
 		List: retServs,
