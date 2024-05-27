@@ -114,7 +114,7 @@ func TestDiscoveryScore(t *testing.T) {
 				"en": "testing",
 				"de": "testing",
 			},
-			score: 4,
+			score: 0,
 		},
 		{
 			q: "test",
@@ -126,7 +126,7 @@ func TestDiscoveryScore(t *testing.T) {
 				"en": "test",
 				"de": "test",
 			},
-			score: 8,
+			score: 2,
 		},
 		{
 			q: "foo",
@@ -138,7 +138,7 @@ func TestDiscoveryScore(t *testing.T) {
 				"en": "foo",
 				"de": "foo",
 			},
-			score: 6,
+			score: 2,
 		},
 		{
 			q: "fox",

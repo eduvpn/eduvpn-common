@@ -61,8 +61,6 @@ func levenshtein(os, ot string) int {
 // for these a score of -1 returned
 // for all others it is the normal levenshtein distance
 func adjusted(substr, full string) int {
-	substr = normalize(substr)
-	full = normalize(full)
 	sSub := strings.Split(substr, " ")
 	for _, vSub := range sSub {
 		if !strings.Contains(full, vSub) {
@@ -78,18 +76,26 @@ const KeywordPenalty = 2
 // DiscoveryScore computes the score of a discovery entry with the given search query
 // a negative score means exclude the entry from the results
 func DiscoveryScore(search string, displays map[string]string, keywords map[string]string) int {
-	var catalogDN strings.Builder
+	search = normalize(search)
+	scoreDN := -1
 	for _, v := range displays {
-		// length and nil error is returned
-		_, _ = catalogDN.WriteString(v)
+		score := adjusted(search, normalize(v))
+		// set the smallest non-zero score
+		if (score >= 0 && score < scoreDN) || scoreDN == -1 {
+			scoreDN = score
+		}
 	}
-	scoreDN := adjusted(search, catalogDN.String())
-	var catalogKW strings.Builder
+	scoreKW := -1
 	for _, v := range keywords {
-		// length and nil error is returned
-		_, _ = catalogKW.WriteString(v)
+		score := KeywordPenalty * adjusted(search, normalize(v))
+		if score == 0 {
+			score = KeywordPenalty
+		}
+		// set the smallest non-zero score
+		if (score >= 0 && score < scoreKW) || scoreKW == -1 {
+			scoreKW = score
+		}
 	}
-	scoreKW := KeywordPenalty * adjusted(search, catalogKW.String())
 
 	// if both scores are positive, return the min
 	if scoreDN >= 0 && scoreKW >= 0 {
