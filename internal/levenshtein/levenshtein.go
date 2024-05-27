@@ -34,12 +34,14 @@ func levenshtein(os, ot string) int {
 		v0[i] = i
 	}
 
+	// loop through every word in the first string
 	for i := 0; i < n; i++ {
 		v1[0] = i + 1
 		for j := 0; j < m; j++ {
 			// calculate deletion cost,
 			// insertion cost and
-			// substitution cost
+			// substitution cost to get from the string
+			// to the target
 			dc := v0[j+1] + 1
 			ic := v1[j] + 1
 			var sc int
@@ -71,6 +73,7 @@ func adjusted(substr, full string) int {
 }
 
 // KeywordPenalty is the penalty for matching on keywords instead of display names
+// We have a penalty for matching on keywords because currently there are a lot of generic keywords
 const KeywordPenalty = 2
 
 // DiscoveryScore computes the score of a discovery entry with the given search query
