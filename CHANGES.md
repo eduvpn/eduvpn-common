@@ -1,3 +1,29 @@
+# 2.0.0
+* Minimise exposed discovery to the client and add search by giving a second argument to DiscoServers or DiscoOrganizations with the search query:
+  - organization list globally changes:
+    * remove `v` field
+    * remove `go_timestamp` field
+  - each organization changes:
+    * remove `authentication_url_template` field
+    * remove `keyword_list` field
+    * remove `public_key_list` field
+    * remove `support_contact` field
+  - server list globally changes:
+    * remove `v` field
+    * remove `go_timestamp` field
+  - each server changes:
+    * remove `secure_internet_home` field
+    * remove `keyword_list` field
+* Python wrapper:
+  - Add setup.py & setup.cfg for backwards compatibility instead of completely relying on pyproject.toml
+* API:
+  - Add a ton of tests by mocking the server API
+* Makefile:
+  - Add a coverage target
+* Server:
+  - Replace the non-interactive AddServer flag with an oauth start time flag,
+    if non-nil the server is added non-interactively and the OAuth start time is stored
+
 # 1.99.2 (2024-04-25)
 * Expose default gateway in profile settings too. For clients, use the default gateway set on the config object, this is maybe only useful for suggesting some profiles in the client profile chooser UI
 * Add a server internally before authorizing and remove it again if authorization has failed. This makes sure the internal state is always up-to-date with what is happening. This also allows us to move to the main state when authorization is done as previously it could be the case where authorization was done but the server was not added yet
