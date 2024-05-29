@@ -671,7 +671,9 @@ func SetSecureLocation(orgID *C.char, cc *C.char) *C.char {
 // DiscoServers gets the servers from discovery, returned as types/discovery/discovery.go Servers marshalled as JSON
 //
 // `c` is the Cookie that needs to be passed. Create a new Cookie using `CookieNew`
-// `search` is the search string for filtering the list. It checks for keywords and display name case insensitive as a substring matching. If search is empty it returns ALL servers currently known in common, including secure internet servers that do not have a display name set
+// `search` is the search string for filtering the list.
+// If any of the words in the search query is not contained in any of the display names or keywords, the candidate is filtered.
+// Otherwise they are ranked based on the levenshtein distance: https://en.wikipedia.org/wiki/Levenshtein_distance 
 //
 // If it was unsuccessful, it returns an error. Note that when the lib was built in release mode the data is almost always non-nil, even when an error has occurred
 // This means it has just returned the cached list
@@ -684,10 +686,12 @@ func SetSecureLocation(orgID *C.char, cc *C.char) *C.char {
 //	 "server_list": [
 //	   {
 //	     "base_url": "https://eduvpn.rash.al/",
+//           "country_code": "AL",
 //	     "server_type": "secure_internet",
 //	   },
 //	   {
 //	     "base_url": "https://eduvpn.deic.dk/",
+//           "country_code": "DK",
 //	     "server_type": "secure_internet",
 //	} , null
 //
@@ -731,7 +735,10 @@ func DiscoServers(c C.uintptr_t, search *C.char) (*C.char, *C.char) {
 // DiscoOrganizations gets the organizations from discovery, returned as types/discovery/discovery.go Organizations marshalled as JSON
 //
 // `c` is the Cookie that needs to be passed. Create a new Cookie using `CookieNew`
-// `search` is the search string for filtering the list. It checks for keywords and display name case insensitive as a substring matching. If search is empty it returns ALL organizations currently known in common
+// `search` is the search string for filtering the list.
+// If any of the words in the search query is not contained in any of the display names or keywords, the candidate is filtered.
+// Otherwise they are ranked based on the levenshtein distance: https://en.wikipedia.org/wiki/Levenshtein_distance 
+// If search is empty it returns ALL organizations currently known in common
 //
 // If it was unsuccessful, it returns an error. Note that when the lib was built in release mode the data is almost always non-nil, even when an error has occurred
 // This means it has just returned the cached list
