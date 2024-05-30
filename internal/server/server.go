@@ -83,7 +83,7 @@ func (s *Server) findProfile(ctx context.Context) (*profiles.Profile, error) {
 
 	n := prfs.Len()
 	switch n {
-	// If we now get no profiles then that means a profile with only WireGuard was removed
+	// no profiles available
 	case 0:
 		return nil, errors.New("the server has no available profiles for your account")
 	case 1:
