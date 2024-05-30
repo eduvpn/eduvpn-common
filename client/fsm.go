@@ -92,7 +92,6 @@ func GetStateName(s FSMStateID) string {
 func newFSM(
 	callback func(FSMStateID, FSMStateID, interface{}) bool,
 	directory string,
-	debug bool,
 ) fsm.FSM {
 	states := FSMStates{
 		StateDeregistered: FSMState{
