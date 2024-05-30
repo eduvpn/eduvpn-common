@@ -169,7 +169,7 @@ func newFSM(
 		},
 	}
 	returnedFSM := fsm.FSM{}
-	returnedFSM.Init(StateMain, states, callback, directory, GetStateName, debug)
+	returnedFSM.Init(StateMain, states, callback, directory, GetStateName)
 	return returnedFSM
 }
 

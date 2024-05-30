@@ -1,13 +1,7 @@
-// Package fsm defines a finite state machine and has the ability to save this state machine to a graph file
-// This graph file can be visualized using mermaid.js
+// Package fsm defines a finite state machine
 package fsm
 
-import (
-	"fmt"
-	"os"
-	"path"
-	"sort"
-)
+import "fmt"
 
 type (
 	// StateID represents the Identifier of the state.
@@ -66,9 +60,6 @@ type FSM struct {
 	// Directory represents the path where the state graph is stored
 	Directory string
 
-	// Generate represents whether we want to generate the graph
-	Generate bool
-
 	// GetStateName gets the name of a state as a string
 	GetStateName func(StateID) string
 
@@ -83,14 +74,12 @@ func (fsm *FSM) Init(
 	callback func(StateID, StateID, interface{}) bool,
 	directory string,
 	nameGen func(StateID) string,
-	generate bool,
 ) {
 	fsm.States = states
 	fsm.Current = current
 	fsm.StateCallback = callback
 	fsm.Directory = directory
 	fsm.GetStateName = nameGen
-	fsm.Generate = generate
 	fsm.initial = current
 }
 
@@ -113,29 +102,6 @@ func (fsm *FSM) CheckTransition(desired StateID) error {
 		}
 	}
 	return fmt.Errorf("fsm invalid transition attempt from '%s' to '%s'", fsm.GetStateName(fsm.Current), fsm.GetStateName(desired))
-}
-
-// graphFilename gets the full path to the graph filename including the .graph extension.
-func (fsm *FSM) graphFilename(extension string) string {
-	pth := path.Join(fsm.Directory, "graph")
-	return fmt.Sprintf("%s%s", pth, extension)
-}
-
-// writeGraph writes the state machine to a .graph file.
-func (fsm *FSM) writeGraph() {
-	gph := fsm.GenerateGraph()
-	gf := fsm.graphFilename(".graph")
-	f, err := os.Create(gf)
-	if err != nil {
-		return
-	}
-	defer func() {
-		_ = f.Close()
-	}()
-
-	// Writing the graph is best effort
-	// TODO: Return string instead, we do not want to write files in this library
-	_, _ = f.WriteString(gph)
 }
 
 // GoTransitionRequired transitions the state machine to a new state with associated state data 'data'
@@ -164,9 +130,6 @@ func (fsm *FSM) GoTransitionWithData(newState StateID, data interface{}) (bool, 
 
 	prev := fsm.Current
 	fsm.Current = newState
-	if fsm.Generate {
-		fsm.writeGraph()
-	}
 	return fsm.StateCallback(prev, newState, data), nil
 }
 
@@ -174,43 +137,4 @@ func (fsm *FSM) GoTransitionWithData(newState StateID, data interface{}) (bool, 
 func (fsm *FSM) GoTransition(newState StateID) (bool, error) {
 	// No data means the callback is never required
 	return fsm.GoTransitionWithData(newState, "")
-}
-
-// generateMermaidGraph generates a graph suitable to be converted by the mermaid.js tool
-// it returns the graph as a string.
-func (fsm *FSM) generateMermaidGraph() string {
-	gph := "graph TD\n"
-	sf := make(StateIDSlice, 0, len(fsm.States))
-	for stateID := range fsm.States {
-		sf = append(sf, stateID)
-	}
-	sort.Sort(sf)
-	for _, state := range sf {
-		transitions := fsm.States[state].Transitions
-		for _, transition := range transitions {
-			if state == fsm.Current {
-				gph += "\nstyle " + fsm.GetStateName(state) + " fill:cyan\n"
-			} else {
-				gph += "\nstyle " + fsm.GetStateName(state) + " fill:white\n"
-			}
-			gph += fsm.GetStateName(
-				state,
-			) + "(" + fsm.GetStateName(
-				state,
-			) + ") " + "-->|" + transition.Description + "| " + fsm.GetStateName(
-				transition.To,
-			) + "\n"
-		}
-	}
-	return gph
-}
-
-// GenerateGraph generates a mermaid graph if the state machine is initialized
-// If the graph cannot be generated, it returns the empty string.
-func (fsm *FSM) GenerateGraph() string {
-	if fsm.GetStateName != nil {
-		return fsm.generateMermaidGraph()
-	}
-
-	return ""
 }
