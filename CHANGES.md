@@ -1,4 +1,4 @@
-# 2.0.0
+# 2.0.0 (2024-06-04)
 * Minimise exposed discovery to the client and add search by giving a second argument to DiscoServers or DiscoOrganizations with the search query:
   - organization list globally changes:
     * remove `v` field
@@ -23,6 +23,14 @@
 * Server:
   - Replace the non-interactive AddServer flag with an oauth start time flag,
     if non-nil the server is added non-interactively and the OAuth start time is stored
+* Client FSM:
+  - Remove graph image generation using Mermaid as that is too much code in core, this will be implemented using an external script
+* Example CLI:
+  - Fix profile/location selection
+* Translations:
+  - Update from Weblate
+* Deps:
+  - Update to eduoauth-go 1.0.0
 
 # 1.99.2 (2024-04-25)
 * Expose default gateway in profile settings too. For clients, use the default gateway set on the config object, this is maybe only useful for suggesting some profiles in the client profile chooser UI
