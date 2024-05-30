@@ -46,9 +46,9 @@ fi
 
 # Replace version number
 # replace in internal/version
-sed -i "" -e "s/const Version = \".*\"/const Version = \"${PROJECT_VERSION}\"/" internal/version/version.go
-sed -i "" -e "s/version = .*/version = ${PROJECT_VERSION}/" wrappers/python/setup.cfg
-sed -i "" -e "s/__version__ = \".*\"/__version__ = \"${PROJECT_VERSION}\"/" wrappers/python/eduvpn_common/__init__.py
+sed -i "s/const Version = \".*\"/const Version = \"${PROJECT_VERSION}\"/" internal/version/version.go
+sed -i "s/version = .*/version = ${PROJECT_VERSION}/" wrappers/python/setup.cfg
+sed -i "s/__version__ = \".*\"/__version__ = \"${PROJECT_VERSION}\"/" wrappers/python/eduvpn_common/__init__.py
 
 git add -u
 git commit -m "Version: Update to ${PROJECT_VERSION}"
