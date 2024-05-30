@@ -91,5 +91,8 @@ func (c *Cookie) Send(data string) error {
 
 // Context gets the underlying context of the cookie
 func (c *Cookie) Context() context.Context {
+	if c.H == 0 {
+		return c.ctx
+	}
 	return context.WithValue(c.ctx, CONTEXTK, c.H)
 }
