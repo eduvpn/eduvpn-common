@@ -6,7 +6,10 @@ link against this library and gradually merge more common logic between eduVPN c
 [Cgo](https://pkg.go.dev/cmd/cgo) is used to build the Go library into a shared dynamic library. Wrappers were
 written using some FFI framework for each language used in eduVPN clients to easily interface with the library.
 
-The only support language is Python at the moment. Other languages will come with updates.
+The only wrapper inside of this repository is Python, used for the Linux clients. Other clients define their own wrappers, see:
+
+- https://github.com/Amebis/eduVPN
+- https://github.com/eduvpn/android
 
 ## Documentation
 The documentation for this library can be found at [GitHub pages](https://eduvpn.github.io/eduvpn-common).
