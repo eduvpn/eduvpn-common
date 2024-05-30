@@ -57,6 +57,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"runtime/cgo"
 	"unsafe"
 
@@ -88,7 +89,7 @@ func getCError(err error) *C.char {
 	}
 	retData, err := getReturnData(retErr)
 	if err != nil {
-		return C.CString("failed to get error return")
+		return C.CString(fmt.Sprintf("failed to get error return: %v", err))
 	}
 	return C.CString(retData)
 }
@@ -117,6 +118,7 @@ func stateCallback(
 	newStateC := C.int(newState)
 	d, err := getReturnData(data)
 	if err != nil {
+		log.Logger.Errorf("failed to get return data: %v", err)
 		return false
 	}
 	dataC := C.CString(d)
