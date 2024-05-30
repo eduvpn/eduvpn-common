@@ -4,7 +4,7 @@
         {
             "id": "The log file with directory: '{Directory}' failed to initialize",
             "message": "The log file with directory: '{Directory}' failed to initialize",
-            "translation": "Het log bestand met pad: '{Directory}' kan niet aangemaakt worden",
+            "translation": "Het log bestand met pad: '{Directory}' kon niet aangemaakt worden",
             "placeholders": [
                 {
                     "id": "Directory",
@@ -19,7 +19,7 @@
         {
             "id": "The current server was not found when getting the VPN expiration date",
             "message": "The current server was not found when getting the VPN expiration date",
-            "translation": ""
+            "translation": "De huidige server was niet gevonden tijdens het ophalen van de VPN verloopdatum"
         },
         {
             "id": "The institute access server with URL: '{Identifier}' could not be added",
@@ -69,7 +69,7 @@
         {
             "id": "input: '{Identifier}' is not a valid URL",
             "message": "input: '{Identifier}' is not a valid URL",
-            "translation": "",
+            "translation": "het ingegeven veld: '{Identifier}' is niet een geldige URL",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -84,7 +84,7 @@
         {
             "id": "Server identifier: '{Identifier}', is not valid when getting a VPN configuration",
             "message": "Server identifier: '{Identifier}', is not valid when getting a VPN configuration",
-            "translation": "",
+            "translation": "De identiteit van de server: '{Identifier}', is niet geldig tijdens het ophalen van de VPN configuratie",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -99,7 +99,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
-            "translation": "",
+            "translation": "De client wilde automatisch verbinden met de VPN server: '{Identifier}', maar er is geen geldige authorizatie. Verbind handmatig nog een keer",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -114,7 +114,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
-            "translation": "",
+            "translation": "De client wilde automatisch verbinden met de VPN server: '{Identifier}', maar het was mislukt",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -129,7 +129,7 @@
         {
             "id": "Server: '{Identifier}' could not be connected to",
             "message": "Server: '{Identifier}' could not be connected to",
-            "translation": "",
+            "translation": "Er kon geen verbinding worden gemaakt met de server: '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -144,7 +144,7 @@
         {
             "id": "No VPN configuration for server: '{Identifier}' could be obtained",
             "message": "No VPN configuration for server: '{Identifier}' could be obtained",
-            "translation": "",
+            "translation": "Er kon geen VPN configuratie opgehaald worden voor de server: '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -159,7 +159,7 @@
         {
             "id": "Server identifier: '{Identifier}', is not valid when removing the server",
             "message": "Server identifier: '{Identifier}', is not valid when removing the server",
-            "translation": "",
+            "translation": "De server: '{Identifier}' is niet geldig om verwijderd te worden",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -174,7 +174,7 @@
         {
             "id": "The server: '{Identifier}' could not be removed",
             "message": "The server: '{Identifier}' could not be removed",
-            "translation": "",
+            "translation": "De server: '{Identifier}' kan niet worden verwijderd",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -189,12 +189,12 @@
         {
             "id": "The current server could not be retrieved",
             "message": "The current server could not be retrieved",
-            "translation": ""
+            "translation": "De huidige server kan niet worden opgehaald"
         },
         {
             "id": "Failed to set the profile ID: '{PID}'",
             "message": "Failed to set the profile ID: '{PID}'",
-            "translation": "",
+            "translation": "Het profiel met identiteit: '{PID}' kan niet opgeslagen worden",
             "placeholders": [
                 {
                     "id": "PID",
@@ -209,27 +209,27 @@
         {
             "id": "The current server was not found when cleaning up the connection",
             "message": "The current server was not found when cleaning up the connection",
-            "translation": ""
+            "translation": "De huidige server was niet gevonden tijdens het opschonen van de verbinding"
         },
         {
             "id": "No OAuth tokens were found when cleaning up the connection",
             "message": "No OAuth tokens were found when cleaning up the connection",
-            "translation": ""
+            "translation": "Er was geen authorizatie gevonden tijdens het opschonen van de verbinding"
         },
         {
             "id": "The server was unable to be retrieved when cleaning up the connection",
             "message": "The server was unable to be retrieved when cleaning up the connection",
-            "translation": ""
+            "translation": "De server kon niet opgehaald worden tijdens het opschonen van de verbinding"
         },
         {
             "id": "Failed to cleanup the VPN connection",
             "message": "Failed to cleanup the VPN connection",
-            "translation": ""
+            "translation": "De VPN verbinding kon niet opgeschoond worden"
         },
         {
             "id": "Failed to get the secure internet server with id: '{OrgID}' for setting a location",
             "message": "Failed to get the secure internet server with id: '{OrgID}' for setting a location",
-            "translation": "",
+            "translation": "De secure internet server met identiteit: '{OrgID}' kon niet opgehaald worden tijdens het bevestigen van de locatie",
             "placeholders": [
                 {
                     "id": "OrgID",
@@ -244,12 +244,12 @@
         {
             "id": "The current server could not be retrieved when renewing the session",
             "message": "The current server could not be retrieved when renewing the session",
-            "translation": ""
+            "translation": "De huidige server kon niet opgehaald worden tijdens het vernieuwen van de sessie"
         },
         {
             "id": "The server was unable to be retrieved when renewing the session",
             "message": "The server was unable to be retrieved when renewing the session",
-            "translation": ""
+            "translation": "De server kon niet opgehaald worden tijdens het vernieuwen van de sessie"
         },
         {
             "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
@@ -287,12 +287,12 @@
         {
             "id": "The VPN proxy exited",
             "message": "The VPN proxy exited",
-            "translation": ""
+            "translation": "De VPN proxy is afgesloten"
         },
         {
             "id": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
             "message": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
-            "translation": "",
+            "translation": "Er heeft zich een time-out opgetreden voor URL: '{URL}' met HTTP methode: '{Method}'",
             "placeholders": [
                 {
                     "id": "URL",

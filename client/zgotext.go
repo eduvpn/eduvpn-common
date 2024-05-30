@@ -246,25 +246,46 @@ var itIndex = []uint32{ // 30 elements
 const itData string = ""
 
 var nlIndex = []uint32{ // 30 elements
-	0x00000000, 0x0000003c, 0x0000003c, 0x00000083,
-	0x000000d0, 0x00000106, 0x00000106, 0x00000106,
-	0x00000106, 0x00000106, 0x00000106, 0x00000106,
-	0x00000106, 0x00000106, 0x00000106, 0x00000106,
-	0x00000106, 0x00000106, 0x00000106, 0x00000106,
-	0x00000106, 0x00000106, 0x00000157, 0x0000019f,
-	0x000001e2, 0x000001e2, 0x000001e2, 0x000001ef,
-	0x0000020e, 0x0000020e,
+	0x00000000, 0x0000003c, 0x0000008c, 0x000000d3,
+	0x00000120, 0x00000156, 0x0000018a, 0x000001eb,
+	0x00000272, 0x000002c9, 0x0000030f, 0x00000349,
+	0x00000377, 0x000003a3, 0x000003e2, 0x0000042e,
+	0x00000478, 0x000004c4, 0x000004f2, 0x00000564,
+	0x000005b5, 0x000005fe, 0x0000064f, 0x00000697,
+	0x000006da, 0x000006f5, 0x00000747, 0x00000754,
+	0x00000773, 0x000007b0,
 } // Size: 144 bytes
 
-const nlData string = "" + // Size: 526 bytes
-	"\x02Het log bestand met pad: '%[1]s' kan niet aangemaakt worden\x02De in" +
-	"stitute access server met URL: '%[1]s' kan niet toegevoegd worden\x02De " +
-	"secure internet server met identiteit: '%[1]s' kan niet toegevoegd worde" +
-	"n\x02De server met URL: '%[1]s' kan niet toegevoegd worden\x02Het 'failo" +
-	"ver' proces kan niet voltooid worden. Gateway: '%[1]s' en MTU: '%[2]d'" +
-	"\x02Er is een fout opgetreden met het ophalen van de lijst van organisat" +
-	"ies\x02Er is een fout opgetreden met het ophalen van de lijst van server" +
-	"s\x02met oorzaak:\x02Een interne fout is opgetreden"
+const nlData string = "" + // Size: 1968 bytes
+	"\x02Het log bestand met pad: '%[1]s' kon niet aangemaakt worden\x02De hu" +
+	"idige server was niet gevonden tijdens het ophalen van de VPN verloopdat" +
+	"um\x02De institute access server met URL: '%[1]s' kan niet toegevoegd wo" +
+	"rden\x02De secure internet server met identiteit: '%[1]s' kan niet toege" +
+	"voegd worden\x02De server met URL: '%[1]s' kan niet toegevoegd worden" +
+	"\x02het ingegeven veld: '%[1]s' is niet een geldige URL\x02De identiteit" +
+	" van de server: '%[1]s', is niet geldig tijdens het ophalen van de VPN c" +
+	"onfiguratie\x02De client wilde automatisch verbinden met de VPN server: " +
+	"'%[1]s', maar er is geen geldige authorizatie. Verbind handmatig nog een" +
+	" keer\x02De client wilde automatisch verbinden met de VPN server: '%[1]s" +
+	"', maar het was mislukt\x02Er kon geen VPN configuratie opgehaald worden" +
+	" voor de server: '%[1]s'\x02De server: '%[1]s' is niet geldig om verwijd" +
+	"erd te worden\x02De server: '%[1]s' kan niet worden verwijderd\x02De hui" +
+	"dige server kan niet worden opgehaald\x02Het profiel met identiteit: '%[" +
+	"1]s' kan niet opgeslagen worden\x02De huidige server was niet gevonden t" +
+	"ijdens het opschonen van de verbinding\x02Er was geen authorizatie gevon" +
+	"den tijdens het opschonen van de verbinding\x02De server kon niet opgeha" +
+	"ald worden tijdens het opschonen van de verbinding\x02De VPN verbinding " +
+	"kon niet opgeschoond worden\x02De secure internet server met identiteit:" +
+	" '%[1]s' kon niet opgehaald worden tijdens het bevestigen van de locatie" +
+	"\x02De huidige server kon niet opgehaald worden tijdens het vernieuwen v" +
+	"an de sessie\x02De server kon niet opgehaald worden tijdens het vernieuw" +
+	"en van de sessie\x02Het 'failover' proces kan niet voltooid worden. Gate" +
+	"way: '%[1]s' en MTU: '%[2]d'\x02Er is een fout opgetreden met het ophale" +
+	"n van de lijst van organisaties\x02Er is een fout opgetreden met het oph" +
+	"alen van de lijst van servers\x02De VPN proxy is afgesloten\x02Er heeft " +
+	"zich een time-out opgetreden voor URL: '%[1]s' met HTTP methode: '%[2]s'" +
+	"\x02met oorzaak:\x02Een interne fout is opgetreden\x02Er kon geen verbin" +
+	"ding worden gemaakt met de server: '%[1]s'"
 
 var slIndex = []uint32{ // 30 elements
 	0x00000000, 0x0000003c, 0x0000003c, 0x00000086,
@@ -300,4 +321,4 @@ var ukIndex = []uint32{ // 30 elements
 
 const ukData string = ""
 
-// Total table size 8446 bytes (8KiB); checksum: 70F24CE8
+// Total table size 9888 bytes (9KiB); checksum: 1B009270
