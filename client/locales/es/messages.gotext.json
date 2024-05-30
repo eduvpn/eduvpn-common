@@ -39,7 +39,7 @@
         {
             "id": "The secure internet server with organisation ID: '{Identifier}' could not be added",
             "message": "The secure internet server with organisation ID: '{Identifier}' could not be added",
-            "translation": "No se ha podido añadir el servidor seguro de Internet con ID de organización: '{Identifier}'.",
+            "translation": "El servidor seguro de Internet con ID de organización: '{Identifier}' no se ha podido añadir",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -254,7 +254,7 @@
         {
             "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
             "message": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
-            "translation": "Error en la conmutación por error con puerta de enlace: '{Gateway}' y MTU: '{Mtu}'.",
+            "translation": "Error en la conmutación por error con puerta de enlace: '{Gateway}' y MTU: '{Mtu}'",
             "placeholders": [
                 {
                     "id": "Gateway",
