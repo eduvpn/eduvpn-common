@@ -92,7 +92,7 @@ func sendProfile(state *client.Client, data interface{}) {
 		fmt.Fprintf(os.Stderr, "\ninvalid data type: %v\n", reflect.TypeOf(data))
 		return
 	}
-	sps, ok := d.Data.(srvtypes.Profiles)
+	sps, ok := d.Data.(*srvtypes.Profiles)
 	if !ok {
 		fmt.Fprintf(os.Stderr, "\ninvalid data type for profiles: %v\n", reflect.TypeOf(d.Data))
 		return
