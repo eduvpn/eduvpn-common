@@ -132,8 +132,8 @@
             "translation": ""
         },
         {
-            "id": "Timeout reached contacting URL: '{URL}'",
-            "message": "Timeout reached contacting URL: '{URL}'",
+            "id": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
+            "message": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
             "translation": "",
             "placeholders": [
                 {
@@ -143,12 +143,20 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "tErr.URL"
+                },
+                {
+                    "id": "Method",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "tErr.Method"
                 }
             ]
         },
         {
-            "id": "The cause of the error is:",
-            "message": "The cause of the error is:",
+            "id": "with cause:",
+            "message": "with cause:",
             "translation": ""
         },
         {
