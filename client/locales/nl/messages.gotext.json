@@ -132,9 +132,9 @@
             "translation": "Het is mislukt om de lijst van servers op te halen"
         },
         {
-            "id": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
-            "message": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
-            "translation": "Er heeft zich een time-out opgetreden voor URL: '{URL}' met HTTP methode: '{Method}'",
+            "id": "Timeout reached contacting URL: '{URL}'",
+            "message": "Timeout reached contacting URL: '{URL}'",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "URL",
@@ -143,21 +143,13 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "tErr.URL"
-                },
-                {
-                    "id": "Method",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "tErr.Method"
                 }
             ]
         },
         {
-            "id": "with cause:",
-            "message": "with cause:",
-            "translation": "met oorzaak:"
+            "id": "The cause of the error is:",
+            "message": "The cause of the error is:",
+            "translation": ""
         },
         {
             "id": "An internal error occurred",

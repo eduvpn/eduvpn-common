@@ -152,9 +152,9 @@
             "fuzzy": true
         },
         {
-            "id": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
-            "message": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
-            "translation": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
+            "id": "Timeout reached contacting URL: '{URL}'",
+            "message": "Timeout reached contacting URL: '{URL}'",
+            "translation": "Timeout reached contacting URL: '{URL}'",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -164,22 +164,14 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "tErr.URL"
-                },
-                {
-                    "id": "Method",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "tErr.Method"
                 }
             ],
             "fuzzy": true
         },
         {
-            "id": "with cause:",
-            "message": "with cause:",
-            "translation": "with cause:",
+            "id": "The cause of the error is:",
+            "message": "The cause of the error is:",
+            "translation": "The cause of the error is:",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
