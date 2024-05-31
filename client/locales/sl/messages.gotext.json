@@ -4,7 +4,7 @@
         {
             "id": "Failed to add an institute access server with URL: '{Identifier}'",
             "message": "Failed to add an institute access server with URL: '{Identifier}'",
-            "translation": "",
+            "translation": "Napaka pri dodajanju strežnika za dostop do ustanove. Strežnikov URL: '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -19,7 +19,7 @@
         {
             "id": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
             "message": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
-            "translation": "",
+            "translation": "Napaka pri dodajanju strežnika za varni splet. Strežnikov URL: '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -34,7 +34,7 @@
         {
             "id": "Failed to add a server with URL: '{Identifier}'",
             "message": "Failed to add a server with URL: '{Identifier}'",
-            "translation": "",
+            "translation": "Napaka pri dodajanju strežnika z URL-jem: '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -49,7 +49,7 @@
         {
             "id": "The input: '{Identifier}' is not a valid URL",
             "message": "The input: '{Identifier}' is not a valid URL",
-            "translation": "",
+            "translation": "Vnos \"{Identifier}\" ni veljaven URL",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -64,7 +64,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
-            "translation": "",
+            "translation": "Odjemalec se je poskusil samodejno povezati s strežnikom VPN \"{Identifier}\", vendar ga morate ponovno avtorizirati. Ponovno se povežite ročno",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -79,7 +79,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
-            "translation": "",
+            "translation": "Odjemalec se je poskusil samodejno povezati s strežnikom VPN \"{Identifier}\", vendar mu ni uspelo",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -94,7 +94,7 @@
         {
             "id": "Failed to connect to server: '{Identifier}'",
             "message": "Failed to connect to server: '{Identifier}'",
-            "translation": "",
+            "translation": "Napaka pri povezovanju s strežnikom \"{Identifier}\"",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -109,7 +109,7 @@
         {
             "id": "Failed to obtain a VPN configuration for server: '{Identifier}'",
             "message": "Failed to obtain a VPN configuration for server: '{Identifier}'",
-            "translation": "",
+            "translation": "Napaka pri pridobivanju nastavitve VPN za strežnik \"{Identifier}\"",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -124,17 +124,17 @@
         {
             "id": "Failed to obtain the list of organizations",
             "message": "Failed to obtain the list of organizations",
-            "translation": ""
+            "translation": "Napaka pri pridobivanju seznama organizacij"
         },
         {
             "id": "Failed to obtain the list of servers",
             "message": "Failed to obtain the list of servers",
-            "translation": ""
+            "translation": "Napaka pri pridobivanju seznama strežnikov"
         },
         {
-            "id": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
-            "message": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
-            "translation": "",
+            "id": "Timeout reached contacting URL: '{URL}'",
+            "message": "Timeout reached contacting URL: '{URL}'",
+            "translation": "Pri dostopu do URL-ja \"{URL}\" je prišlo do preteka časovne kontrole",
             "placeholders": [
                 {
                     "id": "URL",
@@ -143,21 +143,13 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "tErr.URL"
-                },
-                {
-                    "id": "Method",
-                    "string": "%[2]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "tErr.Method"
                 }
             ]
         },
         {
-            "id": "with cause:",
-            "message": "with cause:",
-            "translation": "; razlog:"
+            "id": "The cause of the error is:",
+            "message": "The cause of the error is:",
+            "translation": "Vzrok napake je:"
         },
         {
             "id": "An internal error occurred",
