@@ -70,9 +70,9 @@
             "fuzzy": true
         },
         {
-            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
-            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
-            "translation": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
+            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
+            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
+            "translation": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -169,10 +169,28 @@
             "fuzzy": true
         },
         {
-            "id": "The cause of the error is:",
-            "message": "The cause of the error is:",
-            "translation": "The cause of the error is:",
+            "id": "{Msg}. The cause of the error is: {Error}.",
+            "message": "{Msg}. The cause of the error is: {Error}.",
+            "translation": "{Msg}. The cause of the error is: {Error}.",
             "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Msg",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "msg"
+                },
+                {
+                    "id": "Error",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "e.wrapped.Error()"
+                }
+            ],
             "fuzzy": true
         },
         {

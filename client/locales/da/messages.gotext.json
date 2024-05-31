@@ -62,8 +62,8 @@
             ]
         },
         {
-            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
-            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
+            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
+            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
             "translation": "",
             "placeholders": [
                 {
@@ -147,9 +147,27 @@
             ]
         },
         {
-            "id": "The cause of the error is:",
-            "message": "The cause of the error is:",
-            "translation": ""
+            "id": "{Msg}. The cause of the error is: {Error}.",
+            "message": "{Msg}. The cause of the error is: {Error}.",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Msg",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "msg"
+                },
+                {
+                    "id": "Error",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "e.wrapped.Error()"
+                }
+            ]
         },
         {
             "id": "An internal error occurred",

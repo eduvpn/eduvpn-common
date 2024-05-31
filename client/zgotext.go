@@ -46,7 +46,7 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"%s. The cause of the error is: %s":                                                             12,
+	"%s. The cause of the error is: %s.":                                                            12,
 	"An internal error occurred":                                                                    1,
 	"Failed to add a secure internet server with organisation ID: '%s'":                             3,
 	"Failed to add a server with URL: '%s'":                                                         4,
@@ -86,10 +86,10 @@ var enIndex = []uint32{ // 14 elements
 	0x00000000, 0x00000061, 0x0000007c, 0x000000b7,
 	0x000000fc, 0x00000125, 0x0000014b, 0x000001c9,
 	0x000001ee, 0x00000227, 0x00000252, 0x00000277,
-	0x0000029f, 0x000002c7,
+	0x0000029f, 0x000002c8,
 } // Size: 80 bytes
 
-const enData string = "" + // Size: 711 bytes
+const enData string = "" + // Size: 712 bytes
 	"\x02The client tried to autoconnect to the VPN server: '%[1]s', but the " +
 	"operation failed to complete\x02An internal error occurred\x02Failed to " +
 	"add an institute access server with URL: '%[1]s'\x02Failed to add a secu" +
@@ -100,7 +100,7 @@ const enData string = "" + // Size: 711 bytes
 	"erver: '%[1]s'\x02Failed to obtain a VPN configuration for server: '%[1]" +
 	"s'\x02Failed to obtain the list of organizations\x02Failed to obtain the" +
 	" list of servers\x02Timeout reached contacting URL: '%[1]s'\x02%[1]s. Th" +
-	"e cause of the error is: %[2]s"
+	"e cause of the error is: %[2]s."
 
 var esIndex = []uint32{ // 14 elements
 	0x00000000, 0x00000063, 0x0000007c, 0x0000007c,
@@ -162,18 +162,20 @@ const nlData string = "" + // Size: 668 bytes
 
 var slIndex = []uint32{ // 14 elements
 	0x00000000, 0x0000005b, 0x00000079, 0x000000c9,
-	0x00000112, 0x00000145, 0x00000162, 0x00000162,
-	0x0000018f, 0x000001cb, 0x000001f7, 0x00000223,
-	0x00000269, 0x00000269,
+	0x00000112, 0x00000145, 0x00000162, 0x000001ed,
+	0x0000021a, 0x00000256, 0x00000282, 0x000002ae,
+	0x000002f4, 0x000002f4,
 } // Size: 80 bytes
 
-const slData string = "" + // Size: 617 bytes
+const slData string = "" + // Size: 756 bytes
 	"\x02Odjemalec se je poskusil samodejno povezati s strežnikom VPN \x22%[1" +
 	"]s\x22, vendar mu ni uspelo\x02Prišlo je do notranje napake\x02Napaka pr" +
 	"i dodajanju strežnika za dostop do ustanove. Strežnikov URL: '%[1]s'\x02" +
 	"Napaka pri dodajanju strežnika za varni splet. Strežnikov URL: '%[1]s'" +
 	"\x02Napaka pri dodajanju strežnika z URL-jem: '%[1]s'\x02Vnos \x22%[1]s" +
-	"\x22 ni veljaven URL\x02Napaka pri povezovanju s strežnikom \x22%[1]s" +
+	"\x22 ni veljaven URL\x02Odjemalec se je poskusil samodejno povezati s st" +
+	"režnikom VPN \x22%[1]s\x22, vendar ga morate ponovno avtorizirati. Ponov" +
+	"no se povežite ročno.\x02Napaka pri povezovanju s strežnikom \x22%[1]s" +
 	"\x22\x02Napaka pri pridobivanju nastavitve VPN za strežnik \x22%[1]s\x22" +
 	"\x02Napaka pri pridobivanju seznama organizacij\x02Napaka pri pridobivan" +
 	"ju seznama strežnikov\x02Pri dostopu do URL-ja \x22%[1]s\x22 je prišlo d" +
@@ -188,4 +190,4 @@ var ukIndex = []uint32{ // 14 elements
 
 const ukData string = ""
 
-// Total table size 3634 bytes (3KiB); checksum: 5B988031
+// Total table size 3774 bytes (3KiB); checksum: 95432E62

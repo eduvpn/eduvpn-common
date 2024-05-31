@@ -62,9 +62,9 @@
             ]
         },
         {
-            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
-            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
-            "translation": "De client wilde automatisch verbinden met de VPN server: '{Identifier}', maar er is geen geldige authorizatie. Verbind handmatig nog een keer",
+            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
+            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
+            "translation": "De client wilde automatisch verbinden met de VPN server: '{Identifier}', maar er is geen geldige authorizatie. Verbind handmatig nog een keer.",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -147,9 +147,27 @@
             ]
         },
         {
-            "id": "The cause of the error is:",
-            "message": "The cause of the error is:",
-            "translation": "The oorzaak van de error is:"
+            "id": "{Msg}. The cause of the error is: {Error}.",
+            "message": "{Msg}. The cause of the error is: {Error}.",
+            "translation": "{Msg}. The oorzaak van de error is: {Error}.",
+            "placeholders": [
+                {
+                    "id": "Msg",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "msg"
+                },
+                {
+                    "id": "Error",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "e.wrapped.Error()"
+                }
+            ]
         },
         {
             "id": "An internal error occurred",
