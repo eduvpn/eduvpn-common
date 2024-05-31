@@ -116,7 +116,7 @@ func (c *Client) StartProxyguard(ck *cookie.Cookie, listen string, tcpsp int, pe
 	defer c.proxy.Delete()
 	err = c.proxy.Tunnel(ck.Context(), peer)
 	if err != nil {
-		return i18nerr.Wrap(err, "The VPN proxy exited")
+		return i18nerr.WrapInternal(err, "The VPN proxy exited")
 	}
 	return err
 }
