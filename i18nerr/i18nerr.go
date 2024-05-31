@@ -29,7 +29,7 @@ func TranslatedInner(inner error) (string, bool) {
 	var tErr *http.TimeoutError
 	switch {
 	case errors.As(inner, &tErr):
-		return printerOrNew(language.English).Sprintf("timeout reached for URL: '%s' and HTTP method: '%s'", tErr.URL, tErr.Method), false
+		return printerOrNew(language.English).Sprintf("Timeout reached contacting URL: '%s'", tErr.URL), false
 	case errors.Is(inner, context.Canceled):
 		return unwrapped.Error(), true
 	}
