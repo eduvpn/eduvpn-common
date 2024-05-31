@@ -46,19 +46,19 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"An internal error occurred":                                                                    4,
-	"Failed to add a secure internet server with organisation ID: '%s'":                             6,
-	"Failed to add a server with URL: '%s'":                                                         7,
-	"Failed to add an institute access server with URL: '%s'":                                       5,
-	"Failed to connect to server: '%s'":                                                             9,
-	"Failed to obtain a VPN configuration for server: '%s'":                                         10,
-	"Failed to obtain the list of organizations":                                                    11,
-	"Failed to obtain the list of servers":                                                          12,
+	"An internal error occurred":                                                                    2,
+	"Failed to add a secure internet server with organisation ID: '%s'":                             4,
+	"Failed to add a server with URL: '%s'":                                                         5,
+	"Failed to add an institute access server with URL: '%s'":                                       3,
+	"Failed to connect to server: '%s'":                                                             7,
+	"Failed to obtain a VPN configuration for server: '%s'":                                         8,
+	"Failed to obtain the list of organizations":                                                    9,
+	"Failed to obtain the list of servers":                                                          10,
+	"The cause of the error is:":                                                                    12,
 	"The client tried to autoconnect to the VPN server: '%s', but the operation failed to complete": 1,
 	"The client tried to autoconnect to the VPN server: '%s', but you need to authorizate again. Please manually connect again": 0,
-	"The input: '%s' is not a valid URL":                  8,
-	"timeout reached for URL: '%s' and HTTP method: '%s'": 2,
-	"with cause:": 3,
+	"The input: '%s' is not a valid URL":   6,
+	"Timeout reached contacting URL: '%s'": 11,
 }
 
 var daIndex = []uint32{ // 14 elements
@@ -71,63 +71,72 @@ var daIndex = []uint32{ // 14 elements
 const daData string = ""
 
 var deIndex = []uint32{ // 14 elements
-	0x00000000, 0x000000a6, 0x0000012c, 0x00000173,
-	0x00000180, 0x000001a4, 0x000001a4, 0x000001a4,
-	0x000001a4, 0x000001a4, 0x000001a4, 0x000001a4,
-	0x000001a4, 0x000001a4,
+	0x00000000, 0x000000a6, 0x0000012c, 0x00000150,
+	0x00000150, 0x00000150, 0x00000150, 0x00000150,
+	0x00000150, 0x00000150, 0x00000150, 0x00000150,
+	0x00000150, 0x00000150,
 } // Size: 80 bytes
 
-const deData string = "" + // Size: 420 bytes
+const deData string = "" + // Size: 336 bytes
 	"\x02Der Client hat versucht, sich automatisch mit dem VPN-Server '%[1]s'" +
 	" zu verbinden, aber Sie müssen sich erneut autorisieren. Bitte verbinden" +
 	" sie sich manuell erneut\x02Der Client hat versucht, sich automatisch mi" +
 	"t dem VPN-Server '%[1]s' zu verbinden, aber der Vorgang konnte nicht abg" +
-	"eschlossen werden\x02Zeitüberschreitung für URL '%[1]s' und HTTP-Methode" +
-	" '%[2]s' erreicht\x02mit Ursache:\x02Ein interner Fehler ist aufgetreten"
+	"eschlossen werden\x02Ein interner Fehler ist aufgetreten"
 
 var enIndex = []uint32{ // 14 elements
-	0x00000000, 0x0000007d, 0x000000de, 0x00000118,
-	0x00000124, 0x0000013f, 0x0000017a, 0x000001bf,
-	0x000001e8, 0x0000020e, 0x00000233, 0x0000026c,
-	0x00000297, 0x000002bc,
+	0x00000000, 0x0000007d, 0x000000de, 0x000000f9,
+	0x00000134, 0x00000179, 0x000001a2, 0x000001c8,
+	0x000001ed, 0x00000226, 0x00000251, 0x00000276,
+	0x0000029e, 0x000002b9,
 } // Size: 80 bytes
 
-const enData string = "" + // Size: 700 bytes
+const enData string = "" + // Size: 697 bytes
 	"\x02The client tried to autoconnect to the VPN server: '%[1]s', but you " +
 	"need to authorizate again. Please manually connect again\x02The client t" +
 	"ried to autoconnect to the VPN server: '%[1]s', but the operation failed" +
-	" to complete\x02timeout reached for URL: '%[1]s' and HTTP method: '%[2]s" +
-	"'\x02with cause:\x02An internal error occurred\x02Failed to add an insti" +
-	"tute access server with URL: '%[1]s'\x02Failed to add a secure internet " +
-	"server with organisation ID: '%[1]s'\x02Failed to add a server with URL:" +
-	" '%[1]s'\x02The input: '%[1]s' is not a valid URL\x02Failed to connect t" +
-	"o server: '%[1]s'\x02Failed to obtain a VPN configuration for server: '%" +
-	"[1]s'\x02Failed to obtain the list of organizations\x02Failed to obtain " +
-	"the list of servers"
+	" to complete\x02An internal error occurred\x02Failed to add an institute" +
+	" access server with URL: '%[1]s'\x02Failed to add a secure internet serv" +
+	"er with organisation ID: '%[1]s'\x02Failed to add a server with URL: '%[" +
+	"1]s'\x02The input: '%[1]s' is not a valid URL\x02Failed to connect to se" +
+	"rver: '%[1]s'\x02Failed to obtain a VPN configuration for server: '%[1]s" +
+	"'\x02Failed to obtain the list of organizations\x02Failed to obtain the " +
+	"list of servers\x02Timeout reached contacting URL: '%[1]s'\x02The cause " +
+	"of the error is:"
 
 var esIndex = []uint32{ // 14 elements
-	0x00000000, 0x0000008c, 0x000000ef, 0x00000134,
-	0x00000143, 0x0000015c, 0x0000015c, 0x0000015c,
-	0x0000015c, 0x0000015c, 0x0000015c, 0x0000015c,
-	0x0000015c, 0x0000015c,
+	0x00000000, 0x0000008c, 0x000000ef, 0x00000108,
+	0x00000108, 0x00000108, 0x00000108, 0x00000108,
+	0x00000108, 0x00000108, 0x00000108, 0x00000108,
+	0x00000108, 0x00000108,
 } // Size: 80 bytes
 
-const esData string = "" + // Size: 348 bytes
+const esData string = "" + // Size: 264 bytes
 	"\x02El cliente intentó autoconectarse al servidor VPN: '%[1]s', pero nec" +
 	"esita autorizarse de nuevo. Por favor, conéctese manualmente de nuevo" +
 	"\x02El cliente intentó autoconectarse al servidor VPN: %[1]s', pero la o" +
-	"peración no se ha completado\x02tiempo de espera alcanzado para URL: '%[" +
-	"1]s' y método HTTP: '%[2]s'\x02Por el motivo:\x02Se ha producido un erro" +
-	"r"
+	"peración no se ha completado\x02Se ha producido un error"
 
 var frIndex = []uint32{ // 14 elements
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000,
+	0x00000000, 0x0000009f, 0x0000010d, 0x0000012f,
+	0x0000017d, 0x000001d9, 0x0000020f, 0x0000023d,
+	0x0000026b, 0x000002b2, 0x000002e3, 0x0000030f,
+	0x0000030f, 0x0000030f,
 } // Size: 80 bytes
 
-const frData string = ""
+const frData string = "" + // Size: 783 bytes
+	"\x02Le client a essayé de se connecter automatiquement au serveur VPN" +
+	"\u202f: '%[1]s', mais vous devez l'autoriser de nouveau. Veuillez vous r" +
+	"econnecter manuellement\x02Le client a essayé de se connecter automatiqu" +
+	"ement au serveur VPN\u202f: '%[1]s', mais l'opération a échouée\x02Une e" +
+	"rreur interne s'est produite\x02Échec de l'ajout d'un serveur d'accès à " +
+	"un institut avec l'URL\u202f: '%[1]s'\x02Échec de l'ajout d'un serveur d" +
+	"'accès à un institut avec l'ID d'organisation\u202f: '%[1]s'\x02Échec de" +
+	" l'ajout d'un serveur avec l'URL\u202f: '%[1]s'\x02L'entrée\u202f: '%[1]" +
+	"s' n'est pas un URL valide\x02Échec de la connexion au serveur\u202f: '%" +
+	"[1]s'\x02Échec d'obtention d'une configuration VPN pour le serveur\u202f" +
+	": '%[1]s'\x02Échec de l'obtention de liste des organisations\x02Échec l'" +
+	"obtention de la liste des serveurs"
 
 var itIndex = []uint32{ // 14 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -139,28 +148,33 @@ var itIndex = []uint32{ // 14 elements
 const itData string = ""
 
 var nlIndex = []uint32{ // 14 elements
-	0x00000000, 0x00000087, 0x000000de, 0x00000130,
-	0x0000013d, 0x0000015c, 0x0000015c, 0x0000015c,
-	0x0000015c, 0x0000015c, 0x0000015c, 0x0000015c,
-	0x0000015c, 0x0000015c,
+	0x00000000, 0x00000087, 0x000000de, 0x000000fd,
+	0x0000014a, 0x000001a1, 0x000001dd, 0x0000020d,
+	0x00000240, 0x00000288, 0x000002c0, 0x000002f3,
+	0x000002f3, 0x000002f3,
 } // Size: 80 bytes
 
-const nlData string = "" + // Size: 348 bytes
+const nlData string = "" + // Size: 755 bytes
 	"\x02De client wilde automatisch verbinden met de VPN server: '%[1]s', ma" +
 	"ar er is geen geldige authorizatie. Verbind handmatig nog een keer\x02De" +
 	" client wilde automatisch verbinden met de VPN server: '%[1]s', maar het" +
-	" was mislukt\x02Er heeft zich een time-out opgetreden voor URL: '%[1]s' " +
-	"met HTTP methode: '%[2]s'\x02met oorzaak:\x02Een interne fout is opgetre" +
-	"den"
+	" was mislukt\x02Een interne fout is opgetreden\x02Het is mislukt om een " +
+	"institute access server toe te voegen met URL: '%[1]s'\x02Het is mislukt" +
+	" om een secure internet server toe te voegen met organisatie ID: '%[1]s'" +
+	"\x02Het is mislukt om een server toe te voegen met URL: '%[1]s'\x02Het i" +
+	"ngegeven veld: '%[1]s' is geen geldige URL\x02Het is mislukt om te verbi" +
+	"nden met server: '%[1]s'\x02Het is mislukt om een VPN configuratie op te" +
+	" halen voor server: '%[1]s'\x02Het is mislukt om de lijst van organisati" +
+	"es op te halen\x02Het is mislukt om de lijst van servers op te halen"
 
 var slIndex = []uint32{ // 14 elements
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x0000000a, 0x00000028, 0x00000028, 0x00000028,
-	0x00000028, 0x00000028, 0x00000028, 0x00000028,
-	0x00000028, 0x00000028,
+	0x00000000, 0x00000000, 0x00000000, 0x0000001e,
+	0x0000001e, 0x0000001e, 0x0000001e, 0x0000001e,
+	0x0000001e, 0x0000001e, 0x0000001e, 0x0000001e,
+	0x0000001e, 0x0000001e,
 } // Size: 80 bytes
 
-const slData string = "\x02; razlog:\x02Prišlo je do notranje napake"
+const slData string = "\x02Prišlo je do notranje napake"
 
 var ukIndex = []uint32{ // 14 elements
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -171,4 +185,4 @@ var ukIndex = []uint32{ // 14 elements
 
 const ukData string = ""
 
-// Total table size 2576 bytes (2KiB); checksum: 6AF0360C
+// Total table size 3585 bytes (3KiB); checksum: 536B5521
