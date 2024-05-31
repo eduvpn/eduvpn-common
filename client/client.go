@@ -133,7 +133,7 @@ func New(name string, version string, directory string, stateCallback func(FSMSt
 	}
 
 	if err = log.Logger.Init(lvl, directory); err != nil {
-		return nil, i18nerr.Wrapf(err, "The log file with directory: '%s' failed to initialize", directory)
+		return nil, i18nerr.WrapInternalf(err, "The log file with directory: '%s' failed to initialize", directory)
 	}
 
 	// set client name
@@ -257,7 +257,7 @@ func (c *Client) Deregister() {
 func (c *Client) ExpiryTimes() (*srvtypes.Expiry, error) {
 	srv, err := c.Servers.CurrentServer()
 	if err != nil {
-		return nil, i18nerr.Wrap(err, "The current server was not found when getting the VPN expiration date")
+		return nil, i18nerr.WrapInternal(err, "The current server was not found when getting the VPN expiration date")
 	}
 	return &srvtypes.Expiry{
 		StartTime:         srv.LastAuthorizeTime.Unix(),
@@ -339,20 +339,20 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 	case srvtypes.TypeInstituteAccess:
 		err = c.Servers.AddInstitute(ck.Context(), c.cfg.Discovery(), identifier, ot)
 		if err != nil {
-			return i18nerr.Wrapf(err, "The institute access server with URL: '%s' could not be added", identifier)
+			return i18nerr.Wrapf(err, "Failed to add an institute access server with URL: '%s'", identifier)
 		}
 	case srvtypes.TypeSecureInternet:
 		err = c.Servers.AddSecure(ck.Context(), c.cfg.Discovery(), identifier, ot)
 		if err != nil {
-			return i18nerr.Wrapf(err, "The secure internet server with organisation ID: '%s' could not be added", identifier)
+			return i18nerr.Wrapf(err, "Failed to add a secure internet server with organisation ID: '%s'", identifier)
 		}
 	case srvtypes.TypeCustom:
 		err = c.Servers.AddCustom(ck.Context(), identifier, ot)
 		if err != nil {
-			return i18nerr.Wrapf(err, "The custom server with URL: '%s' could not be added", identifier)
+			return i18nerr.Wrapf(err, "Failed to add a server with URL: '%s'", identifier)
 		}
 	default:
-		return i18nerr.NewInternalf("Server type: '%v' is not valid to be added", _type)
+		return i18nerr.NewInternalf("Failed to add server type: '%v'", _type)
 	}
 	return nil
 }
@@ -365,7 +365,7 @@ func (c *Client) convertIdentifier(identifier string, t srvtypes.Type) (string, 
 	// Convert to an identifier, this also converts the scheme to HTTPS
 	identifier, err := http.EnsureValidURL(identifier, true)
 	if err != nil {
-		return "", i18nerr.Wrapf(err, "input: '%s' is not a valid URL", identifier)
+		return "", i18nerr.Wrapf(err, "The input: '%s' is not a valid URL", identifier)
 	}
 	return identifier, nil
 }
@@ -389,7 +389,7 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 
 	identifier, err = c.convertIdentifier(identifier, _type)
 	if err != nil {
-		return nil, i18nerr.Wrapf(err, "Server identifier: '%s', is not valid when getting a VPN configuration", identifier)
+		return nil, err
 	}
 	err = c.GettingConfig()
 	if err != nil {
@@ -426,12 +426,12 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 			}
 			return nil, i18nerr.Wrapf(err, "The client tried to autoconnect to the VPN server: '%s', but the operation failed to complete", identifier)
 		}
-		return nil, i18nerr.Wrapf(err, "Server: '%s' could not be connected to", identifier)
+		return nil, i18nerr.Wrapf(err, "Failed to connect to server: '%s'", identifier)
 	}
 
 	cfg, err = c.Servers.ConnectWithCallbacks(ck.Context(), srv, pTCP)
 	if err != nil {
-		return nil, i18nerr.Wrapf(err, "No VPN configuration for server: '%s' could be obtained", identifier)
+		return nil, i18nerr.Wrapf(err, "Failed to obtain a VPN configuration for server: '%s'", identifier)
 	}
 	return cfg, nil
 }
@@ -440,11 +440,11 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 func (c *Client) RemoveServer(identifier string, _type srvtypes.Type) (err error) {
 	identifier, err = c.convertIdentifier(identifier, _type)
 	if err != nil {
-		return i18nerr.Wrapf(err, "Server identifier: '%s', is not valid when removing the server", identifier)
+		return err
 	}
 	err = c.Servers.Remove(identifier, _type)
 	if err != nil {
-		return i18nerr.Wrapf(err, "The server: '%s' could not be removed", identifier)
+		return i18nerr.WrapInternalf(err, "Failed to remove server: '%s'", identifier)
 	}
 	return nil
 }
@@ -453,7 +453,7 @@ func (c *Client) RemoveServer(identifier string, _type srvtypes.Type) (err error
 func (c *Client) CurrentServer() (*srvtypes.Current, error) {
 	curr, err := c.Servers.PublicCurrent(c.cfg.Discovery())
 	if err != nil {
-		return nil, i18nerr.Wrap(err, "The current server could not be retrieved")
+		return nil, i18nerr.WrapInternal(err, "The current server could not be retrieved")
 	}
 	return curr, nil
 }
@@ -462,7 +462,7 @@ func (c *Client) CurrentServer() (*srvtypes.Current, error) {
 func (c *Client) SetProfileID(pID string) error {
 	srv, err := c.Servers.CurrentServer()
 	if err != nil {
-		return i18nerr.Wrapf(err, "Failed to set the profile ID: '%s'", pID)
+		return i18nerr.WrapInternalf(err, "Failed to set the profile ID: '%s'", pID)
 	}
 	srv.Profiles.Current = pID
 	return nil
@@ -498,19 +498,19 @@ func (c *Client) Cleanup(ck *cookie.Cookie) error {
 	}
 	srv, err := c.Servers.CurrentServer()
 	if err != nil {
-		return i18nerr.Wrap(err, "The current server was not found when cleaning up the connection")
+		return i18nerr.WrapInternal(err, "The current server was not found when cleaning up the connection")
 	}
 	tok, err := c.retrieveTokens(srv.Key.ID, srv.Key.T)
 	if err != nil {
-		return i18nerr.Wrap(err, "No OAuth tokens were found when cleaning up the connection")
+		return i18nerr.WrapInternal(err, "No OAuth tokens were found when cleaning up the connection")
 	}
 	auth, err := srv.ServerWithCallbacks(ck.Context(), c.cfg.Discovery(), tok, true)
 	if err != nil {
-		return i18nerr.Wrap(err, "The server was unable to be retrieved when cleaning up the connection")
+		return i18nerr.WrapInternal(err, "The server was unable to be retrieved when cleaning up the connection")
 	}
 	err = auth.Disconnect(ck.Context())
 	if err != nil {
-		return i18nerr.Wrap(err, "Failed to cleanup the VPN connection")
+		return i18nerr.WrapInternal(err, "Failed to cleanup the VPN connection")
 	}
 	return nil
 }
@@ -524,7 +524,7 @@ func (c *Client) SetSecureLocation(orgID string, countryCode string) error {
 	}
 	srv, err := c.Servers.GetServer(orgID, srvtypes.TypeSecureInternet)
 	if err != nil {
-		return i18nerr.Wrapf(err, "Failed to get the secure internet server with id: '%s' for setting a location", orgID)
+		return i18nerr.WrapInternalf(err, "Failed to get the secure internet server with id: '%s' for setting a location", orgID)
 	}
 	srv.CountryCode = countryCode
 
@@ -546,13 +546,13 @@ func (c *Client) RenewSession(ck *cookie.Cookie) error {
 	// getting the current serving with nil tokens means re-authorize
 	srv, err := c.Servers.CurrentServer()
 	if err != nil {
-		return i18nerr.Wrap(err, "The current server could not be retrieved when renewing the session")
+		return i18nerr.WrapInternal(err, "The current server could not be retrieved when renewing the session")
 	}
 
 	// getting a server with no tokens means re-authorize
 	_, err = srv.ServerWithCallbacks(ck.Context(), c.cfg.Discovery(), nil, false)
 	if err != nil {
-		return i18nerr.Wrap(err, "The server was unable to be retrieved when renewing the session")
+		return i18nerr.WrapInternal(err, "The server was unable to be retrieved when renewing the session")
 	}
 	return nil
 }
@@ -564,7 +564,7 @@ func (c *Client) StartFailover(ck *cookie.Cookie, gateway string, mtu int, readR
 	// get current profile
 	d, err := f.Start(ck.Context(), gateway, mtu)
 	if err != nil {
-		return d, i18nerr.Wrapf(err, "Failover failed to complete with gateway: '%s' and MTU: '%d'", gateway, mtu)
+		return d, i18nerr.WrapInternalf(err, "Failover failed to complete with gateway: '%s' and MTU: '%d'", gateway, mtu)
 	}
 	return d, nil
 }

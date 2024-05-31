@@ -26,7 +26,7 @@ func (c *Client) DiscoOrganizations(ck *cookie.Cookie, search string) (*discotyp
 
 	orgs, err := c.cfg.Discovery().Organizations(ck.Context())
 	if err != nil {
-		err = i18nerr.Wrap(err, "An error occurred after getting the discovery files for the list of organizations")
+		err = i18nerr.Wrap(err, "Failed to obtain the list of organizations")
 	}
 	if orgs == nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (c *Client) DiscoServers(ck *cookie.Cookie, search string) (*discotypes.Ser
 
 	servs, err := c.cfg.Discovery().Servers(ck.Context())
 	if err != nil {
-		err = i18nerr.Wrap(err, "An error occurred after getting the discovery files for the list of servers")
+		err = i18nerr.Wrap(err, "Failed to obtain the list of servers")
 	}
 	if servs == nil {
 		return nil, err

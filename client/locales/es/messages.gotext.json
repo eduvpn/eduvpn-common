@@ -2,29 +2,9 @@
     "language": "es",
     "messages": [
         {
-            "id": "The log file with directory: '{Directory}' failed to initialize",
-            "message": "The log file with directory: '{Directory}' failed to initialize",
-            "translation": "El archivo de registro con el directorio: '{Directory}' no se puede inicializar",
-            "placeholders": [
-                {
-                    "id": "Directory",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "directory"
-                }
-            ]
-        },
-        {
-            "id": "The current server was not found when getting the VPN expiration date",
-            "message": "The current server was not found when getting the VPN expiration date",
-            "translation": "No se ha encontrado el servidor actual al obtener la fecha de caducidad de la VPN"
-        },
-        {
-            "id": "The institute access server with URL: '{Identifier}' could not be added",
-            "message": "The institute access server with URL: '{Identifier}' could not be added",
-            "translation": "El servidor de acceso al instituto con URL '{Identifier}' no ha podido ser añadido",
+            "id": "Failed to add an institute access server with URL: '{Identifier}'",
+            "message": "Failed to add an institute access server with URL: '{Identifier}'",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -37,9 +17,9 @@
             ]
         },
         {
-            "id": "The secure internet server with organisation ID: '{Identifier}' could not be added",
-            "message": "The secure internet server with organisation ID: '{Identifier}' could not be added",
-            "translation": "El servidor seguro de Internet con ID de organización: '{Identifier}' no se ha podido añadir",
+            "id": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
+            "message": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -52,9 +32,9 @@
             ]
         },
         {
-            "id": "The custom server with URL: '{Identifier}' could not be added",
-            "message": "The custom server with URL: '{Identifier}' could not be added",
-            "translation": "El servidor personalizado con URL: '{Identifier}' no ha podido ser añadido",
+            "id": "Failed to add a server with URL: '{Identifier}'",
+            "message": "Failed to add a server with URL: '{Identifier}'",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -67,24 +47,9 @@
             ]
         },
         {
-            "id": "input: '{Identifier}' is not a valid URL",
-            "message": "input: '{Identifier}' is not a valid URL",
-            "translation": "input: '{Identifier}' no es una URL válida",
-            "placeholders": [
-                {
-                    "id": "Identifier",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "identifier"
-                }
-            ]
-        },
-        {
-            "id": "Server identifier: '{Identifier}', is not valid when getting a VPN configuration",
-            "message": "Server identifier: '{Identifier}', is not valid when getting a VPN configuration",
-            "translation": "El identificador del servidor: '{Identifier}', no es válido al obtener una configuración VPN",
+            "id": "The input: '{Identifier}' is not a valid URL",
+            "message": "The input: '{Identifier}' is not a valid URL",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -127,9 +92,9 @@
             ]
         },
         {
-            "id": "Server: '{Identifier}' could not be connected to",
-            "message": "Server: '{Identifier}' could not be connected to",
-            "translation": "Servidor: '{Identifier}' no se ha podido conectar",
+            "id": "Failed to connect to server: '{Identifier}'",
+            "message": "Failed to connect to server: '{Identifier}'",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -142,9 +107,9 @@
             ]
         },
         {
-            "id": "No VPN configuration for server: '{Identifier}' could be obtained",
-            "message": "No VPN configuration for server: '{Identifier}' could be obtained",
-            "translation": "No hay configuración VPN para el servidor: '{Identifier}' se ha podido obtener",
+            "id": "Failed to obtain a VPN configuration for server: '{Identifier}'",
+            "message": "Failed to obtain a VPN configuration for server: '{Identifier}'",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -157,137 +122,14 @@
             ]
         },
         {
-            "id": "Server identifier: '{Identifier}', is not valid when removing the server",
-            "message": "Server identifier: '{Identifier}', is not valid when removing the server",
-            "translation": "El identificador del servidor: '{Identifier}', no es válido al eliminar el servidor",
-            "placeholders": [
-                {
-                    "id": "Identifier",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "identifier"
-                }
-            ]
+            "id": "Failed to obtain the list of organizations",
+            "message": "Failed to obtain the list of organizations",
+            "translation": ""
         },
         {
-            "id": "The server: '{Identifier}' could not be removed",
-            "message": "The server: '{Identifier}' could not be removed",
-            "translation": "El servidor: '{Identifier}' no pudo ser eliminado",
-            "placeholders": [
-                {
-                    "id": "Identifier",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "identifier"
-                }
-            ]
-        },
-        {
-            "id": "The current server could not be retrieved",
-            "message": "The current server could not be retrieved",
-            "translation": "No se ha podido recuperar el servidor actual"
-        },
-        {
-            "id": "Failed to set the profile ID: '{PID}'",
-            "message": "Failed to set the profile ID: '{PID}'",
-            "translation": "Error al establecer el ID del perfil: '{PID}'",
-            "placeholders": [
-                {
-                    "id": "PID",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "pID"
-                }
-            ]
-        },
-        {
-            "id": "The current server was not found when cleaning up the connection",
-            "message": "The current server was not found when cleaning up the connection",
-            "translation": "No se ha encontrado el servidor actual al restablecer la conexión"
-        },
-        {
-            "id": "No OAuth tokens were found when cleaning up the connection",
-            "message": "No OAuth tokens were found when cleaning up the connection",
-            "translation": "No se han encontrado tokens OAuth al limpiar la conexión"
-        },
-        {
-            "id": "The server was unable to be retrieved when cleaning up the connection",
-            "message": "The server was unable to be retrieved when cleaning up the connection",
-            "translation": "No se ha podido recuperar el servidor al limpiar la conexión"
-        },
-        {
-            "id": "Failed to cleanup the VPN connection",
-            "message": "Failed to cleanup the VPN connection",
-            "translation": "Error al limpiar la conexión VPN"
-        },
-        {
-            "id": "Failed to get the secure internet server with id: '{OrgID}' for setting a location",
-            "message": "Failed to get the secure internet server with id: '{OrgID}' for setting a location",
-            "translation": "Error al obtener el servidor seguro de Internet con id: '{OrgID}' para establecer una ubicación",
-            "placeholders": [
-                {
-                    "id": "OrgID",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "orgID"
-                }
-            ]
-        },
-        {
-            "id": "The current server could not be retrieved when renewing the session",
-            "message": "The current server could not be retrieved when renewing the session",
-            "translation": "No se ha podido recuperar el servidor actual al renovar la sesión"
-        },
-        {
-            "id": "The server was unable to be retrieved when renewing the session",
-            "message": "The server was unable to be retrieved when renewing the session",
-            "translation": "No se ha podido recuperar el servidor al renovar la sesión"
-        },
-        {
-            "id": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
-            "message": "Failover failed to complete with gateway: '{Gateway}' and MTU: '{Mtu}'",
-            "translation": "Error en la conmutación por error con puerta de enlace: '{Gateway}' y MTU: '{Mtu}'",
-            "placeholders": [
-                {
-                    "id": "Gateway",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "gateway"
-                },
-                {
-                    "id": "Mtu",
-                    "string": "%[2]d",
-                    "type": "int",
-                    "underlyingType": "int",
-                    "argNum": 2,
-                    "expr": "mtu"
-                }
-            ]
-        },
-        {
-            "id": "An error occurred after getting the discovery files for the list of organizations",
-            "message": "An error occurred after getting the discovery files for the list of organizations",
-            "translation": "Se ha producido un error al obtener los archivos de detección de la lista de las organizaciones"
-        },
-        {
-            "id": "An error occurred after getting the discovery files for the list of servers",
-            "message": "An error occurred after getting the discovery files for the list of servers",
-            "translation": "Se ha producido un error al obtener los archivos de detección de la lista de servidores"
-        },
-        {
-            "id": "The VPN proxy exited",
-            "message": "The VPN proxy exited",
-            "translation": "Se ha desconectado del proxy VPN"
+            "id": "Failed to obtain the list of servers",
+            "message": "Failed to obtain the list of servers",
+            "translation": ""
         },
         {
             "id": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
