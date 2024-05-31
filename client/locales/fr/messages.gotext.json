@@ -4,7 +4,7 @@
         {
             "id": "Failed to add an institute access server with URL: '{Identifier}'",
             "message": "Failed to add an institute access server with URL: '{Identifier}'",
-            "translation": "",
+            "translation": "Échec de l'ajout d'un serveur d'accès à un institut avec l'URL : '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -19,7 +19,7 @@
         {
             "id": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
             "message": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
-            "translation": "",
+            "translation": "Échec de l'ajout d'un serveur d'accès à un institut avec l'ID d'organisation : '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -34,7 +34,7 @@
         {
             "id": "Failed to add a server with URL: '{Identifier}'",
             "message": "Failed to add a server with URL: '{Identifier}'",
-            "translation": "",
+            "translation": "Échec de l'ajout d'un serveur avec l'URL : '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -49,7 +49,7 @@
         {
             "id": "The input: '{Identifier}' is not a valid URL",
             "message": "The input: '{Identifier}' is not a valid URL",
-            "translation": "",
+            "translation": "L'entrée : '{Identifier}' n'est pas un URL valide",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -64,7 +64,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again",
-            "translation": "",
+            "translation": "Le client a essayé de se connecter automatiquement au serveur VPN : '{Identifier}', mais vous devez l'autoriser de nouveau. Veuillez vous reconnecter manuellement",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -79,7 +79,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
-            "translation": "",
+            "translation": "Le client a essayé de se connecter automatiquement au serveur VPN : '{Identifier}', mais l'opération a échouée",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -94,7 +94,7 @@
         {
             "id": "Failed to connect to server: '{Identifier}'",
             "message": "Failed to connect to server: '{Identifier}'",
-            "translation": "",
+            "translation": "Échec de la connexion au serveur : '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -109,7 +109,7 @@
         {
             "id": "Failed to obtain a VPN configuration for server: '{Identifier}'",
             "message": "Failed to obtain a VPN configuration for server: '{Identifier}'",
-            "translation": "",
+            "translation": "Échec d'obtention d'une configuration VPN pour le serveur : '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -124,17 +124,17 @@
         {
             "id": "Failed to obtain the list of organizations",
             "message": "Failed to obtain the list of organizations",
-            "translation": ""
+            "translation": "Échec de l'obtention de liste des organisations"
         },
         {
             "id": "Failed to obtain the list of servers",
             "message": "Failed to obtain the list of servers",
-            "translation": ""
+            "translation": "Échec l'obtention de la liste des serveurs"
         },
         {
             "id": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
             "message": "timeout reached for URL: '{URL}' and HTTP method: '{Method}'",
-            "translation": "",
+            "translation": "délai d'attente atteint pour l'URL : '{URL}' et la méthode HTTP: '{Method}'",
             "placeholders": [
                 {
                     "id": "URL",
@@ -157,12 +157,12 @@
         {
             "id": "with cause:",
             "message": "with cause:",
-            "translation": ""
+            "translation": "avec la cause :"
         },
         {
             "id": "An internal error occurred",
             "message": "An internal error occurred",
-            "translation": ""
+            "translation": "Une erreur interne s'est produite"
         }
     ]
 }
