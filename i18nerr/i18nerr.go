@@ -150,7 +150,7 @@ func NewInternalf(disp string, args ...interface{}) *Error {
 
 // WrapInternal wraps an error and a display string into a localised internal error
 func WrapInternal(err error, disp string) *Error {
-	return NewInternal(fmt.Sprintf("%s with internal cause: %v", disp, err))
+	return Wrap(fmt.Errorf("%s with internal cause: %w", disp, err), "An internal error occurred")
 }
 
 // WrapInternalf wraps an error and a display string with args into a localised internal error
