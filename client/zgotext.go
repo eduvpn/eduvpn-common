@@ -106,16 +106,25 @@ const enData string = "" + // Size: 712 bytes
 
 var esIndex = []uint32{ // 14 elements
 	0x00000000, 0x0000008d, 0x000000f0, 0x00000109,
-	0x00000109, 0x00000109, 0x00000109, 0x00000109,
-	0x00000109, 0x00000109, 0x00000109, 0x00000109,
-	0x00000109, 0x00000109,
+	0x0000015d, 0x000001b0, 0x000001e0, 0x0000020a,
+	0x00000235, 0x00000277, 0x000002ae, 0x000002da,
+	0x0000031e, 0x00000343,
 } // Size: 80 bytes
 
-const esData string = "" + // Size: 265 bytes
+const esData string = "" + // Size: 835 bytes
 	"\x02El cliente intentó autoconectarse al servidor VPN: '%[1]s', pero nec" +
 	"esita autorizarse de nuevo. Por favor, conéctese manualmente de nuevo." +
 	"\x02El cliente intentó autoconectarse al servidor VPN: %[1]s', pero la o" +
-	"peración no se ha completado\x02Se ha producido un error"
+	"peración no se ha completado\x02Se ha producido un error\x02Error al agr" +
+	"egar el servidor de acceso a la institución. URL del servidor: '%[1]s'" +
+	"\x02No se pudo añadir un servidor de internet seguro con ID de organizac" +
+	"ión: '%[1]s'\x02No se pudo añadir un servidor con URL: '%[1]s'\x02La ent" +
+	"rada: '%[1]s' no es una URL válida\x02Error al conectar con el servidor:" +
+	" '%[1]s'\x02Error al obtener una configuración VPN para el servidor: '%[" +
+	"1]s'\x02No se ha podido obtener la lista de las organizaciones\x02Error " +
+	"al obtener la lista de los servidores\x02Se ha alcanzado el tiempo de es" +
+	"pera para conectar con la URL: %[1]s\x02%[1]s. La causa del error es: %[" +
+	"2]s."
 
 var frIndex = []uint32{ // 14 elements
 	0x00000000, 0x000000a0, 0x0000010e, 0x00000130,
@@ -199,4 +208,4 @@ var ukIndex = []uint32{ // 14 elements
 
 const ukData string = ""
 
-// Total table size 4452 bytes (4KiB); checksum: EADB3284
+// Total table size 5022 bytes (4KiB); checksum: 307B5736

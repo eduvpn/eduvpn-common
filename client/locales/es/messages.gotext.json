@@ -4,7 +4,7 @@
         {
             "id": "Failed to add an institute access server with URL: '{Identifier}'",
             "message": "Failed to add an institute access server with URL: '{Identifier}'",
-            "translation": "",
+            "translation": "Error al agregar el servidor de acceso a la institución. URL del servidor: '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -19,7 +19,7 @@
         {
             "id": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
             "message": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
-            "translation": "",
+            "translation": "No se pudo añadir un servidor de internet seguro con ID de organización: '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -34,7 +34,7 @@
         {
             "id": "Failed to add a server with URL: '{Identifier}'",
             "message": "Failed to add a server with URL: '{Identifier}'",
-            "translation": "",
+            "translation": "No se pudo añadir un servidor con URL: '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -49,7 +49,7 @@
         {
             "id": "The input: '{Identifier}' is not a valid URL",
             "message": "The input: '{Identifier}' is not a valid URL",
-            "translation": "",
+            "translation": "La entrada: '{Identifier}' no es una URL válida",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -94,7 +94,7 @@
         {
             "id": "Failed to connect to server: '{Identifier}'",
             "message": "Failed to connect to server: '{Identifier}'",
-            "translation": "",
+            "translation": "Error al conectar con el servidor: '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -109,7 +109,7 @@
         {
             "id": "Failed to obtain a VPN configuration for server: '{Identifier}'",
             "message": "Failed to obtain a VPN configuration for server: '{Identifier}'",
-            "translation": "",
+            "translation": "Error al obtener una configuración VPN para el servidor: '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -124,17 +124,17 @@
         {
             "id": "Failed to obtain the list of organizations",
             "message": "Failed to obtain the list of organizations",
-            "translation": ""
+            "translation": "No se ha podido obtener la lista de las organizaciones"
         },
         {
             "id": "Failed to obtain the list of servers",
             "message": "Failed to obtain the list of servers",
-            "translation": ""
+            "translation": "Error al obtener la lista de los servidores"
         },
         {
             "id": "Timeout reached contacting URL: '{URL}'",
             "message": "Timeout reached contacting URL: '{URL}'",
-            "translation": "",
+            "translation": "Se ha alcanzado el tiempo de espera para conectar con la URL: {URL}",
             "placeholders": [
                 {
                     "id": "URL",
@@ -149,7 +149,7 @@
         {
             "id": "{Msg}. The cause of the error is: {Error}.",
             "message": "{Msg}. The cause of the error is: {Error}.",
-            "translation": "",
+            "translation": "{Msg}. La causa del error es: {Error}.",
             "placeholders": [
                 {
                     "id": "Msg",
