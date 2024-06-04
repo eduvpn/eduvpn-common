@@ -162,7 +162,8 @@ func newFSM(
 		},
 		StateDisconnected: FSMState{
 			Transitions: []FSMTransition{
-				{To: StateGettingConfig, Description: "Connect again"},
+				{To: StateConnecting, Description: "Connect with existing config"},
+				{To: StateGettingConfig, Description: "Connect with a new config"},
 				{To: StateOAuthStarted, Description: "Renew"},
 			},
 		},
