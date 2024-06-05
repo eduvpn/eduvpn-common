@@ -15,9 +15,11 @@ RUN CGO_ENABLED=1 go build -buildvcs=false -o lib/linux/arm64/libeduvpn_common-$
 
 WORKDIR /pip/eduvpn-common-$COMMONVERSION/wrappers/python
 
-RUN ./setup.py bdist_wheel --exports-lib-path="../../lib"
+RUN python3 -m pip install build
+RUN install ../../lib/linux/arm64/libeduvpn_common-$COMMONVERSION.so -Dt eduvpn_common/lib
+RUN python3 -m build --sdist --wheel .
 
-RUN auditwheel repair dist/*
+RUN auditwheel repair dist/*.whl
 
 RUN mkdir /wheelhouse
 RUN cp -r wheelhouse/* /wheelhouse
