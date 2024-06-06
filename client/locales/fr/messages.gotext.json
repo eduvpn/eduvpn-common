@@ -134,7 +134,7 @@
         {
             "id": "Timeout reached contacting URL: '{URL}'",
             "message": "Timeout reached contacting URL: '{URL}'",
-            "translation": "",
+            "translation": "Délai maximal atteint pour contacter l'URL : {URL}",
             "placeholders": [
                 {
                     "id": "URL",
@@ -149,7 +149,7 @@
         {
             "id": "{Msg}. The cause of the error is: {Error}.",
             "message": "{Msg}. The cause of the error is: {Error}.",
-            "translation": "",
+            "translation": "{Msg}. La cause de cette erreur est : {Error}.",
             "placeholders": [
                 {
                     "id": "Msg",
