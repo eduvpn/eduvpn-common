@@ -34,6 +34,7 @@ func init() {
 		"fr": &dictionary{index: frIndex, data: frData},
 		"it": &dictionary{index: itIndex, data: itData},
 		"nl": &dictionary{index: nlIndex, data: nlData},
+		"pt": &dictionary{index: ptIndex, data: ptData},
 		"sl": &dictionary{index: slIndex, data: slData},
 		"uk": &dictionary{index: ukIndex, data: ukData},
 	}
@@ -178,6 +179,15 @@ const nlData string = "" + // Size: 847 bytes
 	"\x02Er is een time-out opgetreden voor URL: '%[1]s'\x02%[1]s. The oorzaa" +
 	"k van de error is: %[2]s."
 
+var ptIndex = []uint32{ // 14 elements
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000,
+} // Size: 80 bytes
+
+const ptData string = ""
+
 var slIndex = []uint32{ // 14 elements
 	0x00000000, 0x0000008b, 0x000000e6, 0x00000104,
 	0x00000154, 0x0000019d, 0x000001d0, 0x000001ed,
@@ -208,4 +218,4 @@ var ukIndex = []uint32{ // 14 elements
 
 const ukData string = ""
 
-// Total table size 5022 bytes (4KiB); checksum: 307B5736
+// Total table size 5102 bytes (4KiB); checksum: 4128D89D

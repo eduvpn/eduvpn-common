@@ -1,0 +1,178 @@
+{
+    "language": "pt",
+    "messages": [
+        {
+            "id": "Failed to add an institute access server with URL: '{Identifier}'",
+            "message": "Failed to add an institute access server with URL: '{Identifier}'",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ]
+        },
+        {
+            "id": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
+            "message": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ]
+        },
+        {
+            "id": "Failed to add a server with URL: '{Identifier}'",
+            "message": "Failed to add a server with URL: '{Identifier}'",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ]
+        },
+        {
+            "id": "The input: '{Identifier}' is not a valid URL",
+            "message": "The input: '{Identifier}' is not a valid URL",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ]
+        },
+        {
+            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
+            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ]
+        },
+        {
+            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
+            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ]
+        },
+        {
+            "id": "Failed to connect to server: '{Identifier}'",
+            "message": "Failed to connect to server: '{Identifier}'",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ]
+        },
+        {
+            "id": "Failed to obtain a VPN configuration for server: '{Identifier}'",
+            "message": "Failed to obtain a VPN configuration for server: '{Identifier}'",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Identifier",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "identifier"
+                }
+            ]
+        },
+        {
+            "id": "Failed to obtain the list of organizations",
+            "message": "Failed to obtain the list of organizations",
+            "translation": ""
+        },
+        {
+            "id": "Failed to obtain the list of servers",
+            "message": "Failed to obtain the list of servers",
+            "translation": ""
+        },
+        {
+            "id": "Timeout reached contacting URL: '{URL}'",
+            "message": "Timeout reached contacting URL: '{URL}'",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "URL",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "tErr.URL"
+                }
+            ]
+        },
+        {
+            "id": "{Msg}. The cause of the error is: {Error}.",
+            "message": "{Msg}. The cause of the error is: {Error}.",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Msg",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "msg"
+                },
+                {
+                    "id": "Error",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "e.wrapped.Error()"
+                }
+            ]
+        },
+        {
+            "id": "An internal error occurred",
+            "message": "An internal error occurred",
+            "translation": ""
+        }
+    ]
+}
