@@ -1,3 +1,7 @@
+# 2.0.1 (2024-06-06)
+* Discovery: Updates regarding the internal handling of the discovery organization list cache
+* Translations: Update from weblate
+
 # 2.0.0 (2024-06-04)
 * Minimise exposed discovery to the client and add search by giving a second argument to DiscoServers or DiscoOrganizations with the search query:
   - organization list globally changes:
