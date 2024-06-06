@@ -211,6 +211,7 @@ func (c *Client) AuthDone(id string, t srvtypes.Type) {
 		log.Logger.Debugf("unhandled auth done main transition: %v", err)
 	}
 	c.MarkOrganizationsExpired(t)
+	c.TrySave()
 }
 
 // TokensUpdated is called when tokens are updated
@@ -304,15 +305,21 @@ func (c *Client) locationCallback(ck *cookie.Cookie, orgID string) error {
 		return err
 	}
 	srv.CountryCode = loc
+	c.TrySave()
 	return nil
 }
 
 // TrySave tries to save the internal state file
 // If an error occurs it logs it
 func (c *Client) TrySave() {
+	log.Logger.Debugf("saving state file")
+	if c.cfg == nil {
+		log.Logger.Warningf("no state file to save")
+		return
+	}
 	err := c.cfg.Save()
 	if err != nil {
-		log.Logger.Warningf("failed to save configuration: %v", err)
+		log.Logger.Warningf("failed to save state file: %v", err)
 	}
 }
 
@@ -400,6 +407,7 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 			// go back to the previous state if an error occurred
 			c.FSM.GoTransition(previousState) //nolint:errcheck
 		}
+		c.TrySave()
 	}()
 
 	identifier, err = c.convertIdentifier(identifier, _type)
@@ -462,6 +470,7 @@ func (c *Client) RemoveServer(identifier string, _type srvtypes.Type) (err error
 		return i18nerr.WrapInternalf(err, "Failed to remove server: '%s'", identifier)
 	}
 	c.MarkOrganizationsExpired(_type)
+	c.TrySave()
 	return nil
 }
 
@@ -481,6 +490,7 @@ func (c *Client) SetProfileID(pID string) error {
 		return i18nerr.WrapInternalf(err, "Failed to set the profile ID: '%s'", pID)
 	}
 	srv.Profiles.Current = pID
+	c.TrySave()
 	return nil
 }
 
@@ -507,6 +517,7 @@ func (c *Client) retrieveTokens(sid string, t srvtypes.Type) (*eduoauth.Token, e
 
 // Cleanup cleans up the VPN connection by sending a /disconnect
 func (c *Client) Cleanup(ck *cookie.Cookie) error {
+	defer c.TrySave()
 	// cleanup proxyguard
 	cerr := c.proxy.Cancel()
 	if cerr != nil {
@@ -543,6 +554,7 @@ func (c *Client) SetSecureLocation(orgID string, countryCode string) error {
 		return i18nerr.WrapInternalf(err, "Failed to get the secure internet server with id: '%s' for setting a location", orgID)
 	}
 	srv.CountryCode = countryCode
+	defer c.TrySave()
 
 	// no cached location profiles
 	if srv.LocationProfiles == nil {
