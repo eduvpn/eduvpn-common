@@ -4,7 +4,7 @@
         {
             "id": "Failed to add an institute access server with URL: '{Identifier}'",
             "message": "Failed to add an institute access server with URL: '{Identifier}'",
-            "translation": "",
+            "translation": "Kunne ikke tilføje en server for institutadgang med URL’en '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -19,7 +19,7 @@
         {
             "id": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
             "message": "Failed to add a secure internet server with organisation ID: '{Identifier}'",
-            "translation": "",
+            "translation": "Kunne ikke tilføje en server for sikkert internet med organisations-ID’et '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -34,7 +34,7 @@
         {
             "id": "Failed to add a server with URL: '{Identifier}'",
             "message": "Failed to add a server with URL: '{Identifier}'",
-            "translation": "",
+            "translation": "Kunne ikke tilføje en server med URL’en '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -49,7 +49,7 @@
         {
             "id": "The input: '{Identifier}' is not a valid URL",
             "message": "The input: '{Identifier}' is not a valid URL",
-            "translation": "",
+            "translation": "Inputtet '{Identifier}' er altså ikke nogen gyldig URL",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -64,7 +64,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
-            "translation": "",
+            "translation": "Klienten forsøgte at forbinde automatisk til VPN-serveren '{Identifier}, men dét kræver din fornyede godkendelse. Forbind venligst manuelt.",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -79,7 +79,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but the operation failed to complete",
-            "translation": "",
+            "translation": "Klienten forsøgte at forbinde til VPN-serveren '{Identifier}', men forsøget kunne ikke fuldføres",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -94,7 +94,7 @@
         {
             "id": "Failed to connect to server: '{Identifier}'",
             "message": "Failed to connect to server: '{Identifier}'",
-            "translation": "",
+            "translation": "Kunne ikke forbinde til serveren '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -109,7 +109,7 @@
         {
             "id": "Failed to obtain a VPN configuration for server: '{Identifier}'",
             "message": "Failed to obtain a VPN configuration for server: '{Identifier}'",
-            "translation": "",
+            "translation": "Kunne ikke få en VPN-konfiguration for serven '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -124,17 +124,17 @@
         {
             "id": "Failed to obtain the list of organizations",
             "message": "Failed to obtain the list of organizations",
-            "translation": ""
+            "translation": "Kunne ikke få fat i listen over organisationer"
         },
         {
             "id": "Failed to obtain the list of servers",
             "message": "Failed to obtain the list of servers",
-            "translation": ""
+            "translation": "Kunne ikke få fat i listen af servere"
         },
         {
             "id": "Timeout reached contacting URL: '{URL}'",
             "message": "Timeout reached contacting URL: '{URL}'",
-            "translation": "",
+            "translation": "Timeout i forsøget på at tilgå URL’en '{URL}'",
             "placeholders": [
                 {
                     "id": "URL",
@@ -149,7 +149,7 @@
         {
             "id": "{Msg}. The cause of the error is: {Error}.",
             "message": "{Msg}. The cause of the error is: {Error}.",
-            "translation": "",
+            "translation": "{Msg}. Fejlen skyldes: {Error}.",
             "placeholders": [
                 {
                     "id": "Msg",
@@ -172,7 +172,7 @@
         {
             "id": "An internal error occurred",
             "message": "An internal error occurred",
-            "translation": ""
+            "translation": "Der skete en intern fejl"
         }
     ]
 }
