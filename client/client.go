@@ -55,6 +55,20 @@ type Client struct {
 	mu sync.Mutex
 }
 
+// MarkOrganizationsExpired marks the discovery organization list as expired
+// it's a no-op if the type `t` is not secure internet
+// or if discovery is nil
+func (c *Client) MarkOrganizationsExpired(t srvtypes.Type) {
+	if t != srvtypes.TypeSecureInternet {
+		return
+	}
+	disco := c.cfg.Discovery()
+	if disco == nil {
+		return
+	}
+	disco.MarkOrganizationsExpired()
+}
+
 // GettingConfig is defined here to satisfy the server.Callbacks interface
 // It is called when internally we are getting a config
 // We go to the GettingConfig state
@@ -196,6 +210,7 @@ func (c *Client) AuthDone(id string, t srvtypes.Type) {
 	if err != nil {
 		log.Logger.Debugf("unhandled auth done main transition: %v", err)
 	}
+	c.MarkOrganizationsExpired(t)
 }
 
 // TokensUpdated is called when tokens are updated
@@ -446,6 +461,7 @@ func (c *Client) RemoveServer(identifier string, _type srvtypes.Type) (err error
 	if err != nil {
 		return i18nerr.WrapInternalf(err, "Failed to remove server: '%s'", identifier)
 	}
+	c.MarkOrganizationsExpired(_type)
 	return nil
 }
 

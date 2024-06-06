@@ -25,10 +25,6 @@ func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, org
 	}
 	dorg, dsrv, err := disco.SecureHomeArgs(orgID)
 	if err != nil {
-		// We mark the organizations as expired because we got an error
-		// Note that in the docs it states that it only should happen when the Org ID doesn't exist
-		// However, this is nice as well because it also catches the error where the SecureInternetHome server is not found
-		disco.MarkOrganizationsExpired()
 		return err
 	}
 
