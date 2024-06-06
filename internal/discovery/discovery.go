@@ -285,10 +285,11 @@ func (discovery *Discovery) previousServers() (*Servers, error) {
 }
 
 // Organizations returns the discovery organizations
+// The second return value is a boolean that indicates whether a fresh list was updated internally
 // If there was an error, a cached copy is returned if available.
-func (discovery *Discovery) Organizations(ctx context.Context) (*Organizations, error) {
+func (discovery *Discovery) Organizations(ctx context.Context) (*Organizations, bool, error) {
 	if !discovery.DetermineOrganizationsUpdate() {
-		return &discovery.OrganizationList, nil
+		return &discovery.OrganizationList, false, nil
 	}
 	file := "organization_list.json"
 	err := discovery.file(ctx, file, discovery.OrganizationList.Version, &discovery.OrganizationList)
@@ -298,30 +299,30 @@ func (discovery *Discovery) Organizations(ctx context.Context) (*Organizations, 
 		if perr != nil {
 			log.Logger.Warningf("failed to get previous discovery organizations: %v", perr)
 		}
-		return orgs, err
+		return orgs, false, err
 	}
 	discovery.OrganizationList.Timestamp = time.Now()
-	return &discovery.OrganizationList, nil
+	return &discovery.OrganizationList, true, nil
 }
 
 // Servers returns the discovery servers
+// The second return value is a boolean that indicates whether a fresh list was updated internally
 // If there was an error, a cached copy is returned if available.
-func (discovery *Discovery) Servers(ctx context.Context) (*Servers, error) {
+func (discovery *Discovery) Servers(ctx context.Context) (*Servers, bool, error) {
 	if !discovery.DetermineServersUpdate() {
-		return &discovery.ServerList, nil
+		return &discovery.ServerList, false, nil
 	}
 	file := "server_list.json"
 	err := discovery.file(ctx, file, discovery.ServerList.Version, &discovery.ServerList)
 	if err != nil {
 		// Return previous with an error
-		// TODO: Log here if we fail to get previous
 		srvs, perr := discovery.previousServers()
 		if perr != nil {
 			log.Logger.Warningf("failed to get previous discovery servers: %v", perr)
 		}
-		return srvs, err
+		return srvs, false, err
 	}
 	// Update servers timestamp
 	discovery.ServerList.Timestamp = time.Now()
-	return &discovery.ServerList, nil
+	return &discovery.ServerList, true, nil
 }
