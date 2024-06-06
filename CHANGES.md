@@ -1,3 +1,7 @@
+# 2.0.2 (2024-06-25)
+* Client: More frequent state file saving which helps forceful closes of a client
+* Config: Implement atomic file writes
+
 # 2.0.1 (2024-06-06)
 * Discovery: Updates regarding the internal handling of the discovery organization list cache
 * Translations: Update from weblate
