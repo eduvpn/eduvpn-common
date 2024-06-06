@@ -24,7 +24,10 @@ func (c *Client) DiscoOrganizations(ck *cookie.Cookie, search string) (*discotyp
 		return nil, i18nerr.NewInternal("Server/organization discovery with this client ID is not supported")
 	}
 
-	orgs, err := c.cfg.Discovery().Organizations(ck.Context())
+	orgs, fresh, err := c.cfg.Discovery().Organizations(ck.Context())
+	if fresh {
+		defer c.TrySave()
+	}
 	if err != nil {
 		err = i18nerr.Wrap(err, "Failed to obtain the list of organizations")
 	}
@@ -67,7 +70,10 @@ func (c *Client) DiscoServers(ck *cookie.Cookie, search string) (*discotypes.Ser
 		return nil, i18nerr.NewInternal("Server/organization discovery with this client ID is not supported")
 	}
 
-	servs, err := c.cfg.Discovery().Servers(ck.Context())
+	servs, fresh, err := c.cfg.Discovery().Servers(ck.Context())
+	if fresh {
+		defer c.TrySave()
+	}
 	if err != nil {
 		err = i18nerr.Wrap(err, "Failed to obtain the list of servers")
 	}
