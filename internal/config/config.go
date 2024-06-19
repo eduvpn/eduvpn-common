@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/eduvpn/eduvpn-common/internal/config/atomicfile"
 	"github.com/eduvpn/eduvpn-common/internal/config/v1"
 	"github.com/eduvpn/eduvpn-common/internal/config/v2"
 	"github.com/eduvpn/eduvpn-common/internal/discovery"
@@ -43,7 +44,7 @@ func (c *Config) Save() error {
 	if err != nil {
 		return err
 	}
-	if err = os.WriteFile(c.filename(), cfg, 0o600); err != nil {
+	if err = atomicfile.WriteFile(c.filename(), cfg, 0o600); err != nil {
 		return err
 	}
 	return nil
