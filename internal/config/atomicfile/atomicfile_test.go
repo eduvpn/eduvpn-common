@@ -37,7 +37,7 @@ func TestDoesNotOverwriteIrregularFiles(t *testing.T) {
 	}
 	defer l.Close()
 
-	err = WriteFile(path, []byte("hello"), 0644)
+	err = WriteFile(path, []byte("hello"), 0o644)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
