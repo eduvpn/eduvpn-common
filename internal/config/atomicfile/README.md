@@ -2,6 +2,8 @@
 
 This package was copied from: https://github.com/tailscale/tailscale/blob/21460a5b14e9fb883fedd6071ff53729ed68370c/atomicfile
 
+We only did some tiny formatting change.
+
 # License:
 
 ```
