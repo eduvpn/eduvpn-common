@@ -23,12 +23,42 @@ func TestServers(t *testing.T) {
 	}
 	d := &Discovery{httpClient: c}
 	// get servers
-	s1, fresh, err := d.Servers(context.Background())
+	_, fresh, err := d.Servers(context.Background())
 	if !fresh {
 		t.Fatalf("Did not obtain the server list fresh")
 	}
 	if err != nil {
 		t.Fatalf("Failed getting servers: %v", err)
+	}
+
+	// force expired
+	d.ServerList.Timestamp = time.Now().Add(-1 * time.Hour)
+
+	// override the last server with a keyword list
+	// and make sure a new fetch doesn't copy over the keyword list
+	// to the last entry
+	d.ServerList.List[len(d.ServerList.List)-1] = Server{
+		Server: discotypes.Server{
+			BaseURL: "https://example.org/",
+			DisplayName: map[string]string{
+				"en": "example",
+			},
+			Type: "institute_access",
+		},
+		KeywordList: map[string]string{
+			"en": "test bla",
+		},
+		SupportContact: []string{"mailto:test@example.org"},
+	}
+	s1, fresh, err := d.Servers(context.Background())
+	if !fresh {
+		t.Fatalf("Did not obtain the server list fresh after inserting a mock entry and faking expiry")
+	}
+	if err != nil {
+		t.Fatalf("Failed getting servers after inserting a mock entry: %v", err)
+	}
+	if kws := s1.List[len(s1.List)-1].KeywordList; kws != nil {
+		t.Fatalf("KeywordList is not nil when getting a fresh server list after inserting a mock entry: %v", kws)
 	}
 
 	// Shutdown the server
@@ -75,7 +105,7 @@ func TestOrganizations(t *testing.T) {
 	}
 	d := &Discovery{httpClient: c}
 	// get servers
-	s1, fresh, err := d.Organizations(context.Background())
+	_, fresh, err := d.Organizations(context.Background())
 	if !fresh {
 		t.Fatalf("The organization list was not obtained fresh")
 	}
@@ -84,6 +114,35 @@ func TestOrganizations(t *testing.T) {
 	}
 	if !fresh {
 		t.Fatalf("Did not get a fresh organization list")
+	}
+
+	// force expired
+	d.OrganizationList.Timestamp = time.Now().Add(-4 * time.Hour)
+
+	// override the last organization with a keyword list
+	// and make sure a new fetch doesn't copy over the keyword list
+	// to the last entry
+	d.OrganizationList.List[len(d.OrganizationList.List)-1] = Organization{
+		Organization: discotypes.Organization{
+			DisplayName: map[string]string{
+				"en": "example",
+			},
+			OrgID: "example_orgid",
+		},
+		SecureInternetHome: "example.org",
+		KeywordList: map[string]string{
+			"en": "test bla",
+		},
+	}
+	s1, fresh, err := d.Organizations(context.Background())
+	if !fresh {
+		t.Fatalf("Did not obtain the organization list fresh after inserting a mock entry and faking expiry")
+	}
+	if err != nil {
+		t.Fatalf("Failed getting organizations after inserting a mock entry: %v", err)
+	}
+	if kws := s1.List[len(s1.List)-1].KeywordList; kws != nil {
+		t.Fatalf("KeywordList is not nil when getting a fresh organization list after inserting a mock entry: %v", kws)
 	}
 
 	// Shutdown the server
