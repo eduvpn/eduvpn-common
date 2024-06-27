@@ -292,14 +292,21 @@ func (discovery *Discovery) Organizations(ctx context.Context) (*Organizations, 
 		return &discovery.OrganizationList, false, nil
 	}
 	file := "organization_list.json"
-	err := discovery.file(ctx, file, discovery.OrganizationList.Version, &discovery.OrganizationList)
+	var jsonDecode Organizations
+	err := discovery.file(ctx, file, discovery.OrganizationList.Version, &jsonDecode)
 	if err != nil {
+		log.Logger.Warningf("failed to get fresh organizations: %v", err)
 		// Return previous with an error
 		orgs, perr := discovery.previousOrganizations()
 		if perr != nil {
 			log.Logger.Warningf("failed to get previous discovery organizations: %v", perr)
 		}
 		return orgs, false, err
+	}
+	if len(jsonDecode.List) == 0 {
+		log.Logger.Warningf("fresh organization list is empty")
+	} else {
+		discovery.OrganizationList = jsonDecode
 	}
 	discovery.OrganizationList.Timestamp = time.Now()
 	return &discovery.OrganizationList, true, nil
@@ -313,8 +320,10 @@ func (discovery *Discovery) Servers(ctx context.Context) (*Servers, bool, error)
 		return &discovery.ServerList, false, nil
 	}
 	file := "server_list.json"
-	err := discovery.file(ctx, file, discovery.ServerList.Version, &discovery.ServerList)
+	var jsonDecode Servers
+	err := discovery.file(ctx, file, discovery.ServerList.Version, &jsonDecode)
 	if err != nil {
+		log.Logger.Warningf("failed to get fresh servers: %v", err)
 		// Return previous with an error
 		srvs, perr := discovery.previousServers()
 		if perr != nil {
@@ -322,7 +331,11 @@ func (discovery *Discovery) Servers(ctx context.Context) (*Servers, bool, error)
 		}
 		return srvs, false, err
 	}
-	// Update servers timestamp
+	if len(jsonDecode.List) == 0 {
+		log.Logger.Warningf("fresh server list is empty")
+	} else {
+		discovery.ServerList = jsonDecode
+	}
 	discovery.ServerList.Timestamp = time.Now()
 	return &discovery.ServerList, true, nil
 }
