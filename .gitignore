@@ -1,0 +1,10 @@
+.vs/
+*.iml
+.idea/
+.DS_Store
+
+# locales
+/client/locales/*/out.gotext.json
+/docs/book/
+/cmd/cli/configs/
+/ci/docker/selfsigned/
