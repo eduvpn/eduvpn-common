@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := build
-.PHONY: build fmt cli clean coverage
+.PHONY: build fmt lint cli test clean coverage sloc
 
 
 VERSION := $(shell grep -o 'const Version = "[^"]*' internal/version/version.go | cut -d '"' -f 2)
@@ -27,3 +27,6 @@ clean:
 coverage:
 	go test -v -coverpkg=./... -coverprofile=common.cov ./...
 	go tool cover -func common.cov
+
+sloc:
+	tokei --exclude "*_test.go" -t=Go . || cloc --include-ext=go --not-match-f='_test.go' .
