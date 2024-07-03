@@ -166,6 +166,13 @@ func New(name string, version string, directory string, stateCallback func(FSMSt
 
 	// set the servers
 	c.Servers = server.NewServers(c.Name, c, c.cfg.V2)
+
+	// the first fetch for the servers should be fresh
+	c.cfg.Discovery().MarkServersExpired()
+
+	if !c.cfg.HasSecureInternet() {
+		c.cfg.Discovery().MarkOrganizationsExpired()
+	}
 	return c, nil
 }
 
@@ -423,22 +430,30 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 	if err != nil {
 		log.Logger.Debugf("no tokens found for server: '%s', with error: '%v'", identifier, err)
 	}
+
+	ctx := ck.Context()
+	disco := c.cfg.Discovery()
+	// make sure the servers are fetched fresh
+	disco.Servers(ctx)
+
 	var srv *server.Server
 	switch _type {
 	case srvtypes.TypeInstituteAccess:
-		srv, err = c.Servers.GetInstitute(ck.Context(), identifier, c.cfg.Discovery(), tok, startup)
+		srv, err = c.Servers.GetInstitute(ctx, identifier, disco, tok, startup)
 	case srvtypes.TypeSecureInternet:
-		srv, err = c.Servers.GetSecure(ck.Context(), identifier, c.cfg.Discovery(), tok, startup)
+		// make sure the organizations are fetched if they need an update
+		disco.Organizations(ctx)
+		srv, err = c.Servers.GetSecure(ctx, identifier, disco, tok, startup)
 
 		var cErr *discovery.ErrCountryNotFound
 		if errors.As(err, &cErr) {
 			err = c.locationCallback(ck, identifier)
 			if err == nil {
-				srv, err = c.Servers.GetSecure(ck.Context(), identifier, c.cfg.Discovery(), tok, startup)
+				srv, err = c.Servers.GetSecure(ctx, identifier, disco, tok, startup)
 			}
 		}
 	case srvtypes.TypeCustom:
-		srv, err = c.Servers.GetCustom(ck.Context(), identifier, tok, startup)
+		srv, err = c.Servers.GetCustom(ctx, identifier, tok, startup)
 	default:
 		err = i18nerr.NewInternalf("Server type: '%v' is not valid to get a config for", _type)
 	}

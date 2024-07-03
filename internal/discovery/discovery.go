@@ -147,6 +147,12 @@ func (discovery *Discovery) MarkOrganizationsExpired() {
 	discovery.OrganizationList.Timestamp = time.Time{}
 }
 
+// MarkServersExpired marks the servers as expired
+func (discovery *Discovery) MarkServersExpired() {
+	// Re-initialize the timestamp to zero
+	discovery.ServerList.Timestamp = time.Time{}
+}
+
 // DetermineOrganizationsUpdate returns a boolean indicating whether or not the discovery organizations should be updated
 // https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md
 // - [IMPLEMENTED] on "first launch" when offering the search for "Institute Access" and "Organizations";

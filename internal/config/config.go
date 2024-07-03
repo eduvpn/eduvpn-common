@@ -33,6 +33,11 @@ func (c *Config) Discovery() *discovery.Discovery {
 	return &c.V2.Discovery
 }
 
+// HasSecureInternet returns whether or not the configuration has a secure internet server
+func (c *Config) HasSecureInternet() bool {
+	return c.V2.HasSecureInternet()
+}
+
 // Save saves the state file to disk
 func (c *Config) Save() error {
 	if err := util.EnsureDirectory(c.directory); err != nil {
