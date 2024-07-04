@@ -50,12 +50,22 @@ func TestServers(t *testing.T) {
 		},
 		SupportContact: []string{"mailto:test@example.org"},
 	}
-	s1, fresh, err := d.Servers(context.Background())
-	if !fresh {
-		t.Fatalf("Did not obtain the server list fresh after inserting a mock entry and faking expiry")
+	// conditional requests: this should not be fetched fresh
+	_, fresh, err = d.Servers(context.Background())
+	if fresh {
+		t.Fatalf("Obtained the server list fresh with conditional requests")
 	}
 	if err != nil {
 		t.Fatalf("Failed getting servers after inserting a mock entry: %v", err)
+	}
+	// mock conditional requests
+	d.ServerList.UpdateHeader = time.Time{}
+	s1, fresh, err := d.Servers(context.Background())
+	if !fresh {
+		t.Fatalf("Did not obtain the server list fresh with mocked conditional request and mocked entry")
+	}
+	if err != nil {
+		t.Fatalf("Failed getting servers after inserting a mock entry and mocking conditional request: %v", err)
 	}
 	if kws := s1.List[len(s1.List)-1].KeywordList; kws != nil {
 		t.Fatalf("KeywordList is not nil when getting a fresh server list after inserting a mock entry: %v", kws)
@@ -134,12 +144,22 @@ func TestOrganizations(t *testing.T) {
 			"en": "test bla",
 		},
 	}
-	s1, fresh, err := d.Organizations(context.Background())
-	if !fresh {
-		t.Fatalf("Did not obtain the organization list fresh after inserting a mock entry and faking expiry")
+
+	_, fresh, err = d.Organizations(context.Background())
+	if fresh {
+		t.Fatalf("Obtained the organization list fresh with conditional requests")
 	}
 	if err != nil {
 		t.Fatalf("Failed getting organizations after inserting a mock entry: %v", err)
+	}
+	// mock conditional requests
+	d.OrganizationList.UpdateHeader = time.Time{}
+	s1, fresh, err := d.Organizations(context.Background())
+	if !fresh {
+		t.Fatalf("Did not obtain the organization list fresh after inserting a mock entry, faking expiry and mocking conditional request")
+	}
+	if err != nil {
+		t.Fatalf("Failed getting organizations after inserting a mock entry and faking conditional request: %v", err)
 	}
 	if kws := s1.List[len(s1.List)-1].KeywordList; kws != nil {
 		t.Fatalf("KeywordList is not nil when getting a fresh organization list after inserting a mock entry: %v", kws)

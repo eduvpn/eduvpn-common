@@ -164,11 +164,6 @@ func (c *Client) Get(ctx context.Context, url string) (http.Header, []byte, erro
 	return c.Do(ctx, http.MethodGet, url, nil)
 }
 
-// PostWithOpts creates a Post request with optional parameters and returns the headers, body and an error.
-func (c *Client) PostWithOpts(ctx context.Context, url string, opts *OptionalParams) (http.Header, []byte, error) {
-	return c.Do(ctx, http.MethodPost, url, opts)
-}
-
 // Do sends a HTTP request using a method (e.g. GET, POST), an url and optional parameters
 // It returns the HTTP headers, the body and an error if there is one.
 func (c *Client) Do(ctx context.Context, method string, urlStr string, opts *OptionalParams) (http.Header, []byte, error) {
