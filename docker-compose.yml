@@ -1,5 +1,3 @@
-version: '3'
-
 # Common environment vars
 # These are the credentials for the portal
 # And the URI of the server

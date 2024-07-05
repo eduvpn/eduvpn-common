@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM docker.io/library/debian:bookworm
 
 # This docker image is for testing the go code with go test and the needed dependencies for selenium
 
@@ -6,14 +6,14 @@ WORKDIR /eduvpn
 
 # Dependencies
 RUN apt-get update
-RUN apt-get -y install openjdk-11-jre xvfb python3-selenium firefox-esr python3-pip wget
+RUN apt-get -y install firefox-esr python3-selenium python3-build python3-pip python3.11-venv firefox-esr wget xvfb
 
 # Install go from go.dev
 # Get
-RUN wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz -O go.tar.gz
+RUN wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz -O go.tar.gz
 
 # Verify hash
-RUN echo "d0398903a16ba2232b389fb31032ddf57cac34efda306a0eebac34f0965a0742  go.tar.gz" | sha256sum --check
+RUN echo "904b924d435eaea086515bc63235b192ea441bd8c9b198c507e85009e6e4c7f0  go.tar.gz" | sha256sum --check
 
 # Untar
 RUN tar -C /usr/local -xzf go.tar.gz
@@ -23,8 +23,8 @@ ENV PATH="/usr/local/go/bin:$PATH"
 
 # Install geckodriver and add to path
 WORKDIR /eduvpn/vendor
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz
-RUN tar xzvf geckodriver-v0.30.0-linux64.tar.gz
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz
+RUN tar xzvf geckodriver-v0.34.0-linux64.tar.gz
 ENV PATH="/eduvpn/vendor:$PATH"
 
 # Update certificates
@@ -53,7 +53,8 @@ RUN make build
 RUN make -C wrappers/python
 
 # Install python lib
-RUN pip3 install wrappers/python/dist/*.whl
+# who cares if we break the system here :^)
+RUN pip3 install --break-system-packages wrappers/python/dist/*.whl
 
 # Run the tests
 CMD ["make", "test"]

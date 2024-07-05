@@ -1,4 +1,4 @@
-FROM fedora:38
+FROM docker.io/library/fedora:40
 
 # This dockerfile was adapted from https://codeberg.og/eduvpn/deploy/src/branch/v3/deploy_fedora.sh
 # DO NOT USE THIS IN PRODUCTION, ONLY FOR TESTING
