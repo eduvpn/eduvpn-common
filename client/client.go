@@ -333,6 +333,10 @@ func (c *Client) TrySave() {
 func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.Type, ot *int64) (err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
+	if !c.hasDiscovery() && _type != srvtypes.TypeCustom {
+		return i18nerr.NewInternalf("Adding a non-custom server when the client does not use discovery is not supported, identifier: %s, type: %v", identifier, _type)
+	}
 	// we are non-interactive if oauth time is non-nil
 	ni := ot != nil
 	// If we have failed to add the server, we remove it again
@@ -404,6 +408,10 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 	defer c.mu.Unlock()
 	previousState := c.FSM.Current
 
+	if !c.hasDiscovery() && _type != srvtypes.TypeCustom {
+		return nil, i18nerr.NewInternalf("Getting a non-custom server when the client does not use discovery is not supported, identifier: %s, type: %d", identifier, _type)
+	}
+
 	defer func() {
 		if err == nil {
 			// it could be that we are not in getting config yet if we have just done authorization
@@ -432,8 +440,13 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 
 	ctx := ck.Context()
 	disco := c.cfg.Discovery()
-	// make sure the servers are fetched fresh
-	disco.Servers(ctx)
+	if _type != srvtypes.TypeCustom {
+	    // make sure the servers are fetched fresh
+	    _, _, dserverr := disco.Servers(ctx)
+	    if dserverr != nil {
+		    log.Logger.Warningf("failed to fetch server discovery when getting config: %v", dserverr)
+	    }
+	}
 
 	var srv *server.Server
 	switch _type {
@@ -441,7 +454,10 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 		srv, err = c.Servers.GetInstitute(ctx, identifier, disco, tok, startup)
 	case srvtypes.TypeSecureInternet:
 		// make sure the organizations are fetched if they need an update
-		disco.Organizations(ctx)
+		_, _, dorgerr := disco.Organizations(ctx)
+		if dorgerr != nil {
+			log.Logger.Warningf("failed to fetch organization discovery when getting config: %v", dorgerr)
+		}
 		srv, err = c.Servers.GetSecure(ctx, identifier, disco, tok, startup)
 
 		var cErr *discovery.ErrCountryNotFound
