@@ -82,6 +82,7 @@ func NewAPI(ctx context.Context, clientID string, sd ServerData, cb Callbacks, t
 			cb.TokensUpdated(sd.ID, sd.Type, tok)
 		},
 		Transport: sd.Transport,
+		UserAgent: httpw.UserAgent,
 	}
 
 	if tokens != nil {
