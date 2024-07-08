@@ -217,7 +217,6 @@ func (c *Client) AuthDone(id string, t srvtypes.Type) {
 	if err != nil {
 		log.Logger.Debugf("unhandled auth done main transition: %v", err)
 	}
-	c.MarkOrganizationsExpired(t)
 	c.TrySave()
 }
 

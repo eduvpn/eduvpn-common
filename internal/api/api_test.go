@@ -196,8 +196,8 @@ func createTestAPI(t *testing.T, tok *eduoauth.Token, gt []string, hps []test.Ha
 		Type:       server.TypeCustom,
 		BaseWK:     serv.URL,
 		BaseAuthWK: serv.URL,
-		ProcessAuth: func(in string) string {
-			return in
+		ProcessAuth: func(ctx context.Context, in string) (string, error) {
+			return in, nil
 		},
 		DisableAuthorize: false,
 		Transport:        servc.Client.Transport,
