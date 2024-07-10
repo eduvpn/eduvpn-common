@@ -186,7 +186,7 @@ func (discovery *Discovery) MarkServersExpired() {
 // DetermineOrganizationsUpdate returns a boolean indicating whether or not the discovery organizations should be updated
 // https://github.com/eduvpn/documentation/blob/v3/SERVER_DISCOVERY.md
 // - [IMPLEMENTED] on "first launch" when offering the search for "Institute Access" and "Organizations";
-// - [IMPLEMENTED in client/client.go and here] when the user tries to add new server AND the user did NOT yet choose an organization before; We cannot really differentiate between adding a new server and when the function is called at random so we have a 4 hour cache
+// - [IMPLEMENTED in client/client.go and here] when the user tries to add new server AND the user did NOT yet choose an organization before; Implemented in Register()
 // - [IMPLEMENTED in client/client.go] when the authorization for the server associated with an already chosen organization is triggered, e.g. after expiry or revocation.
 // - [IMPLEMENTED here] NOTE: when the org_id that the user chose previously is no longer available in organization_list.json the application should ask the user to choose their organization (again). This can occur for example when the organization replaced their identity provider, uses a different domain after rebranding or simply ceased to exist.
 func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
@@ -196,9 +196,7 @@ func (discovery *Discovery) DetermineOrganizationsUpdate() bool {
 	if discovery.OrganizationList.UpdateHeader.IsZero() {
 		return true
 	}
-	// 4 hour since the last update
-	upd := discovery.OrganizationList.Timestamp.Add(4 * time.Hour)
-	return !time.Now().Before(upd)
+	return false
 }
 
 // SecureLocationList returns a slice of all the available locations.
