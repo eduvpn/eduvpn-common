@@ -405,3 +405,24 @@ func (discovery *Discovery) Servers(ctx context.Context) (*Servers, bool, error)
 	}
 	return &discovery.ServerList, true, nil
 }
+
+func (discovery *Discovery) UpdateServers(other Discovery) {
+	if other.ServerList.Version >= discovery.ServerList.Version {
+		discovery.ServerList = other.ServerList
+	}
+}
+
+func (discovery *Discovery) Copy() (Discovery, error) {
+	var dest Discovery
+	b, err := json.Marshal(discovery)
+	if err != nil {
+		return dest, err
+	}
+
+	err = json.Unmarshal(b, &dest)
+	if err != nil {
+		return dest, err
+	}
+
+	return dest, nil
+}

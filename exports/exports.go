@@ -21,6 +21,7 @@ typedef long long int (*ReadRxBytes)();
 
 typedef int (*StateCB)(int oldstate, int newstate, void* data);
 
+typedef void (*RefreshList)();
 typedef void (*TokenGetter)(const char* server_id, int server_type, char* out, size_t len);
 typedef void (*TokenSetter)(const char* server_id, int server_type, const char* tokens);
 typedef void (*ProxySetup)(int fd, const char* peer_ips);
@@ -33,6 +34,10 @@ static long long int get_read_rx_bytes(ReadRxBytes read)
 static int call_callback(StateCB callback, int oldstate, int newstate, void* data)
 {
     return callback(oldstate, newstate, data);
+}
+static void call_refresh_list(RefreshList refresh)
+{
+    refresh();
 }
 static void call_token_getter(TokenGetter getter, const char* server_id, int server_type, char* out, size_t len)
 {
@@ -1022,6 +1027,28 @@ func getCookie(c C.uintptr_t) (*cookie.Cookie, error) {
 	// TODO: On first glance this might not make any sense, find a better way
 	v.H = h
 	return v, nil
+}
+
+
+// DiscoveryStartup does a discovery request in the background
+//
+// The `refresh` argument is a callback that is called when the refreshing is done
+// When this callback is thus called, the app SHOULD refresh the server list of the already configured servers
+// This DiscoveryStartup function MUST be called after calling `Register`
+//
+//export DiscoveryStartup
+func DiscoveryStartup(refresh C.RefreshList) *C.char {
+	state, stateErr := getVPNState()
+	if stateErr != nil {
+		return getCError(stateErr)
+	}
+	state.DiscoveryStartup(func() {
+		if refresh == nil {
+			return
+		}
+		C.call_refresh_list(refresh)
+	})
+	return nil
 }
 
 // SetTokenHandler sets the token getters and token setters for OAuth

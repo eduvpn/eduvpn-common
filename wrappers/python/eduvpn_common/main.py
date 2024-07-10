@@ -10,6 +10,7 @@ from eduvpn_common.types import (
     ProxyReady,
     ProxySetup,
     ReadRxBytes,
+    RefreshList,
     TokenGetter,
     TokenSetter,
     VPNStateChange,
@@ -180,12 +181,14 @@ class EduVPN(object):
 
     def get_disco_organizations(self, search="") -> str:
         orgs, _ = self.go_cookie_function(self.lib.DiscoOrganizations, search)
-        # TODO: Log error
+        # We don't log anything here as we want to return a result and we don't want to throw here
+        # we already log for errors in common
         return orgs
 
     def get_disco_servers(self, search="") -> str:
         servers, _ = self.go_cookie_function(self.lib.DiscoServers, search)
-        # TODO: Log error
+        # We don't log anything here as we want to return a result and we don't want to throw here
+        # we already log for errors in common
         return servers
 
     def get_servers(self) -> str:
@@ -297,6 +300,12 @@ class EduVPN(object):
         # And so that the Go code can move to the next state
         if location_err:
             forwardError(location_err)
+
+    def discovery_startup(self, refresh: RefreshList) -> None:
+        refresh_err = self.go_function(self.lib.DiscoveryStartup, refresh)
+
+        if refresh_err:
+            forwardError(refresh_err)
 
     def set_token_handler(self, getter: Callable, setter: Callable) -> None:
         self.token_setter = setter
