@@ -80,6 +80,7 @@ func (p *Proxy) Tunnel(ctx context.Context, peer string) error {
 	}
 	cctx, cf := context.WithCancel(ctx)
 	p.cancel = cf
+	client := *p.c
 	p.mu.Unlock()
 	defer func() {
 		p.mu.Lock()
@@ -87,7 +88,7 @@ func (p *Proxy) Tunnel(ctx context.Context, peer string) error {
 		p.mu.Unlock()
 	}()
 	// we set peer IPs to nil here as proxyguard already does a DNS request for us
-	return p.c.Tunnel(cctx, peer, nil)
+	return client.Tunnel(cctx, peer, nil)
 }
 
 // StartProxyguard starts proxyguard for proxied WireGuard connections
