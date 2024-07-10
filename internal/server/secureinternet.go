@@ -34,8 +34,10 @@ func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, org
 		BaseWK:     dsrv.BaseURL,
 		BaseAuthWK: dsrv.BaseURL,
 		ProcessAuth: func(ctx context.Context, url string) (string, error) {
-			disco.Servers(ctx)
-			disco.Organizations(ctx)
+			// the only thing we can do is log warn
+			// this is already done in the functions
+			disco.Servers(ctx) //nolint:errcheck
+			disco.Organizations(ctx) //nolint:errcheck
 			updorg, updsrv, err := disco.SecureHomeArgs(orgID)
 			if err != nil {
 				return "", err
@@ -104,10 +106,12 @@ func (s *Servers) GetSecure(ctx context.Context, orgID string, disco *discovery.
 		BaseWK:     dloc.BaseURL,
 		BaseAuthWK: dhome.BaseURL,
 		ProcessAuth: func(ctx context.Context, url string) (string, error) {
+			// the only thing we can do is log warn
+			// this is already done in the functions
 			disco.MarkServersExpired()
-			disco.Servers(ctx)
+			disco.Servers(ctx) //nolint:errcheck
 			disco.MarkOrganizationsExpired()
-			disco.Organizations(ctx)
+			disco.Organizations(ctx) //nolint:errcheck
 			updorg, updsrv, err := disco.SecureHomeArgs(orgID)
 			if err != nil {
 				return "", err

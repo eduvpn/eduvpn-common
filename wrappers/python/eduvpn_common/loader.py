@@ -8,6 +8,7 @@ from eduvpn_common.types import (
     ProxyReady,
     ProxySetup,
     ReadRxBytes,
+    RefreshList,
     TokenGetter,
     TokenSetter,
     VPNStateChange,
@@ -90,6 +91,7 @@ def initialize_functions(lib: CDLL) -> None:
         c_void_p,
     )
     lib.RenewSession.argtypes, lib.RenewSession.restype = [c_int], c_void_p
+    lib.DiscoveryStartup.argtypes, lib.DiscoveryStartup.restype = [RefreshList], c_void_p
     lib.SetTokenHandler.argtypes, lib.SetTokenHandler.restype = (
         [
             TokenGetter,
