@@ -6,9 +6,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/eduvpn/eduvpn-common/i18nerr"
 	"github.com/eduvpn/eduvpn-common/internal/discovery"
 	"github.com/eduvpn/eduvpn-common/internal/log"
-	"github.com/eduvpn/eduvpn-common/i18nerr"
 	"github.com/eduvpn/eduvpn-common/types/cookie"
 	discotypes "github.com/eduvpn/eduvpn-common/types/discovery"
 )
@@ -119,8 +119,8 @@ type DiscoManager struct {
 	disco *discovery.Discovery
 
 	cancel context.CancelFunc
-	mu sync.RWMutex
-	wait sync.WaitGroup
+	mu     sync.RWMutex
+	wait   sync.WaitGroup
 }
 
 func (m *DiscoManager) lock(write bool) {
@@ -161,7 +161,6 @@ func (m *DiscoManager) Startup(ctx context.Context, cb func()) {
 	m.cancel = cancel
 	m.wait.Add(1)
 	go func() {
-		defer m.wait.Done()
 		m.lock(false)
 		discoCopy, err := m.disco.Copy()
 		if err != nil {
@@ -175,8 +174,15 @@ func (m *DiscoManager) Startup(ctx context.Context, cb func()) {
 		m.lock(true)
 		m.disco.UpdateServers(discoCopy)
 		m.unlock(true)
+		m.wait.Done()
 
-		if cb != nil {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			if cb == nil {
+				return
+			}
 			cb()
 		}
 	}()

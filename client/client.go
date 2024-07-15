@@ -58,7 +58,21 @@ type Client struct {
 }
 
 func (c *Client) DiscoveryStartup(cb func()) {
-	c.discoMan.Startup(context.Background(), cb)
+	fcb := func() {
+		if cb == nil {
+			return
+		}
+
+		c.mu.Lock()
+		defer c.mu.Unlock()
+
+		if c.FSM.Current != StateMain {
+			return
+		}
+
+		cb()
+	}
+	c.discoMan.Startup(context.Background(), fcb)
 }
 
 // GettingConfig is defined here to satisfy the server.Callbacks interface
@@ -456,11 +470,11 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 	var disco *discovery.Discovery
 	disco, release = c.discoMan.Discovery(true)
 	if _type != srvtypes.TypeCustom {
-	    // make sure the servers are fetched fresh
-	    _, _, dserverr := disco.Servers(ctx)
-	    if dserverr != nil {
-		    log.Logger.Warningf("failed to fetch server discovery when getting config: %v", dserverr)
-	    }
+		// make sure the servers are fetched fresh
+		_, _, dserverr := disco.Servers(ctx)
+		if dserverr != nil {
+			log.Logger.Warningf("failed to fetch server discovery when getting config: %v", dserverr)
+		}
 	}
 
 	var srv *server.Server
