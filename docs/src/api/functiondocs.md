@@ -13,6 +13,7 @@ This document was automatically generated from the exports/exports.go file
     * [Deregister](#deregister)
     * [DiscoOrganizations](#discoorganizations)
     * [DiscoServers](#discoservers)
+    * [DiscoveryStartup](#discoverystartup)
     * [ExpiryTimes](#expirytimes)
     * [FreeString](#freestring)
     * [GetConfig](#getconfig)
@@ -397,6 +398,18 @@ Example Output:
              },
            ]
     	} , null
+
+## DiscoveryStartup
+Signature:
+ ```go
+func DiscoveryStartup(refresh C.RefreshList) *C.char
+```
+DiscoveryStartup does a discovery request in the background
+
+The `refresh` argument is a callback that is called when the refreshing is
+done When this callback is thus called, the app SHOULD refresh the server
+list of the already configured servers This DiscoveryStartup function MUST
+be called after calling `Register`
 
 ## ExpiryTimes
 Signature:
