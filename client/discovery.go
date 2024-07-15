@@ -25,7 +25,7 @@ func (c *Client) hasDiscovery() bool {
 func (c *Client) DiscoOrganizations(ck *cookie.Cookie, search string) (*discotypes.Organizations, error) {
 	// Not supported with Let's Connect! & govVPN
 	if !c.hasDiscovery() {
-		return nil, i18nerr.NewInternal("Server/organization discovery with this client ID is not supported")
+		return nil, i18nerr.NewInternal("Organization discovery with this client ID is not supported")
 	}
 
 	disco, release := c.discoMan.Discovery(true)
@@ -74,7 +74,7 @@ func (c *Client) DiscoOrganizations(ck *cookie.Cookie, search string) (*discotyp
 func (c *Client) DiscoServers(ck *cookie.Cookie, search string) (*discotypes.Servers, error) {
 	// Not supported with Let's Connect! & govVPN
 	if !c.hasDiscovery() {
-		return nil, i18nerr.NewInternal("Server/organization discovery with this client ID is not supported")
+		return nil, i18nerr.NewInternal("Server discovery with this client ID is not supported")
 	}
 
 	disco, release := c.discoMan.Discovery(true)
@@ -113,6 +113,30 @@ func (c *Client) DiscoServers(ck *cookie.Cookie, search string) (*discotypes.Ser
 	return &discotypes.Servers{
 		List: retServs,
 	}, err
+}
+
+func (c *Client) DiscoveryStartup(cb func()) error {
+	// Not supported with Let's Connect! & govVPN
+	if !c.hasDiscovery() {
+		return i18nerr.NewInternal("Server/organization discovery startup with this client ID is not supported")
+	}
+
+	fcb := func() {
+		if cb == nil {
+			return
+		}
+
+		c.mu.Lock()
+		defer c.mu.Unlock()
+
+		if c.FSM.Current != StateMain {
+			return
+		}
+
+		cb()
+	}
+	c.discoMan.Startup(context.Background(), fcb)
+	return nil
 }
 
 type DiscoManager struct {

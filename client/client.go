@@ -57,24 +57,6 @@ type Client struct {
 	discoMan DiscoManager
 }
 
-func (c *Client) DiscoveryStartup(cb func()) {
-	fcb := func() {
-		if cb == nil {
-			return
-		}
-
-		c.mu.Lock()
-		defer c.mu.Unlock()
-
-		if c.FSM.Current != StateMain {
-			return
-		}
-
-		cb()
-	}
-	c.discoMan.Startup(context.Background(), fcb)
-}
-
 // GettingConfig is defined here to satisfy the server.Callbacks interface
 // It is called when internally we are getting a config
 // We go to the GettingConfig state
