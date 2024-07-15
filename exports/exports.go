@@ -1029,7 +1029,6 @@ func getCookie(c C.uintptr_t) (*cookie.Cookie, error) {
 	return v, nil
 }
 
-
 // DiscoveryStartup does a discovery request in the background
 //
 // The `refresh` argument is a callback that is called when the refreshing is done
@@ -1042,13 +1041,13 @@ func DiscoveryStartup(refresh C.RefreshList) *C.char {
 	if stateErr != nil {
 		return getCError(stateErr)
 	}
-	state.DiscoveryStartup(func() {
+	startupErr := state.DiscoveryStartup(func() {
 		if refresh == nil {
 			return
 		}
 		C.call_refresh_list(refresh)
 	})
-	return nil
+	return getCError(startupErr)
 }
 
 // SetTokenHandler sets the token getters and token setters for OAuth
