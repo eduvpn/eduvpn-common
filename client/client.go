@@ -344,15 +344,15 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 
 	var release func()
 	defer func() {
-		// If we must run callbacks, go to the previous state if we're not in it
-		if !ni && !c.FSM.InState(previousState) {
-			c.FSM.GoTransition(previousState) //nolint:errcheck
-		}
 		if err == nil {
 			c.TrySave()
 		}
 		if release != nil {
 			release()
+		}
+		// If we must run callbacks, go to the previous state if we're not in it
+		if !ni && !c.FSM.InState(previousState) {
+			c.FSM.GoTransition(previousState) //nolint:errcheck
 		}
 	}()
 
@@ -420,6 +420,10 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 
 	var release func()
 	defer func() {
+		c.TrySave()
+		if release != nil {
+			release()
+		}
 		if err == nil {
 			// it could be that we are not in getting config yet if we have just done authorization
 			c.FSM.GoTransition(StateGettingConfig) //nolint:errcheck
@@ -427,10 +431,6 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 		} else if !c.FSM.InState(previousState) {
 			// go back to the previous state if an error occurred
 			c.FSM.GoTransition(previousState) //nolint:errcheck
-		}
-		c.TrySave()
-		if release != nil {
-			release()
 		}
 	}()
 
