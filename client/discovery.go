@@ -148,6 +148,7 @@ type DiscoManager struct {
 }
 
 func (m *DiscoManager) lock(write bool) {
+	log.Logger.Debugf("Locking write: %v", write)
 	if write {
 		m.mu.Lock()
 		return
@@ -156,6 +157,7 @@ func (m *DiscoManager) lock(write bool) {
 }
 
 func (m *DiscoManager) unlock(write bool) {
+	log.Logger.Debugf("Unlocking write: %v", write)
 	if write {
 		m.mu.Unlock()
 		return
@@ -164,6 +166,7 @@ func (m *DiscoManager) unlock(write bool) {
 }
 
 func (m *DiscoManager) Discovery(write bool) (*discovery.Discovery, func()) {
+	log.Logger.Debugf("Requesting discovery write: %v", write)
 	if write {
 		m.wait.Wait()
 	}
