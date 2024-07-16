@@ -636,7 +636,7 @@ func (c *Client) RenewSession(ck *cookie.Cookie) error {
 	defer release()
 	_, err = srv.ServerWithCallbacks(ck.Context(), disco, nil, false)
 	if err != nil {
-		c.FSM.GoTransition(previousState)
+		c.FSM.GoTransition(previousState) //nolint:errcheck
 		return i18nerr.WrapInternal(err, "The server was unable to be retrieved when renewing the session")
 	}
 	return nil
