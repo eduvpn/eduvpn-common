@@ -627,11 +627,16 @@ func (c *Client) RenewSession(ck *cookie.Cookie) error {
 		return i18nerr.WrapInternal(err, "The current server could not be retrieved when renewing the session")
 	}
 
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	previousState := c.FSM.Current
+
 	// getting a server with no tokens means re-authorize
 	disco, release := c.discoMan.Discovery(true)
 	defer release()
 	_, err = srv.ServerWithCallbacks(ck.Context(), disco, nil, false)
 	if err != nil {
+		c.FSM.GoTransition(previousState)
 		return i18nerr.WrapInternal(err, "The server was unable to be retrieved when renewing the session")
 	}
 	return nil
