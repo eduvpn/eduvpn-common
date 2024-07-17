@@ -77,11 +77,19 @@ func TestServer(t *testing.T) {
 	ck := cookie.NewWithContext(context.Background())
 	defer ck.Cancel() //nolint:errcheck
 	dir := t.TempDir()
+	var state *Client
 	state, err := New(
 		"org.letsconnect-vpn.app.linux",
 		"0.1.0-test",
 		dir,
 		func(old FSMStateID, new FSMStateID, data interface{}) bool {
+			// test if main server server list succeeds
+			if new == StateMain {
+				_, listErr := state.ServerList()
+				if listErr != nil {
+					t.Fatalf("Got server list error: %v", listErr)
+				}
+			}
 			go stateCallback(ck, old, new, data)
 			return true
 		},
