@@ -19,14 +19,17 @@ import (
 // `disco` are the discovery servers
 // `orgID` is the organiztaion ID
 // `ot` specifies specifies the start time OAuth was already triggered
-func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, orgID string, ot *int64) error {
+func (s *Servers) AddSecure(ctx context.Context, discom *discovery.Manager, orgID string, ot *int64) error {
 	if s.config.HasSecureInternet() {
 		return errors.New("a secure internet server already exists")
 	}
+	disco, release := discom.Discovery(false)
 	dorg, dsrv, err := disco.SecureHomeArgs(orgID)
 	if err != nil {
+		release()
 		return err
 	}
+	release()
 
 	sd := api.ServerData{
 		ID:         dorg.OrgID,
@@ -34,11 +37,13 @@ func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, org
 		BaseWK:     dsrv.BaseURL,
 		BaseAuthWK: dsrv.BaseURL,
 		ProcessAuth: func(ctx context.Context, url string) (string, error) {
+			newd, release := discom.Discovery(true)
+			defer release()
 			// the only thing we can do is log warn
 			// this is already done in the functions
-			disco.Servers(ctx) //nolint:errcheck
-			disco.Organizations(ctx) //nolint:errcheck
-			updorg, updsrv, err := disco.SecureHomeArgs(orgID)
+			newd.Servers(ctx)       //nolint:errcheck
+			newd.Organizations(ctx) //nolint:errcheck
+			updorg, updsrv, err := newd.SecureHomeArgs(orgID)
 			if err != nil {
 				return "", err
 			}
@@ -84,21 +89,25 @@ func (s *Servers) AddSecure(ctx context.Context, disco *discovery.Discovery, org
 // `disco` are the discovery servers
 // `tok` are the tokens such that the server can be found without triggering auth
 // `disableAuth` is set to true when authorization should not be triggered
-func (s *Servers) GetSecure(ctx context.Context, orgID string, disco *discovery.Discovery, tok *eduoauth.Token, disableAuth bool) (*Server, error) {
+func (s *Servers) GetSecure(ctx context.Context, orgID string, discom *discovery.Manager, tok *eduoauth.Token, disableAuth bool) (*Server, error) {
 	srv, err := s.config.GetServer(orgID, server.TypeSecureInternet)
 	if err != nil {
 		return nil, err
 	}
 
+	disco, release := discom.Discovery(false)
 	dorg, dhome, err := disco.SecureHomeArgs(orgID)
 	if err != nil {
+		release()
 		return nil, err
 	}
 
 	dloc, err := disco.ServerByCountryCode(srv.CountryCode)
 	if err != nil {
+		release()
 		return nil, err
 	}
+	release()
 
 	sd := api.ServerData{
 		ID:         dorg.OrgID,
@@ -106,13 +115,15 @@ func (s *Servers) GetSecure(ctx context.Context, orgID string, disco *discovery.
 		BaseWK:     dloc.BaseURL,
 		BaseAuthWK: dhome.BaseURL,
 		ProcessAuth: func(ctx context.Context, url string) (string, error) {
+			newd, release := discom.Discovery(true)
+			defer release()
 			// the only thing we can do is log warn
 			// this is already done in the functions
-			disco.MarkServersExpired()
-			disco.Servers(ctx) //nolint:errcheck
-			disco.MarkOrganizationsExpired()
-			disco.Organizations(ctx) //nolint:errcheck
-			updorg, updsrv, err := disco.SecureHomeArgs(orgID)
+			newd.MarkServersExpired()
+			newd.Servers(ctx) //nolint:errcheck
+			newd.MarkOrganizationsExpired()
+			newd.Organizations(ctx) //nolint:errcheck
+			updorg, updsrv, err := newd.SecureHomeArgs(orgID)
 			if err != nil {
 				return "", err
 			}

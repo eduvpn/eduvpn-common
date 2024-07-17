@@ -54,12 +54,12 @@ type CurrentServer struct {
 }
 
 // ServerWithCallbacks gets the current server as a server struct and triggers callbacks as needed
-func (cs *CurrentServer) ServerWithCallbacks(ctx context.Context, disco *discovery.Discovery, tokens *eduoauth.Token, disableAuth bool) (*Server, error) {
+func (cs *CurrentServer) ServerWithCallbacks(ctx context.Context, discom *discovery.Manager, tokens *eduoauth.Token, disableAuth bool) (*Server, error) {
 	switch cs.Key.T {
 	case srvtypes.TypeInstituteAccess:
-		return cs.srvs.GetInstitute(ctx, cs.Key.ID, disco, tokens, disableAuth)
+		return cs.srvs.GetInstitute(ctx, cs.Key.ID, discom, tokens, disableAuth)
 	case srvtypes.TypeSecureInternet:
-		return cs.srvs.GetSecure(ctx, cs.Key.ID, disco, tokens, disableAuth)
+		return cs.srvs.GetSecure(ctx, cs.Key.ID, discom, tokens, disableAuth)
 	case srvtypes.TypeCustom:
 		return cs.srvs.GetCustom(ctx, cs.Key.ID, tokens, disableAuth)
 	default:
@@ -89,7 +89,9 @@ func (s *Servers) CurrentServer() (*CurrentServer, error) {
 }
 
 // PublicCurrent gets the current server into a type that we can return to the client
-func (s *Servers) PublicCurrent(disco *discovery.Discovery) (*srvtypes.Current, error) {
+func (s *Servers) PublicCurrent(discom *discovery.Manager) (*srvtypes.Current, error) {
+	disco, release := discom.Discovery(false)
+	defer release()
 	return s.config.PublicCurrent(disco)
 }
 
