@@ -17,12 +17,15 @@ import (
 // `disco` are the discovery servers
 // `id` is the identifier for the server, the base url
 // `ot` specifies specifies the start time OAuth was already triggered
-func (s *Servers) AddInstitute(ctx context.Context, disco *discovery.Discovery, id string, ot *int64) error {
+func (s *Servers) AddInstitute(ctx context.Context, discom *discovery.Manager, id string, ot *int64) error {
 	// This is basically done to double check if the server is part of the institute access section of disco
+	disco, release := discom.Discovery(false)
 	dsrv, err := disco.ServerByURL(id, "institute_access")
 	if err != nil {
+		release()
 		return err
 	}
+	release()
 
 	sd := api.ServerData{
 		ID:         dsrv.BaseURL,
@@ -67,12 +70,15 @@ func (s *Servers) AddInstitute(ctx context.Context, disco *discovery.Discovery, 
 // `disco` are the discovery servers
 // `tok` are the tokens such that we do not have to trigger auth
 // `disableAuth` is true when auth should never be triggered
-func (s *Servers) GetInstitute(ctx context.Context, id string, disco *discovery.Discovery, tok *eduoauth.Token, disableAuth bool) (*Server, error) {
+func (s *Servers) GetInstitute(ctx context.Context, id string, discom *discovery.Manager, tok *eduoauth.Token, disableAuth bool) (*Server, error) {
+	disco, release := discom.Discovery(false)
 	// This is basically done to double check if the server is part of the institute access section of disco
 	dsrv, err := disco.ServerByURL(id, "institute_access")
 	if err != nil {
+		release()
 		return nil, err
 	}
+	release()
 
 	// Get the server from the config
 	_, err = s.config.GetServer(dsrv.BaseURL, server.TypeInstituteAccess)

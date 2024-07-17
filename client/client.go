@@ -54,7 +54,7 @@ type Client struct {
 
 	mu sync.Mutex
 
-	discoMan DiscoManager
+	discoMan *discovery.Manager
 }
 
 // GettingConfig is defined here to satisfy the server.Callbacks interface
@@ -155,7 +155,7 @@ func New(name string, version string, directory string, stateCallback func(FSMSt
 	// set the servers
 	c.Servers = server.NewServers(c.Name, c, c.cfg.V2)
 
-	c.discoMan = DiscoManager{disco: c.cfg.Discovery()}
+	c.discoMan = discovery.NewManager(c.cfg.Discovery())
 
 	if !c.hasDiscovery() {
 		return c, nil
@@ -289,8 +289,10 @@ func (c *Client) ExpiryTimes() (*srvtypes.Expiry, error) {
 	}, nil
 }
 
-func (c *Client) locationCallback(ck *cookie.Cookie, disco *discovery.Discovery, orgID string) error {
+func (c *Client) locationCallback(ck *cookie.Cookie, orgID string) error {
+	disco, release := c.discoMan.Discovery(false)
 	locs := disco.SecureLocationList()
+	release()
 	errChan := make(chan error)
 	go func() {
 		err := c.FSM.GoTransitionRequired(StateAskLocation, &srvtypes.RequiredAskTransition{
@@ -342,13 +344,9 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 	// We add the server because we can then obtain it in other callback functions
 	previousState := c.FSM.Current
 
-	var release func()
 	defer func() {
 		if err == nil {
 			c.TrySave()
-		}
-		if release != nil {
-			release()
 		}
 		// If we must run callbacks, go to the previous state if we're not in it
 		if !ni && !c.FSM.InState(previousState) {
@@ -371,16 +369,14 @@ func (c *Client) AddServer(ck *cookie.Cookie, identifier string, _type srvtypes.
 		}
 	}
 
-	var disco *discovery.Discovery
-	disco, release = c.discoMan.Discovery(true)
 	switch _type {
 	case srvtypes.TypeInstituteAccess:
-		err = c.Servers.AddInstitute(ck.Context(), disco, identifier, ot)
+		err = c.Servers.AddInstitute(ck.Context(), c.discoMan, identifier, ot)
 		if err != nil {
 			return i18nerr.Wrapf(err, "Failed to add an institute access server with URL: '%s'", identifier)
 		}
 	case srvtypes.TypeSecureInternet:
-		err = c.Servers.AddSecure(ck.Context(), disco, identifier, ot)
+		err = c.Servers.AddSecure(ck.Context(), c.discoMan, identifier, ot)
 		if err != nil {
 			return i18nerr.Wrapf(err, "Failed to add a secure internet server with organisation ID: '%s'", identifier)
 		}
@@ -418,12 +414,8 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 		return nil, i18nerr.NewInternalf("Getting a non-custom server when the client does not use discovery is not supported, identifier: %s, type: %d", identifier, _type)
 	}
 
-	var release func()
 	defer func() {
 		c.TrySave()
-		if release != nil {
-			release()
-		}
 		if err == nil {
 			// it could be that we are not in getting config yet if we have just done authorization
 			c.FSM.GoTransition(StateGettingConfig) //nolint:errcheck
@@ -449,33 +441,35 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 	}
 
 	ctx := ck.Context()
-	var disco *discovery.Discovery
-	disco, release = c.discoMan.Discovery(true)
 	if _type != srvtypes.TypeCustom {
+		disco, release := c.discoMan.Discovery(true)
 		// make sure the servers are fetched fresh
 		_, _, dserverr := disco.Servers(ctx)
 		if dserverr != nil {
 			log.Logger.Warningf("failed to fetch server discovery when getting config: %v", dserverr)
 		}
+		release()
 	}
 
 	var srv *server.Server
 	switch _type {
 	case srvtypes.TypeInstituteAccess:
-		srv, err = c.Servers.GetInstitute(ctx, identifier, disco, tok, startup)
+		srv, err = c.Servers.GetInstitute(ctx, identifier, c.discoMan, tok, startup)
 	case srvtypes.TypeSecureInternet:
+		disco, release := c.discoMan.Discovery(true)
 		// make sure the organizations are fetched if they need an update
 		_, _, dorgerr := disco.Organizations(ctx)
 		if dorgerr != nil {
 			log.Logger.Warningf("failed to fetch organization discovery when getting config: %v", dorgerr)
 		}
-		srv, err = c.Servers.GetSecure(ctx, identifier, disco, tok, startup)
+		release()
+		srv, err = c.Servers.GetSecure(ctx, identifier, c.discoMan, tok, startup)
 
 		var cErr *discovery.ErrCountryNotFound
 		if errors.As(err, &cErr) {
-			err = c.locationCallback(ck, disco, identifier)
+			err = c.locationCallback(ck, identifier)
 			if err == nil {
-				srv, err = c.Servers.GetSecure(ctx, identifier, disco, tok, startup)
+				srv, err = c.Servers.GetSecure(ctx, identifier, c.discoMan, tok, startup)
 			}
 		}
 	case srvtypes.TypeCustom:
@@ -521,10 +515,7 @@ func (c *Client) RemoveServer(identifier string, _type srvtypes.Type) (err error
 
 // CurrentServer gets the current server that is configured
 func (c *Client) CurrentServer() (*srvtypes.Current, error) {
-	// TODO: do clients call this during a write mutex?
-	disco, release := c.discoMan.Discovery(false)
-	defer release()
-	curr, err := c.Servers.PublicCurrent(disco)
+	curr, err := c.Servers.PublicCurrent(c.discoMan)
 	if err != nil {
 		return nil, i18nerr.WrapInternal(err, "The current server could not be retrieved")
 	}
@@ -579,9 +570,7 @@ func (c *Client) Cleanup(ck *cookie.Cookie) error {
 	if err != nil {
 		return i18nerr.WrapInternal(err, "No OAuth tokens were found when cleaning up the connection")
 	}
-	disco, release := c.discoMan.Discovery(true)
-	defer release()
-	auth, err := srv.ServerWithCallbacks(ck.Context(), disco, tok, true)
+	auth, err := srv.ServerWithCallbacks(ck.Context(), c.discoMan, tok, true)
 	if err != nil {
 		return i18nerr.WrapInternal(err, "The server was unable to be retrieved when cleaning up the connection")
 	}
@@ -632,9 +621,7 @@ func (c *Client) RenewSession(ck *cookie.Cookie) error {
 	previousState := c.FSM.Current
 
 	// getting a server with no tokens means re-authorize
-	disco, release := c.discoMan.Discovery(true)
-	defer release()
-	_, err = srv.ServerWithCallbacks(ck.Context(), disco, nil, false)
+	_, err = srv.ServerWithCallbacks(ck.Context(), c.discoMan, nil, false)
 	if err != nil {
 		c.FSM.GoTransition(previousState) //nolint:errcheck
 		return i18nerr.WrapInternal(err, "The server was unable to be retrieved when renewing the session")
