@@ -20,7 +20,6 @@ func NewManager(disco *Discovery) *Manager {
 }
 
 func (m *Manager) lock(write bool) {
-	log.Logger.Debugf("Locking write: %v", write)
 	if write {
 		m.mu.Lock()
 		return
@@ -29,7 +28,6 @@ func (m *Manager) lock(write bool) {
 }
 
 func (m *Manager) unlock(write bool) {
-	log.Logger.Debugf("Unlocking write: %v", write)
 	if write {
 		m.mu.Unlock()
 		return
@@ -38,7 +36,6 @@ func (m *Manager) unlock(write bool) {
 }
 
 func (m *Manager) Discovery(write bool) (*Discovery, func()) {
-	log.Logger.Debugf("Requesting discovery write: %v", write)
 	if write {
 		m.wait.Wait()
 	}
