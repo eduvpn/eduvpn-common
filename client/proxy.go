@@ -9,6 +9,7 @@ import (
 	"codeberg.org/eduVPN/proxyguard"
 
 	"github.com/eduvpn/eduvpn-common/i18nerr"
+	httpw "github.com/eduvpn/eduvpn-common/internal/http"
 	"github.com/eduvpn/eduvpn-common/internal/log"
 	"github.com/eduvpn/eduvpn-common/types/cookie"
 )
@@ -110,7 +111,8 @@ func (c *Client) StartProxyguard(ck *cookie.Cookie, listen string, tcpsp int, pe
 			}
 			gotFD(fd, string(b))
 		},
-		Ready: ready,
+		UserAgent: httpw.UserAgent,
+		Ready:     ready,
 	}
 
 	c.proxy.NewClient(&proxyc)
