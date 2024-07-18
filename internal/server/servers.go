@@ -113,6 +113,10 @@ func (s *Servers) ConnectWithCallbacks(ctx context.Context, srv *Server, pTCP bo
 	if !errors.Is(err, ErrInvalidProfile) {
 		return cfg, err
 	}
+	err = s.cb.GettingConfig()
+	if err != nil {
+		return nil, err
+	}
 	// Get a new profile from the callback
 	pr, err := s.cb.InvalidProfile(ctx, srv)
 	if err != nil {
