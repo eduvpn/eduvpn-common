@@ -8,9 +8,7 @@ from selenium.webdriver.firefox.options import Options
 
 def login_eduvpn(authURL):
     options = Options()
-    options.headless = True
-
-    # Use the firefox driver
+    options.add_argument("-headless")
     driver = webdriver.Firefox(options=options)
 
     login_oauth(driver, authURL)
@@ -23,6 +21,7 @@ def login_eduvpn(authURL):
 def login_oauth(driver, authURL):
     # Go to the oauth url and verify the title
     driver.get(authURL)
+    print(driver.title)
     assert "VPN Portal - Sign In" in driver.title
 
     # Get credentials
@@ -52,6 +51,7 @@ def login_oauth(driver, authURL):
     ).click()
 
     # Check that we have reached the approve application page
+    print(driver.title)
     assert "VPN Portal - Approve Application" in driver.title
     # Click approve
     driver.find_element(

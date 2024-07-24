@@ -12,9 +12,14 @@ import (
 
 // mockedPinger is a ping sender that always returns nil for sending
 // but returns EOF for reading
-type mockedPinger struct{}
+type mockedPinger struct{
+	cleanRead bool
+}
 
 func (mp *mockedPinger) Read(_ time.Time) error {
+	if mp.cleanRead {
+		return nil
+	}
 	return io.EOF
 }
 
@@ -43,18 +48,27 @@ func TestMonitor(t *testing.T) {
 			readRxBytes: func() (int64, error) {
 				return 0, errors.New("error test")
 			},
+			mockedPinger: func(_ string, _ int) (sender, error) {
+				return &mockedPinger{}, nil
+			},
 			wantDropped: false,
 			wantErr:     "error test",
 		},
 		// default case, not dropped
-		{},
-		// readRxBytes always returns 0
-		// still we do not want a drop because we get a pong from 127.0.0.1
+		{
+			mockedPinger: func(_ string, _ int) (sender, error) {
+				return &mockedPinger{}, nil
+			},
+		},
+		// default case where it could read a ping response, and read rx bytes always returns 0
+		// should be not dropped
 		{
 			readRxBytes: func() (int64, error) {
 				return 0, nil
 			},
-			wantDropped: false,
+			mockedPinger: func(_ string, _ int) (sender, error) {
+				return &mockedPinger{cleanRead: true}, nil
+			},
 		},
 		// readRxBytes always returns 0
 		// we want dropped as the mock pinger does nothing
@@ -74,7 +88,7 @@ func TestMonitor(t *testing.T) {
 		var counter int64
 		// some defaults
 		if c.interval == 0 {
-			c.interval = 2 * time.Second
+			c.interval = 2 * time.Millisecond
 		}
 		if c.pDropped == 0 {
 			c.pDropped = 5
@@ -94,9 +108,7 @@ func TestMonitor(t *testing.T) {
 			}
 		}
 		dcm := NewDroppedMonitor(c.interval, c.pDropped, c.readRxBytes)
-		if c.mockedPinger != nil {
-			dcm.newPinger = c.mockedPinger
-		}
+		dcm.newPinger = c.mockedPinger
 		dropped, err := dcm.Start(context.Background(), c.gateway, c.mtuSize)
 		if dropped != c.wantDropped {
 			t.Fatalf("dropped is not equal to want dropped, got: %v, want: %v", dropped, c.wantDropped)
