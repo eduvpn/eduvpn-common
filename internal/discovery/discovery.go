@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"net/http"
 	"fmt"
+	"net/http"
 	"time"
 
 	httpw "github.com/eduvpn/eduvpn-common/internal/http"
