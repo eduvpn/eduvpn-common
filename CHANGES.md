@@ -1,3 +1,20 @@
+# 2.1.0 (2024-07-25)
+* Discovery:
+  - Fetch on startup in the background with a function "DiscoveryStartup"
+  - Remove organization 4 hour expiry, fetch organization list when the client needs to authorize again
+  - Fix missing JSON fields not having empty values but having values for previous entries due to a memory re-use bug (#55). This can be noticed in e.g. the keyword list
+  - Implement conditional requests using `If-Modified-Since` request header and `Last-Modified` response header and checking on HTTP 304
+* FSM:
+  - Allow AskProfile selection after authorizing
+  - Go to previous state on renew error
+* Proxyguard integration:
+  - Fix race condition warning
+* User agent:
+  - Override ProxyGuard user agent
+  - Override eduoauth-go user agent
+* Deps:
+  - Update to latest versions
+
 # 2.0.2 (2024-06-25)
 * Client: More frequent state file saving which helps forceful closes of a client
 * Config: Implement atomic file writes
