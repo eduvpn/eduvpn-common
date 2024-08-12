@@ -4,6 +4,7 @@ This document was automatically generated from the exports/exports.go file
 - [About the API](#about-the-api)
 - [Functions](#functions)
     * [AddServer](#addserver)
+    * [CalculateGateway](#calculategateway)
     * [Cleanup](#cleanup)
     * [CookieCancel](#cookiecancel)
     * [CookieDelete](#cookiedelete)
@@ -112,6 +113,20 @@ Example Output:
       },
       "misc": false
     }
+
+## CalculateGateway
+Signature:
+ ```go
+func CalculateGateway(subnet *C.char) (*C.char, *C.char)
+```
+CalculateGateway calculates the gateway for a subnet, it can take IPv4 or
+IPv6 networks with CIDR notation as inputs and returns the gateway address
+This is useful to pass to `StartFailover`. It returns an error if it fails
+to calculate a gateway.
+
+Example Input: ```CalculateGateway("10.10.0.5/24")```
+
+Example Output: ```"10.10.0.1", null```
 
 ## Cleanup
 Signature:
@@ -854,7 +869,8 @@ WireGuard connection to OpenVPN over TCP
 
   - `c` is the cookie that is passed for cancellation. To create a cookie,
     use the `CookieNew` function
-  - `gateway` is the gateway IP of the VPN
+  - `gateway` is the gateway IP of the VPN. You MAY calculate this with the
+    `CalculateGateway` function
   - `readRxBytes` is a function that returns the current rx bytes of the VPN
     interface, this should return a `long long int` in c
 

@@ -152,6 +152,23 @@ class EduVPN(object):
         if register_err:
             forwardError(register_err)
 
+    def calculate_gateway(self, subnet: str) -> str:
+        """Calculate the gateway
+
+        :param subnet: str: The IPv4/IPv6 subnet in CIDR notation
+
+        :raises WrappedError: An error by the Go library
+        """
+        gw, gw_err = self.go_function(
+            self.lib.CalculateGateway,
+            subnet,
+        )
+
+        if gw_err:
+            forwardError(gw_err)
+
+        return gw
+
     def add_server(self, _type: ServerType, _id: str, ot: Optional[int] = None) -> None:
         """Add a server
 

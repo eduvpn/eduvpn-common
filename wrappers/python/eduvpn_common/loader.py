@@ -99,6 +99,7 @@ def initialize_functions(lib: CDLL) -> None:
         ],
         c_void_p,
     )
+    lib.CalculateGateway.argtypes, lib.CalculateGateway.restype = [c_char_p], DataError
     lib.Cleanup.argtypes, lib.Cleanup.restype = [c_int], c_void_p
     lib.SetProfileID.argtypes, lib.SetProfileID.restype = [c_char_p], c_void_p
     lib.CookieNew.argtypes, lib.CookieNew.restype = [], c_int
