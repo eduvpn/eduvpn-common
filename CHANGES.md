@@ -1,4 +1,6 @@
 # UNRELEASED
+* Docs:
+  - Cleanup function comments
 * Util:
   - Add a function to calculate the gateway address for a given IPv4/IPv6 subnet
 
