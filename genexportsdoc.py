@@ -47,7 +47,17 @@ for sec in section:
         first = False
         continue
     lines = sec.splitlines()
-    signature, doc = lines[0], "\n".join(lines[1:])
+
+    # parse multi-line function names
+    # detect end of line if we get a )
+    # hacky but works for our use case
+    signature_len = 1
+    for line in lines:
+        if not ")" in line:
+            signature_len += 1
+        else:
+            break
+    signature, doc = "\n".join(lines[:signature_len]), "\n".join(lines[signature_len:])
     body = f"Signature:\n ```go\n{signature}\n```\n{doc}"
     gen_sections.append((func_name(signature), body))
 
