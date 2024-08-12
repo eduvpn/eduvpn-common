@@ -1,3 +1,7 @@
+# UNRELEASED
+* Util:
+  - Add a function to calculate the gateway address for a given IPv4/IPv6 subnet
+
 # 2.1.0 (2024-07-25)
 * Discovery:
   - Fetch on startup in the background with a function "DiscoveryStartup"
