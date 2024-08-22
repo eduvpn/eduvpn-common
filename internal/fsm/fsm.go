@@ -3,11 +3,19 @@ package fsm
 
 import "fmt"
 
+// State represents a single node in the graph.
+type State struct {
+	// Transitions indicates which out arrows this node has
+	Transitions []Transition
+}
+
 type (
 	// StateID represents the Identifier of the state.
 	StateID int8
 	// StateIDSlice represents the list of state identifiers.
 	StateIDSlice []StateID
+	// States is the map from state identifier to the state itself
+	States map[StateID]State
 )
 
 // Len is defined here such that we can sort the slice
@@ -33,15 +41,6 @@ type Transition struct {
 	Description string
 }
 
-// States is the map from state identifier to the state itself
-type States map[StateID]State
-
-// State represents a single node in the graph.
-type State struct {
-	// Transitions indicates which out arrows this node has
-	Transitions []Transition
-}
-
 // FSM represents the total graph.
 type FSM struct {
 	// States is the map from state ID to states
@@ -57,9 +56,6 @@ type FSM struct {
 	// It takes the old state, the new state and the data and returns if this is handled by the client
 	StateCallback func(StateID, StateID, interface{}) bool
 
-	// Directory represents the path where the state graph is stored
-	Directory string
-
 	// GetStateName gets the name of a state as a string
 	GetStateName func(StateID) string
 
@@ -67,20 +63,15 @@ type FSM struct {
 	initial StateID
 }
 
-// Init initializes the state machine and sets it to the given current state.
-func (fsm *FSM) Init(
-	current StateID,
-	states States,
-	callback func(StateID, StateID, interface{}) bool,
-	directory string,
-	nameGen func(StateID) string,
-) {
-	fsm.States = states
-	fsm.Current = current
-	fsm.StateCallback = callback
-	fsm.Directory = directory
-	fsm.GetStateName = nameGen
-	fsm.initial = current
+// NewFSM creates a new finite state machine
+func NewFSM(current StateID, states States, callback func(StateID, StateID, interface{}) bool, nameGen func(StateID) string) FSM {
+	return FSM{
+		States:        states,
+		Current:       current,
+		StateCallback: callback,
+		GetStateName:  nameGen,
+		initial:       current,
+	}
 }
 
 // InState returns whether or not the state machine is in the given 'check' state.

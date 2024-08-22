@@ -91,7 +91,6 @@ func GetStateName(s FSMStateID) string {
 
 func newFSM(
 	callback func(FSMStateID, FSMStateID, interface{}) bool,
-	directory string,
 ) fsm.FSM {
 	states := FSMStates{
 		StateDeregistered: FSMState{
@@ -168,9 +167,8 @@ func newFSM(
 			},
 		},
 	}
-	returnedFSM := fsm.FSM{}
-	returnedFSM.Init(StateMain, states, callback, directory, GetStateName)
-	return returnedFSM
+
+	return fsm.NewFSM(StateMain, states, callback, GetStateName)
 }
 
 // SetState sets the state for the client FSM to `state`

@@ -145,7 +145,7 @@ func New(name string, version string, directory string, stateCallback func(FSMSt
 	http.RegisterAgent(userAgentName(name), version)
 
 	// Initialize the FSM
-	c.FSM = newFSM(stateCallback, directory)
+	c.FSM = newFSM(stateCallback)
 
 	// Debug only if given
 	c.Debug = debug
