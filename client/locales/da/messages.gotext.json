@@ -49,7 +49,7 @@
         {
             "id": "The input: '{Identifier}' is not a valid URL",
             "message": "The input: '{Identifier}' is not a valid URL",
-            "translation": "Inputtet '{Identifier}' er altså ikke nogen gyldig URL",
+            "translation": "Inputtet '{Identifier}' er ikke nogen gyldig URL",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -64,7 +64,7 @@
         {
             "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
             "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
-            "translation": "Klienten forsøgte at forbinde automatisk til VPN-serveren '{Identifier}, men dét kræver din fornyede godkendelse. Forbind venligst manuelt.",
+            "translation": "Klienten forsøgte at forbinde automatisk til VPN-serveren '{Identifier}', men dét kræver din fornyede godkendelse. Forbind venligst manuelt.",
             "placeholders": [
                 {
                     "id": "Identifier",
@@ -109,7 +109,7 @@
         {
             "id": "Failed to obtain a VPN configuration for server: '{Identifier}'",
             "message": "Failed to obtain a VPN configuration for server: '{Identifier}'",
-            "translation": "Kunne ikke få en VPN-konfiguration for serven '{Identifier}'",
+            "translation": "Kunne ikke få en VPN-konfiguration for serveren '{Identifier}'",
             "placeholders": [
                 {
                     "id": "Identifier",
