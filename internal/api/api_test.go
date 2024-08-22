@@ -177,7 +177,6 @@ func createTestAPI(t *testing.T, tok *eduoauth.Token, gt []string, hps []test.Ha
   "v": "0.0.0"
 }					
 `, listen.Addr().String()),
-			ResponseCode: 200,
 		},
 		{
 			Path:            "/test-token-endpoint",
@@ -284,7 +283,6 @@ func TestAPIInfo(t *testing.T) {
     }
 }
 `,
-				ResponseCode: 200,
 			},
 			info: &profiles.Info{
 				Info: profiles.ListInfo{
@@ -318,7 +316,6 @@ func TestAPIInfo(t *testing.T) {
     }
 }
 `,
-				ResponseCode: 200,
 			},
 			info: &profiles.Info{
 				Info: profiles.ListInfo{
@@ -386,20 +383,18 @@ func TestAPIConnect(t *testing.T) {
 	}{
 		{
 			hp: test.HandlerPath{
-				Method:       http.MethodPost,
-				Path:         "/test-api-endpoint/connect",
-				Response:     ``,
-				ResponseCode: 200,
+				Method:   http.MethodPost,
+				Path:     "/test-api-endpoint/connect",
+				Response: ``,
 			},
 			cd:  nil,
 			err: ErrNoProtocols,
 		},
 		{
 			hp: test.HandlerPath{
-				Method:       http.MethodPost,
-				Path:         "/test-api-endpoint/connect",
-				Response:     ``,
-				ResponseCode: 200,
+				Method:   http.MethodPost,
+				Path:     "/test-api-endpoint/connect",
+				Response: ``,
 			},
 			cd:     nil,
 			protos: []protocol.Protocol{protocol.Unknown},
@@ -407,10 +402,9 @@ func TestAPIConnect(t *testing.T) {
 		},
 		{
 			hp: test.HandlerPath{
-				Method:       http.MethodPost,
-				Path:         "/test-api-endpoint/connect",
-				Response:     ``,
-				ResponseCode: 200,
+				Method:   http.MethodPost,
+				Path:     "/test-api-endpoint/connect",
+				Response: ``,
 			},
 			cd:     nil,
 			protos: []protocol.Protocol{protocol.OpenVPN, protocol.WireGuard, protocol.Unknown},
