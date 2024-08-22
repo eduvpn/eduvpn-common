@@ -60,6 +60,9 @@ func NewServerWithHandles(hps []HandlerPath, listener net.Listener) *Server {
 	mux := http.NewServeMux()
 	for _, hp := range hps {
 		hp := hp
+		if hp.ResponseCode == 0 {
+			hp.ResponseCode = 200
+		}
 		mux.HandleFunc(hp.Path, hp.HandlerFunc())
 	}
 	return NewServer(mux, listener)
