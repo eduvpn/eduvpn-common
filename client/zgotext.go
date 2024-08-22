@@ -64,37 +64,45 @@ var messageKeyToIndex = map[string]int{
 
 var daIndex = []uint32{ // 14 elements
 	0x00000000, 0x00000046, 0x0000009b, 0x000000ce,
-	0x000000ff, 0x00000187, 0x000001e4, 0x0000020d,
-	0x00000244, 0x00000274, 0x0000029b, 0x000002ce,
-	0x000002ec, 0x00000305,
+	0x000000f8, 0x00000181, 0x000001de, 0x00000207,
+	0x00000240, 0x00000270, 0x00000297, 0x000002ca,
+	0x000002e8, 0x00000301,
 } // Size: 80 bytes
 
-const daData string = "" + // Size: 773 bytes
+const daData string = "" + // Size: 769 bytes
 	"\x02Kunne ikke tilføje en server for institutadgang med URL’en '%[1]s'" +
 	"\x02Kunne ikke tilføje en server for sikkert internet med organisations-" +
 	"ID’et '%[1]s'\x02Kunne ikke tilføje en server med URL’en '%[1]s'\x02Inpu" +
-	"ttet '%[1]s' er altså ikke nogen gyldig URL\x02Klienten forsøgte at forb" +
-	"inde automatisk til VPN-serveren '%[1]s, men dét kræver din fornyede god" +
-	"kendelse. Forbind venligst manuelt.\x02Klienten forsøgte at forbinde til" +
-	" VPN-serveren '%[1]s', men forsøget kunne ikke fuldføres\x02Kunne ikke f" +
-	"orbinde til serveren '%[1]s'\x02Kunne ikke få en VPN-konfiguration for s" +
-	"erven '%[1]s'\x02Kunne ikke få fat i listen over organisationer\x02Kunne" +
-	" ikke få fat i listen af servere\x02Timeout i forsøget på at tilgå URL’e" +
-	"n '%[1]s'\x02%[1]s. Fejlen skyldes: %[2]s.\x02Der skete en intern fejl"
+	"ttet '%[1]s' er ikke nogen gyldig URL\x02Klienten forsøgte at forbinde a" +
+	"utomatisk til VPN-serveren '%[1]s', men dét kræver din fornyede godkende" +
+	"lse. Forbind venligst manuelt.\x02Klienten forsøgte at forbinde til VPN-" +
+	"serveren '%[1]s', men forsøget kunne ikke fuldføres\x02Kunne ikke forbin" +
+	"de til serveren '%[1]s'\x02Kunne ikke få en VPN-konfiguration for server" +
+	"en '%[1]s'\x02Kunne ikke få fat i listen over organisationer\x02Kunne ik" +
+	"ke få fat i listen af servere\x02Timeout i forsøget på at tilgå URL’en '" +
+	"%[1]s'\x02%[1]s. Fejlen skyldes: %[2]s.\x02Der skete en intern fejl"
 
 var deIndex = []uint32{ // 14 elements
-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x000000a7, 0x0000012d, 0x0000012d,
-	0x0000012d, 0x0000012d, 0x0000012d, 0x0000012d,
-	0x0000012d, 0x00000151,
+	0x00000000, 0x00000047, 0x0000009c, 0x000000d7,
+	0x00000103, 0x000001aa, 0x00000230, 0x0000025e,
+	0x000002aa, 0x000002db, 0x00000305, 0x00000336,
+	0x0000035b, 0x0000037f,
 } // Size: 80 bytes
 
-const deData string = "" + // Size: 337 bytes
-	"\x02Der Client hat versucht, sich automatisch mit dem VPN-Server '%[1]s'" +
-	" zu verbinden, aber Sie müssen sich erneut autorisieren. Bitte verbinden" +
-	" sie sich manuell erneut.\x02Der Client hat versucht, sich automatisch m" +
-	"it dem VPN-Server '%[1]s' zu verbinden, aber der Vorgang konnte nicht ab" +
-	"geschlossen werden\x02Ein interner Fehler ist aufgetreten"
+const deData string = "" + // Size: 895 bytes
+	"\x02Fehler beim Hinzufügen eines Institutszugangsservers mit URL: '%[1]s" +
+	"'\x02Fehler beim Hinzufügen eines sicheren Internetservers mit Organisat" +
+	"ions-ID: '%[1]s'\x02Fehler beim Hinzufügen eines Servers mit der URL: '%" +
+	"[1]s'\x02Die Eingabe: '%[1]s' ist keine gültige URL\x02Der Client hat ve" +
+	"rsucht, sich automatisch mit dem VPN-Server '%[1]s' zu verbinden, aber S" +
+	"ie müssen sich erneut autorisieren. Bitte verbinden Sie sich erneut manu" +
+	"ell.\x02Der Client hat versucht, sich automatisch mit dem VPN-Server '%[" +
+	"1]s' zu verbinden, aber der Vorgang konnte nicht abgeschlossen werden" +
+	"\x02Verbindung zum Server fehlgeschlagen: '%[1]s'\x02Es konnte keine VPN" +
+	"-Konfiguration für den Server abgerufen werden: '%[1]s'\x02Fehler beim A" +
+	"brufen der Liste von Organisationen\x02Fehler beim Abrufen der Liste von" +
+	" Servern\x02Zeitüberschreitung beim Aufruf der URL: '%[1]s'\x02%[1]s. Di" +
+	"e Fehlerursache ist: %[2]s.\x02Ein interner Fehler ist aufgetreten"
 
 var enIndex = []uint32{ // 14 elements
 	0x00000000, 0x0000003b, 0x00000080, 0x000000a9,
@@ -230,4 +238,4 @@ var ukIndex = []uint32{ // 14 elements
 
 const ukData string = ""
 
-// Total table size 5976 bytes (5KiB); checksum: 4C67332F
+// Total table size 6530 bytes (6KiB); checksum: 1F4972CA
