@@ -25,7 +25,7 @@ clean:
 	go clean
 
 coverage:
-	go test -v -coverpkg=./... -coverprofile=common.cov ./...
+	go test -tags=cgotesting -v -coverpkg=./... -coverprofile=common.cov ./...
 	go tool cover -func common.cov
 
 sloc:
