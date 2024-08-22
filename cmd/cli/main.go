@@ -13,6 +13,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/version"
 	"github.com/eduvpn/eduvpn-common/types/cookie"
 	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
+	"github.com/eduvpn/eduvpn-common/util"
 
 	"github.com/pkg/browser"
 )
@@ -34,56 +35,6 @@ func openBrowser(data interface{}) {
 	}()
 }
 
-// GetLanguageMatched uses a map from language tags to strings to extract the right language given the tag
-// It implements it according to https://github.com/eduvpn/documentation/blob/dc4d53c47dd7a69e95d6650eec408e16eaa814a2/SERVER_DISCOVERY.md#language-matching
-func GetLanguageMatched(langMap map[string]string, langTag string) string {
-	// If no map is given, return the empty string
-	if len(langMap) == 0 {
-		return ""
-	}
-	// Try to find the exact match
-	if val, ok := langMap[langTag]; ok {
-		return val
-	}
-	// Try to find a key that starts with the OS language setting
-	for k := range langMap {
-		if strings.HasPrefix(k, langTag) {
-			return langMap[k]
-		}
-	}
-	// Try to find a key that starts with the first part of the OS language (e.g. de-)
-	pts := strings.Split(langTag, "-")
-	// We have a "-"
-	if len(pts) > 1 {
-		for k := range langMap {
-			if strings.HasPrefix(k, pts[0]+"-") {
-				return langMap[k]
-			}
-		}
-	}
-	// search for just the language (e.g. de)
-	for k := range langMap {
-		if k == pts[0] {
-			return langMap[k]
-		}
-	}
-
-	// Pick one that is deemed best, e.g. en-US or en, but note that not all languages are always available!
-	// We force an entry that is english exactly or with an english prefix
-	for k := range langMap {
-		if k == "en" || strings.HasPrefix(k, "en-") {
-			return langMap[k]
-		}
-	}
-
-	// Otherwise just return one
-	for k := range langMap {
-		return langMap[k]
-	}
-
-	return ""
-}
-
 // Ask for a profile in the command line.
 func sendProfile(state *client.Client, data interface{}) {
 	fmt.Printf("Multiple VPN profiles found. Please select a profile by entering e.g. 1")
@@ -102,7 +53,7 @@ func sendProfile(state *client.Client, data interface{}) {
 	var options []string
 	i := 0
 	for k, v := range sps.Map {
-		ps += fmt.Sprintf("\n%d - %s", i+1, GetLanguageMatched(v.DisplayName, "en"))
+		ps += fmt.Sprintf("\n%d - %s", i+1, util.GetLanguageMatched(v.DisplayName, "en"))
 		options = append(options, k)
 		i++
 	}
