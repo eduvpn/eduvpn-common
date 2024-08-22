@@ -10,7 +10,6 @@ codeberg.org/eduVPN/proxyguard v0.0.0-20240717121319-c80d3bd681d6 h1:SraE4iJ5cte
 codeberg.org/eduVPN/proxyguard v0.0.0-20240717121319-c80d3bd681d6/go.mod h1:fc7DsdgdLmrO7DN45HNp+ekVewlRcikSOkAvUeGUvWk=
 codeberg.org/eduVPN/proxyguard v0.0.0-20240723101427-d0b2383c372c h1:C+CRKtZb8pEdNsaZuvheoTInlEUFqtOpF0lUvreD79Q=
 codeberg.org/eduVPN/proxyguard v0.0.0-20240723101427-d0b2383c372c/go.mod h1:fc7DsdgdLmrO7DN45HNp+ekVewlRcikSOkAvUeGUvWk=
-github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
 github.com/jedisct1/go-minisign v0.0.0-20230811132847-661be99b8267 h1:TMtDYDHKYY15rFihtRfck/bfFqNfvcabqvXAFQfAUpY=
 github.com/jedisct1/go-minisign v0.0.0-20230811132847-661be99b8267/go.mod h1:h1nSAbGFqGVzn6Jyl1R/iCcBUHN4g+gW1u9CoBTrb9E=
 github.com/jwijenbergh/eduoauth-go v0.0.0-20240315135955-9f1f5b2fd78e h1:KOWbMxOd6qRF6Zw7PfDwUy0HFhks1KXU/7ai98WKFVY=
