@@ -314,7 +314,7 @@ func testGetConfig(t *testing.T) {
 	// TODO: can we do this better
 	http.DefaultTransport = sclient.Client.Transport
 
-	cfg, cfgErr := GetConfig(ck, 3, listS, 0, 0)
+	_, cfgErr := GetConfig(ck, 3, listS, 0, 0)
 	cfgErrS := getError(t, cfgErr)
 	if !strings.HasSuffix(cfgErrS, "server does not exist.") {
 		t.Fatalf("error does not end with 'server does not exist.': %v", cfgErrS)
@@ -326,7 +326,7 @@ func testGetConfig(t *testing.T) {
 		t.Fatalf("failed to add server: %v", addErr)
 	}
 
-	cfg, cfgErr = GetConfig(ck, 3, listS, 0, 0)
+	cfg, cfgErr := GetConfig(ck, 3, listS, 0, 0)
 	cfgErrS = getError(t, cfgErr)
 	if cfgErrS != "" {
 		t.Fatalf("failed to get config for server: %v", cfgErrS)
