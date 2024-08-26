@@ -173,6 +173,10 @@ func testServer(t *testing.T) *test.Server {
 }`,
 		},
 		{
+			Method: http.MethodPost,
+			Path:   "/test-api-endpoint/disconnect",
+		},
+		{
 			Path: "/test-api-endpoint/connect",
 			ResponseHandler: func(w http.ResponseWriter, r *http.Request) {
 				if r.Method != http.MethodPost {
@@ -265,6 +269,30 @@ func testServerList(t *testing.T) {
 	}
 }
 
+func testSetProfileID(t *testing.T) {
+	prfS := C.CString("idontexist")
+	defer FreeString(prfS)
+	pErr := getError(t, SetProfileID(prfS))
+	if pErr == "" {
+		t.Fatal("got empty error for non-existent profile")
+	}
+	prfS2 := C.CString("employees")
+	defer FreeString(prfS2)
+	pErr = getError(t, SetProfileID(prfS2))
+	if pErr != "" {
+		t.Fatal("got error setting existent profile")
+	}
+}
+
+func testCleanup(t *testing.T) {
+	ck := CookieNew()
+	defer CookieDelete(ck)
+	cErr := getError(t, Cleanup(ck))
+	if cErr != "" {
+		t.Fatalf("failed cleaning up connection: %v", cErr)
+	}
+}
+
 func testGetConfig(t *testing.T) {
 	mustRegister(t)
 	defer Deregister()
@@ -318,4 +346,7 @@ func testGetConfig(t *testing.T) {
 	if !ok {
 		t.Fatalf("VPN config does not match regex: %v", cfgS)
 	}
+
+	testSetProfileID(t)
+	testCleanup(t)
 }
