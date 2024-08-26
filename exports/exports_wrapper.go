@@ -73,7 +73,7 @@ func test_state_callback(_ C.int, new C.int, data *C.char) int32 {
 		}
 		prS := C.CString("employees")
 		defer FreeString(prS)
-		CookieReply(C.ulong(tr.Cookie), prS)
+		CookieReply(C.uint64_t(tr.Cookie), prS)
 		return 1
 	}
 
