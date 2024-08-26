@@ -301,6 +301,9 @@ func (a *API) Connect(ctx context.Context, prof profiles.Profile, protos []proto
 
 	// Parse expiry
 	expH := h.Get("expires")
+	if expH == "" {
+		return nil, errors.New("the server did not give an expires header")
+	}
 	expT, err := http.ParseTime(expH)
 	if err != nil {
 		return nil, fmt.Errorf("failed parsing expiry time: %w", err)
