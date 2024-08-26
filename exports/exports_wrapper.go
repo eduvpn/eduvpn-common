@@ -47,12 +47,36 @@ func getError(t *testing.T, gerr *C.char) string {
 	return util.GetLanguageMatched(transl.Message, "en")
 }
 
+// ClonedAskTransition is a clone of the struct types/server.go RequiredAskTransition
+// It is cloned here to ensure that when the types API changes, the tests have to be changed as well
+type ClonedAskTransition struct {
+	Cookie int         `json:"cookie"`
+	Data   interface{} `json:"data"`
+}
+
 //export test_state_callback
 func test_state_callback(_ C.int, new C.int, data *C.char) int32 {
+	// OAUTH_STARTED
+	// We use hardcoded values here instead of constants
+	// to ensure that a change in the API needs to be changed here too
 	if int(new) == 3 {
 		fakeBrowserAuth(C.GoString(data)) //nolint:errcheck
 		return 1
 	}
+	// ASK_PROFILE
+	if int(new) == 6 {
+		dataS := C.GoString(data)
+		var tr ClonedAskTransition
+		jsonErr := json.Unmarshal([]byte(dataS), &tr)
+		if jsonErr != nil {
+			panic(jsonErr)
+		}
+		prS := C.CString("employees")
+		defer FreeString(prS)
+		CookieReply(C.ulong(tr.Cookie), prS)
+		return 1
+	}
+
 	return 0
 }
 
@@ -167,6 +191,15 @@ func testServer(t *testing.T) *test.Server {
                     "openvpn",
                     "wireguard"
                 ]
+            },
+            {
+                "default_gateway": true,
+                "display_name": "Other",
+                "profile_id": "other",
+                "vpn_proto_list": [
+                    "openvpn",
+                    "wireguard"
+                ]
             }
         ]
     }
@@ -217,6 +250,7 @@ func testServerList(t *testing.T) {
 
 	ck := CookieNew()
 	defer CookieDelete(ck)
+	defer CookieCancel(ck)
 
 	list := fmt.Sprintf("https://%s", serv.Listener.Addr().String())
 	listS := C.CString(list)
