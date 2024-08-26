@@ -528,6 +528,9 @@ func (c *Client) SetProfileID(pID string) error {
 	if err != nil {
 		return i18nerr.WrapInternalf(err, "Failed to set the profile ID: '%s'", pID)
 	}
+	if _, ok := srv.Profiles.Map[pID]; !ok {
+		return i18nerr.WrapInternalf(err, "Failed to set the profile ID as it does not exist: '%s'", pID)
+	}
 	srv.Profiles.Current = pID
 	c.TrySave()
 	return nil
