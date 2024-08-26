@@ -11,3 +11,7 @@ func TestRegister(t *testing.T) {
 func TestServerList(t *testing.T) {
 	testServerList(t)
 }
+
+func TestGetConfig(t *testing.T) {
+	testGetConfig(t)
+}

@@ -14,6 +14,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/eduvpn/eduvpn-common/internal/test"
@@ -149,6 +151,56 @@ func testServer(t *testing.T) *test.Server {
 	"expires_in": 3600
 }`,
 		},
+		{
+			Method: http.MethodGet,
+			Path:   "/test-api-endpoint/info",
+			Response: `
+
+{
+    "info": {
+        "profile_list": [
+            {
+                "default_gateway": true,
+                "display_name": "Employees",
+                "profile_id": "employees",
+                "vpn_proto_list": [
+                    "openvpn",
+                    "wireguard"
+                ]
+            }
+        ]
+    }
+}`,
+		},
+		{
+			Path: "/test-api-endpoint/connect",
+			ResponseHandler: func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodPost {
+					http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+					return
+				}
+				w.Header().Add("expires", "Mon, 26 Aug 2024 10:45:59 GMT")
+				w.Header().Add("Content-Type", "application/x-wireguard-profile")
+				w.WriteHeader(200)
+				// example from https://docs.eduvpn.org/server/v3/api.html#response_1
+				resp := `
+Expires: Fri, 06 Aug 2021 03:59:59 GMT
+Content-Type: application/x-wireguard-profile
+
+[Interface]
+Address = 10.43.43.2/24, fd43::2/64
+DNS = 9.9.9.9, 2620:fe::fe
+
+[Peer]
+PublicKey = iWAHXts9w9fQVEbA5pVriPlAYMwwEPD5XcVCZDZn1AE=
+AllowedIPs = 0.0.0.0/0, ::/0
+Endpoint = vpn.example:51820`
+				_, err := w.Write([]byte(resp))
+				if err != nil {
+					panic(err)
+				}
+			},
+		},
 	}
 	return test.NewServerWithHandles(hps, listen)
 }
@@ -210,5 +262,60 @@ func testServerList(t *testing.T) {
 	want = "{}"
 	if srvlistS != want {
 		t.Fatalf("server list not equal, want: %v, got: %v", want, srvlistS)
+	}
+}
+
+func testGetConfig(t *testing.T) {
+	mustRegister(t)
+	defer Deregister()
+	serv := testServer(t)
+	defer serv.Close()
+
+	ck := CookieNew()
+	defer CookieDelete(ck)
+
+	list := fmt.Sprintf("https://%s", serv.Listener.Addr().String())
+	listS := C.CString(list)
+	defer FreeString(listS)
+
+	sclient, err := serv.Client()
+	if err != nil {
+		t.Fatalf("failed to obtain server client: %v", err)
+	}
+
+	// TODO: can we do this better
+	http.DefaultTransport = sclient.Client.Transport
+
+	cfg, cfgErr := GetConfig(ck, 3, listS, 0, 0)
+	cfgErrS := getError(t, cfgErr)
+	if !strings.HasSuffix(cfgErrS, "server does not exist.") {
+		t.Fatalf("error does not end with 'server does not exist.': %v", cfgErrS)
+	}
+
+	// add the server
+	addErr := getError(t, AddServer(ck, 3, listS, nil))
+	if addErr != "" {
+		t.Fatalf("failed to add server: %v", addErr)
+	}
+
+	cfg, cfgErr = GetConfig(ck, 3, listS, 0, 0)
+	cfgErrS = getError(t, cfgErr)
+	if cfgErrS != "" {
+		t.Fatalf("failed to get config for server: %v", cfgErrS)
+	}
+	cfgS := getString(cfg)
+
+	// match the config with the private key in the middle
+	bRe := `{"config":"[Interface]\nAddress = 10.43.43.2/24, fd43::2/64\nDNS = 9.9.9.9, 2620:fe::fe\nPrivateKey = `
+	aRe := `\n[Peer]\nPublicKey = iWAHXts9w9fQVEbA5pVriPlAYMwwEPD5XcVCZDZn1AE=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = vpn.example:51820\n","protocol":2,"default_gateway":true,"should_failover":true}`
+
+	// simple regex to match the key, see https://lists.zx2c4.com/pipermail/wireguard/2020-December/006222.html
+	re := fmt.Sprintf("%s[A-Za-z0-9+/]{42}[AEIMQUYcgkosw480]=%s", regexp.QuoteMeta(bRe), regexp.QuoteMeta(aRe))
+	ok, rErr := regexp.MatchString(re, cfgS)
+	if rErr != nil {
+		t.Fatalf("failed matching regexp: %v", rErr)
+	}
+	if !ok {
+		t.Fatalf("VPN config does not match regex: %v", cfgS)
 	}
 }
