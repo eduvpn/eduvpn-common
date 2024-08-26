@@ -318,6 +318,14 @@ func testSetProfileID(t *testing.T) {
 	}
 }
 
+func testRenewSession(t *testing.T) {
+	ck := CookieNew()
+	rErr := getError(t, RenewSession(ck))
+	if rErr != "" {
+		t.Fatalf("failed renewing session: %v", rErr)
+	}
+}
+
 func testCleanup(t *testing.T) {
 	ck := CookieNew()
 	defer CookieDelete(ck)
@@ -382,5 +390,6 @@ func testGetConfig(t *testing.T) {
 	}
 
 	testSetProfileID(t)
+	testRenewSession(t)
 	testCleanup(t)
 }
