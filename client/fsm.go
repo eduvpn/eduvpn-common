@@ -115,6 +115,7 @@ func newFSM(
 			Transitions: []FSMTransition{
 				{To: StateMain, Description: "Authorized"},
 				{To: StateDisconnected, Description: "Cancel, was disconnected"},
+				{To: StateGotConfig, Description: "Cancel, was got config"},
 			},
 		},
 		StateGettingConfig: FSMState{
@@ -140,6 +141,7 @@ func newFSM(
 			Transitions: []FSMTransition{
 				{To: StateGettingConfig, Description: "Get a VPN config again"},
 				{To: StateConnecting, Description: "VPN is connecting"},
+				{To: StateOAuthStarted, Description: "Renew"},
 			},
 		},
 		StateConnecting: FSMState{
