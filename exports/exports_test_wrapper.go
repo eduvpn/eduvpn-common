@@ -450,6 +450,29 @@ func testGetConfig(t *testing.T) {
 		t.Fatalf("VPN config does not match regex: %v", cfgS)
 	}
 
+	// 7 = GotConfig
+	stateIn, statErr := InState(7)
+	statErrS := getError(t, statErr)
+	if statErrS != "" {
+		t.Fatalf("got a state error when checking if client is in state: %v", statErr)
+	}
+	if stateIn == 0 {
+		t.Fatal("client is not in State 7: GotConfig")
+	}
+	setState := func(in C.int) {
+		// set state connecting
+		statErr := getError(t, SetState(in))
+		if statErr != "" {
+			t.Fatalf("failed to set state: %v, err: %v", in, statErr)
+		}
+	}
+
+	// set connecting -> connected -> disconnecting -> disconnected
+	setState(8)
+	setState(9)
+	setState(10)
+	setState(11)
+
 	testExpiryTimes(t)
 	testSetProfileID(t)
 	testRenewSession(t)
