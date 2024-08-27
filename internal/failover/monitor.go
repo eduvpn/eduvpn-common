@@ -2,7 +2,6 @@ package failover
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -43,8 +42,8 @@ func (m *DroppedConMon) dropped(startBytes int64) (bool, error) {
 // This does not check Rx bytes every tick, but rather when pAlive or pDropped is reached
 // It returns an error if there was an invalid input or a ping was failed to be sent
 func (m *DroppedConMon) Start(ctx context.Context, gateway string, mtuSize int) (bool, error) {
-	if mtuSize <= 0 {
-		return false, errors.New("invalid mtu size given")
+	if mtuSize < mtuOverhead {
+		return false, fmt.Errorf("invalid MTU size given, MTU has to be at least: %v bytes", mtuOverhead)
 	}
 
 	// Create a ping struct with our mtu size
