@@ -15,3 +15,7 @@ func TestServerList(t *testing.T) {
 func TestGetConfig(t *testing.T) {
 	testGetConfig(t)
 }
+
+func TestLetsConnectDiscovery(t *testing.T) {
+	testLetsConnectDiscovery(t)
+}
