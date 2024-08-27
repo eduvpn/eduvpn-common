@@ -455,3 +455,47 @@ func testGetConfig(t *testing.T) {
 	testRenewSession(t)
 	testCleanup(t)
 }
+
+func testLetsConnectDiscovery(t *testing.T) {
+	// this registers a let's connect! client
+	mustRegister(t)
+	defer Deregister()
+	serv := testServer(t)
+	defer serv.Close()
+
+	ck := CookieNew()
+	defer CookieDelete(ck)
+
+	list := fmt.Sprintf("https://%s", serv.Listener.Addr().String())
+	listS := C.CString(list)
+	defer FreeString(listS)
+
+	sclient, err := serv.Client()
+	if err != nil {
+		t.Fatalf("failed to obtain server client: %v", err)
+	}
+
+	// TODO: can we do this better
+	http.DefaultTransport = sclient.Client.Transport
+
+	// try to add an institute access server
+	exptErr := fmt.Sprintf("An internal error occurred. The cause of the error is: Adding a non-custom server when the client does not use discovery is not supported, identifier: %s, type: 1.", list)
+	addErr := getError(t, AddServer(ck, 1, listS, nil))
+	if addErr != exptErr {
+		t.Fatalf("failed to add server got a different error: %v, want: %v", addErr, exptErr)
+	}
+
+	_, servErr := DiscoServers(ck, nil)
+	servErrS := getError(t, servErr)
+	exptErr = "An internal error occurred. The cause of the error is: Server discovery with this client ID is not supported."
+	if servErrS != exptErr {
+		t.Fatalf("discovery servers got a different error: %v, want: %v", servErrS, exptErr)
+	}
+
+	_, orgErr := DiscoOrganizations(ck, nil)
+	orgErrS := getError(t, orgErr)
+	exptErr = "An internal error occurred. The cause of the error is: Organization discovery with this client ID is not supported."
+	if orgErrS != exptErr {
+		t.Fatalf("discovery organizations got a different error: %v, want: %v", orgErrS, exptErr)
+	}
+}
