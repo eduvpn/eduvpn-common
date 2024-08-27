@@ -8,6 +8,11 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/log"
 )
 
+type sender interface {
+	Read(deadline time.Time) error
+	Send(seq int) error
+}
+
 // The DroppedConMon is a connection monitor that checks for an increase in rx bytes in certain intervals
 type DroppedConMon struct {
 	// pInterval means how the interval in which to send pings
@@ -17,6 +22,9 @@ type DroppedConMon struct {
 	// The function that reads Rx bytes
 	// If this function returns an error, the monitor exits
 	readRxBytes func() (int64, error)
+	// newPinger creates a new pinger
+	// This gets used in the tests to mock the Ping sender interface
+	newPinger func(gateway string, mtu int) (sender, error)
 }
 
 // NewDroppedMonitor creates a new failover monitor
@@ -24,7 +32,9 @@ type DroppedConMon struct {
 // `pDropped` is how many pings we need to send before we deem it is dropped
 // `readRxBytes` is a function that gets the rx bytes from the client
 func NewDroppedMonitor(pingInterval time.Duration, pDropped int, readRxBytes func() (int64, error)) *DroppedConMon {
-	return &DroppedConMon{pInterval: pingInterval, pDropped: pDropped, readRxBytes: readRxBytes}
+	return &DroppedConMon{pInterval: pingInterval, pDropped: pDropped, readRxBytes: readRxBytes, newPinger: func(gateway string, mtu int) (sender, error) {
+		return NewPinger(gateway, mtu)
+	}}
 }
 
 // Dropped checks whether or not the connection is 'dropped'
@@ -47,7 +57,7 @@ func (m *DroppedConMon) Start(ctx context.Context, gateway string, mtuSize int) 
 	}
 
 	// Create a ping struct with our mtu size
-	p, err := NewPinger(gateway, mtuSize)
+	p, err := m.newPinger(gateway, mtuSize)
 	if err != nil {
 		return false, err
 	}
