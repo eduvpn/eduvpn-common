@@ -17,6 +17,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/eduvpn/eduvpn-common/internal/test"
 	"github.com/eduvpn/eduvpn-common/types/error"
@@ -216,7 +217,7 @@ func testServer(t *testing.T) *test.Server {
 					http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 					return
 				}
-				w.Header().Add("expires", "Mon, 26 Aug 2024 10:45:59 GMT")
+				w.Header().Add("expires", time.Now().Add(4*time.Hour).Format(http.TimeFormat))
 				w.Header().Add("Content-Type", "application/x-wireguard-profile")
 				w.WriteHeader(200)
 				// example from https://docs.eduvpn.org/server/v3/api.html#response_1
@@ -300,6 +301,64 @@ func testServerList(t *testing.T) {
 	want = "{}"
 	if srvlistS != want {
 		t.Fatalf("server list not equal, want: %v, got: %v", want, srvlistS)
+	}
+}
+
+// ClonedExpiryTimes is a copy of types/server Expiry
+// to ensure that when the public API is changed, this should be changed too
+type ClonedExpiryTimes struct {
+	// StartTime is the start time of the VPN in Unix
+	StartTime int64 `json:"start_time"`
+	// EndTime is the end time of the VPN in Unix.
+	EndTime int64 `json:"end_time"`
+	// ButtonTime is the Unix time at which to start showing the renew button in the UI
+	ButtonTime int64 `json:"button_time"`
+	// CountdownTime is the Unix time at which to start showing more detailed countdown timer.
+	// E.g. first start with days (7 days left), and when the current time is after this time, show e.g. 9 minutes and 59 seconds
+	CountdownTime int64 `json:"countdown_time"`
+	// NotificationTimes is the slice/list of times at which to show a notification that the VPN is about to expire
+	NotificationTimes []int64 `json:"notification_times"`
+}
+
+func testExpiryTimes(t *testing.T) {
+	exp, expErr := ExpiryTimes()
+	expErrS := getError(t, expErr)
+	if expErrS != "" {
+		t.Fatalf("expiry times error is not empty: %v", expErrS)
+	}
+
+	expS := getString(exp)
+
+	var et ClonedExpiryTimes
+
+	jErr := json.Unmarshal([]byte(expS), &et)
+	if jErr != nil {
+		t.Fatalf("failed parsing expiry times as JSON: %v", jErr)
+	}
+	etu := time.Unix(et.EndTime, 0)
+	stu := time.Unix(et.StartTime, 0)
+
+	between := func(label string, cand time.Time, equalS bool, equalE bool) {
+		if !cand.After(stu) && (!equalS || !cand.Equal(stu)) {
+			t.Fatalf("%s: %v, is not after start time: %v", label, cand, stu)
+		}
+		if !cand.Before(etu) && (!equalE || !cand.Equal(etu)) {
+			t.Fatalf("%s: %v, is after end time: %v", label, cand, etu)
+		}
+	}
+
+	now := time.Now()
+	between("now", now, false, false)
+	btu := time.Unix(et.ButtonTime, 0)
+	between("button time", btu, false, false)
+	ctu := time.Unix(et.CountdownTime, 0)
+	between("countdown time", ctu, true, false)
+
+	first := true
+	for _, v := range et.NotificationTimes {
+		curr := time.Unix(v, 0)
+		between("notification time", curr, false, first)
+		first = false
 	}
 }
 
@@ -389,6 +448,7 @@ func testGetConfig(t *testing.T) {
 		t.Fatalf("VPN config does not match regex: %v", cfgS)
 	}
 
+	testExpiryTimes(t)
 	testSetProfileID(t)
 	testRenewSession(t)
 	testCleanup(t)
