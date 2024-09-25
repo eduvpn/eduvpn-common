@@ -3,6 +3,7 @@ package http
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -146,12 +147,25 @@ type Client struct {
 	Timeout time.Duration
 }
 
+// TLS13Transport returns a http.Transport with the minimum TLS version set to 1.3
+func TLS13Transport() *http.Transport {
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = &tls.Config{MinVersion: tls.VersionTLS13}
+	return tr
+}
+
 // NewClient returns a HTTP client with some default settings
 func NewClient(client *http.Client) *Client {
 	c := client
 	if c == nil {
-		c = &http.Client{}
+		c = &http.Client{
+			Transport: TLS13Transport(),
+		}
 	}
+	// if a client is non-nil it uses its own transport
+	// for the OAuth client we also make sure TLS 1.3 is set
+	// TODO: Should we double verify that MinVersion is 1.3 or is that overkill?
+
 	// ReadLimit denotes the maximum amount of bytes that are read in HTTP responses
 	// This is used to prevent servers from sending huge amounts of data
 	// A limit of 16MB, although maybe much larger than needed, ensures that we do not run into problems
