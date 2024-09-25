@@ -64,6 +64,12 @@ type API struct {
 func NewAPI(ctx context.Context, clientID string, sd ServerData, cb Callbacks, tokens *eduoauth.Token) (*API, error) {
 	cr := customRedirect(clientID)
 	// Construct OAuth
+
+	transp := sd.Transport
+	// in the tests this can be non-nil
+	if transp == nil {
+		transp = httpw.TLS13Transport()
+	}
 	o := eduoauth.OAuth{
 		ClientID: clientID,
 		EndpointFunc: func(ctx context.Context) (*eduoauth.EndpointResponse, error) {
@@ -81,7 +87,7 @@ func NewAPI(ctx context.Context, clientID string, sd ServerData, cb Callbacks, t
 		TokensUpdated: func(tok eduoauth.Token) {
 			cb.TokensUpdated(sd.ID, sd.Type, tok)
 		},
-		Transport: sd.Transport,
+		Transport: transp,
 		UserAgent: httpw.UserAgent,
 	}
 
