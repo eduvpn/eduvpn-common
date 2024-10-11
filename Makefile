@@ -18,14 +18,14 @@ cli:
 	go build -o eduvpn-common-cli ./cmd/cli
 
 test:
-	go test -race ./...
+	go test -tags=cgotesting -race ./...
 
 clean:
 	rm -rf lib
 	go clean
 
 coverage:
-	go test -v -coverpkg=./... -coverprofile=common.cov ./...
+	go test -tags=cgotesting -v -coverpkg=./... -coverprofile=common.cov ./...
 	go tool cover -func common.cov
 
 sloc:
