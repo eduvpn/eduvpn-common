@@ -40,8 +40,8 @@ func availableUDPPort() (int, error) {
 type Proxy struct {
 	// SourcePort is the source port of the TCP socket
 	SourcePort int
-	// Listen is the IP:PORT of the udp listener
-	Listen string
+	// ListenPort is the PORT of the udp listener
+	ListenPort int
 	// Peer is the hostname/ip:port of the WireGuard peer
 	Peer string
 }
@@ -54,22 +54,23 @@ func Config(cfg string, key *wgtypes.Key, proxy bool) (string, *Proxy, error) {
 	}
 
 	var tcpp int
-	var plisten string
+	var udpp int
 	var err error
+	var udpl string
 
 	if proxy {
 		tcpp, err = availableTCPPort()
 		if err != nil {
 			return "", nil, err
 		}
-		udpp, err := availableUDPPort()
+		udpp, err = availableUDPPort()
 		if err != nil {
 			return "", nil, err
 		}
-		plisten = fmt.Sprintf("127.0.0.1:%d", udpp)
+		udpl = fmt.Sprintf("127.0.0.1:%d", udpp)
 	}
 
-	rcfg, peer, err := configReplace(cfg, *key, plisten)
+	rcfg, peer, err := configReplace(cfg, *key, udpl)
 	if err != nil {
 		return "", nil, err
 	}
@@ -77,7 +78,7 @@ func Config(cfg string, key *wgtypes.Key, proxy bool) (string, *Proxy, error) {
 	if proxy {
 		retP = &Proxy{
 			SourcePort: tcpp,
-			Listen:     plisten,
+			ListenPort: udpp,
 			Peer:       peer,
 		}
 	}

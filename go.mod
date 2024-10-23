@@ -2,6 +2,8 @@ module github.com/eduvpn/eduvpn-common
 
 go 1.18
 
+replace codeberg.org/eduVPN/proxyguard => ../proxyguard
+
 require (
 	codeberg.org/eduVPN/proxyguard v0.0.0-20240723101427-d0b2383c372c
 	github.com/jedisct1/go-minisign v0.0.0-20230811132847-661be99b8267
