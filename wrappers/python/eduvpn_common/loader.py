@@ -5,7 +5,7 @@ from eduvpn_common import __version__
 from eduvpn_common.types import (
     BoolError,
     DataError,
-    ProxyReady,
+    HandlerError,
     ProxySetup,
     ReadRxBytes,
     RefreshList,
@@ -134,14 +134,27 @@ def initialize_functions(lib: CDLL) -> None:
         ],
         BoolError,
     )
-    lib.StartProxyguard.argtypes, lib.StartProxyguard.restype = (
+    lib.NewProxyguard.argtypes, lib.NewProxyguard.restype = (
         [
             c_int,
-            c_char_p,
+            c_int,
             c_int,
             c_char_p,
             ProxySetup,
-            ProxyReady,
         ],
-        c_void_p,
+        HandlerError,
+    )
+    lib.ProxyguardTunnel.argtypes, lib.ProxyguardTunnel.restype = (
+        [
+            c_int,
+            c_int,
+            c_int,
+        ],
+        c_char_p,
+    )
+    lib.ProxyguardPeerIPs.argtypes, lib.ProxyguardPeerIPs.restype = (
+        [
+            c_int,
+        ],
+        DataError,
     )

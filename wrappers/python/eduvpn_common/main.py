@@ -1,13 +1,12 @@
 import ctypes
 import json
 from enum import IntEnum
-from typing import Any, Callable, Iterator, Optional
+from typing import Any, Callable, Iterator, List, Optional
 
 from eduvpn_common.event import EventHandler
 from eduvpn_common.loader import initialize_functions, load_lib
 from eduvpn_common.state import State
 from eduvpn_common.types import (
-    ProxyReady,
     ProxySetup,
     ReadRxBytes,
     RefreshList,
@@ -19,6 +18,24 @@ from eduvpn_common.types import (
 )
 
 global_object = None
+
+
+class Proxyguard(object):
+    def __init__(self, parent, handler):
+        self.parent = parent
+        self.handler = handler
+
+    def tunnel(self, wglisten: int):
+        tunnel_err = self.parent.go_cookie_function(self.parent.lib.ProxyguardTunnel, self.handler, wglisten)
+        if tunnel_err:
+            forwardError(tunnel_err)
+
+    @property
+    def peer_ips(self) -> List[str]:
+        peer_ips, peer_ips_err = self.parent.go_function(self.parent.lib.ProxyguardPeerIPs, self.handler)
+        if peer_ips_err:
+            forwardError(peer_ips_err)
+        return json.loads(peer_ips)
 
 
 class WrappedError(Exception):
@@ -359,24 +376,23 @@ class EduVPN(object):
             forwardError(dropped_err)
         return dropped
 
-    def start_proxyguard(
+    def new_proxyguard(
         self,
-        listen: str,
-        source_port: int,
+        listen_port: int,
+        tcp_source_port: int,
         peer: str,
         setup: ProxySetup,
-        ready: ProxyReady,
-    ):
-        proxy_err = self.go_cookie_function(
-            self.lib.StartProxyguard,
-            listen,
-            source_port,
+    ) -> Proxyguard:
+        proxy, proxy_err = self.go_cookie_function(
+            self.lib.NewProxyguard,
+            listen_port,
+            tcp_source_port,
             peer,
             setup,
-            ready,
         )
         if proxy_err:
             forwardError(proxy_err)
+        return Proxyguard(self, proxy)
 
     def cancel(self):
         self.jar.cancel()

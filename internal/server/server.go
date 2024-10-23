@@ -142,7 +142,7 @@ func (s *Server) connect(ctx context.Context, pTCP bool) (*srvtypes.Configuratio
 	if apicfg.Proxy != nil {
 		proxy = &srvtypes.Proxy{
 			SourcePort: apicfg.Proxy.SourcePort,
-			Listen:     apicfg.Proxy.Listen,
+			ListenPort: apicfg.Proxy.ListenPort,
 			Peer:       apicfg.Proxy.Peer,
 		}
 	}

@@ -497,8 +497,8 @@ PrivateKey = .*`,
 				if gcd.Proxy.SourcePort <= 0 {
 					t.Fatalf("got proxy source port is smaller or equal to 0: %v", gcd.Proxy.SourcePort)
 				}
-				if !strings.Contains(gcd.Proxy.Listen, "127.0.0.1") {
-					t.Fatalf("proxy listen does not contain 127.0.0.1: %s", gcd.Proxy.Listen)
+				if gcd.Proxy.ListenPort <= 0 {
+					t.Fatalf("proxy listen port is smaller or equal to 0: %v", gcd.Proxy.ListenPort)
 				}
 				c.cd.Proxy = gcd.Proxy
 			}
