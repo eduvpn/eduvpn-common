@@ -29,6 +29,7 @@ import (
 	"github.com/eduvpn/eduvpn-common/client"
 	"github.com/eduvpn/eduvpn-common/i18nerr"
 	"github.com/eduvpn/eduvpn-common/internal/log"
+	"github.com/eduvpn/eduvpn-common/proxy"
 	"github.com/eduvpn/eduvpn-common/types/cookie"
 	errtypes "github.com/eduvpn/eduvpn-common/types/error"
 	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
@@ -876,50 +877,85 @@ func StartFailover(c C.uintptr_t, gateway *C.char, mtu C.int, readRxBytes C.Read
 	return droppedC, nil
 }
 
-// StartProxyguard starts the 'proxyguard' procedure in eduvpn-common.
+// NewProxyguard creates the 'proxyguard' procedure in eduvpn-common.
 // eduvpn-common currently also cleans up the running ProxyGuard process in `cleanup`.
-// If the proxy cannot be started it returns an error.
+// If the proxy cannot be created it returns an error.
 //
 // This function proxies WireGuard UDP connections over HTTP: [ProxyGuard on Codeberg](https://codeberg.org/eduvpn/proxyguard).
 //
 // These input variables can be gotten from the configuration that is retrieved using the `proxy` JSON key
 //
 //   - `c` is the cookie. Note that if you cancel/delete the cookie, ProxyGuard gets cleaned up. Common automatically cleans up ProxyGuard when `Cleanup` is called, but it is good to cleanup yourself too.
-//   - `listen` is the `ip:port` of the local udp connection, this is what is set to the WireGuard endpoint
+//   - `lp` is the `port` of the local udp ProxyGuard connection, this is what is set to the WireGuard endpoint
 //   - `tcpsp` is the TCP source port. Pass 0 if you do not route based on source port, so far only the Linux client has to pass non-zero.
 //   - `peer` is the `ip:port` of the remote server
 //   - `proxySetup` is a callback which is called when the socket is setting up, this can be used for configuring routing in the client. It takes two arguments: the file descriptor (integer) and a JSON list of IPs the client connects to
-//   - `proxyReady` is a callback when the proxy is ready to be used. This is only called when the client is not connected yet. Use this to determine when the actual wireguard connection can be started. This callback returns and takes no arguments
 //
-// Example Input: ```StartProxyGuard(myCookie, "127.0.0.1:1337", 0, "5.5.5.5:51820", proxySetupCB, proxyReadyCB)```
+// Example Input: ```StartProxyGuard(myCookie, 1337, 0, "5.5.5.5:51820", proxySetupCB)```
 //
 // Example Output: ```null```
 //
-//export StartProxyguard
-func StartProxyguard(c C.uintptr_t, listen *C.char, tcpsp C.int, peer *C.char, proxySetup C.ProxySetup, proxyReady C.ProxyReady) *C.char {
-	state, stateErr := getVPNState()
-	if stateErr != nil {
-		return getCError(stateErr)
+//export NewProxyguard
+func NewProxyguard(c C.uintptr_t, lp C.int, tcpsp C.int, peer *C.char, proxySetup C.ProxySetup) (C.uintptr_t, *C.char) {
+	ck, err := getCookie(c)
+	if err != nil {
+		return 0, getCError(err)
 	}
+	proxy, proxyErr := proxy.NewProxyguard(ck.Context(), int(lp), int(tcpsp), C.GoString(peer), func(fd int) {
+		if proxySetup == nil {
+			return
+		}
+		C.call_proxy_setup(proxySetup, C.int(fd))
+	})
+	if proxyErr != nil {
+		return 0, getCError(proxyErr)
+	}
+	return C.uintptr_t(cgo.NewHandle(proxy)), nil
+}
+
+func getProxy(proxyH C.uintptr_t) (*proxy.Proxy, error) {
+	h := cgo.Handle(proxyH)
+	v, ok := h.Value().(*proxy.Proxy)
+	if !ok {
+		return nil, i18nerr.NewInternal("value is not a proxyguard wrapper")
+	}
+	return v, nil
+}
+
+//export ProxyguardTunnel
+func ProxyguardTunnel(c C.uintptr_t, proxyH C.uintptr_t, wglisten C.int) *C.char {
 	ck, err := getCookie(c)
 	if err != nil {
 		return getCError(err)
 	}
+	pr, err := getProxy(proxyH)
+	if err != nil {
+		return getCError(err)
+	}
+	tunnelErr := pr.Tunnel(ck.Context(), int(wglisten))
 
-	proxyErr := state.StartProxyguard(ck, C.GoString(listen), int(tcpsp), C.GoString(peer), func(fd int, pips string) {
-		if proxySetup == nil {
-			return
-		}
-		cpip := C.CString(pips)
-		C.call_proxy_setup(proxySetup, C.int(fd), cpip)
-		FreeString(cpip)
-	}, func() {
-		if proxyReady == nil {
-			return
-		}
-		C.call_proxy_ready(proxyReady)
-	})
-	return getCError(proxyErr)
+	// after tunneling is done, the handle should be deleted
+	cgo.Handle(proxyH).Delete()
+	return getCError(tunnelErr)
+}
+
+//export ProxyguardPeerIPs
+func ProxyguardPeerIPs(proxyH C.uintptr_t) (*C.char, *C.char) {
+	pr, err := getProxy(proxyH)
+	if err != nil {
+		return nil, getCError(err)
+	}
+	pips := pr.PeerIPS
+
+	b, err := json.Marshal(pips)
+	if err != nil {
+		return nil, getCError(i18nerr.WrapInternal(err, "failed converting Peer IPs to JSON"))
+	}
+	ret, err := getReturnData(string(b))
+	if err != nil {
+		return nil, getCError(err)
+	}
+	return C.CString(ret), nil
 }
 
 // SetState sets the state of the state machine.

@@ -25,6 +25,15 @@ class DataError(Structure):
     _fields_ = [("data", c_void_p), ("error", c_void_p)]
 
 
+class HandlerError(Structure):
+    """The C type that represents a tuple of a CGO handler and error (string) as returned by the Go library
+
+    :meta private:
+    """
+
+    _fields_ = [("handler", c_int), ("error", c_void_p)]
+
+
 class BoolError(Structure):
     """The C type that represents a tuple of boolean and error as returned by the Go library
 
@@ -36,8 +45,7 @@ class BoolError(Structure):
 
 # The type for a Go state change callback
 VPNStateChange = CFUNCTYPE(c_int, c_int, c_int, c_char_p)
-ProxySetup = CFUNCTYPE(c_void_p, c_int, c_char_p)
-ProxyReady = CFUNCTYPE(c_void_p)
+ProxySetup = CFUNCTYPE(c_void_p, c_int)
 ReadRxBytes = CFUNCTYPE(c_ulonglong)
 RefreshList = CFUNCTYPE(c_void_p)
 TokenGetter = CFUNCTYPE(c_void_p, c_char_p, c_int, POINTER(c_char), c_size_t)
@@ -84,6 +92,7 @@ def decode_res(res: Any) -> Any:
     """
     decode_map = {
         c_void_p: get_ptr_string,
+        HandlerError: get_handler_error,
         DataError: get_data_error,
         BoolError: get_bool_error,
     }
@@ -124,6 +133,22 @@ def get_data_error(lib: CDLL, data_error: DataError) -> Tuple[str, str]:
     data = get_ptr_string(lib, data_error.data)
     error = get_ptr_string(lib, data_error.error)
     return data, error
+
+
+def get_handler_error(lib: CDLL, handler_error: HandlerError) -> Tuple[int, str]:
+    """Convert a C handler+error structure to a Python usable handler+error structure
+
+    :param lib: CDLL: The Go shared library
+    :param handler_error: HandlerError: The handler error C structure
+
+    :meta private:
+
+    :return: The handler and error
+    :rtype: Tuple[int, str]
+    """
+    handler = int(handler_error.handler)
+    error = get_ptr_string(lib, handler_error.error)
+    return handler, error
 
 
 def get_bool_error(lib: CDLL, bool_error: BoolError) -> Tuple[bool, str]:

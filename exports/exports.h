@@ -11,8 +11,7 @@ typedef int (*StateCB)(int oldstate, int newstate, void* data);
 typedef void (*RefreshList)();
 typedef void (*TokenGetter)(const char* server_id, int server_type, char* out, size_t len);
 typedef void (*TokenSetter)(const char* server_id, int server_type, const char* tokens);
-typedef void (*ProxySetup)(int fd, const char* peer_ips);
-typedef void (*ProxyReady)();
+typedef void (*ProxySetup)(int fd);
 
 static long long int get_read_rx_bytes(ReadRxBytes read)
 {
@@ -34,13 +33,9 @@ static void call_token_setter(TokenSetter setter, const char* server_id, int ser
 {
     setter(server_id, server_type, tokens);
 }
-static void call_proxy_setup(ProxySetup proxysetup, int fd, const char* peer_ips)
+static void call_proxy_setup(ProxySetup proxysetup, int fd)
 {
-    proxysetup(fd, peer_ips);
-}
-static void call_proxy_ready(ProxyReady ready)
-{
-    ready();
+    proxysetup(fd);
 }
 
 #endif /* EXPORTS_H */
