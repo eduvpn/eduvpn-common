@@ -24,6 +24,8 @@ import (
 	"github.com/eduvpn/eduvpn-common/internal/test"
 	"github.com/eduvpn/eduvpn-common/types/error"
 	"github.com/eduvpn/eduvpn-common/util"
+
+	httpw "github.com/eduvpn/eduvpn-common/internal/http"
 )
 
 func getString(in *C.char) string {
@@ -264,8 +266,7 @@ func testServerList(t *testing.T) {
 		t.Fatalf("failed to obtain server client: %v", err)
 	}
 
-	// TODO: can we do this better
-	http.DefaultTransport = sclient.Client.Transport
+	httpw.DefaultTransport = sclient.Client.Transport.(*http.Transport)
 
 	gerr := getError(t, AddServer(ck, 3, listS, nil))
 	if gerr != "" {
@@ -417,8 +418,7 @@ func testGetConfig(t *testing.T) {
 		t.Fatalf("failed to obtain server client: %v", err)
 	}
 
-	// TODO: can we do this better
-	http.DefaultTransport = sclient.Client.Transport
+	httpw.DefaultTransport = sclient.Client.Transport.(*http.Transport)
 
 	_, cfgErr := GetConfig(ck, 3, listS, 0, 0)
 	cfgErrS := getError(t, cfgErr)
@@ -501,8 +501,7 @@ func testLetsConnectDiscovery(t *testing.T) {
 		t.Fatalf("failed to obtain server client: %v", err)
 	}
 
-	// TODO: can we do this better
-	http.DefaultTransport = sclient.Client.Transport
+	httpw.DefaultTransport = sclient.Client.Transport.(*http.Transport)
 
 	// try to add an institute access server
 	exptErr := fmt.Sprintf("An internal error occurred. The cause of the error is: Adding a non-custom server when the client does not use discovery is not supported, identifier: %s, type: 1.", list)
