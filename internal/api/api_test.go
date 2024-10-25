@@ -199,7 +199,7 @@ func createTestAPI(t *testing.T, tok *eduoauth.Token, gt []string, hps []test.Ha
 			return in, nil
 		},
 		DisableAuthorize: false,
-		Transport:        servc.Client.Transport,
+		transport:        servc.Client.Transport,
 	}
 
 	tc := &TestCallback{t: t}

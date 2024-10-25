@@ -147,19 +147,23 @@ type Client struct {
 	Timeout time.Duration
 }
 
-// TLS13Transport returns a http.Transport with the minimum TLS version set to 1.3
-func TLS13Transport() *http.Transport {
+// tls13Transport returns a http.Transport with the minimum TLS version set to 1.3
+func tls13Transport() *http.Transport {
 	tr := http.DefaultTransport.(*http.Transport).Clone()
 	tr.TLSClientConfig = &tls.Config{MinVersion: tls.VersionTLS13}
 	return tr
 }
+
+// DefaultTransport is the default HTTP transport to use
+// by default it is a transport that only allows TLS 1.3
+var DefaultTransport = tls13Transport()
 
 // NewClient returns a HTTP client with some default settings
 func NewClient(client *http.Client) *Client {
 	c := client
 	if c == nil {
 		c = &http.Client{
-			Transport: TLS13Transport(),
+			Transport: DefaultTransport,
 		}
 	}
 	// if a client is non-nil it uses its own transport
