@@ -368,8 +368,11 @@ func testSetProfileID(t *testing.T) {
 	prfS := C.CString("idontexist")
 	defer FreeString(prfS)
 	pErr := getError(t, SetProfileID(prfS))
-	if pErr == "" {
-		t.Fatal("got empty error for non-existent profile")
+	// this might sound wrong but it's correct!
+	// setting an incorrect profile should still work
+	// as it can be used for migrating old profiles to the new common codebase
+	if pErr != "" {
+		t.Fatal("got empty error setting non-existent profile")
 	}
 	prfS2 := C.CString("employees")
 	defer FreeString(prfS2)
