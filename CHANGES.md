@@ -3,6 +3,17 @@
   - Cleanup function comments
 * Util:
   - Add a function to calculate the gateway address for a given IPv4/IPv6 subnet
+* ProxyGuard:
+  - Updated to the latest version
+  - API breakage:
+    - `StartProxyguard` function has been removed, use `NewProxyguard` instead
+    - `NewProxyguard` function has been added which returns a ProxyGuard instance
+    - `ProxyguardTunnel` to establish a tunnel for an existing ProxyGuard instance
+    - `ProxyguardPeerIPs` to get the Peer IPs ProxyGuard will attempt to connect to
+    - types.Server.Proxy JSON no longer returns `listen` but `listen_port`
+* HTTP: Enforce TLS >= 1.3 transport
+* Exports: Add tests to test the public API
+* Translations: Update from Weblate
 
 # 2.1.0 (2024-07-25)
 * Discovery:
