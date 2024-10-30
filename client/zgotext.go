@@ -27,6 +27,7 @@ func (d *dictionary) Lookup(key string) (data string, ok bool) {
 
 func init() {
 	dict := map[string]catalog.Dictionary{
+		"cs": &dictionary{index: csIndex, data: csData},
 		"da": &dictionary{index: daIndex, data: daData},
 		"de": &dictionary{index: deIndex, data: deData},
 		"en": &dictionary{index: enIndex, data: enData},
@@ -61,6 +62,15 @@ var messageKeyToIndex = map[string]int{
 	"The input: '%s' is not a valid URL":   3,
 	"Timeout reached contacting URL: '%s'": 10,
 }
+
+var csIndex = []uint32{ // 14 elements
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	0x00000000, 0x00000000,
+} // Size: 80 bytes
+
+const csData string = ""
 
 var daIndex = []uint32{ // 14 elements
 	0x00000000, 0x00000046, 0x0000009b, 0x000000ce,
@@ -238,4 +248,4 @@ var ukIndex = []uint32{ // 14 elements
 
 const ukData string = ""
 
-// Total table size 6530 bytes (6KiB); checksum: 1F4972CA
+// Total table size 6610 bytes (6KiB); checksum: 8E6830C9
