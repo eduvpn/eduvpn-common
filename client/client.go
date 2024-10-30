@@ -477,7 +477,7 @@ func (c *Client) GetConfig(ck *cookie.Cookie, identifier string, _type srvtypes.
 	if err != nil {
 		if startup {
 			if errors.Is(err, api.ErrAuthorizeDisabled) {
-				return nil, i18nerr.Newf("The client tried to autoconnect to the VPN server: '%s', but you need to authorizate again. Please manually connect again.", identifier)
+				return nil, i18nerr.Newf("The client tried to autoconnect to the VPN server: '%s', but you need to authorize again. Please manually connect again.", identifier)
 			}
 			return nil, i18nerr.Wrapf(err, "The client tried to autoconnect to the VPN server: '%s', but the operation failed to complete", identifier)
 		}
