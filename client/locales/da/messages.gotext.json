@@ -62,8 +62,8 @@
             ]
         },
         {
-            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
-            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorizate again. Please manually connect again.",
+            "id": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorize again. Please manually connect again.",
+            "message": "The client tried to autoconnect to the VPN server: '{Identifier}', but you need to authorize again. Please manually connect again.",
             "translation": "Klienten forsøgte at forbinde automatisk til VPN-serveren '{Identifier}', men dét kræver din fornyede godkendelse. Forbind venligst manuelt.",
             "placeholders": [
                 {
