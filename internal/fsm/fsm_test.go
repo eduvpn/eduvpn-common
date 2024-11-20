@@ -149,9 +149,9 @@ func TestGoTransitionRequired(t *testing.T) {
 
 	for _, c := range cases {
 		curr := machine.Current
-		machine.StateCallback = func(_ StateID, new StateID, data interface{}) bool {
-			if c.WantErr == "" && new != c.In {
-				t.Fatalf("new state is not what we want, got: %v, want: %v", new, c.In)
+		machine.StateCallback = func(_ StateID, newState StateID, data interface{}) bool {
+			if c.WantErr == "" && newState != c.In {
+				t.Fatalf("new state is not what we want, got: %v, want: %v", newState, c.In)
 			}
 			v, ok := data.(string)
 			if !ok {
@@ -217,9 +217,9 @@ func TestGoTransition(t *testing.T) {
 		machine.StateCallback = func(StateID, StateID, interface{}) bool {
 			return c.Handle
 		}
-		machine.StateCallback = func(_ StateID, new StateID, data interface{}) bool {
-			if c.WantErr == "" && new != c.In {
-				t.Fatalf("new state is not what we want, got: %v, want: %v", new, c.In)
+		machine.StateCallback = func(_ StateID, newState StateID, data interface{}) bool {
+			if c.WantErr == "" && newState != c.In {
+				t.Fatalf("new state is not what we want, got: %v, want: %v", newState, c.In)
 			}
 			v, ok := data.(string)
 			if !ok {

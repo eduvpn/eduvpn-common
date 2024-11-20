@@ -82,15 +82,15 @@ func TestServer(t *testing.T) {
 		"org.letsconnect-vpn.app.linux",
 		"0.1.0-test",
 		dir,
-		func(old FSMStateID, new FSMStateID, data interface{}) bool {
+		func(oldState FSMStateID, newState FSMStateID, data interface{}) bool {
 			// test if main server server list succeeds
-			if new == StateMain {
+			if newState == StateMain {
 				_, listErr := state.ServerList()
 				if listErr != nil {
 					t.Fatalf("Got server list error: %v", listErr)
 				}
 			}
-			go stateCallback(ck, old, new, data)
+			go stateCallback(ck, oldState, newState, data)
 			return true
 		},
 		false,
@@ -137,8 +137,8 @@ func TestTokenExpired(t *testing.T) {
 		"org.letsconnect-vpn.app.linux",
 		"0.1.0-test",
 		dir,
-		func(old FSMStateID, new FSMStateID, data interface{}) bool {
-			go stateCallback(ck, old, new, data)
+		func(oldState FSMStateID, newState FSMStateID, data interface{}) bool {
+			go stateCallback(ck, oldState, newState, data)
 			return true
 		},
 		false,
@@ -196,8 +196,8 @@ func TestInvalidProfileCorrected(t *testing.T) {
 		"org.letsconnect-vpn.app.linux",
 		"0.1.0-test",
 		dir,
-		func(old FSMStateID, new FSMStateID, data interface{}) bool {
-			go stateCallback(ck, old, new, data)
+		func(oldState FSMStateID, newState FSMStateID, data interface{}) bool {
+			go stateCallback(ck, oldState, newState, data)
 			return true
 		},
 		false,
@@ -253,8 +253,8 @@ func TestConfigStartup(t *testing.T) {
 		"org.letsconnect-vpn.app.linux",
 		"0.1.0-test",
 		dir,
-		func(old FSMStateID, new FSMStateID, data interface{}) bool {
-			go stateCallback(ck, old, new, data)
+		func(oldState FSMStateID, newState FSMStateID, data interface{}) bool {
+			go stateCallback(ck, oldState, newState, data)
 			return true
 		},
 		false,
@@ -314,8 +314,8 @@ func TestPreferTCP(t *testing.T) {
 		"org.letsconnect-vpn.app.linux",
 		"0.1.0-test",
 		dir,
-		func(old FSMStateID, new FSMStateID, data interface{}) bool {
-			go stateCallback(ck, old, new, data)
+		func(oldState FSMStateID, newState FSMStateID, data interface{}) bool {
+			go stateCallback(ck, oldState, newState, data)
 			return true
 		},
 		false,

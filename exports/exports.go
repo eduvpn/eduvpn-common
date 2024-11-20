@@ -150,8 +150,8 @@ func Register(
 		C.GoString(name),
 		C.GoString(version),
 		C.GoString(configDirectory),
-		func(old client.FSMStateID, new client.FSMStateID, data interface{}) bool {
-			return stateCallback(cb, old, new, data)
+		func(oldState client.FSMStateID, newState client.FSMStateID, data interface{}) bool {
+			return stateCallback(cb, oldState, newState, data)
 		},
 		debug != 0,
 	)

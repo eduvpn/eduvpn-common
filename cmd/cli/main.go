@@ -111,8 +111,8 @@ func printConfig(url string, srvType srvtypes.Type) {
 		"org.eduvpn.app.linux",
 		fmt.Sprintf("%s-cli", version.Version),
 		"configs",
-		func(old client.FSMStateID, new client.FSMStateID, data interface{}) bool {
-			stateCallback(c, old, new, data)
+		func(oldState client.FSMStateID, newState client.FSMStateID, data interface{}) bool {
+			stateCallback(c, oldState, newState, data)
 			return true
 		},
 		true,
