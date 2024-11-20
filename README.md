@@ -9,7 +9,7 @@ written using some FFI framework for each language used in eduVPN clients to eas
 The only wrapper inside of this repository is Python, used for the Linux clients. Other clients define their own wrappers, see:
 
 - https://github.com/Amebis/eduVPN
-- https://github.com/eduvpn/android
+- https://codeberg.org/eduVPN/android
 
 ## Documentation
 The documentation for this library can be found at [GitHub pages](https://eduvpn.github.io/eduvpn-common).
