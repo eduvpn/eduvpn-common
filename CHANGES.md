@@ -1,4 +1,8 @@
 # UNRELEASED
+* Go version:
+  - Require Go 1.22
+* Forge:
+  - Move from [GitHub](https://github.com/eduvpn/eduvpn-common) to [Codeberg](https://codeberg.org/eduVPN/eduvpn-common)
 * Docs:
   - Cleanup function comments
 * Util:
