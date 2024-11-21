@@ -90,7 +90,7 @@ The current state is highlighted in the <span style="color:cyan">cyan</span> col
 
 ## State explanation
 
-For the explanation of what all the different states mean, see the [client documentation](https://github.com/eduvpn/eduvpn-common/blob/v2/client/fsm.go#L14-L50)
+For the explanation of what all the different states mean, see the [client documentation](https://codeberg.org/eduVPN/eduvpn-common/src/branch/main/client/fsm.go#L14-L50)
 
 ## States that ask data
 

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/test"
-	discotypes "github.com/eduvpn/eduvpn-common/types/discovery"
+	"codeberg.org/eduVPN/eduvpn-common/internal/test"
+	discotypes "codeberg.org/eduVPN/eduvpn-common/types/discovery"
 )
 
 // TestServers tests whether or not we can obtain discovery servers

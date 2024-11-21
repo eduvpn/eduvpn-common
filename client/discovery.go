@@ -5,9 +5,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/eduvpn/eduvpn-common/i18nerr"
-	"github.com/eduvpn/eduvpn-common/types/cookie"
-	discotypes "github.com/eduvpn/eduvpn-common/types/discovery"
+	"codeberg.org/eduVPN/eduvpn-common/i18nerr"
+	"codeberg.org/eduVPN/eduvpn-common/types/cookie"
+	discotypes "codeberg.org/eduVPN/eduvpn-common/types/discovery"
 )
 
 func (c *Client) hasDiscovery() bool {

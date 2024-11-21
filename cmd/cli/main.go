@@ -9,11 +9,11 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/eduvpn/eduvpn-common/client"
-	"github.com/eduvpn/eduvpn-common/internal/version"
-	"github.com/eduvpn/eduvpn-common/types/cookie"
-	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
-	"github.com/eduvpn/eduvpn-common/util"
+	"codeberg.org/eduVPN/eduvpn-common/client"
+	"codeberg.org/eduVPN/eduvpn-common/internal/version"
+	"codeberg.org/eduVPN/eduvpn-common/types/cookie"
+	srvtypes "codeberg.org/eduVPN/eduvpn-common/types/server"
+	"codeberg.org/eduVPN/eduvpn-common/util"
 
 	"github.com/pkg/browser"
 )

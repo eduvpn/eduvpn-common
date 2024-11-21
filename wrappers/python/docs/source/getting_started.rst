@@ -12,7 +12,7 @@ This documentation page describes the API for the python-eduvpn-common library. 
 2 Overview
 ----------
 
-This library interfaces with the Go library by loading the library as a shared C library (e.g. *.so* file for Linux) and then defining *ctypes*. This means that the library and the glue code needs to be in sync. When you install this library with a package manager or pip, we bundle this shared library with it so that the exact version matches. Note that you can also compile this shared library from source by following instructions at `the official documentation <https://github.com/eduvpn/eduvpn-common>`_.
+This library interfaces with the Go library by loading the library as a shared C library (e.g. *.so* file for Linux) and then defining *ctypes*. This means that the library and the glue code needs to be in sync. When you install this library with a package manager or pip, we bundle this shared library with it so that the exact version matches. Note that you can also compile this shared library from source by following instructions at `the official documentation <https://codeberg.org/eduVPN/eduvpn-common>`_.
 
 There are various modules that this library defines, some are meant to be extensively used by the resulting eduVPN client, while others are purely meant for internal use. We give a general overview for each:
 
@@ -118,7 +118,7 @@ Now for the final step, let's try connect to a server that has multiple profiles
 
 In practice, you should define these callbacks on every state transition (at least *ENTER* transitions) such that every case is handled. For example, there are also mandatory callbacks when asking for a location to connect to in case of secure internet.
 
-A more elaborate example of the library can be found at `the GitHub repository <https://github.com/eduvpn/eduvpn-common/tree/main/wrappers/python/main.py>`_.
+A more elaborate example of the library can be found at `the Codeberg repository <https://codeberg.org/eduVPN/eduvpn-common/src/branch/main/wrappers/python/main.py>`_.
 Or, a full featured example can be found by looking at `the official Linux client <https://github.com/eduvpn/python-eduvpn-client>`_.
 
 4 API Documentation

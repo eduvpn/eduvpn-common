@@ -21,11 +21,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/test"
-	"github.com/eduvpn/eduvpn-common/types/error"
-	"github.com/eduvpn/eduvpn-common/util"
+	"codeberg.org/eduVPN/eduvpn-common/internal/test"
+	"codeberg.org/eduVPN/eduvpn-common/types/error"
+	"codeberg.org/eduVPN/eduvpn-common/util"
 
-	httpw "github.com/eduvpn/eduvpn-common/internal/http"
+	httpw "codeberg.org/eduVPN/eduvpn-common/internal/http"
 )
 
 func getString(in *C.char) string {

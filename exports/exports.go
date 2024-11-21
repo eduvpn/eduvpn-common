@@ -26,14 +26,14 @@ import (
 	"runtime/cgo"
 	"unsafe"
 
-	"github.com/eduvpn/eduvpn-common/client"
-	"github.com/eduvpn/eduvpn-common/i18nerr"
-	"github.com/eduvpn/eduvpn-common/internal/log"
-	"github.com/eduvpn/eduvpn-common/proxy"
-	"github.com/eduvpn/eduvpn-common/types/cookie"
-	errtypes "github.com/eduvpn/eduvpn-common/types/error"
-	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
-	"github.com/eduvpn/eduvpn-common/util"
+	"codeberg.org/eduVPN/eduvpn-common/client"
+	"codeberg.org/eduVPN/eduvpn-common/i18nerr"
+	"codeberg.org/eduVPN/eduvpn-common/internal/log"
+	"codeberg.org/eduVPN/eduvpn-common/proxy"
+	"codeberg.org/eduVPN/eduvpn-common/types/cookie"
+	errtypes "codeberg.org/eduVPN/eduvpn-common/types/error"
+	srvtypes "codeberg.org/eduVPN/eduvpn-common/types/server"
+	"codeberg.org/eduVPN/eduvpn-common/util"
 )
 
 // VPNState is the current state of the library

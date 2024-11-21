@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/eduvpn/eduvpn-common/internal/log"
+	"codeberg.org/eduVPN/eduvpn-common/internal/log"
 )
 
 type Manager struct {

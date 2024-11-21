@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
+	srvtypes "codeberg.org/eduVPN/eduvpn-common/types/server"
 	"github.com/jwijenbergh/eduoauth-go"
 )
 

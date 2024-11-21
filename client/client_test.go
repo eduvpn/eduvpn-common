@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	httpw "github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/eduvpn/eduvpn-common/types/cookie"
-	"github.com/eduvpn/eduvpn-common/types/protocol"
-	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
+	httpw "codeberg.org/eduVPN/eduvpn-common/internal/http"
+	"codeberg.org/eduVPN/eduvpn-common/types/cookie"
+	"codeberg.org/eduVPN/eduvpn-common/types/protocol"
+	srvtypes "codeberg.org/eduVPN/eduvpn-common/types/server"
 	"github.com/jwijenbergh/eduoauth-go"
 )
 

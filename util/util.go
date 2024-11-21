@@ -6,7 +6,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/eduvpn/eduvpn-common/i18nerr"
+	"codeberg.org/eduVPN/eduvpn-common/i18nerr"
 )
 
 // CalculateGateway takes a CIDR encoded subnet `cidr` and returns the gateway and an error

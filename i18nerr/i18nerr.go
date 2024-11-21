@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/eduvpn/eduvpn-common/internal/log"
+	"codeberg.org/eduVPN/eduvpn-common/internal/http"
+	"codeberg.org/eduVPN/eduvpn-common/internal/log"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"

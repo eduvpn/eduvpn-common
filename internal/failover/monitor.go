@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/log"
+	"codeberg.org/eduVPN/eduvpn-common/internal/log"
 )
 
 type sender interface {

@@ -14,12 +14,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/api/profiles"
-	httpw "github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/eduvpn/eduvpn-common/internal/test"
-	"github.com/eduvpn/eduvpn-common/internal/wireguard"
-	"github.com/eduvpn/eduvpn-common/types/protocol"
-	"github.com/eduvpn/eduvpn-common/types/server"
+	"codeberg.org/eduVPN/eduvpn-common/internal/api/profiles"
+	httpw "codeberg.org/eduVPN/eduvpn-common/internal/http"
+	"codeberg.org/eduVPN/eduvpn-common/internal/test"
+	"codeberg.org/eduVPN/eduvpn-common/internal/wireguard"
+	"codeberg.org/eduVPN/eduvpn-common/types/protocol"
+	"codeberg.org/eduVPN/eduvpn-common/types/server"
 	"github.com/jwijenbergh/eduoauth-go"
 )
 

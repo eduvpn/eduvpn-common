@@ -9,9 +9,9 @@ import (
 
 	"codeberg.org/eduVPN/proxyguard"
 
-	"github.com/eduvpn/eduvpn-common/i18nerr"
-	httpw "github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/eduvpn/eduvpn-common/internal/log"
+	"codeberg.org/eduVPN/eduvpn-common/i18nerr"
+	httpw "codeberg.org/eduVPN/eduvpn-common/internal/http"
+	"codeberg.org/eduVPN/eduvpn-common/internal/log"
 )
 
 // Logger is defined here such that we can update the proxyguard logger

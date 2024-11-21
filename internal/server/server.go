@@ -7,11 +7,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/api"
-	"github.com/eduvpn/eduvpn-common/internal/api/profiles"
-	v2 "github.com/eduvpn/eduvpn-common/internal/config/v2"
-	"github.com/eduvpn/eduvpn-common/types/protocol"
-	srvtypes "github.com/eduvpn/eduvpn-common/types/server"
+	"codeberg.org/eduVPN/eduvpn-common/internal/api"
+	"codeberg.org/eduVPN/eduvpn-common/internal/api/profiles"
+	v2 "codeberg.org/eduVPN/eduvpn-common/internal/config/v2"
+	"codeberg.org/eduVPN/eduvpn-common/types/protocol"
+	srvtypes "codeberg.org/eduVPN/eduvpn-common/types/server"
 )
 
 // Server is the struct for a single server

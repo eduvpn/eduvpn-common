@@ -3,7 +3,7 @@ This section gives an example on how to build and install the library from scrat
 
 1. Clone the library
 ```bash
-git clone https://github.com/eduvpn/eduvpn-common
+git clone https://codeberg.org/eduVPN/eduvpn-common
 ```
 
 2. Go to the library directory

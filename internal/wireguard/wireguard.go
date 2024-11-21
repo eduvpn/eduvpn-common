@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/eduvpn/eduvpn-common/internal/wireguard/ini"
+	"codeberg.org/eduVPN/eduvpn-common/internal/wireguard/ini"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 

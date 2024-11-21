@@ -3,8 +3,8 @@
 package profiles
 
 import (
-	"github.com/eduvpn/eduvpn-common/types/protocol"
-	"github.com/eduvpn/eduvpn-common/types/server"
+	"codeberg.org/eduVPN/eduvpn-common/types/protocol"
+	"codeberg.org/eduVPN/eduvpn-common/types/server"
 )
 
 // Profile is the information for a profile

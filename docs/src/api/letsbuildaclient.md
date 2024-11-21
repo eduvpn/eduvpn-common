@@ -110,7 +110,7 @@ Note that this state transition is essentially the same as the following code:
 
 ```python
 -def handler(old: int, new: int, data: str):
--    # it's 6 because https://github.com/eduvpn/eduvpn-common/blob/b660911b5db000b43970f3754b5767bb50741360/client/fsm.go#L33
+-    # it's 6 because https://codeberg.org/eduVPN/eduvpn-common/src/commit/b660911b5db000b43970f3754b5767bb50741360/client/fsm.go#L33
 -    if new == 6:
 -        webbrowser.open(data)
 -        return True

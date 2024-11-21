@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/api"
-	"github.com/eduvpn/eduvpn-common/internal/config/v2"
-	"github.com/eduvpn/eduvpn-common/internal/discovery"
-	"github.com/eduvpn/eduvpn-common/internal/log"
-	"github.com/eduvpn/eduvpn-common/types/server"
+	"codeberg.org/eduVPN/eduvpn-common/internal/api"
+	"codeberg.org/eduVPN/eduvpn-common/internal/config/v2"
+	"codeberg.org/eduVPN/eduvpn-common/internal/discovery"
+	"codeberg.org/eduVPN/eduvpn-common/internal/log"
+	"codeberg.org/eduVPN/eduvpn-common/types/server"
 	"github.com/jwijenbergh/eduoauth-go"
 )
 

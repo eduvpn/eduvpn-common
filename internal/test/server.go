@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	httpw "github.com/eduvpn/eduvpn-common/internal/http"
+	httpw "codeberg.org/eduVPN/eduvpn-common/internal/http"
 )
 
 // Server wraps a HTTP test server

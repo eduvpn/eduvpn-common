@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/discovery"
-	"github.com/eduvpn/eduvpn-common/internal/log"
-	"github.com/eduvpn/eduvpn-common/types/server"
+	"codeberg.org/eduVPN/eduvpn-common/internal/discovery"
+	"codeberg.org/eduVPN/eduvpn-common/internal/log"
+	"codeberg.org/eduVPN/eduvpn-common/types/server"
 )
 
 // Server is the struct for each server

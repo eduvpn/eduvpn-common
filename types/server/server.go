@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/eduvpn/eduvpn-common/types/cookie"
-	"github.com/eduvpn/eduvpn-common/types/protocol"
+	"codeberg.org/eduVPN/eduvpn-common/types/cookie"
+	"codeberg.org/eduVPN/eduvpn-common/types/protocol"
 )
 
 // Type gives the type of server

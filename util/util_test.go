@@ -3,7 +3,7 @@ package util
 import (
 	"testing"
 
-	"github.com/eduvpn/eduvpn-common/internal/test"
+	"codeberg.org/eduVPN/eduvpn-common/internal/test"
 )
 
 func TestCalculateGateway(t *testing.T) {

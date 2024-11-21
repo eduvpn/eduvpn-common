@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/test"
+	"codeberg.org/eduVPN/eduvpn-common/internal/test"
 )
 
 // mockedPinger is a ping sender that always returns nil for sending

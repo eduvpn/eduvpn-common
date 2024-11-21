@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/api/endpoints"
+	"codeberg.org/eduVPN/eduvpn-common/internal/api/endpoints"
 )
 
 // EndpointCache is a struct that caches well-known API endpoints

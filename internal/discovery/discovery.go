@@ -9,11 +9,11 @@ import (
 	"net/http"
 	"time"
 
-	httpw "github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/eduvpn/eduvpn-common/internal/levenshtein"
-	"github.com/eduvpn/eduvpn-common/internal/log"
-	"github.com/eduvpn/eduvpn-common/internal/verify"
-	discotypes "github.com/eduvpn/eduvpn-common/types/discovery"
+	httpw "codeberg.org/eduVPN/eduvpn-common/internal/http"
+	"codeberg.org/eduVPN/eduvpn-common/internal/levenshtein"
+	"codeberg.org/eduVPN/eduvpn-common/internal/log"
+	"codeberg.org/eduVPN/eduvpn-common/internal/verify"
+	discotypes "codeberg.org/eduVPN/eduvpn-common/types/discovery"
 )
 
 // HasCache denotes whether or not we have an embedded cache available

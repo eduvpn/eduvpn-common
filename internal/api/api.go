@@ -13,13 +13,13 @@ import (
 	"github.com/jwijenbergh/eduoauth-go"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/eduvpn/eduvpn-common/internal/api/endpoints"
-	"github.com/eduvpn/eduvpn-common/internal/api/profiles"
-	httpw "github.com/eduvpn/eduvpn-common/internal/http"
-	"github.com/eduvpn/eduvpn-common/internal/log"
-	"github.com/eduvpn/eduvpn-common/internal/wireguard"
-	"github.com/eduvpn/eduvpn-common/types/protocol"
-	"github.com/eduvpn/eduvpn-common/types/server"
+	"codeberg.org/eduVPN/eduvpn-common/internal/api/endpoints"
+	"codeberg.org/eduVPN/eduvpn-common/internal/api/profiles"
+	httpw "codeberg.org/eduVPN/eduvpn-common/internal/http"
+	"codeberg.org/eduVPN/eduvpn-common/internal/log"
+	"codeberg.org/eduVPN/eduvpn-common/internal/wireguard"
+	"codeberg.org/eduVPN/eduvpn-common/types/protocol"
+	"codeberg.org/eduVPN/eduvpn-common/types/server"
 )
 
 // Callbacks is the API callback interface

@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/eduvpn/eduvpn-common/internal/test"
-	"github.com/eduvpn/eduvpn-common/types/server"
+	"codeberg.org/eduVPN/eduvpn-common/internal/test"
+	"codeberg.org/eduVPN/eduvpn-common/types/server"
 )
 
 func TestLoad(t *testing.T) {

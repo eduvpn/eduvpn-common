@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/eduvpn/eduvpn-common/internal/util"
+	"codeberg.org/eduVPN/eduvpn-common/internal/util"
 )
 
 // FileLogger defines the type of logger that this package implements

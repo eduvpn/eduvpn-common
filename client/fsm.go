@@ -3,9 +3,9 @@ package client
 import (
 	"fmt"
 
-	"github.com/eduvpn/eduvpn-common/i18nerr"
-	"github.com/eduvpn/eduvpn-common/internal/fsm"
-	"github.com/eduvpn/eduvpn-common/internal/log"
+	"codeberg.org/eduVPN/eduvpn-common/i18nerr"
+	"codeberg.org/eduVPN/eduvpn-common/internal/fsm"
+	"codeberg.org/eduVPN/eduvpn-common/internal/log"
 )
 
 type (

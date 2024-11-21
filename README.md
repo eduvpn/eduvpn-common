@@ -24,4 +24,4 @@ Contributions are welcome. Helping with translations can be done on weblate:
 [MIT](./LICENSE)
 
 ## Authors
-This work is done by [@stevenwdv](https://github.com/stevenwdv) and [@jwijenbergh](https://github.com/jwijenbergh) at the [SURF](https://www.surf.nl/) and [GÉANT](https://geant.org/) organization.
+This work is done by [@stevenwdv](https://github.com/stevenwdv) and [@jwijenbergh](https://codeberg.org/jwijenbergh) at the [SURF](https://www.surf.nl/) and [GÉANT](https://geant.org/) organization.

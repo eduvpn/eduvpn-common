@@ -13,7 +13,7 @@ Note that this runs the tests without any server interaction (so for now only th
 SERVER_URI="eduvpn.example.com" PORTAL_USER="example" PORTAL_PASS="example" make test
 ```
 
-This needs [python3-selenium](https://selenium-python.readthedocs.io/) and [geckodriver](https://github.com/mozilla/geckodriver/releases) (extract and put in your `$PATH`). Note that testing with a server assumes it uses a default portal, due to it needing to click on buttons on the web page. You can add your own portal by customizing the [called Selenium script](https://github.com/eduvpn/eduvpn-common/blob/main/selenium_eduvpn.py).
+This needs [python3-selenium](https://selenium-python.readthedocs.io/) and [geckodriver](https://github.com/mozilla/geckodriver/releases) (extract and put in your `$PATH`). Note that testing with a server assumes it uses a default portal, due to it needing to click on buttons on the web page. You can add your own portal by customizing the [called Selenium script](https://codeberg.org/eduVPN/eduvpn-common/src/branch/main/selenium_eduvpn.py).
 
 If you have [Docker](https://www.docker.com/get-started/) installed and [Docker-compose](https://docs.docker.com/compose/install/) you can use a convenient helper script which starts up two containers
 - An eduVPN server for testing

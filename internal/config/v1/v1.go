@@ -7,8 +7,8 @@ package v1
 import (
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/api/profiles"
-	"github.com/eduvpn/eduvpn-common/internal/discovery"
+	"codeberg.org/eduVPN/eduvpn-common/internal/api/profiles"
+	"codeberg.org/eduVPN/eduvpn-common/internal/discovery"
 )
 
 // Profiles is the list of profiles

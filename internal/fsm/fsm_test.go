@@ -6,7 +6,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/eduvpn/eduvpn-common/internal/test"
+	"codeberg.org/eduVPN/eduvpn-common/internal/test"
 )
 
 func TestSortSlice(t *testing.T) {

@@ -6,7 +6,7 @@ WORKDIR /pip
 
 ARG COMMONVERSION
 
-RUN wget -O eduvpn-common.tar.xz https://github.com/eduvpn/eduvpn-common/releases/download/$COMMONVERSION/eduvpn-common-$COMMONVERSION.tar.xz
+RUN wget -O eduvpn-common.tar.xz https://codeberg.org/eduVPN/eduvpn-common/releases/download/$COMMONVERSION/eduvpn-common-$COMMONVERSION.tar.xz
 RUN tar xf eduvpn-common.tar.xz
 
 WORKDIR /pip/eduvpn-common-$COMMONVERSION

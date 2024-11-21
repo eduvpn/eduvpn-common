@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/eduvpn/eduvpn-common/internal/test"
+	"codeberg.org/eduVPN/eduvpn-common/internal/test"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 

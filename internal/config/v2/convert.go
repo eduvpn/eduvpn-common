@@ -3,8 +3,8 @@ package v2
 import (
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/config/v1"
-	"github.com/eduvpn/eduvpn-common/types/server"
+	"codeberg.org/eduVPN/eduvpn-common/internal/config/v1"
+	"codeberg.org/eduVPN/eduvpn-common/types/server"
 )
 
 func v1AuthTime(st time.Time, ost time.Time) time.Time {

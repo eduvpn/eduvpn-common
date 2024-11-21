@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eduvpn/eduvpn-common/internal/version"
+	"codeberg.org/eduVPN/eduvpn-common/internal/version"
 )
 
 // UserAgent is the user agent that is used for requests

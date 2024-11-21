@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/eduvpn/eduvpn-common/internal/test"
+	"codeberg.org/eduVPN/eduvpn-common/internal/test"
 )
 
 func TestShouldSkip(t *testing.T) {
