@@ -1,6 +1,6 @@
 module codeberg.org/eduVPN/eduvpn-common
 
-go 1.18
+go 1.22
 
 require (
 	codeberg.org/eduVPN/proxyguard v0.0.0-20241028155505-e9ee8522373e
