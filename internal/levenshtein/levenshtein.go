@@ -10,14 +10,6 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-// min returns the min of a and b
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // levenshtein is an algorithm that returns the "distance" between two strings
 // the distance for hello and helloxd is 2 because it takes two inserts to go from hello to helloxd
 // the distance between hello and hello is 0 because the strings are equal
